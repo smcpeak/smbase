@@ -306,6 +306,9 @@ public:
   // on temporaries
   stringBuilder &myself() { return *this; }
 
+  // compatibility with ostringstream
+  string str() const { return string(*this); }
+
   // stream readers
   friend istream& operator>> (istream &is, stringBuilder &sb)
     { sb.readline(is); return is; }
