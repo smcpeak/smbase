@@ -38,6 +38,15 @@ string::string(char const *src, int length, SmbaseStringFunc)
 }
 
 
+// This is the same code as the above constructor.
+string::string(char const *src, int length)
+{
+  s=emptyString;
+  setlength(length);
+  memcpy(s, src, length);
+}
+
+
 void string::dup(char const *src)
 {
   // std::string does not accept NULL pointers

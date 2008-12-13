@@ -68,6 +68,9 @@ public:	       // funcs
 
   // for this one, use ::substring instead
   string(char const *src, int length, SmbaseStringFunc);
+  
+  // actually, not sure what I was thinking, std::string has this
+  string(char const *src, int length);
 
   // for this one, there are two alternatives:
   //   - stringBuilder has nearly the same constructor interface
