@@ -114,6 +114,7 @@ mysig.o: mysig.cc mysig.h
 # library itself
 OBJS := \
   autofile.o \
+  bdffont.o \
   bflatten.o \
   bit2d.o \
   bitarray.o \
@@ -175,7 +176,7 @@ TESTS := nonport voidlist tobjlist bit2d growbuf testmalloc mypopen \
          testmalloc mypopen tobjpool strhash cycles tsobjlist crc \
          srcloc hashline gprintf smregexp vptrmap vdtllist pprint \
          boxprint tarrayqueue testarray taillist_test autofile \
-         bitarray d2vector
+         bitarray d2vector bdffont
 
 # some programs do not build on mingw32
 ifeq ($(strip $(CROSSTARGET)),i386-mingw32msvc)
@@ -299,6 +300,9 @@ bitarray$(EXE): bitarray.cc $(THIS)
 d2vector$(EXE): d2vector.c $(THIS)
 	$(TESTCXX) -o $@ -DTEST_D2VECTOR d2vector.c $(TESTFLAGS)
 
+bdffont$(EXE): bdffont.cc $(THIS)
+	$(TESTCXX) -o $@ -DTEST_BDFFONT bdffont.cc $(TESTFLAGS)
+
 
 ifeq ($(CROSSTARGET),0)
   RUN :=
@@ -344,6 +348,7 @@ check: $(TESTS)
 	$(RUN)./autofile$(EXE) autofile.cc
 	$(RUN)./bitarray$(EXE)
 	$(RUN)./d2vector$(EXE)
+	$(RUN)./bdffont$(EXE)
 ifeq ($(CROSSTARGET),0)
 	@echo
 	@echo "make check: all the tests PASSED"

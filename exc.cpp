@@ -88,6 +88,12 @@ void xBase::addContextLeft(rostring context)
 }
 
 
+void xBase::prependContext(rostring context)
+{
+  msg = stringb(context << ": " << msg);
+}
+
+
 // ------------------- x_assert -----------------
 x_assert::x_assert(rostring cond, rostring fname, int line)
   : xBase(stringb(

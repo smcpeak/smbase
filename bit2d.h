@@ -54,6 +54,21 @@ public:      // funcs
   // set everything
   void setall(int val);
 
+  // Set 8 bits at a time.  p.x must be a multiple of 8.  The
+  // least significant bit is at 'p', the next significant bit
+  // is at 'p+(1,0)', etc.
+  //
+  // If 'Size().x - p.x' is less than 8, the high bits of 'val'
+  // are discarded.
+  void set8(point const &p, byte val);
+
+  // Retrieve 8 bits at a time.  Same restrictions and interpretation
+  // as with 'set8'.
+  //
+  // If 'Size().x - p.x' is less than 8, the high bits of 'val' are
+  // zero.
+  byte get8(point const &p) const;
+
   // debugging
   void print() const;
 
@@ -66,5 +81,12 @@ public:      // funcs
   int private_stride() const { return stride; }
 };
 
-#endif // __BIT2D_H
 
+// Swap 8 bits around so that the least significant bit becomes the
+// most significant, and vice-versa, and so on for the other bits.
+// For example, 01101101 becomes 10110110.  This function is its own
+// inverse.
+byte byteBitSwapLsbMsb(byte b);
+
+
+#endif // __BIT2D_H

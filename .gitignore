@@ -67,3 +67,4 @@ bitarray
 d2vector
 *.o
 libsmbase.a
+bdffont

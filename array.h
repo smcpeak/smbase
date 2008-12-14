@@ -379,6 +379,15 @@ public:     // funcs
 
   T const * operator[](int index) const  { return arr[index]; }
   T *       operator[](int index)        { return arr[index]; }
+    
+  // Replace the element at 'index' with 'newPtr', returning the old
+  // element pointer (as an owner pointer).
+  T *swapAt(int index, T *newPtr)
+  {
+    T *ret = arr[index];
+    arr[index] = newPtr;
+    return ret;
+  }
 
   int length() const         { return arr.length(); }
   bool isEmpty() const       { return arr.isEmpty(); }

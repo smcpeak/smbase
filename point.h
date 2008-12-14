@@ -24,6 +24,7 @@ public:
   void set(num nx, num ny) { x=nx; y=ny; }
   void get(num *gx, num *gy) const { *gx=x; *gy=y; }
   bool zero() const { return x==0 && y==0; }
+  bool isZero() const { return x==0 && y==0; }
   bool gtez() const { return x>=0 && y>=0; }
 
   TPoint<num> operator - () const

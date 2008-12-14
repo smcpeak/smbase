@@ -129,8 +129,10 @@ public:	       // funcs
 
   #define MAKEOP(op)							       	 \
     bool operator op (string const &src) const { return compareTo(src) op 0; }	 \
-    /*bool operator op (const char *src) const { return compareTo(src) op 0; }*/ \
+    bool operator op (const char *src) const { return compareTo(src) op 0; }
     /* killed stuff with char* because compilers are too flaky; use compareTo */
+    // 2008-12-13: Re-added char* since the removal of the impicit
+    // conversion to char const * makes it unambiguous again.
   MAKEOP(==)  MAKEOP(!=)
   MAKEOP(>=)  MAKEOP(>)
   MAKEOP(<=)  MAKEOP(<)
