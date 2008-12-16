@@ -113,6 +113,12 @@ BDFFont::Glyph const * /*nullable*/ BDFFont::getGlyph(int charIndex) const
 }
 
 
+int BDFFont::glyphIndexLimit() const
+{
+  return glyphs.length();
+}
+
+
 // ------------------------- BDF parser ---------------------------
 #define XFORMAT(stuff) xformat(stringb(stuff))
 
@@ -131,6 +137,19 @@ static void expect(char const *&p, char const *expected)
   if (*expected != 0) {
     XFORMAT("expected \"" << origExpected <<
             "\", but found \"" << string(origP, p-origP) << "\"");
+  }
+}
+
+
+// Skip any blanks and newlines.
+//
+// Although the spec does not say anything about tolerating blank
+// lines, xmbdef creates BDF files with blank lines, so I need to
+// accept them.
+static void skipBlanks(char const *&p)
+{
+  while (*p == ' ' || *p == '\r' || *p == '\n') {
+    p++;
   }
 }
 
@@ -188,7 +207,7 @@ static string parseString(char const *&p)
 static string parseWord(char const *&p)
 {
   stringBuilder ret;
-  
+
   for (; *p != 0 && *p != ' ' && *p != '\r' && *p != '\n'; p++) {
     ret << *p;
   }
@@ -388,8 +407,8 @@ static void parseBoundingBox(char const *&p, BDFFont::GlyphMetrics &metrics)
 {
   metrics.bbSize = parsePoint(p);
   
-  if (metrics.bbSize.x <= 0 || metrics.bbSize.y <= 0) {
-    XFORMAT("bounding box must have positive dimensions, but is " <<
+  if (metrics.bbSize.x < 0 || metrics.bbSize.y < 0) {
+    XFORMAT("bounding box must have non-negative dimensions, but is " <<
             metrics.bbSize);
   }
 
@@ -473,7 +492,11 @@ static void parseBitmap(char const *&p, Bit2d &bitmap)
 static void parseGlyph(char const *&p, BDFFont::Glyph *glyph,
                        BDFFont const &font)
 {
+  bool sawBBX = false;
+  bool sawBITMAP = false;
+
   for (;;) {
+    skipBlanks(p);
     string keyword = parseWord(p);
 
     try {
@@ -500,6 +523,7 @@ static void parseGlyph(char const *&p, BDFFont::Glyph *glyph,
 
       else if (keyword == "BBX") {
         parseBoundingBox(p, glyph->metrics);
+        sawBBX = true;
       }
 
       else if (keyword == "BITMAP") {
@@ -507,16 +531,19 @@ static void parseGlyph(char const *&p, BDFFont::Glyph *glyph,
 
         // The BBX must have already been specified so we know how big
         // a bitmap to make.
-        if (glyph->metrics.bbSize.isZero()) {
+        if (!sawBBX) {
           XFORMAT("encountered BITMAP before BBX");
         }
 
-        if (glyph->bitmap) {
+        if (sawBITMAP) {
           XFORMAT("more than one BITMAP section");
         }
+        sawBITMAP = true;
 
-        glyph->bitmap = new Bit2d(glyph->metrics.bbSize);
-        parseBitmap(p, *(glyph->bitmap));
+        if (!glyph->metrics.bbSize.isZero()) {
+          glyph->bitmap = new Bit2d(glyph->metrics.bbSize);
+          parseBitmap(p, *(glyph->bitmap));
+        }
 
         expect(p, "ENDCHAR");
         skipNewline(p);
@@ -524,9 +551,6 @@ static void parseGlyph(char const *&p, BDFFont::Glyph *glyph,
         // Make sure we have everything.
         if (glyph->getCharacterIndex() == -1) {
           XFORMAT("missing ENCODING attribute");
-        }
-        if (!glyph->bitmap) {
-          XFORMAT("missing BITMAP attribute");
         }
         
         // TODO: Check with METRICSSET and 'font' to make sure
@@ -551,6 +575,7 @@ static void parseGlyph(char const *&p, BDFFont::Glyph *glyph,
 static void parseChars(char const *&p, int numChars, BDFFont &font)
 {
   for (int i=0; i<numChars; i++) {
+    skipBlanks(p);
     expect(p, "STARTCHAR");
     skipSpaces(p);
     
@@ -626,7 +651,8 @@ void parseBDFString(BDFFont &font, char const *bdfSourceData)
     font.fileFormatVersion = parseString(p);
 
     // drop into loop reading font-wide characteristics
-    for (;;) {
+    for (;;) {                            
+      skipBlanks(p);
       string keyword = parseWord(p);
 
       try {
@@ -689,6 +715,7 @@ void parseBDFString(BDFFont &font, char const *bdfSourceData)
 
           parseChars(p, numChars, font);
 
+          skipBlanks(p);
           expect(p, "ENDFONT");
           skipNewline(p);
           break;
@@ -827,11 +854,8 @@ static void writeGlyph(stringBuilder &dest, BDFFont::Glyph const &glyph)
   dest << "BBX " << writePoint(glyph.metrics.bbSize)
        << " " << writePoint(glyph.metrics.bbOffset) << EOL;
 
-  if (!glyph.bitmap) {
-    dest << "*** no bitmap! ***" << EOL;
-  }
-  else {
-    dest << "BITMAP" << EOL;
+  dest << "BITMAP" << EOL;
+  if (glyph.bitmap) {
     writeBitmap(dest, *(glyph.bitmap));
   }
   
@@ -923,6 +947,9 @@ void entry()
   // Amusingly, the actual sample input in the spec is missing a
   // bitmap line for the "quoteright" character!  I have repaired it
   // in my version of the input.
+  //
+  // I've made some other changes as well to test some syntax
+  // variations and another anomalies.
   BDFFont font;
   parseBDFFile(font, "fonts/sample1.bdf");
 

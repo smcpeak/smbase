@@ -79,7 +79,7 @@ public:      // types
     // every glyph in the font has its black pixels contained inside
     // the font bounding box; the spec does not explicitly say this,
     // however.  The spec also does not indicate whether it is
-    // expected that the given bounding box is the smallest such box.
+    // required that the given bounding box is the smallest such box.
     point bbSize;            // width and height
     point bbOffset;          // positive means bb is right/above
 
@@ -140,6 +140,8 @@ public:      // types
     // 1 means black (printing).  Initially NULL.  Once built,
     // 'bitmap' should be non-NULL, and 'bitmap->Size()' should equal
     // 'metrics.bbSize'.
+    //
+    // However, this is NULL if the size is (0,0).
     //
     // The 0,0 pixel of the bitmap is the upper-left corner of the
     // glyph image.  (Note that this means the interpretation of
@@ -215,6 +217,10 @@ public:      // funcs
   // may be invalidated by subsequent modifications to 'this', so
   // should not be stored long-term.
   Glyph const * /*nullable*/ getGlyph(int charIndex) const;
+  
+  // Return one greater than the maximum valid glyph index, or 0 if
+  // none are valid.
+  int glyphIndexLimit() const;
 };
 
 
