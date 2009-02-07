@@ -176,7 +176,7 @@ TESTS := nonport voidlist tobjlist bit2d growbuf testmalloc mypopen \
          testmalloc mypopen tobjpool strhash cycles tsobjlist crc \
          srcloc hashline gprintf smregexp vptrmap vdtllist pprint \
          boxprint tarrayqueue testarray taillist_test autofile \
-         bitarray d2vector bdffont
+         bitarray d2vector bdffont tarray2d
 
 # some programs do not build on mingw32
 ifeq ($(strip $(CROSSTARGET)),i386-mingw32msvc)
@@ -303,6 +303,9 @@ d2vector$(EXE): d2vector.c $(THIS)
 bdffont$(EXE): bdffont.cc $(THIS)
 	$(TESTCXX) -o $@ -DTEST_BDFFONT bdffont.cc $(TESTFLAGS)
 
+tarray2d$(EXE): tarray2d.cc array2d.h $(THIS)
+	$(TESTCXX) -o $@ -DTEST_TARRAY2D tarray2d.cc $(TESTFLAGS)
+
 
 ifeq ($(CROSSTARGET),0)
   RUN :=
@@ -349,6 +352,7 @@ check: $(TESTS)
 	$(RUN)./bitarray$(EXE)
 	$(RUN)./d2vector$(EXE)
 	$(RUN)./bdffont$(EXE)
+	$(RUN)./tarray2d$(EXE)
 ifeq ($(CROSSTARGET),0)
 	@echo
 	@echo "make check: all the tests PASSED"

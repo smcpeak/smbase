@@ -68,3 +68,4 @@ d2vector
 *.o
 libsmbase.a
 bdffont
+tarray2d
