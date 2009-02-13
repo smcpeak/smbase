@@ -39,9 +39,11 @@ BDFFont::GlyphMetrics::GlyphMetrics()
     sWidthX(),
     sWidthY(),
     dWidth(0,0),
+    dWidthSpecified(false),
     sWidthX1(),
     sWidthY1(),
     dWidth1(0,0),
+    dWidth1Specified(false),
     vVector(0,0)
 {}
 
@@ -324,12 +326,14 @@ static bool parseMetricsAttribute(char const *&p, rostring keyword,
   
   else if (keyword == "DWIDTH") {
     metrics.dWidth = parsePoint(p);
+    metrics.dWidthSpecified = true;
     skipNewline(p);
     return true;
   }
 
   else if (keyword == "DWIDTH1") {
     metrics.dWidth1 = parsePoint(p);
+    metrics.dWidth1Specified = true;
     skipNewline(p);
     return true;
   }
@@ -785,7 +789,7 @@ static void writeMetrics(stringBuilder &dest,
     dest << "SWIDTH " << metrics.sWidthX << " " << metrics.sWidthY << EOL;
   }
 
-  if (!metrics.dWidth.isZero()) {
+  if (metrics.hasDWidth()) {
     dest << "DWIDTH " << writePoint(metrics.dWidth) << EOL;
   }
 
@@ -793,7 +797,7 @@ static void writeMetrics(stringBuilder &dest,
     dest << "SWIDTH1 " << metrics.sWidthX1 << " " << metrics.sWidthY1 << EOL;
   }
 
-  if (!metrics.dWidth1.isZero()) {
+  if (metrics.dWidth1Specified) {
     dest << "DWIDTH1 " << writePoint(metrics.dWidth1) << EOL;
   }
 

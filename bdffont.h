@@ -113,8 +113,12 @@ public:      // types
     // provide a vector specifying how to move the origin after
     // rendering each glyph, in writing mode 0 (left-to-right).  The
     // font-wide values can be overridden by individual glyphs.
-    // Initially both 0, which means none is specified.
+    // Initially both 0.
     point dWidth;
+    
+    // True if DWIDTH appeared for this glyph.  Initially false, which
+    // means the font-width DWIDTH should be used for this glyph.
+    bool dWidthSpecified;
 
     // The values after the SWIDTH1 keyword, providing the "scalable
     // width" in writing mode 1 (top-to-bottom).  See spec.
@@ -124,6 +128,7 @@ public:      // types
     // The values after the DWIDTH1 keyword, which is the origin
     // offset vector for writing mode 1.  Initially 0.
     point dWidth1;
+    bool dWidth1Specified;
 
     // The values after the VVECTOR keyword.  Taken together, these
     // provide a vector from origin 0 to origin 1, which are the
@@ -135,7 +140,7 @@ public:      // types
     ~GlyphMetrics();
     
     // Return true if the 'dWidth' is specified.
-    bool hasDWidth() const { return dWidth.isZero(); }
+    bool hasDWidth() const { return dWidthSpecified; }
   };
 
   // Data for a single glyph.
