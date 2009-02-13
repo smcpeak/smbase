@@ -15,6 +15,19 @@
 // as platform-specific pixmaps, etc.  This module will not incur any
 // such dependencies.
 
+// Note on character indices: This module uses 'int' rather than
+// 'char' to name a character so that it will work with character
+// encoding systems with more than 256 characters (such as Unicode).
+// The font module interface makes no assumptions about what the
+// characters mean, so is compatible with any character encoding
+// system.
+//
+// That said, the current implementation uses a non-sparse array to
+// map from character indices to glyph attributes, so is not as
+// efficient as it could be for some encodings.  In the future it may
+// be desirable to modify the implementation to more efficiently
+// handle such encodings.
+
 #ifndef BDFFONT_H
 #define BDFFONT_H
 
@@ -203,6 +216,8 @@ public:      // data
   // which to use.  The intent is if I want to render ASCII
   // characters, the ASCII code will be the index for the
   // corresponding glyph.
+  //
+  // See note at top of file about character indices and encodings.
   ObjArrayStack<Glyph> glyphs;
 
 public:      // funcs
@@ -214,6 +229,8 @@ public:      // funcs
   // directly accessing 'glyphs' when possible.  The returned pointer
   // may be invalidated by subsequent modifications to 'this', so
   // should not be stored long-term.
+  //
+  // See note at top of file about character indices and encodings.
   Glyph const * /*nullable*/ getGlyph(int charIndex) const;
 };
 
