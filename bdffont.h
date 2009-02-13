@@ -27,6 +27,14 @@
 // efficient as it could be for some encodings.  In the future it may
 // be desirable to modify the implementation to more efficiently
 // handle such encodings.
+//
+// Although 'int' is signed, this module does not permit negative
+// character indices, as no encoding system uses them.  Why, then, not
+// use 'unsigned int'?  A full explanation is beyond the scope of this
+// module's documentation, but briefly, 'unsigned' turns out to be a
+// poor way of saying "non-negative" because 'unsigned' alters the
+// semantics of arithmetic and the implicit conversions in C/C++ make
+// it almost meaningless anyway.
 
 #ifndef BDFFONT_H
 #define BDFFONT_H
@@ -224,6 +232,10 @@ public:      // funcs
   BDFFont();
   ~BDFFont();
 
+  // Maximum index for which a glyph is present, or -1 if no glyphs
+  // are present.
+  int maxValidGlyph() const;
+
   // Retrieve the glyph for a particular character code, or NULL if no
   // such glyph is defined.  Calling this function is preferable to
   // directly accessing 'glyphs' when possible.  The returned pointer
@@ -231,6 +243,8 @@ public:      // funcs
   // should not be stored long-term.
   //
   // See note at top of file about character indices and encodings.
+  //
+  // Returns NULL if 'charIndex' is negative.
   Glyph const * /*nullable*/ getGlyph(int charIndex) const;
 };
 

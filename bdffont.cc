@@ -100,6 +100,16 @@ BDFFont::~BDFFont()
 {}
 
 
+int BDFFont::maxValidGlyph() const
+{
+  int ret = glyphs.length() - 1;
+  while (ret >= 0 && glyphs[ret] == NULL) {
+    ret--;
+  }
+  return ret;
+}
+
+
 BDFFont::Glyph const * /*nullable*/ BDFFont::getGlyph(int charIndex) const
 {
   if (0 <= charIndex &&
