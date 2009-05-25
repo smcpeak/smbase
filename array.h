@@ -538,7 +538,83 @@ public:       // funcs
 
   T const &top() const
     { return getElt(len-1); }
+  T &topNC()
+    { return const_cast<T&>(getElt(len-1)); }
 };
 
+
+// this code has not been tested, so it's #if 0'd out for now
+#if 0
+// STL-style iterator for ArrayStackEmbed
+template <class T, int n>
+class ArrayStackEmbedIter {
+public:      // data          
+  // Array over which we're iterating.
+  ArrayStackEmbed<T,n> *array;
+
+  // Current index; changed as we increment.  'index' is
+  // equal to array.length() for the "end" iterator.
+  int index;
+
+public:      // funcs
+  ArrayStackEmbedIter(ArrayStackEmbed<T,n> &a, int i)
+    : array(&a),
+      index(i)
+  {
+    selfCheck();
+  }
+
+  ~ArrayStackEmbedIter()
+  {}
+
+  ArrayStackEmbedIter(ArrayStackEmbedIter const &obj)
+    : DMEMB(array),
+      DMEMB(index)
+  {}
+
+  ArrayStackEmbedIter& operator=(ArrayStackEmbedIter const &obj)
+  {
+    CMEMB(array);
+    CMEMB(index);
+    return *this;
+  }
+
+  // check internal invariants
+  void selfCheck() const
+  {
+    xassert((unsigned)index <= array->length());
+  }
+
+  bool operator==(ArrayStackEmbedIter const &obj) const
+  {
+    return EMEMB(array) &&
+           EMEMB(index);
+  }
+
+  bool operator<(ArrayStackEmbedIter const &obj) const
+  {
+    // Only legal to do inequality comparisons among iterators
+    // pointing to the same container.
+    xassert(array == obj.array);
+
+    return index < obj.index;
+  }
+
+  RELATIONAL_OPERATORS(ArrayStackEmbedIter)
+  
+  ArrayStackEmbedIter const &operator++(/*preincrement*/)
+  {
+    index++;
+    selfCheck();
+  }
+
+  ArrayStackEmbedIter operator++(int/*postincrement*/)
+  {
+    ArrayStackEmbedIter ret(*this);
+    operator++();
+    return ret;
+  }
+};
+#endif // 0 (code not tested)
 
 #endif // ARRAY_H
