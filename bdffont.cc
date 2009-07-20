@@ -979,6 +979,14 @@ void entry()
 
   (void)unlink("tmp.bdf");
 
+  if (char const *otherTest = getenv("BDFFONT_OTHERTEST")) {
+    cout << "testing " << otherTest << endl;
+
+    BDFFont otherFont;
+    parseBDFFile(otherFont, otherTest);
+    writeBDFFile("tmp.bdf", otherFont);
+  }
+
   cout << "bdffont ok\n";
 }
 
