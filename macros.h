@@ -274,4 +274,12 @@ public:
 #define override virtual
 
 
+// Open and close namespaces w/o interfering with indentation.
+#define OPEN_NAMESPACE(name) namespace name {
+#define CLOSE_NAMESPACE(name) } /* name */
+
+#define OPEN_ANONYMOUS_NAMESPACE namespace {
+#define CLOSE_ANONYMOUS_NAMESPACE } /* anon */
+
+
 #endif // __MACROS_H
