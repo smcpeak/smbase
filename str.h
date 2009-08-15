@@ -342,6 +342,9 @@ public:
 //   puts(stringb("x=" << x << ", y=" << y));
 #define stringb(expr) (stringBuilder().myself() << expr)
 
+// explicit c_str() is annoying
+#define stringbc(expr) (stringb(expr).c_str())
+
 // experimenting with dropping the () in favor of <<
 // (the "c" can be interpreted as "constructor", or maybe just
 // the successor to "b" above)
