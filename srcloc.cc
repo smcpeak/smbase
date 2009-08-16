@@ -171,7 +171,7 @@ SourceLocManager::File::~File()
   delete[] index;
 }
 
-SourceLocManager::File::File(FileData *fileData, SourceLoc aStartLoc)
+SourceLocManager::File::File(FileData const *fileData, SourceLoc aStartLoc)
   : name(fileData->name),
     startLoc(aStartLoc),        // assigned by SourceLocManager
 //      hashLines(fileData->hashLines),
@@ -610,7 +610,7 @@ SourceLocManager::File *SourceLocManager::getFile(char const *name)
 
 
 // load a file from a FileData object
-void SourceLocManager::loadFile(FileData *fileData)
+void SourceLocManager::loadFile(FileData const *fileData)
 {
   xassert(fileData);
   // we should be loading a new file; dsw: I think this should remain

@@ -89,8 +89,12 @@ public:      // types
 
   // Holds basic data about files for use in initializing the
   // SourceLocManager when de-serializing it from XML.
+  //
+  // More generally, it allows a "file" to be tracked by the
+  // SourceLocManager by specifying its line lengths directly,
+  // rather than SLM reading contents off of the file system.
   class FileData {
-    public:
+  public:
     string name;
     int numChars;
     int numLines;
@@ -105,7 +109,7 @@ public:      // types
     {}
     // FIX: recursively delete the members here
 
-    bool complete() {
+    bool complete() const {
       // NOTE: hashLines is nullable, so says Scott, so it is not on
       // the list of things that have to be there for the object to be
       // complete
@@ -182,8 +186,11 @@ public:      // types
   public:    // funcs
     // this builds both the array and the index
     File(char const *name, SourceLoc startLoc);
-    // used when de-serializing from xml
-    File(FileData *fileData, SourceLoc aStartLoc);
+
+    // used when de-serializing from xml; the 'fileData' pointer
+    // is *not* retained after this call completes
+    File(FileData const *fileData, SourceLoc aStartLoc);
+
     ~File();
 
     // line number to character offset
@@ -402,8 +409,13 @@ public:      // funcs
   // dsw: the xml serialization code needs access to this field; the
   // idea is that the method name suggests that people not use it
   FileList &serializationOnly_get_files() {return files;}
+
   // for de-serializing from xml a single File and loading it into the SourceLocManager
-  void loadFile(FileData *fileData);
+  //
+  // The contents of 'fileData' are copied, so the object can be
+  // destroyed after this call.
+  void loadFile(FileData const *fileData);
+
   // has this file been loaded?
   bool isLoaded(char const *name) { return findFile(name); }
 };
