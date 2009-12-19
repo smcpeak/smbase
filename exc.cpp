@@ -5,7 +5,7 @@
 #include "exc.h"          // this module
 
 #include <string.h>       // strlen, strcpy
-#include <iostream.h>     // clog
+#include "sm-iostream.h"  // clog
 #include <stdarg.h>       // va_xxx
 #include <ctype.h>        // toupper, tolower
 

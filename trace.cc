@@ -7,7 +7,7 @@
 #include "strtokp.h"   // StrtokParse
 #include "nonport.h"   // getMilliseconds()
 
-#include <fstream.h>   // ofstream
+#include "sm-fstream.h"// ofstream
 #include <stdlib.h>    // getenv
 
 

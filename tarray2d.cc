@@ -4,7 +4,9 @@
 #include "array2d.h"         // module to test
 #include "test.h"            // USUAL_MAIN
 
-#include <iostream.h>        // cout
+#include "sm-iostream.h"     // cout
+
+#include <stdlib.h>          // exit
 
 void entry()
 {

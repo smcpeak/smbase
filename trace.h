@@ -5,7 +5,7 @@
 #ifndef TRACE_H
 #define TRACE_H
 
-#include <iostream.h>     // ostream
+#include "sm-iostream.h"     // ostream
 
 
 // add a subsystem to the list of those being traced

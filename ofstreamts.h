@@ -5,7 +5,7 @@
 #ifndef OFSTREAMTS_H
 #define OFSTREAMTS_H
 
-#include <fstream.h>
+#include "sm-fstream.h"
 #include "str.h"
 
 // An ofstream which is timestamp-conscious.  It first writes to a temporary

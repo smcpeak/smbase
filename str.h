@@ -14,7 +14,7 @@
 #define STR_H
 
 #include "typ.h"         // bool
-#include <iostream.h>	 // istream, ostream
+#include "sm-iostream.h" // istream, ostream
 #include <stdarg.h>      // va_list
 #include <string.h>      // strcmp, etc.
 

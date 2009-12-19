@@ -568,7 +568,7 @@ void qsortStringArray(char const **strings, int size) {
 #include "test.h"      // USUAL_MAIN
 
 #include <assert.h>    // assert
-#include <fstream.h>   // ofstream
+#include "sm-fstream.h"// ofstream
 #include <stdlib.h>    // getenv
 #include <stdio.h>     // printf, remove
 

@@ -8,7 +8,7 @@
 #include <stdio.h>          // sprintf
 #include <ctype.h>          // isspace
 #include <string.h>         // strcmp
-#include <iostream.h>       // ostream << char*
+#include "sm-iostream.h"    // ostream << char*
 #include <assert.h>         // assert
 #include <unistd.h>         // write
 
@@ -488,7 +488,7 @@ string vstringf(char const *format, va_list args)
 // ------------------ test code --------------------
 #ifdef TEST_STR
 
-#include <iostream.h>    // cout
+#include "sm-iostream.h"    // cout
 
 void test(unsigned long val)
 {

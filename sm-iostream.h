@@ -1,5 +1,5 @@
 // sm-iostream.h
-// iostream.h stuff
+// similar to old iostream.h
 
 #ifndef SM_IOSTREAM_H
 #define SM_IOSTREAM_H
@@ -14,5 +14,7 @@ using std::endl;
 using std::iostream;
 using std::ostream;
 using std::istream;
+using std::streampos;
+using std::ios;
 
 #endif // SM_IOSTREAM_H
