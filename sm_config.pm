@@ -227,10 +227,11 @@ sub getPerlEnvPrefix {
   if ($sz1 == 2) {
     # no LF->CRLF translation done on output, I think we're ok
     #print("(case 1) ");
+    unlink("tmp.txt");
     return "";
   }
   if ($sz1 != 3) {
-    die("expected file size of 2 or 3");
+    die("expected tmp.txt file size of 2 or 3, not $sz1");
   }
 
   open(TMP, "<tmp.txt") or die;
