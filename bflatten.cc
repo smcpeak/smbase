@@ -3,6 +3,7 @@
 
 #include "bflatten.h"     // this module
 #include "exc.h"          // throw_XOpen
+#include "sm-stdint.h"    // intptr_t
 #include "syserr.h"       // xsyserror
 
 
@@ -32,7 +33,7 @@ STATICDEF void const* BFlatten::getOwnerPtrKeyFn(OwnerMapping *data)
 
 STATICDEF void const* BFlatten::getIntNameKeyFn(OwnerMapping *data)
 { 
-  return (void const*)(data->intName);
+  return (void const*)(intptr_t)(data->intName);
 }
 
 
@@ -65,7 +66,7 @@ void BFlatten::noteOwner(void *ownerPtr)
   }
   else {
     // index by int name
-    ownerTable.add((void const*)(map->intName), map);
+    ownerTable.add((void const*)(intptr_t)(map->intName), map);
   }
 }
 
@@ -100,7 +101,7 @@ void BFlatten::xferSerf(void *&serfPtr, bool isNullable)
     }
     else {
       // lookup the mapping
-      OwnerMapping *map = ownerTable.get((void const*)name);
+      OwnerMapping *map = ownerTable.get((void const*)(intptr_t)name);
       formatAssert(map != NULL);
 
       // return the pointer

@@ -476,7 +476,7 @@ string vstringf(char const *format, va_list args)
     static char const msg[] =
       "fatal error: vnprintf failed to provide a conservative estimate,\n"
       "memory is most likely corrupted\n";
-    write(2 /*stderr*/, msg, strlen(msg));
+    (void)write(2 /*stderr*/, msg, strlen(msg));
     abort();
   }
 

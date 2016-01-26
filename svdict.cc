@@ -404,6 +404,7 @@ string StringVoidDict::toString() const
 // -------------------- test code ------------------------
 #ifdef TEST_SVDICT
 
+#include "sm-stdint.h" // intptr_t
 #include "test.h"      // USUAL_MAIN
 #include <stdlib.h>    // rand
 
@@ -443,7 +444,7 @@ string randKey(StringVoidDict const &dict)
 
 void *randVoidPtr()
 {
-  return (void*)(myrandom(100) * 8);
+  return (void*)(intptr_t)(myrandom(100) * 8);
 }
 
 

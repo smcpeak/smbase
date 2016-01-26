@@ -749,7 +749,9 @@ VoidListIter::VoidListIter(VoidList const &list, int pos)
 
 // -------------- testing --------------
 #ifdef TEST_VOIDLIST
-#include "test.h"     // USUAL_MAIN
+
+#include "sm-stdint.h"       // intptr_t
+#include "test.h"            // USUAL_MAIN
 
 // assumes we're using pointerAddressDiff as the comparison fn
 // (I don't use isSorted because this fn will throw at the disequality,
@@ -782,8 +784,8 @@ void testSorting()
       list3.removeAll();
       numItems = rand()%ITEMS;
       loopj(numItems) {
-        void *toInsert = (void*)( (rand()%ITEMS) * 4 );
-	list1.prepend(toInsert);
+        void *toInsert = (void*)(intptr_t)( (rand()%ITEMS) * 4 );
+        list1.prepend(toInsert);
         list3.insertSorted(toInsert, VoidList::pointerAddressDiff);
       }
     } while (list1.isSorted(VoidList::pointerAddressDiff));

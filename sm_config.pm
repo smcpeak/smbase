@@ -21,7 +21,12 @@ sub get_sm_config_version {
   $main::no_dash_O2 = 0;
   $main::exe = "";
 
-  return 1.05;
+  # The GCC implementation of this warning is not silenced by
+  # a cast to void, making it useless.  :(
+  # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66425
+  push @main::CCFLAGS, ("-Wno-unused-result");
+
+  return 1.06;
 
   # 1.01: first version
   #
@@ -30,6 +35,8 @@ sub get_sm_config_version {
   # 1.03: 2005-04-23: moved a bunch of argument processing into sm_config
   #
   # 1.04: 2005-05-04: re-added -no-dash-g and -no-dash-O2
+  #
+  # 1.06: 2016-01-25: Add -Wno-unused-result.
 }
 
 # standard prefix of the usage string
