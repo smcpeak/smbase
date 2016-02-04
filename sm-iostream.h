@@ -16,5 +16,6 @@ using std::ostream;
 using std::istream;
 using std::streampos;
 using std::ios;
+using std::flush;
 
 #endif // SM_IOSTREAM_H

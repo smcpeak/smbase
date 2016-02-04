@@ -7,7 +7,7 @@
 #include "xassert.h"      // xassert
 #include <stdlib.h>       // qsort
 #include <string.h>       // memcpy
-#include <new.h>          // new
+#include "sm-new.h"       // bad_alloc
 
 
 // ------------------ BitwiseGrowArray --------------------
