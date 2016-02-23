@@ -45,7 +45,7 @@ class PPrintStringOut : public PPrintOut {
 public:
   PPrintStringOut(stringBuilder &s) : sb(s) {}
   virtual ~PPrintStringOut() {}
-  virtual void write(char const *text);
+  virtual void write(char const *text) override;
 };
 
 class PPrintOstreamOut : public PPrintOut {
@@ -53,7 +53,7 @@ class PPrintOstreamOut : public PPrintOut {
 public:
   PPrintOstreamOut(ostream &o) : os(o) {}
   virtual ~PPrintOstreamOut() {}
-  virtual void write(char const *text);
+  virtual void write(char const *text) override;
 };
 
 

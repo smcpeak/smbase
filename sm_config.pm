@@ -20,13 +20,14 @@ sub get_sm_config_version {
   $main::no_dash_g = 0;
   $main::no_dash_O2 = 0;
   $main::exe = "";
+  $main::cxx11 = 1;
 
   # The GCC implementation of this warning is not silenced by
   # a cast to void, making it useless.  :(
   # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66425
   push @main::CCFLAGS, ("-Wno-unused-result");
 
-  return 1.06;
+  return 1.07;
 
   # 1.01: first version
   #
@@ -37,6 +38,8 @@ sub get_sm_config_version {
   # 1.04: 2005-05-04: re-added -no-dash-g and -no-dash-O2
   #
   # 1.06: 2016-01-25: Add -Wno-unused-result.
+  #
+  # 1.07: 2016-02-23: Add C++11 choice, default is true.
 }
 
 # standard prefix of the usage string
@@ -54,6 +57,7 @@ standard (sm_config) options:
   -target=<target>:  cross compilation target, e.g., "i386-mingw32msvc"
   -no-dash-g:        disable -g
   -no-dash-O2:       disable -O2
+  -cxx11[=0/1]:      enable C++11 extensions [$main::cxx11]
 EOF
 
   if ($main::thisPackage ne "smbase") {
@@ -106,6 +110,11 @@ sub handleStandardOption {
     $main::no_dash_O2 = 1;
   }
 
+  elsif ($arg eq "cxx11") {
+    $main::cxx11 = getBoolArg();
+    return 1;
+  }
+
   else {
     return 0;
   }
@@ -116,6 +125,10 @@ sub handleStandardOption {
 sub finishedOptionProcessing {
   if (!$main::debug) {
     push @CCFLAGS, ("-O2", "-DNDEBUG");
+  }
+
+  if ($main::cxx11) {
+    push @CCFLAGS, ("-std=c++11");
   }
 
   if (!$main::target) {

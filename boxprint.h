@@ -106,9 +106,9 @@ public:
   ~BPText();
 
   // BPElement funcs
-  virtual int oneLineWidthEx(bool &forcedBreak);
-  virtual void render(BPRender &mgr);
-  virtual void debugPrint(ostream &os, int ind) const;
+  virtual int oneLineWidthEx(bool &forcedBreak) override;
+  virtual void render(BPRender &mgr) override;
+  virtual void debugPrint(ostream &os, int ind) const override;
 };
 
 
@@ -141,11 +141,11 @@ public:
   ~BPBreak();
 
   // BPElement funcs
-  virtual int oneLineWidthEx(bool &forcedBreak);
-  virtual void render(BPRender &mgr);
-  virtual bool isBreak() const;
-  virtual bool isForcedBreak() const;
-  virtual void debugPrint(ostream &os, int ind) const;
+  virtual int oneLineWidthEx(bool &forcedBreak) override;
+  virtual void render(BPRender &mgr) override;
+  virtual bool isBreak() const override;
+  virtual bool isForcedBreak() const override;
+  virtual void debugPrint(ostream &os, int ind) const override;
 };
 
 
@@ -180,9 +180,9 @@ public:
   ~BPBox();
 
   // BPElement funcs
-  virtual int oneLineWidthEx(bool &forcedBreak);
-  virtual void render(BPRender &mgr);
-  virtual void debugPrint(ostream &os, int ind) const;
+  virtual int oneLineWidthEx(bool &forcedBreak) override;
+  virtual void render(BPRender &mgr) override;
+  virtual void debugPrint(ostream &os, int ind) const override;
 };
 
 

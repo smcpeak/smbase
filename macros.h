@@ -271,7 +271,11 @@ public:
 // The intended semantics of 'override' is that the function is
 // overriding a virtual member of a base class.  I intend to write
 // a checker for this annotation at some point.
-#define override virtual
+//#define override virtual
+//
+// 2016-02-23: C++11 how has 'override' as a standard (psuedo-)
+// keyword, so I am hereby removing this macro and will start using
+// the standard keyword.
 
 
 // Open and close namespaces w/o interfering with indentation.
