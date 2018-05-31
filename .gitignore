@@ -69,3 +69,5 @@ d2vector
 libsmbase.a
 bdffont
 tarray2d
+.project
+.cproject
