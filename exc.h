@@ -42,12 +42,15 @@ bool unwinding();
 class xBase;
 bool unwinding_other(xBase const &x);
 
-// using unwinding() in destructors to avoid abort()
-#define CAUTIOUS_RELAY           \
-  catch (xBase &x) {             \
-    if (!unwinding_other(x)) {   \
-      throw;   /* re-throw */    \
-    }                            \
+// Previously, I used this to allow an exception to propagate out of a
+// destructor only if no other exception was in flight.  I have now
+// decided that is a mistake, and this always just logs the exception.
+//
+// I should provide a better name and more flexible handling mechanism.
+#define CAUTIOUS_RELAY                                    \
+  catch (xBase &x) {                                      \
+    clog << "warning: exception in destructor: "          \
+         << toCStr(x.why()) << endl;                      \
   }
 
 
