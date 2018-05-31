@@ -3,6 +3,10 @@
 
 use strict 'subs';
 
+# Look for sm_config.pm in same directory as this script.
+use FindBin 1.51 qw( $RealBin );
+use lib $RealBin;
+
 require sm_config;
 
 $SMBASE = ".";
