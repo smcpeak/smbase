@@ -1132,7 +1132,7 @@ void buildHashMap(SourceLocManager::File *pp, char const *fname, int &expanderLi
 void testHashMap()
 {
   // run the preprocessor
-  if (0!=system("cpp -DTEST_SRCLOC srcloc.test.cc >srcloc.tmp 2>/dev/null")) {
+  if (0!=system("cpp -DTEST_SRCLOC srcloc.test.cc >srcloc.tmp")) {
     xbase("failed to preprocess srcloc.test.cc; the command that failed was:\n"
           "  cpp -DTEST_SRCLOC srcloc.test.cc >srcloc.tmp");
   }
