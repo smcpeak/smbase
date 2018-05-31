@@ -81,8 +81,10 @@ unsigned long crc32(unsigned char const *data, int length)
 // ----------------- test code ------------------------------
 #ifdef TEST_CRC
 
+#include <errno.h>     // errno
 #include <stdio.h>     // printf, FILE, etc.
 #include <stdlib.h>    // malloc
+#include <string.h>    // strerror
 
 
 int errors=0;
@@ -104,7 +106,7 @@ int main(int argc, char *argv[])
   if (argc >= 2) {
     FILE *fp = fopen(argv[1], "r");
     if (!fp) {
-      printf("error opening %s: %m\n", argv[1]);
+      printf("error opening %s: %s\n", argv[1], strerror(errno));
       return 2;
     }
 

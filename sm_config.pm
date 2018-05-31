@@ -26,7 +26,12 @@ sub get_sm_config_version {
   # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66425
   push @main::CCFLAGS, ("-Wno-unused-result");
 
-  return 1.06;
+  # Reports a false positive in SourceLocManager::File, and there
+  # does not appear to be a reliable way to locally disable
+  # warnings in GCC.
+  push @main::CCFLAGS, ("-Wno-nonnull-compare");
+
+  return 1.07;
 
   # 1.01: first version
   #
@@ -37,6 +42,8 @@ sub get_sm_config_version {
   # 1.04: 2005-05-04: re-added -no-dash-g and -no-dash-O2
   #
   # 1.06: 2016-01-25: Add -Wno-unused-result.
+  #
+  # 1.07: 2018-05-31: Add -target x86_64-w64-mingw32.
 }
 
 # standard prefix of the usage string
@@ -89,8 +96,18 @@ sub handleStandardOption {
       push @main::CCFLAGS, "-D__WIN32__";
       return 1;
     }
+    elsif ($target eq "x86_64-w64-mingw32") {
+      $main::CC = "x86_64-w64-mingw32-gcc";
+      $main::CXX = "x86_64-w64-mingw32-g++";
+      $main::exe = ".exe";
+      @main::CCFLAGS = grep { $_ ne "-D__UNIX__" } @main::CCFLAGS;
+      return 1;
+    }
     else {
-      die("at the moment, only the 'i386-mingw32msvc' cross target is supported\n");
+      die("Unknown argument to -target \"$target\".\n" .
+          "Valid targets:\n" .
+          "  i386-mingw32msvc\n" .
+          "  x86_64-w64-mingw32\n");
     }
   }
 

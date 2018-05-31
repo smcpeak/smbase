@@ -70,7 +70,7 @@ public:     // types
     string &key() const { return current->key; }
     void *&value() const { return current->value; }
 
-    long private_getCurrent() const { return (long)current; }
+    uintptr_t private_getCurrent() const { return (uintptr_t)current; }
   };
   friend class Iter;
 
@@ -185,7 +185,7 @@ public:
   string toString() const;
 
   // debugging...
-  long private_getTopAddr() const { return (long)top; }
+  uintptr_t private_getTopAddr() const { return (uintptr_t)top; }
 };
 
 #endif // __SVDICT_H

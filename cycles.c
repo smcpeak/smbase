@@ -105,10 +105,14 @@ unsigned long long getCycles_ll()
 
 int main()
 {
-  #ifdef __GNUC__
+  // Here, I exclude GCC+MSVCRT (i.e., MinGW) because GCC issues
+  // a spurious warning in that case for the "ll" format specifier.
+  // The code should work, but 'getCycles' is mostly obsolete
+  // anyway and I just want to silence the warning.
+  #if defined(__GNUC__) && !defined(__MSVCRT__)
     unsigned long long v = getCycles_ll();
     printf("getCycles: %llu\n", v);
-  #endif // __GNUC__
+  #endif // __GNUC__ && !__MSVCRT__
 
   // this segment should work on any compiler, by virtue
   // of only using 32-bit quantities

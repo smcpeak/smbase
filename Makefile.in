@@ -158,8 +158,12 @@ OBJS := \
   warn.o
 -include $(OBJS:.o=.d)
 
-# some modules do not build on mingw32; for the moment I do not need them
-ifeq ($(strip $(CROSSTARGET)),i386-mingw32msvc)
+# Some modules do not build on Mingw; for the moment I do not need them.
+TARGET_IS_MINGW := 0
+ifeq ($(findstring mingw,$(CROSSTARGET)),mingw)
+  TARGET_IS_MINGW := 1
+endif
+ifeq ($(TARGET_IS_MINGW),1)
   OBJS := $(filter-out mypopen.o mysig.o smregexp.o,$(OBJS))
 endif
 
@@ -178,8 +182,8 @@ TESTS := nonport voidlist tobjlist bit2d growbuf testmalloc mypopen \
          boxprint tarrayqueue testarray taillist_test autofile \
          bitarray d2vector bdffont tarray2d
 
-# some programs do not build on mingw32
-ifeq ($(strip $(CROSSTARGET)),i386-mingw32msvc)
+# Some programs do not build on Mingw.
+ifeq ($(TARGET_IS_MINGW),1)
   TESTS := $(filter-out testmalloc mypopen mysig smregexp,$(TESTS))
 endif
 
@@ -332,16 +336,12 @@ check: $(TESTS)
 	$(RUN)./strhash$(EXE)
 	$(RUN)./trdelete$(EXE)
 	$(RUN)./bflatten$(EXE)
-	$(RUN)./mysig$(EXE)
-	$(RUN)./testmalloc$(EXE) >/dev/null 2>&1
-	$(RUN)./mypopen$(EXE)
 	$(RUN)./tobjpool$(EXE)
 	$(RUN)./cycles$(EXE)
 	$(RUN)./tsobjlist$(EXE)
 	$(RUN)./hashline$(EXE)
 	$(RUN)./srcloc$(EXE)
 	$(RUN)./gprintf$(EXE)
-	$(RUN)./smregexp$(EXE)
 	$(RUN)./vptrmap$(EXE)
 	$(RUN)./pprint$(EXE)
 	$(RUN)./boxprint$(EXE)
@@ -353,6 +353,12 @@ check: $(TESTS)
 	$(RUN)./d2vector$(EXE)
 	$(RUN)./bdffont$(EXE)
 	$(RUN)./tarray2d$(EXE)
+ifeq ($(TARGET_IS_MINGW),0)
+  $(RUN)./mysig$(EXE)
+  $(RUN)./testmalloc$(EXE) >/dev/null 2>&1
+  $(RUN)./mypopen$(EXE)
+  $(RUN)./smregexp$(EXE)
+endif
 ifeq ($(CROSSTARGET),0)
 	@echo
 	@echo "make check: all the tests PASSED"

@@ -71,3 +71,6 @@ bdffont
 tarray2d
 .project
 .cproject
+.settings
+*.exe
+*.tmp
