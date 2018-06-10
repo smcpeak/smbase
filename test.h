@@ -49,6 +49,10 @@ int main(int argc, char *argv[])                \
 // convenient for printing the value of a variable or expression
 #define PVAL(val) cout << #val << " = " << (val) << endl
 
+// Same, but also print the file and line.
+#define DEBUG_PVAL(val) cout << __FILE__ << ":" << __LINE__ << \
+  ": " #val << " = " << (val) << endl
+
 
 // easy way to time a section of code
 class TimedSection {
