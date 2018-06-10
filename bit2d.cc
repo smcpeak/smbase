@@ -56,7 +56,9 @@ bool Bit2d::operator== (Bit2d const &obj) const
 
 Bit2d::Bit2d(Flatten &)
   : data(NULL),
-    owning(true)
+    owning(true),
+    size(),
+    stride(0)
 {}
 
 void Bit2d::xfer(Flatten &flat)
@@ -143,11 +145,16 @@ byte Bit2d::get8(point const &p) const
 }
 
  
-// count the number of digits required to represent a positive
-// integer in base 10
+// Count the number of digits required to represent a non-negative
+// integer in base 10.
 static int digits(int value)
 {
-  xassert(value > 0);
+  xassert(value >= 0);
+
+  if (value == 0) {
+    return 1;
+  }
+
   int ct=0;
   while (value > 0) {
     ct++;
@@ -160,14 +167,20 @@ static int digits(int value)
 /*
  * Goal is to draw something like this:
  *
- *     	 1  2  3
- *  1 [	 0  0  0  ]
- *  2 [	 0  1  1  ]
- *  3 [	 0  1  0  ]
+ *     	 0  1  2
+ *  0 [	 0  0  0  ]
+ *  1 [	 0  1  1  ]
+ *  2 [	 0  1  0  ]
  *
  */
 void Bit2d::print() const
 {
+  if (size.x <= 0 || size.y <= 0) {
+    printf("Degenerate Bit2d with dimensions (%d,%d)\n", size.x, size.y);
+    fflush(stdout);
+    return;
+  }
+
   // compute column widths
   int rowLabelWidth = digits(size.y-1);
   int colLabelWidth = digits(size.x-1);
@@ -187,6 +200,8 @@ void Bit2d::print() const
     }
     printf("]\n");
   }
+
+  fflush(stdout);
 }
 
 
