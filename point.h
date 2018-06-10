@@ -14,7 +14,7 @@ public:
   num x, y;
 
 public:
-  TPoint() {}
+  TPoint() : x(0), y(0) {}
   TPoint(num nx, num ny) { set(nx,ny); }
   TPoint(TPoint<num> const &obj) : x(obj.x), y(obj.y) {}
 
