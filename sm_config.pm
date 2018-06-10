@@ -16,10 +16,17 @@ sub get_sm_config_version {
   @main::CCFLAGS = ("-g", "-Wall", "-Wno-deprecated", "-D__UNIX__");
   $main::CC_SYSINC_PATH = "";
   $main::debug = 0;
-  $main::target = 0;
+  $main::target_platform = 0;
   $main::no_dash_g = 0;
   $main::no_dash_O2 = 0;
   $main::exe = "";
+
+  # When true, we the executables created by the compiler are
+  # assumed to not be runnable in the build host environment.
+  # Note that this is really independent of the notion of build
+  # target, since the build host might be capable of running
+  # many kinds of programs.
+  $main::cross_compile = 0;
 
   # The GCC implementation of this warning is not silenced by
   # a cast to void, making it useless.  :(
@@ -31,7 +38,7 @@ sub get_sm_config_version {
   # warnings in GCC.
   push @main::CCFLAGS, ("-Wno-nonnull-compare");
 
-  return 1.07;
+  return 1.08;
 
   # 1.01: first version
   #
@@ -44,6 +51,8 @@ sub get_sm_config_version {
   # 1.06: 2016-01-25: Add -Wno-unused-result.
   #
   # 1.07: 2018-05-31: Add -target x86_64-w64-mingw32.
+  #
+  # 1.08: 2018-06-09: Add -cross.  Rename CROSSTARGET to TARGET_PLATFORM.
 }
 
 # standard prefix of the usage string
@@ -58,7 +67,8 @@ influential environment variables:
 standard (sm_config) options:
   -h:                print this message
   -debug[=0/1]:      enable debugging options [$main::debug]
-  -target=<target>:  cross compilation target, e.g., "i386-mingw32msvc"
+  -target=<target>:  compilation target, e.g., "i386-mingw32msvc"
+  -cross[=0/1]:      indicate we are cross-compiling [$main::cross_compile]
   -no-dash-g:        disable -g
   -no-dash-O2:       disable -O2
 EOF
@@ -89,14 +99,14 @@ sub handleStandardOption {
   }
 
   elsif ($arg eq "target") {
-    $main::target = getOptArg();
-    if ($target eq "i386-mingw32msvc") {
+    $main::target_platform = getOptArg();
+    if ($main::target_platform eq "i386-mingw32msvc") {
       $main::exe = ".exe";
       @main::CCFLAGS = grep { $_ ne "-D__UNIX__" } @main::CCFLAGS;
       push @main::CCFLAGS, "-D__WIN32__";
       return 1;
     }
-    elsif ($target eq "x86_64-w64-mingw32") {
+    elsif ($main::target_platform eq "x86_64-w64-mingw32") {
       $main::CC = "x86_64-w64-mingw32-gcc";
       $main::CXX = "x86_64-w64-mingw32-g++";
       $main::exe = ".exe";
@@ -104,11 +114,16 @@ sub handleStandardOption {
       return 1;
     }
     else {
-      die("Unknown argument to -target \"$target\".\n" .
+      die("Unknown argument to -target \"$main::target_platform\".\n" .
           "Valid targets:\n" .
           "  i386-mingw32msvc\n" .
           "  x86_64-w64-mingw32\n");
     }
+  }
+
+  elsif ($arg eq "cross") {
+    $main::cross_compile = getBoolArg();
+    return 1;
   }
 
   elsif ($arg eq "smbase") {
@@ -135,7 +150,7 @@ sub finishedOptionProcessing {
     push @CCFLAGS, ("-O2", "-DNDEBUG");
   }
 
-  if (!$main::target) {
+  if (!$main::target_platform) {
     my $os = `uname -s`;
     chomp($os);
     if ($os eq "Linux") {
@@ -199,8 +214,11 @@ sub get_smbase_compile_flags {
     elsif ($name eq "CCFLAGS") {
       @main::CCFLAGS = split(' ', $value);
     }
-    elsif ($name eq "CROSSTARGET") {
-      $main::target = $value;
+    elsif ($name eq "TARGET_PLATFORM") {
+      $main::target_platform = $value;
+    }
+    elsif ($name eq "CROSS_COMPILE") {
+      $main::cross_compile = $value;
     }
     elsif ($name eq "EXE") {
       $main::exe = $value;
@@ -365,7 +383,7 @@ EOF
     }
   }
 
-  if (!$target) {
+  if (!$cross_compile) {
     if (system("./$testcout")) {
       print(<<"EOF");
 
@@ -415,16 +433,17 @@ echo "$main::thisPackage configuration summary:"
 echo "  command:     ./configure @main::ARGV"
 echo ""
 echo "Compile flags:"
-echo "  CC:          $main::CC"
-echo "  CXX:         $main::CXX"
-echo "  CCFLAGS:     @main::CCFLAGS"
+echo "  CC:              $main::CC"
+echo "  CXX:             $main::CXX"
+echo "  CCFLAGS:         @main::CCFLAGS"
+echo "  CROSS_COMPILE:   $main::cross_compile"
 EOF
 
-  if ($main::target) {
-    $ret .= "echo \"  CROSSTARGET: $main::target\"\n";
+  if ($main::target_platform) {
+    $ret .= "echo \"  TARGET_PLATFORM: $main::target_platform\"\n";
   }
   if ($exe) {
-    $ret .= "echo \"  EXE:         $main::exe\"\n";
+    $ret .= "echo \"  EXE:             $main::exe\"\n";
   }
 
   return $ret;
@@ -482,7 +501,8 @@ sed -e "s|\@CCFLAGS\@|@main::CCFLAGS|g" \\
     -e "s|\@CFLAGS\@|@main::CFLAGS|g" \\
     -e "s|\@CC\@|$main::CC|g" \\
     -e "s|\@CXX\@|$main::CXX|g" \\
-    -e "s|\@CROSSTARGET\@|$main::target|g" \\
+    -e "s|\@TARGET_PLATFORM\@|$main::target_platform|g" \\
+    -e "s|\@CROSS_COMPILE\@|$main::cross_compile|g" \\
     -e "s|\@EXE\@|$main::exe|g" \\
     -e "s|\@SMBASE\@|$main::SMBASE|g" \\
 OUTER_EOF

@@ -16,9 +16,10 @@ CXX := @CXX@
 CFLAGS  := @CFLAGS@
 CCFLAGS := @CCFLAGS@
 
-# cross-compile info
-CROSSTARGET   := @CROSSTARGET@
-EXE           := @EXE@
+# compile target platform info
+TARGET_PLATFORM := @TARGET_PLATFORM@
+CROSS_COMPILE   := @CROSS_COMPILE@
+EXE             := @EXE@
 
 # flags for the linker
 LDFLAGS := -g -Wall libsmbase.a
@@ -159,11 +160,11 @@ OBJS := \
 -include $(OBJS:.o=.d)
 
 # Some modules do not build on Mingw; for the moment I do not need them.
-TARGET_IS_MINGW := 0
-ifeq ($(findstring mingw,$(CROSSTARGET)),mingw)
-  TARGET_IS_MINGW := 1
+TARGET_PLATFORM_IS_MINGW := 0
+ifeq ($(findstring mingw,$(TARGET_PLATFORM)),mingw)
+  TARGET_PLATFORM_IS_MINGW := 1
 endif
-ifeq ($(TARGET_IS_MINGW),1)
+ifeq ($(TARGET_PLATFORM_IS_MINGW),1)
   OBJS := $(filter-out mypopen.o mysig.o smregexp.o,$(OBJS))
 endif
 
@@ -183,7 +184,7 @@ TESTS := nonport voidlist tobjlist bit2d growbuf testmalloc mypopen \
          bitarray d2vector bdffont tarray2d
 
 # Some programs do not build on Mingw.
-ifeq ($(TARGET_IS_MINGW),1)
+ifeq ($(TARGET_PLATFORM_IS_MINGW),1)
   TESTS := $(filter-out testmalloc mypopen mysig smregexp,$(TESTS))
 endif
 
@@ -311,7 +312,7 @@ tarray2d$(EXE): tarray2d.cc array2d.h $(THIS)
 	$(TESTCXX) -o $@ -DTEST_TARRAY2D tarray2d.cc $(TESTFLAGS)
 
 
-ifeq ($(CROSSTARGET),0)
+ifeq ($(CROSS_COMPILE),0)
   RUN :=
 else
   # there is a necessary space at the end of the next line ...
@@ -353,13 +354,13 @@ check: $(TESTS)
 	$(RUN)./d2vector$(EXE)
 	$(RUN)./bdffont$(EXE)
 	$(RUN)./tarray2d$(EXE)
-ifeq ($(TARGET_IS_MINGW),0)
+ifeq ($(TARGET_PLATFORM_IS_MINGW),0)
   $(RUN)./mysig$(EXE)
   $(RUN)./testmalloc$(EXE) >/dev/null 2>&1
   $(RUN)./mypopen$(EXE)
   $(RUN)./smregexp$(EXE)
 endif
-ifeq ($(CROSSTARGET),0)
+ifeq ($(CROSS_COMPILE),0)
 	@echo
 	@echo "make check: all the tests PASSED"
 else
