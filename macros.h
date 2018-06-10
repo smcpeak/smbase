@@ -268,10 +268,9 @@ public:
     void operator=(name&) /*user ;*/
 
 
-// The intended semantics of 'override' is that the function is
-// overriding a virtual member of a base class.  I intend to write
-// a checker for this annotation at some point.
-#define override virtual
+// In the past, I had "#define override virtual" here, intended as
+// an annotation for which I would later write a checker.  But C++11
+// 'override' has made that unnecessary.
 
 
 // Open and close namespaces w/o interfering with indentation.

@@ -6,11 +6,12 @@
 
 #include "typ.h"      // NULL
 
-// I'm tossing these in here so they are somewhere in smbase, even
-// though they don't have much to do with the Owner class.
-#define owner /*nothing*/
-#define serf /*nothing*/
-#define nullable /*nothing*/
+// Previously, I had #definitions of "owner", "serf", and "nullable"
+// (all expanding to nothing), intended as a form of annotation that
+// might be checked in the future.  But these too easily collide with
+// names pulled in from library header files, creating difficult to
+// diagnose compilation errors, so I have removed them.  I will just
+// use /*owner*/, /*serf*/, and /*nullable*/ instead.
 
 #ifdef DEBUG_OWNER
   #include <stdio.h>    // printf, temporary
