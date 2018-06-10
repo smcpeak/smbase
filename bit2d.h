@@ -77,6 +77,7 @@ public:      // funcs
   // I need access to some private fields and a special ctor
   Bit2d(byte * /*serf*/ data, point const &size, int stride);
   byte *private_data() { return data; }
+  byte const *private_dataC() const { return data; }
   int private_datasize() const { return datasize(); }
   int private_stride() const { return stride; }
 };
