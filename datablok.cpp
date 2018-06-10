@@ -270,6 +270,8 @@ void DataBlock::print(char const *label, int bytesPerLine) const
   if (label) {
     printf("}\n");
   }
+
+  fflush(stdout);
   SELFCHECK();
 }
 
