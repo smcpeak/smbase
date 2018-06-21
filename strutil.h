@@ -39,6 +39,12 @@ string firstAlphanumToken(rostring str);
 // 'src' is *not* rostring, since it is not NUL terminated
 string encodeWithEscapes(char const *src, int len);
 
+// Overloads for the other variants of 'char'.
+inline string encodeWithEscapes(unsigned char const *src, int len)
+  { return encodeWithEscapes((char const *)src, len); }
+inline string encodeWithEscapes(signed char const *src, int len)
+  { return encodeWithEscapes((char const *)src, len); }
+
 // safe when the text has no NUL characters
 string encodeWithEscapes(rostring src);
 

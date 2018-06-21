@@ -187,7 +187,10 @@ inline char const *toCStr(rostring s) { return s.c_str(); }
 void/*unusable*/ toCStr(char const *s);
 
 // I need some compatibility functions
-inline int strlen(rostring s) { return s.length(); }
+inline size_t strlen(rostring s) { return s.length(); }
+
+// Overload strlen for unsigned char* to avoid annoying casts.
+inline size_t strlen(unsigned char const *s) { return strlen((char const*)s); }
 
 inline istream &getline(istream &in, string &line) { line.readline(in); return in; }
 
