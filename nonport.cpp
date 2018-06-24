@@ -26,10 +26,10 @@
 #    define mkdir _mkdir    // why must VC be such an oddball?
 #    define chdir _chdir
 #    define chmod _chmod
-     void sleep(unsigned sec) {
+     static void sleep(unsigned sec) {
        Sleep(sec * 1000);
        return;
-       }
+     }
 #  endif
 #  define DIRSLASH '\\'
 #  define DIRSLASHES "\\/"
@@ -392,6 +392,22 @@ bool isDirectory(char const *path)
 }
 
 
+bool getFileModificationTime(char const *path, int64_t &modUnixTime)
+{
+  struct stat st;
+  if (0!=stat(path, &st)) {
+    modUnixTime = 0;
+    fail("stat", path);
+    return false;
+  }
+
+  // Assume this is unix time on all systems.
+  modUnixTime = (int64_t)st.st_mtime;
+
+  return true;
+}
+
+
 bool fileOrDirectoryExists(char const *path)
 {
   struct stat st;
@@ -745,6 +761,17 @@ int main(int argc, char **argv)
   }
 
   printf("what's more, I just tried to mkdir & chdir test.dir\n");
+
+  // Test getFileModificationTime (crudely).
+  {
+    int64_t t;
+    if (!getFileModificationTime("nonport.cpp", t /*OUT*/)) {
+      printf("getFileModificationTime(\"nonport.cpp\") failed!\n");
+      return 4;
+    }
+    printf("modification time of nonport.cpp: %ld\n",
+           (long)t);
+  }
 
   // test ensurePath
   if (!ensurePath("test.dir/a/b/c/d", false /*isDirectory*/)) {

@@ -6,8 +6,10 @@
 #ifndef __NONPORT_H
 #define __NONPORT_H
 
-#include "typ.h"     // bool
-#include <stdarg.h>  // va_list
+#include "typ.h"                       // bool
+
+#include <stdarg.h>                    // va_list
+#include <stdint.h>                    // int64_t
 
 
 // I'm attempting to improve error handling in this module; this fn will be
@@ -79,6 +81,15 @@ void applyToDirContents(char const *dirName,
 
 // return true if the given string names a directory
 bool isDirectory(char const *path);
+
+
+// Get the file modification time for 'path' as "unix time", an integer
+// number of seconds since 1970-01-01T00:00:00Z, ignoring leap seconds.
+//
+// If there is an error getting this information, 'modUnixTime' will be
+// set to 0, 'nonportFail' will be called, and false returned, although
+// neither conveys the reason for the failure.
+bool getFileModificationTime(char const *path, int64_t &modUnixTime);
 
 
 // delete a file; returns false on failure
