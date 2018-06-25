@@ -86,8 +86,12 @@ public:      // funcs
 
   GrowArray& operator=(GrowArray const &obj) { copyFrom(obj); return *this; }
 
-  // allocated space
-  int size() const { return sz; }
+  // Allocated space, as number of elements in the array.
+  int allocatedSize() const { return sz; }
+
+  // TODO: This should be removed!  It conflicts badly with the
+  // meaning of the 'size' method on standard C++ containers.
+  int size() const { return allocatedSize(); }
 
   // element access
   T const& operator[] (int i) const   { bc(i); return arr[i]; }
@@ -96,6 +100,8 @@ public:      // funcs
   // set size, reallocating if old size is different; if the
   // array gets bigger, existing elements are preserved; if the
   // array gets smaller, elements are truncated
+  //
+  // TODO: This should be renamed!
   void setSize(int newSz);
 
   // make sure there are at least 'minSz' elements in the array;
@@ -288,6 +294,8 @@ public:
     { len -= ct; xassert(len >= 0); }
   void empty()
     { len = 0; }
+  void clear()
+    { len = 0; }
 
   // useful when someone has used 'getDangerousWritableArray' to
   // fill the array's internal storage
@@ -311,6 +319,28 @@ public:
 template <class T>
 ArrayStack<T>::~ArrayStack()
 {}
+
+
+// Compare two ArrayStacks elementwise for equality.
+template <class T>
+bool operator== (ArrayStack<T> const &a1, ArrayStack<T> const &a2)
+{
+  if (a1.length() != a2.length()) {
+    return false;
+  }
+  for (int i=0; i < a1.length(); i++) {
+    if (a1[i] != a2[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+template <class T>
+bool operator!= (ArrayStack<T> const &a1, ArrayStack<T> const &a2)
+{
+  return !operator==(a1, a2);
+}
 
 
 // iterator over contents of an ArrayStack, to make it easier to
@@ -392,6 +422,8 @@ public:     // funcs
   int length() const         { return arr.length(); }
   bool isEmpty() const       { return arr.isEmpty(); }
   bool isNotEmpty() const    { return !isEmpty(); }
+
+  int allocatedSize() const  { return arr.allocatedSize(); }
 
   void deleteTopSeveral(int ct);
   void deleteAll()           { deleteTopSeveral(length()); }
