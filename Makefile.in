@@ -361,10 +361,10 @@ check: $(TESTS)
 	$(RUN)./tarray2d$(EXE)
 	$(RUN)./test-datetime$(EXE)
 ifeq ($(TARGET_PLATFORM_IS_MINGW),0)
-  $(RUN)./mysig$(EXE)
-  $(RUN)./testmalloc$(EXE) >/dev/null 2>&1
-  $(RUN)./mypopen$(EXE)
-  $(RUN)./smregexp$(EXE)
+	$(RUN)./mysig$(EXE)
+	$(RUN)./testmalloc$(EXE) >/dev/null 2>&1
+	$(RUN)./mypopen$(EXE)
+	$(RUN)./smregexp$(EXE)
 endif
 ifeq ($(CROSS_COMPILE),0)
 	@echo
