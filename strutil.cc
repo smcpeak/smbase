@@ -336,14 +336,6 @@ string parseQuotedString(rostring text)
 }
 
 
-string localTimeString()
-{
-  time_t t = time(NULL);
-  char const *p = asctime(localtime(&t));
-  return substring(p, strlen(p) - 1);     // strip final newline
-}
-
-
 string sm_basename(rostring origSrc)
 {
   char const *src = toCStr(origSrc);

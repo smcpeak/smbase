@@ -360,6 +360,8 @@ stringBuilder& stringBuilder::operator<< (char c)
     return *this << buf;                                 \
   }
 
+MAKE_LSHIFT(long long, "%lld")
+MAKE_LSHIFT(unsigned long long, "%llu")
 MAKE_LSHIFT(long, "%ld")
 MAKE_LSHIFT(unsigned long, "%lu")
 MAKE_LSHIFT(double, "%g")

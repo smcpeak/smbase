@@ -63,9 +63,7 @@ void decodeEscapes(ArrayStack<char> &dest, rostring src,
 string parseQuotedString(rostring text);
 
 
-// this probably belongs in a dedicated module for time/date stuff..
-// returns asctime(localtime(time))
-string localTimeString();
+// 2018-06-30: I moved 'localTimeString' into datetime.h
 
 
 // given a directory name like "a/b/c", return "c"

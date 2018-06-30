@@ -293,6 +293,8 @@ public:
   stringBuilder& operator << (char const *text) { return operator&=(text); }
   stringBuilder& operator << (char c);
   stringBuilder& operator << (unsigned char c) { return operator<<((char)c); }
+  stringBuilder& operator << (long long i);
+  stringBuilder& operator << (unsigned long long i);
   stringBuilder& operator << (long i);
   stringBuilder& operator << (unsigned long i);
   stringBuilder& operator << (int i) { return operator<<((long)i); }

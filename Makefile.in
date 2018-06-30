@@ -124,6 +124,7 @@ OBJS := \
   crc.o \
   cycles.o \
   datablok.o \
+  datetime.o \
   d2vector.o \
   exc.o \
   flatten.o \
@@ -181,7 +182,8 @@ TESTS := nonport voidlist tobjlist bit2d growbuf testmalloc mypopen \
          testmalloc mypopen tobjpool strhash cycles tsobjlist crc \
          srcloc hashline gprintf smregexp vptrmap vdtllist pprint \
          boxprint tarrayqueue testarray taillist_test autofile \
-         bitarray d2vector bdffont tarray2d
+         bitarray d2vector bdffont tarray2d \
+         test-datetime
 
 # Some programs do not build on Mingw.
 ifeq ($(TARGET_PLATFORM_IS_MINGW),1)
@@ -311,6 +313,9 @@ bdffont$(EXE): bdffont.cc $(THIS)
 tarray2d$(EXE): tarray2d.cc array2d.h $(THIS)
 	$(TESTCXX) -o $@ -DTEST_TARRAY2D tarray2d.cc $(TESTFLAGS)
 
+test-datetime$(EXE): test-datetime.cc $(THIS)
+	$(TESTCXX) -o $@ test-datetime.cc $(TESTFLAGS)
+
 
 ifeq ($(CROSS_COMPILE),0)
   RUN :=
@@ -354,6 +359,7 @@ check: $(TESTS)
 	$(RUN)./d2vector$(EXE)
 	$(RUN)./bdffont$(EXE)
 	$(RUN)./tarray2d$(EXE)
+	$(RUN)./test-datetime$(EXE)
 ifeq ($(TARGET_PLATFORM_IS_MINGW),0)
   $(RUN)./mysig$(EXE)
   $(RUN)./testmalloc$(EXE) >/dev/null 2>&1
