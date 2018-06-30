@@ -65,6 +65,10 @@ void entry()
   cout << "  timeString    : " << d.timeString() << endl;
   cout << "  zoneString    : " << d.zoneString() << endl;
 
+  FixedDateTimeProvider fdtp(1000000000 + 83*60, -(1*60 + 23));
+  d.fromCurrentTime(&fdtp);
+  xassert(d.toString() == "2001-09-09 01:46:40 -01:23");
+
   d.fromUnixTime(1456746400, -8*60);
   xassert(d.toString() == "2016-02-29 03:46:40 -08:00");
 

@@ -17,8 +17,52 @@
 typedef int64_t UnixTime;
 
 
-// Get the current time.
-UnixTime getCurrentUnixTime();
+// Interface for querying date/time, for example from the OS.
+//
+// The main reason for the existence of this interface, rather than
+// just having global functions, is to facilitate testing.
+class DateTimeProvider {
+public:      // funcs
+  virtual ~DateTimeProvider() {}          // Silence warnings.
+
+  // Get the current time.
+  virtual UnixTime getCurrentUnixTime() = 0;
+
+  // Get local time zone offset right now.
+  //
+  // If there is a local convention like daylight saving time, the
+  // output of this function includes it if and only if (the provider
+  // thinks) it applies right now.
+  virtual int getLocalTzOffsetMinutes() = 0;
+};
+
+// Return a singleton object that queries the OS.
+DateTimeProvider *getOSDateTimeProvider();
+
+
+inline UnixTime getCurrentUnixTime()
+  { return getOSDateTimeProvider()->getCurrentUnixTime(); }
+
+inline int getLocalTzOffsetMinutes()
+  { return getOSDateTimeProvider()->getLocalTzOffsetMinutes(); }
+
+
+// For testing purposes, a provider that just yields specific values.
+class FixedDateTimeProvider : public DateTimeProvider {
+public:      // data
+  // Values to yield.
+  UnixTime unixTime;
+  int tzOffsetMinutes;
+
+public:      // funcs
+  FixedDateTimeProvider(UnixTime u, int t)
+    : unixTime(u),
+      tzOffsetMinutes(t)
+  {}
+
+  UnixTime getCurrentUnixTime() override;
+  int getLocalTzOffsetMinutes() override;
+};
 
 
 // Represent a date/time, at the resolution of one second, in a
@@ -80,9 +124,9 @@ public:      // funcs
   // although that is somewhat subjective.
   UnixTime toUnixTime() const;
 
-  // Get the current date, time, and local time zone from the OS and
-  // populate this object with them.
-  void fromCurrentTime();
+  // Get the current date, time, and local time zone from the OS (or
+  // a specified provider) and populate this object with them.
+  void fromCurrentTime(DateTimeProvider *provider = NULL);
 
   // Validate that the fields conform to their documented ranges.  If
   // one does not, throw xFormat.
@@ -116,13 +160,6 @@ public:      // funcs
   friend std::ostream& operator<< (std::ostream &os, DateTimeSeconds const &obj)
     { obj.insertOstream(os); return os; }
 };
-
-
-// Ask the OS what it thinks the local time zone offset is right now.
-// If there is a local convention like daylight saving time, the output
-// of this function includes it if and only if (the OS thinks) it
-// applies right now.
-int getLocalTzOffsetMinutes();
 
 
 // Return the current time in the format of

@@ -15,7 +15,15 @@
 #endif // __MINGW32__
 
 
-UnixTime getCurrentUnixTime()
+// ------------------------ OSDateTimeProvider ----------------------
+class OSDateTimeProvider : public DateTimeProvider {
+public:      // funcs
+  UnixTime getCurrentUnixTime() override;
+  int getLocalTzOffsetMinutes() override;
+};
+
+
+UnixTime OSDateTimeProvider::getCurrentUnixTime()
 {
   time_t t = time(NULL);
   xassert(t != ((time_t)-1));          // this never fails in practice
@@ -25,6 +33,58 @@ UnixTime getCurrentUnixTime()
 }
 
 
+int OSDateTimeProvider::getLocalTzOffsetMinutes()
+{
+#ifdef __MINGW32__
+  // On mingw, tzset yields a 0 time zone under most circumstances
+  // because it wants to use TZ and zoneinfo, which are not normally
+  // installed, so we use the Windows API.
+  TIME_ZONE_INFORMATION tzi;
+  DWORD res = GetTimeZoneInformation(&tzi);
+  if (res == TIME_ZONE_ID_INVALID) {
+    xsyserror("GetTimeZoneInformation");
+  }
+  if (res == TIME_ZONE_ID_STANDARD) {
+    return - (tzi.Bias + tzi.StandardBias);
+  }
+  else if (res == TIME_ZONE_ID_DAYLIGHT) {
+    return - (tzi.Bias + tzi.DaylightBias);
+  }
+  else {
+    return - tzi.Bias;
+  }
+
+#else
+  // Sets global variable 'timezone' ...
+  tzset();
+
+  // ... which is an offset in seconds with opposite sense to that
+  // of RFC 3339.  We round fractional minutes down.
+  return (-timezone) / 60;
+#endif // !__MINGW32__
+}
+
+
+DateTimeProvider *getOSDateTimeProvider()
+{
+  static OSDateTimeProvider provider;
+  return &provider;
+}
+
+
+// ---------------------- FixedDateTimeProvider --------------------
+UnixTime FixedDateTimeProvider::getCurrentUnixTime()
+{
+  return this->unixTime;
+}
+
+int FixedDateTimeProvider::getLocalTzOffsetMinutes()
+{
+  return this->tzOffsetMinutes;
+}
+
+
+// ------------------------ DateTimeSeconds ----------------------
 DateTimeSeconds::DateTimeSeconds()
   : year(1970),
     month(1),
@@ -230,9 +290,14 @@ UnixTime DateTimeSeconds::toUnixTime() const
 }
 
 
-void DateTimeSeconds::fromCurrentTime()
+void DateTimeSeconds::fromCurrentTime(DateTimeProvider *provider)
 {
-  this->fromUnixTime(getCurrentUnixTime(), getLocalTzOffsetMinutes());
+  if (!provider) {
+    provider = getOSDateTimeProvider();
+  }
+  this->fromUnixTime(
+    provider->getCurrentUnixTime(),
+    provider->getLocalTzOffsetMinutes());
 }
 
 
@@ -321,38 +386,6 @@ string DateTimeSeconds::zoneString() const
 std::ostream& DateTimeSeconds::insertOstream(std::ostream &os) const
 {
   return os << this->toString();
-}
-
-
-int getLocalTzOffsetMinutes()
-{
-#ifdef __MINGW32__
-  // On mingw, tzset yields a 0 time zone under most circumstances
-  // because it wants to use TZ and zoneinfo, which are not normally
-  // installed, so we use the Windows API.
-  TIME_ZONE_INFORMATION tzi;
-  DWORD res = GetTimeZoneInformation(&tzi);
-  if (res == TIME_ZONE_ID_INVALID) {
-    xsyserror("GetTimeZoneInformation");
-  }
-  if (res == TIME_ZONE_ID_STANDARD) {
-    return - (tzi.Bias + tzi.StandardBias);
-  }
-  else if (res == TIME_ZONE_ID_DAYLIGHT) {
-    return - (tzi.Bias + tzi.DaylightBias);
-  }
-  else {
-    return - tzi.Bias;
-  }
-
-#else
-  // Sets global variable 'timezone' ...
-  tzset();
-
-  // ... which is an offset in seconds with opposite sense to that
-  // of RFC 3339.  We round fractional minutes down.
-  return (-timezone) / 60;
-#endif // !__MINGW32__
 }
 
 
