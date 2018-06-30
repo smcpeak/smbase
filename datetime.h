@@ -99,6 +99,18 @@ public:      // funcs
   // characters due to negative values.
   string toString() const;
 
+  // Date and time only: "YYYY-MM-DD hh:mm:ss".
+  string dateTimeString() const;
+
+  // Date only: "YYYY-MM-DD".
+  string dateString() const;
+
+  // "hh:mm:ss".
+  string timeString() const;
+
+  // "+hh:ss" or "-hh:ss".
+  string zoneString() const;
+
   // Write in same format as 'toString'.
   std::ostream& insertOstream(std::ostream &os) const;
   friend std::ostream& operator<< (std::ostream &os, DateTimeSeconds const &obj)
@@ -113,7 +125,8 @@ public:      // funcs
 int getLocalTzOffsetMinutes();
 
 
-// Return the current time in the format of DateTimeSeconds::toString.
+// Return the current time in the format of
+// DateTimeSeconds::dateTimeString().
 string localTimeString();
 
 

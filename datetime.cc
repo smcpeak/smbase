@@ -277,6 +277,32 @@ void DateTimeSeconds::validateFields() const
 
 string DateTimeSeconds::toString() const
 {
+  return stringb(this->dateTimeString() << ' ' << this->zoneString());
+}
+
+string DateTimeSeconds::dateTimeString() const
+{
+  return stringb(this->dateString() << ' ' << this->timeString());
+}
+
+string DateTimeSeconds::dateString() const
+{
+  return stringf("%04d-%02d-%02d",
+    this->year,
+    this->month,
+    this->day);
+}
+
+string DateTimeSeconds::timeString() const
+{
+  return stringf("%02d:%02d:%02d",
+    this->hour,
+    this->minute,
+    this->second);
+}
+
+string DateTimeSeconds::zoneString() const
+{
   int minuteOffset = this->tzOffsetMinutes;
   char signChar = '+';
   if (minuteOffset < 0) {
@@ -285,13 +311,7 @@ string DateTimeSeconds::toString() const
   }
   int hourOffset = extractUnits(minuteOffset, 60);
 
-  return stringf("%04d-%02d-%02d %02d:%02d:%02d %c%02d:%02d",
-    this->year,
-    this->month,
-    this->day,
-    this->hour,
-    this->minute,
-    this->second,
+  return stringf("%c%02d:%02d",
     signChar,
     hourOffset,
     minuteOffset);
@@ -340,7 +360,7 @@ string localTimeString()
 {
   DateTimeSeconds d;
   d.fromCurrentTime();
-  return d.toString();
+  return d.dateTimeString();
 }
 
 

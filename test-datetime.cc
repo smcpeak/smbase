@@ -58,11 +58,21 @@ void entry()
   DateTimeSeconds d;
   cout << "Default-constructed: " << d << endl;
 
+  d.fromCurrentTime();
+  cout << "Now: " << d << endl;
+  cout << "  dateTimeString: " << d.dateTimeString() << endl;
+  cout << "  dateString    : " << d.dateString() << endl;
+  cout << "  timeString    : " << d.timeString() << endl;
+  cout << "  zoneString    : " << d.zoneString() << endl;
+
   d.fromUnixTime(1456746400, -8*60);
   xassert(d.toString() == "2016-02-29 03:46:40 -08:00");
 
   d.fromUnixTime(1456746400, +8*60);
   xassert(d.toString() == "2016-02-29 19:46:40 +08:00");
+
+  d.fromUnixTime(1456746400 - 30*60, -(7*60 + 30));
+  xassert(d.toString() == "2016-02-29 03:46:40 -07:30");
 
   d.month = 13;
   try {
@@ -74,7 +84,7 @@ void entry()
     // As expected.
   }
 
-  cout << "Now: " << localTimeString() << endl;
+  cout << "localTimeString: " << localTimeString() << endl;
 
   cout << "test-datetime PASSED\n";
 }
