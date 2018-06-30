@@ -33,12 +33,7 @@ sub get_sm_config_version {
   # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66425
   push @main::CCFLAGS, ("-Wno-unused-result");
 
-  # Reports a false positive in SourceLocManager::File, and there
-  # does not appear to be a reliable way to locally disable
-  # warnings in GCC.
-  push @main::CCFLAGS, ("-Wno-nonnull-compare");
-
-  return 1.08;
+  return 1.09;
 
   # 1.01: first version
   #
@@ -53,6 +48,8 @@ sub get_sm_config_version {
   # 1.07: 2018-05-31: Add -target x86_64-w64-mingw32.
   #
   # 1.08: 2018-06-09: Add -cross.  Rename CROSSTARGET to TARGET_PLATFORM.
+  #
+  # 1.09: 2018-06-30: Remove -Wno-nonnull-compare.
 }
 
 # standard prefix of the usage string
@@ -67,7 +64,7 @@ influential environment variables:
 standard (sm_config) options:
   -h:                print this message
   -debug[=0/1]:      enable debugging options [$main::debug]
-  -target=<target>:  compilation target, e.g., "i386-mingw32msvc"
+  -target=<target>:  compilation target, e.g., "x86_64-w64-mingw32"
   -cross[=0/1]:      indicate we are cross-compiling [$main::cross_compile]
   -no-dash-g:        disable -g
   -no-dash-O2:       disable -O2
