@@ -177,14 +177,44 @@ $(THIS): $(OBJS)
 
 # ---------- module tests ----------------
 # test program targets
-TESTS := nonport voidlist tobjlist bit2d growbuf testmalloc mypopen \
-         strdict svdict str strutil trdelete bflatten mysig \
-         testmalloc mypopen tobjpool strhash cycles tsobjlist crc \
-         srcloc hashline gprintf smregexp vptrmap vdtllist pprint \
-         boxprint tarrayqueue testarray taillist_test autofile \
-         bitarray d2vector bdffont tarray2d \
-         test-datetime \
-         test-stringset
+TESTS :=
+TESTS += autofile
+TESTS += bdffont
+TESTS += bflatten
+TESTS += bit2d
+TESTS += bitarray
+TESTS += boxprint
+TESTS += crc
+TESTS += cycles
+TESTS += d2vector
+TESTS += gprintf
+TESTS += growbuf
+TESTS += hashline
+TESTS += mypopen
+TESTS += mysig
+TESTS += nonport
+TESTS += pprint
+TESTS += smregexp
+TESTS += srcloc
+TESTS += str
+TESTS += strdict
+TESTS += strhash
+TESTS += strutil
+TESTS += svdict
+TESTS += taillist_test
+TESTS += tarray2d
+TESTS += tarrayqueue
+TESTS += test-datetime
+TESTS += test-stringset
+TESTS += testarray
+TESTS += testmalloc
+TESTS += tobjlist
+TESTS += tobjpool
+TESTS += trdelete
+TESTS += tsobjlist
+TESTS += vdtllist
+TESTS += voidlist
+TESTS += vptrmap
 
 # Some programs do not build on Mingw.
 ifeq ($(TARGET_PLATFORM_IS_MINGW),1)
