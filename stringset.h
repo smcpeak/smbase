@@ -66,6 +66,10 @@ public:      // funcs
   void add(char const *elt);
   void add(rostring elt) { add(elt.c_str()); }
 
+  // Add, failing an assertion if it is already there.
+  void addUnique(char const *elt);
+  void addUnique(rostring elt) { add(elt.c_str()); }
+
   // remove elt from the set; ok if it's not there now
   void remove(char const *elt);
   void remove(rostring elt) { remove(elt.c_str()); }

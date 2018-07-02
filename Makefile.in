@@ -183,7 +183,8 @@ TESTS := nonport voidlist tobjlist bit2d growbuf testmalloc mypopen \
          srcloc hashline gprintf smregexp vptrmap vdtllist pprint \
          boxprint tarrayqueue testarray taillist_test autofile \
          bitarray d2vector bdffont tarray2d \
-         test-datetime
+         test-datetime \
+         test-stringset
 
 # Some programs do not build on Mingw.
 ifeq ($(TARGET_PLATFORM_IS_MINGW),1)
@@ -313,8 +314,10 @@ bdffont$(EXE): bdffont.cc $(THIS)
 tarray2d$(EXE): tarray2d.cc array2d.h $(THIS)
 	$(TESTCXX) -o $@ -DTEST_TARRAY2D tarray2d.cc $(TESTFLAGS)
 
-test-datetime$(EXE): test-datetime.cc $(THIS)
-	$(TESTCXX) -o $@ test-datetime.cc $(TESTFLAGS)
+# Rule for tests that have dedicated .cc files, which is what I
+# would like to transition toward.
+test-%$(EXE): test-%.cc $(THIS)
+	$(TESTCXX) -o $@ test-$*.cc $(TESTFLAGS)
 
 
 ifeq ($(CROSS_COMPILE),0)
@@ -360,6 +363,7 @@ check: $(TESTS)
 	$(RUN)./bdffont$(EXE)
 	$(RUN)./tarray2d$(EXE)
 	$(RUN)./test-datetime$(EXE)
+	$(RUN)./test-stringset$(EXE)
 ifeq ($(TARGET_PLATFORM_IS_MINGW),0)
 	$(RUN)./mysig$(EXE)
 	$(RUN)./testmalloc$(EXE) >/dev/null 2>&1
