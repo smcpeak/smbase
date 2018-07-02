@@ -290,6 +290,9 @@ public:
   bool isNotEmpty() const
     { return !isEmpty(); }
 
+  // Return index of element 't' or -1 if not in the array.
+  int indexOf(T const &t) const;
+
   void popMany(int ct)
     { len -= ct; xassert(len >= 0); }
   void empty()
@@ -319,6 +322,18 @@ public:
 template <class T>
 ArrayStack<T>::~ArrayStack()
 {}
+
+
+template <class T>
+int ArrayStack<T>::indexOf(T const &t) const
+{
+  for (int i=0; i < this->length(); i++) {
+    if (this->operator[](i) == t) {
+      return i;
+    }
+  }
+  return -1;
+}
 
 
 // Compare two ArrayStacks elementwise for equality.
@@ -409,7 +424,10 @@ public:     // funcs
 
   T const * operator[](int index) const  { return arr[index]; }
   T *       operator[](int index)        { return arr[index]; }
-    
+
+  // Return index of element 't' or -1 if not in the array.
+  int indexOf(T const *t) const          { return arr.indexOf(t); }
+
   // Replace the element at 'index' with 'newPtr', returning the old
   // element pointer (as an owner pointer).
   T *swapAt(int index, T *newPtr)

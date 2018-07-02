@@ -2,15 +2,105 @@
 // test the array.h module
 // based on tarrayqueue.cc
 
-#include "array.h"     // module to test
-#include "objlist.h"         // ObjList
-#include "ckheap.h"          // malloc_stats
+#include "array.h"                     // module to test
+#include "objlist.h"                   // ObjList
+#include "ckheap.h"                    // malloc_stats
+#include "test.h"                      // PVAL, USUAL_MAIN
 
-#include <stdio.h>           // printf
-#include <stdlib.h>          // exit
+#include <stdio.h>                     // printf
+#include <stdlib.h>                    // exit
 
 
 int maxLength = 0;
+
+// Return index of first element in 'list' that is equal, after
+// dereferencing, to 't', or -1 if none.
+template <class T>
+int indexOfFirstDeref(ObjList<T> const &list, T const &t)
+{
+  int index = 0;
+  FOREACH_OBJLIST(T, list, iter) {
+    if (*(iter.data()) == t) {
+      return index;
+    }
+    index++;
+  }
+  return -1;
+}
+
+template <class T>
+int reversedIndexDerefHelper(ObjListIter<T> const &iter, int index, T const &t)
+{
+  if (iter.isDone()) {
+    xassert(index == -1);
+    return -1;
+  }
+  else {
+    xassert(index >= 0);
+    ObjListIter<T> next(iter);
+    next.adv();
+    int tailIndex = reversedIndexDerefHelper(next, index-1, t);
+    if (tailIndex >= 0) {
+      return tailIndex;
+    }
+    else if (*(iter.data()) == t) {
+      return index;
+    }
+    else {
+      return -1;
+    }
+  }
+}
+
+// Return 'indexOfFirstDeref(list.reverse())', except without
+// actually reversing the list.
+template <class T>
+int reversedIndexOfFirstDeref(ObjList<T> const &list, T const &t)
+{
+  ObjListIter<T> iter(list);
+  return reversedIndexDerefHelper(iter, list.count()-1, t);
+}
+
+template <class T>
+ostream& printList(ostream &os, ObjList<T> const &list)
+{
+  os << '[';
+  FOREACH_OBJLIST(T, list, iter) {
+    os << ' ' << *(iter.data());
+  }
+  if (list.isNotEmpty()) {
+    os << ' ';
+  }
+  os << ']';
+  return os;
+}
+
+template <class T>
+inline ostream& operator<< (ostream &os, ObjList<T> const &list)
+{
+  return printList(os, list);
+}
+
+template <class T>
+ostream& printArray(ostream &os, ArrayStack<T> const &array)
+{
+  os << '[';
+  for (int i=0; i < array.length(); i++) {
+    os << ' ' << array[i];
+  }
+  if (array.isNotEmpty()) {
+    os << ' ';
+  }
+  os << ']';
+  return os;
+}
+
+template <class T>
+inline ostream& operator<< (ostream &os, ArrayStack<T> const &array)
+{
+  return printArray(os, array);
+}
+
 
 // one round of testing
 void round(int ops)
@@ -33,8 +123,19 @@ void round(int ops)
 
       int index = length-1;
       FOREACH_OBJLIST(int, listStack, iter) {
-        xassert(iter.data()[0] == arrayStack[index]);
-        xassert(iter.data()[0] == arrayStackEmbed[index]);
+        int item = *(iter.data());
+        xassert(item == arrayStack[index]);
+        xassert(item == arrayStackEmbed[index]);
+        if (reversedIndexOfFirstDeref(listStack, item) == arrayStack.indexOf(item)) {
+          // fine
+        }
+        else {
+          PVAL(listStack);
+          PVAL(arrayStack);
+          PVAL(index);
+          PVAL(item);
+        }
+        xassert(reversedIndexOfFirstDeref(listStack, item) == arrayStack.indexOf(item));
         index--;
       }
       xassert(index == -1);
@@ -72,7 +173,7 @@ void round(int ops)
 }
 
 
-int main()
+void entry()
 {
   for (int i=0; i<20; i++) {
     round(1000);
@@ -80,8 +181,9 @@ int main()
 
   malloc_stats();
   printf("arrayStack appears to work; maxLength=%d\n", maxLength);
-  return 0;
 }
+
+USUAL_MAIN
 
 
 // EOF
