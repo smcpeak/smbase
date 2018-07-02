@@ -4,8 +4,10 @@
 #ifndef ARRAY_H
 #define ARRAY_H
 
-#include "xassert.h"      // xassert
-#include <stdlib.h>       // qsort
+#include "sm-swap.h"                   // swap
+#include "xassert.h"                   // xassert
+
+#include <stdlib.h>                    // qsort
 
 
 // -------------------- Array ----------------------
@@ -137,6 +139,11 @@ public:      // funcs
       arr[i] = val;
     }
   }
+
+  // Move the item at 'oldIndex' so it occupies 'newIndex' instead,
+  // shifting the intervening elements by one spot.  Both arguments
+  // must be in [0,allocatedSize()-1].
+  void moveElement(int oldIndex, int newIndex);
 };
 
 
@@ -226,6 +233,24 @@ void GrowArray<T>::eidLoop(int index)
 }
 
 
+template <class T>
+void GrowArray<T>::moveElement(int oldIndex, int newIndex)
+{
+  this->bc(oldIndex);
+  this->bc(newIndex);
+
+  while (oldIndex < newIndex) {
+    swap(this->arr[oldIndex], this->arr[oldIndex+1]);
+    oldIndex++;
+  }
+
+  while (oldIndex > newIndex) {
+    swap(this->arr[oldIndex], this->arr[oldIndex-1]);
+    oldIndex--;
+  }
+}
+
+
 // ---------------------- ArrayStack ---------------------
 // This is an array where some of the array is unused.  Specifically,
 // it maintains a 'length', and elements 0 up to length-1 are
@@ -233,10 +258,13 @@ void GrowArray<T>::eidLoop(int index)
 // expected use is as a stack, where "push" adds a new (used) element.
 template <class T>
 class ArrayStack : public GrowArray<T> {
-private:
+private:     // data
   int len;               // # of elts in the stack
 
-public:
+private:     // funcs
+  void bc(int i) const { xassert((unsigned)i < (unsigned)len); }
+
+public:      // funcs
   ArrayStack(int initArraySize = 10)
     : GrowArray<T>(initArraySize),
       len(0)
@@ -317,6 +345,11 @@ public:
     qsort(GrowArray<T>::getArrayNC(), len, sizeof(T),
           (int (*)(void const*, void const*))compare );
   }
+
+  // Move the item at 'oldIndex' so it occupies 'newIndex' instead,
+  // shifting the intervening elements by one spot.  Both arguments
+  // must be in [0,length()-1].
+  void moveElement(int oldIndex, int newIndex);
 };
 
 template <class T>
@@ -333,6 +366,18 @@ int ArrayStack<T>::indexOf(T const &t) const
     }
   }
   return -1;
+}
+
+
+template <class T>
+void ArrayStack<T>::moveElement(int oldIndex, int newIndex)
+{
+  // GrowArray also checks bounds, but only against the allocated
+  // size, not the ArrayStack 'len' field.
+  this->bc(oldIndex);
+  this->bc(newIndex);
+
+  this->GrowArray<T>::moveElement(oldIndex, newIndex);
 }
 
 
@@ -453,7 +498,11 @@ public:     // funcs
   // will not delete any items
   void consolidate()         { arr.consolidate(); }
 
-  void swapWith(ObjArrayStack<T> &obj)   { arr.swapWith(obj.arr); }
+  void swapWith(ObjArrayStack<T> &obj)
+    { arr.swapWith(obj.arr); }
+
+  void moveElement(int oldIndex, int newIndex)
+    { arr.moveElement(oldIndex, newIndex); }
 };
 
 
@@ -590,7 +639,27 @@ public:       // funcs
     { return getElt(len-1); }
   T &topNC()
     { return const_cast<T&>(getElt(len-1)); }
+
+  void moveElement(int oldIndex, int newIndex);
 };
+
+
+template <class T, int n>
+void ArrayStackEmbed<T,n>::moveElement(int oldIndex, int newIndex)
+{
+  this->bc(oldIndex);
+  this->bc(newIndex);
+
+  while (oldIndex < newIndex) {
+    swap(this->operator[](oldIndex), this->operator[](oldIndex+1));
+    oldIndex++;
+  }
+
+  while (oldIndex > newIndex) {
+    swap(this->operator[](oldIndex), this->operator[](oldIndex-1));
+    oldIndex--;
+  }
+}
 
 
 // this code has not been tested, so it's #if 0'd out for now

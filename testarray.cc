@@ -61,6 +61,9 @@ int reversedIndexOfFirstDeref(ObjList<T> const &list, T const &t)
   return reversedIndexDerefHelper(iter, list.count()-1, t);
 }
 
+// This is a candidate for moving into xobjlist.h or perhaps another
+// file for general-purpose use.  The issue with the former is the
+// dependence on ostream.
 template <class T>
 ostream& printList(ostream &os, ObjList<T> const &list)
 {
@@ -81,6 +84,16 @@ inline ostream& operator<< (ostream &os, ObjList<T> const &list)
   return printList(os, list);
 }
 
+template <class T>
+void moveListElement(ObjList<T> &list, int oldIndex, int newIndex)
+{
+  T *t = list.removeAt(oldIndex);
+  list.insertAt(t, newIndex);
+}
+
+// This is a candidate for moving into array.h or perhaps another file
+// for general-purpose use.  The issue with the former is the
+// dependence on ostream.
 template <class T>
 ostream& printArray(ostream &os, ArrayStack<T> const &array)
 {
@@ -152,7 +165,7 @@ void round(int ops)
     }
 
     // do a random operation
-    int op = rand() % 100;
+    int op = rand() % 120;
     if (op < 40 && arrayStack.isNotEmpty()) {
       // pop
       int i = arrayStack.pop();
@@ -161,6 +174,16 @@ void round(int ops)
       xassert(i == *k);
       xassert(j == *k);
       delete k;
+    }
+    else if (op < 60 && arrayStack.isNotEmpty()) {
+      // moveElement
+      int oldIndex = rand() % (arrayStack.length());
+      int newIndex = rand() % (arrayStack.length());
+      arrayStack.moveElement(oldIndex, newIndex);
+      arrayStackEmbed.moveElement(oldIndex, newIndex);
+      oldIndex = arrayStack.length()-1 - oldIndex;
+      newIndex = arrayStack.length()-1 - newIndex;
+      moveListElement(listStack, oldIndex, newIndex);
     }
     else {
       // push
