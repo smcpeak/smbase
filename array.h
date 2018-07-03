@@ -471,7 +471,7 @@ public:     // funcs
   T *       operator[](int index)        { return arr[index]; }
 
   // Return index of element 't' or -1 if not in the array.
-  int indexOf(T const *t) const          { return arr.indexOf(t); }
+  int indexOf(T const *t) const;
 
   // Replace the element at 'index' with 'newPtr', returning the old
   // element pointer (as an owner pointer).
@@ -504,6 +504,17 @@ public:     // funcs
   void moveElement(int oldIndex, int newIndex)
     { arr.moveElement(oldIndex, newIndex); }
 };
+
+
+template <class T>
+int ObjArrayStack<T>::indexOf(T const *t) const
+{
+  // The const_cast here is justified by the fact that the inner
+  // 'indexOf' will only use the pointer value since it does not
+  // even know it is a pointer, and it will not store that value.
+  // It is required simply because 'arr' is an ArrayStack<T*>.
+  return arr.indexOf(const_cast<T*>(t));
+}
 
 
 template <class T>
