@@ -74,3 +74,5 @@ tarray2d
 .settings
 *.exe
 *.tmp
+test-datetime
+test-stringset
