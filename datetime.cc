@@ -54,13 +54,30 @@ int OSDateTimeProvider::getLocalTzOffsetMinutes()
     return - tzi.Bias;
   }
 
-#else
-  // Sets global variable 'timezone' ...
-  tzset();
+#elif defined(__TM_GMTOFF)
+  // On GNU libc, 'struct tm' has a field with the required info.
+  time_t unixtime = time(NULL);
+  struct tm *tm = localtime(&unixtime);
+  return tm->__TM_GMTOFF / 60;
 
-  // ... which is an offset in seconds with opposite sense to that
-  // of RFC 3339.  We round fractional minutes down.
-  return (-timezone) / 60;
+#else
+  // Clever solution from:
+  //
+  //   https://stackoverflow.com/questions/32424125/c-code-to-get-local-time-offset-in-minutes-relative-to-utc
+  //
+  // This works by asking for the current time as GMT, then asks the
+  // library to pretend that was local in the current TZ and compute
+  // unix time from it.  Then we subtract.
+  //
+  // However, I think this is wrong when the current time is close to
+  // the DST/STD cutover since we're asking mktime about a time other
+  // than "now".
+  time_t utNow = time(NULL);
+  struct tm *ptm = gmtime(&utNow);
+  // Request that mktime() looksup dst in timezone database.
+  ptm->tm_isdst = -1;
+  time_t utAsIfLocal = mktime(ptm);
+  return difftime(utNow, utAsIfLocal) / 60;
 #endif // !__MINGW32__
 }
 
