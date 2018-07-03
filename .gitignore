@@ -76,3 +76,4 @@ tarray2d
 *.tmp
 test-datetime
 test-stringset
+.gdbinit
