@@ -570,14 +570,6 @@ void SourceLocManager::makeFirstStatics()
 // find it, or return NULL
 SourceLocManager::File *SourceLocManager::findFile(char const *name)
 {
-  if (!this) {
-    // it's quite common to forget to do this, and this function is
-    // almost always the one which segfaults in that case, so I'll
-    // make the error message a bit nicer to save a trip through
-    // the debugger
-    xfailure("you have to create a SourceLocManager in your main() function");
-  }
-
   if (recent && recent->name.equals(name)) {
     return recent;
   }
@@ -824,17 +816,11 @@ void SourceLocManager::decodeLineCol_explicitHL(
   SourceLoc loc, char const *&filename, int &line, int &col,
   bool localUseHashLines)
 {
-  if (!this) {
-    // didn't initialize a loc manager.. but maybe we can survive?
-    if (loc == SL_UNKNOWN) {
-      filename = "<noloc>";
-      line = 1;
-      col = 1;
-      return;
-    }
-    else {
-      xfailure("you have to create a SourceLocManager in your main() function");
-    }
+  if (loc == SL_UNKNOWN) {
+    filename = "<noloc>";
+    line = 1;
+    col = 1;
+    return;
   }
 
   // check for static
