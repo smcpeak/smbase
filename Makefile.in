@@ -140,6 +140,7 @@ OBJS := \
   ofstreamts.o \
   point.o \
   pprint.o \
+  sm-file-util.o \
   smregexp.o \
   srcloc.o \
   str.o \
@@ -205,6 +206,7 @@ TESTS += taillist_test
 TESTS += tarray2d
 TESTS += tarrayqueue
 TESTS += test-datetime
+TESTS += test-sm-file-util
 TESTS += test-stringset
 TESTS += testarray
 TESTS += testmalloc
@@ -393,6 +395,7 @@ check: $(TESTS)
 	$(RUN)./bdffont$(EXE)
 	$(RUN)./tarray2d$(EXE)
 	$(RUN)./test-datetime$(EXE)
+	$(RUN)./test-sm-file-util$(EXE)
 	$(RUN)./test-stringset$(EXE)
 ifeq ($(TARGET_PLATFORM_IS_MINGW),0)
 	$(RUN)./mysig$(EXE)
