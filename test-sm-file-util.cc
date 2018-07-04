@@ -13,6 +13,10 @@ static void entry()
   PVAL(sfu.windowsPathSemantics());
 
   PVAL(sfu.normalizePathSeparators("a/b\\c"));
+  PVAL(sfu.normalizePathSeparators("a/b/c/d/e/f/g/h"));
+  PVAL(sfu.normalizePathSeparators(sfu.getAbsolutePath("a/b/c/d/e/f/g/h")));
+  PVAL(sfu.normalizePathSeparators(sfu.getAbsolutePath("a/b/c/d/e/f/g/h")));
+  PVAL(sfu.normalizePathSeparators(sfu.getAbsolutePath("a/b/c/d/e/f/g/h")));
 
   PVAL(sfu.currentDirectory());
 

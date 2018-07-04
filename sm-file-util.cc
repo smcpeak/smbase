@@ -66,6 +66,7 @@ string SMFileUtil::normalizePathSeparators(string const &s)
       arr[i] = s[i];
     }
   }
+  arr[len] = 0;
   return string(arr.ptr());
 }
 
