@@ -16,11 +16,17 @@ private:      // data
   // invariants: 0 <= dataLen <= allocated
   //             (data==NULL) == (allocated==0)
 
+private:      // static data
   // endpost: 'data' will be kept allocated with one extra byte at the
   // end, where an endpost byte is written.  thus, we have another
   // invariant:
   //             (data!=NULL) implies data[allocated] == endpost
   static byte const endpost;
+
+public:       // static data
+  // Normally if we detect corrupted memory we abort().  But for
+  // testing, allow a different function to be called.
+  static void (*s_memoryCorruptionOverrideHandler)();
 
 private:      // funcs
   void init(int allocatedSize);
@@ -39,6 +45,9 @@ private:      // funcs
 
   void selfCheck() const;
     // confirm that invariants are true
+
+  void checkEndpost() const;
+    // check that 'endpost' is at the end of the array
 
 public:       // funcs
   // constructors

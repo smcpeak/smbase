@@ -15,8 +15,10 @@
 // define the endpost byte as something we hope is
 // unlikely to coincidentally be written during an
 // overrun
-byte const DataBlock::endpost = 0xBB;
-    
+/*static*/ byte const DataBlock::endpost = 0xBB;
+
+/*static*/ void (*DataBlock::s_memoryCorruptionOverrideHandler)() = NULL;
+
     
 void DataBlock::init(int allocatedSize)
 {
@@ -44,14 +46,40 @@ STATICDEF byte *DataBlock::allocate(int size)
     
 void DataBlock::selfCheck() const
 {
-  if (!( 0 <= dataLen && dataLen <= allocated )) {
-    breaker();    // having trouble discovering the precise state under gdb
-  }
+  this->checkEndpost();
   xassert(0 <= dataLen && dataLen <= allocated);
   xassert( (data==NULL) == (allocated==0) );
-  xassert( data==NULL || data[allocated]==endpost );
 }
-    
+
+
+void DataBlock::checkEndpost() const
+{
+  // Check for memory corruption.
+  if (data != NULL && data[allocated] != endpost) {
+    fprintf(stderr, "DataBlock: array overrun detected!\n"
+                    "  this: %p\n"
+                    "  data: %p\n"
+                    "  allocated: %d\n"
+                    "  dataLen: %d\n"
+                    "  data[allocated]: %d\n"
+                    "Program will now terminate.\n",
+                    this,
+                    data,
+                    allocated,
+                    dataLen,
+                    (int)data[allocated]);
+    fflush(stderr);
+
+    if (s_memoryCorruptionOverrideHandler) {
+      (*s_memoryCorruptionOverrideHandler)();
+    }
+    else {
+      // Memory corruption is not recoverable.
+      abort();
+    }
+  }
+}
+
     
 DataBlock::DataBlock(int allocatedSize)
 {
@@ -110,13 +138,14 @@ DataBlock::DataBlock(DataBlock const &obj, int minToAllocate)
     
 DataBlock::~DataBlock()
 {
-  try {
-    SELFCHECK();
-    if (data) {
-      delete[] data;
-    }
+  // Do not do a full self-check, since that might throw an
+  // exception.  But do check for memory corruption, which
+  // will abort if there is a problem.
+  this->checkEndpost();
+
+  if (data) {
+    delete[] data;
   }
-  CAUTIOUS_RELAY
 }
     
     
@@ -420,7 +449,36 @@ void DataBlock::readFromFile(char const *fname)
 
 
 // ------------- self test code --------------
-#ifdef DATABLOK_TEST
+#ifdef TEST_DATABLOK
+
+#include "macros.h"                    // Restorer
+#include "nonport.h"                   // removeFile
+
+static bool detectedCorruption = false;
+
+static void corruptionHandler()
+{
+  detectedCorruption = true;
+}
+
+static void testMemoryCorruption()
+{
+  Restorer< void (*)() > restorer(DataBlock::s_memoryCorruptionOverrideHandler,
+    &corruptionHandler);
+
+  {
+    DataBlock b("some test data");
+    b.getData()[b.getAllocated()] = 0;   // overrun
+
+    printf("This should cause a corruption detection:\n");
+    fflush(stdout);
+    // invoke selfcheck in destructor
+  }
+
+  if (!detectedCorruption) {
+    xfailure("failed to detect overrun");
+  }
+}
 
 int doit()
 {
@@ -456,22 +514,12 @@ int doit()
     DataBlock block4;
     block4.readFromFile("tempfile.blk");
     xassert(block == block4);
+    removeFile("tempfile.blk");
 
-    // test overrun detection
-    try {
-      {
-        DataBlock b(block);
-        b.getData()[block.getAllocated()] = 0;   // overrun
-
-        printf("this should cause an assertion failure:\n");
-        // invoke selfcheck in destructor
-      }
-      return printf("failed to detect overrun\n");
-    }
-    catch (...) {}
+    testMemoryCorruption();
   }
     
-  printf("test succeeded\n");
+  printf("datablok test succeeded\n");
   return 0;
 }
     
@@ -481,9 +529,8 @@ int main()
     return doit();
   }
   catch (xBase &x) {
-    return printf("failed: %s\n", x.why());
+    return printf("failed: %s\n", x.why().c_str());
   }
 }
     
-#endif // DATABLOK_TEST
-
+#endif // TEST_DATABLOK

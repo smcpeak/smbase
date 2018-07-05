@@ -188,6 +188,7 @@ TESTS += boxprint
 TESTS += crc
 TESTS += cycles
 TESTS += d2vector
+TESTS += datablok
 TESTS += gprintf
 TESTS += growbuf
 TESTS += hashline
@@ -346,6 +347,9 @@ bdffont$(EXE): bdffont.cc $(THIS)
 tarray2d$(EXE): tarray2d.cc array2d.h $(THIS)
 	$(TESTCXX) -o $@ -DTEST_TARRAY2D tarray2d.cc $(TESTFLAGS)
 
+datablok$(EXE): datablok.cpp datablok.h $(THIS)
+	$(TESTCXX) -o $@ -DTEST_DATABLOK datablok.cpp $(TESTFLAGS)
+
 # Rule for tests that have dedicated .cc files, which is what I
 # would like to transition toward.
 test-%$(EXE): test-%.cc $(THIS)
@@ -397,6 +401,7 @@ check: $(TESTS)
 	$(RUN)./test-datetime$(EXE)
 	$(RUN)./test-sm-file-util$(EXE)
 	$(RUN)./test-stringset$(EXE)
+	$(RUN)./datablok$(EXE)
 ifeq ($(TARGET_PLATFORM_IS_MINGW),0)
 	$(RUN)./mysig$(EXE)
 	$(RUN)./testmalloc$(EXE) >/dev/null 2>&1
