@@ -16,6 +16,7 @@
 #include "str.h"         // string
 #include "sm-iostream.h" // ostream
 
+
 // by using this macro, the debugger gets a shot before the stack is unwound
 #ifdef THROW
 #undef THROW
@@ -31,53 +32,10 @@
 #define HANDLER() breaker() /* user ; */
 
 
-// this function returns true if we're in the process of unwinding the
-// stack, and therefore destructors may want to avoid throwing new exceptions;
-// for now, may return false positives, but won't return false negatives
-bool unwinding();
-
-// inside a catch expression, the unwinding() function needs a tweak; pass
-// the caught expression, and this returns whether there any *additional*
-// exceptions currently in flight
-class xBase;
-bool unwinding_other(xBase const &x);
-
-// Previously, I used this to allow an exception to propagate out of a
-// destructor only if no other exception was in flight.  I have now
-// decided that is a mistake, and this always just logs the exception.
-//
-// I should provide a better name and more flexible handling mechanism.
-//
-// TODO: This is a mistake.  I should remove it and change any uses.
-#define CAUTIOUS_RELAY                                    \
-  catch (xBase &x) {                                      \
-    clog << "warning: exception in destructor: "          \
-         << toCStr(x.why()) << endl;                      \
-  }
-
-
-// This is used when we do not expect an exception to be thrown, and
-// do not have a good recovery available, but it might happen, and we
-// do not want to simply terminate.
-//
-// Print details about 'x' to stderr.
-void printUnhandled(xBase const &x);
-
-
-// This goes at the top of any function we do not want to let throw
-// an exception.  Often such functions are marked 'noexcept'.
-#define GENERIC_CATCH_BEGIN         \
-  try {
-
-// And this goes at the bottom.  This if the client does not do
-// anything special, 'printUnhandled' will use the global version,
-// but in a class method, a client can provide their own handler
-// with that name.
-#define GENERIC_CATCH_END             \
-  }                                   \
-  catch (xBase &x) {                  \
-    printUnhandled(x);                \
-  }
+// Removed 2018-07-06:
+//   unwinding
+//   unwinding_other
+//   CAUTIOUS_RELAY
 
 
 // -------------------- xBase ------------------
@@ -123,6 +81,30 @@ public:
 
 // equivalent to THROW(xBase(msg))
 void xbase(rostring msg) NORETURN;
+
+
+// This is used when we do not expect an exception to be thrown, and
+// do not have a good recovery available, but it might happen, and we
+// do not want to simply terminate.
+//
+// Print details about 'x' to stderr.
+void printUnhandled(xBase const &x);
+
+
+// This goes at the top of any function we do not want to let throw
+// an exception.  Often such functions are marked 'noexcept'.
+#define GENERIC_CATCH_BEGIN         \
+  try {
+
+// And this goes at the bottom.  This if the client does not do
+// anything special, 'printUnhandled' will use the global version,
+// but in a class method, a client can provide their own handler
+// with that name.
+#define GENERIC_CATCH_END             \
+  }                                   \
+  catch (xBase &x) {                  \
+    printUnhandled(x);                \
+  }
 
 
 // -------------------- x_assert -----------------------

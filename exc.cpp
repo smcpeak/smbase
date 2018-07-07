@@ -47,27 +47,6 @@ xBase::~xBase()
 }
 
 
-// this is obviously not perfect, since exception objects can be
-// created and not thrown; I heard the C++ standard is going to,
-// or already does, include (by this name?) a function that does this
-// correctly; until then, this will serve as a close approximation
-// (this kind of test is, IMO, not a good way to handle the underlying
-// problem, but it does reasonably handle 70-90% of the cases that
-// arise in practice, so I will endorse it for now)
-bool unwinding()
-{
-  return xBase::creationCount != 0;
-}
-
-
-// tweaked version
-bool unwinding_other(xBase const &)
-{
-  // we know the passed xBase exists.. any others?
-  return xBase::creationCount > 1;
-}
-
-
 void xBase::insert(ostream &os) const
 {
   os << why();
