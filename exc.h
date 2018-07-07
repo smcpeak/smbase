@@ -106,6 +106,14 @@ void printUnhandled(xBase const &x);
     printUnhandled(x);                \
   }
 
+// Variant for functions that return a value.
+#define GENERIC_CATCH_END_RET(retval) \
+  }                                   \
+  catch (xBase &x) {                  \
+    printUnhandled(x);                \
+    return retval;                    \
+  }
+
 
 // -------------------- x_assert -----------------------
 // thrown by _xassert_fail, declared in xassert.h
