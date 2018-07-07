@@ -5,10 +5,12 @@
 #ifndef __TEST_H
 #define __TEST_H
 
-#include "sm-iostream.h"   // cout
-#include <stdio.h>         // printf
 #include "exc.h"           // xBase
 #include "nonport.h"       // getMilliseconds
+#include "sm-iostream.h"   // cout
+#include "str.h"           // stringb
+
+#include <stdio.h>         // printf
 
 
 // reports uncaught exceptions
@@ -69,5 +71,19 @@ public:
 };
 
 
-#endif // __TEST_H
+template <class T>
+void expectEq(char const *label, T const &actual, T const &expect)
+{
+  if (expect != actual) {
+    cout << "mismatched " << label << ':' << endl;
+    cout << "  actual: " << actual << endl;
+    cout << "  expect: " << expect << endl;
+    xfailure(stringb("mismatched " << label));
+  }
+}
 
+#define EXPECT_EQ(actual, expect) \
+  expectEq(#actual, actual, expect) /* user ; */
+
+
+#endif // __TEST_H
