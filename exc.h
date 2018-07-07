@@ -47,10 +47,36 @@ bool unwinding_other(xBase const &x);
 // decided that is a mistake, and this always just logs the exception.
 //
 // I should provide a better name and more flexible handling mechanism.
+//
+// TODO: This is a mistake.  I should remove it and change any uses.
 #define CAUTIOUS_RELAY                                    \
   catch (xBase &x) {                                      \
     clog << "warning: exception in destructor: "          \
          << toCStr(x.why()) << endl;                      \
+  }
+
+
+// This is used when we do not expect an exception to be thrown, and
+// do not have a good recovery available, but it might happen, and we
+// do not want to simply terminate.
+//
+// Print details about 'x' to stderr.
+void printUnhandled(xBase const &x);
+
+
+// This goes at the top of any function we do not want to let throw
+// an exception.  Often such functions are marked 'noexcept'.
+#define GENERIC_CATCH_BEGIN         \
+  try {
+
+// And this goes at the bottom.  This if the client does not do
+// anything special, 'printUnhandled' will use the global version,
+// but in a class method, a client can provide their own handler
+// with that name.
+#define GENERIC_CATCH_END             \
+  }                                   \
+  catch (xBase &x) {                  \
+    printUnhandled(x);                \
   }
 
 

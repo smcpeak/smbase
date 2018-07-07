@@ -10,6 +10,12 @@
 #include <ctype.h>        // toupper, tolower
 
 
+void printUnhandled(xBase const &x)
+{
+  cerr << "WARNING: Unhandled exception: " << x.why() << endl;
+}
+
+
 // ------------------------- xBase -----------------
 bool xBase::logExceptions = true;
 int xBase::creationCount = 0;
