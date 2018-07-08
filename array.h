@@ -23,7 +23,10 @@ private:     // not allowed
   void operator=(Array&);
 
 public:
-  Array(int len) : arr(new T[len]) {}
+  Array(int len)
+    : arr(new T[(len>=0? len :
+                  (xfailure("Array with negative length"), 0) )])
+  {}
   ~Array() { delete[] arr; }
 
   T const &operator[] (int i) const { return arr[i]; }

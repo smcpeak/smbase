@@ -7,6 +7,7 @@
 #include "ckheap.h"                    // malloc_stats
 #include "test.h"                      // PVAL, USUAL_MAIN
 
+#include <assert.h>                    // assert
 #include <stdio.h>                     // printf
 #include <stdlib.h>                    // exit
 
@@ -196,11 +197,29 @@ void round(int ops)
 }
 
 
+static void testArrayNegativeLength()
+{
+  // This should be allowed.
+  Array<char> arrZeroLength(0);
+
+  try {
+    cout << "This should throw:" << endl;
+    Array<char> arr(-700);
+    assert(!"should have failed");
+  }
+  catch (xBase &x) {
+    cout << "as expected: " << x.why() << endl;
+  }
+}
+
+
 void entry()
 {
   for (int i=0; i<20; i++) {
     round(1000);
   }
+
+  testArrayNegativeLength();
 
   malloc_stats();
   printf("arrayStack appears to work; maxLength=%d\n", maxLength);
