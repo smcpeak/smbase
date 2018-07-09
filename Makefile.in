@@ -123,9 +123,10 @@ OBJS := \
   breaker.o \
   crc.o \
   cycles.o \
+  d2vector.o \
   datablok.o \
   datetime.o \
-  d2vector.o \
+  dev-warning.o \
   exc.o \
   flatten.o \
   gprintf.o \
