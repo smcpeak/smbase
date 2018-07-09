@@ -20,12 +20,6 @@
 class CheckObjectCount {
   NO_OBJECT_COPIES(CheckObjectCount);
 
-public:      // static data
-  // If true, and we find a non-zero count in the destructor, then
-  // exit(4).  This is meant to be set in unit tests so that the test
-  // fails if a warning is printed.  It is initially false.
-  static bool s_exitUponFailure;
-
 public:      // instance data
   // Name of the class whose count I am watching.
   char const *m_className;

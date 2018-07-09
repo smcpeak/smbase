@@ -5,6 +5,7 @@
 #ifndef __TEST_H
 #define __TEST_H
 
+#include "dev-warning.h"   // g_abortUponDevWarning
 #include "exc.h"           // xBase
 #include "nonport.h"       // getMilliseconds
 #include "sm-iostream.h"   // cout
@@ -46,6 +47,37 @@ int main(int argc, char *argv[])                \
     return 4;                                   \
   }                                             \
 }
+
+
+// Like USUAL_MAIN but meant for use in unit tests.
+#define USUAL_TEST_MAIN                         \
+  int main()                                    \
+  {                                             \
+    g_abortUponDevWarning = true;               \
+    try {                                       \
+      entry();                                  \
+      return 0;                                 \
+    }                                           \
+    catch (xBase &x) {                          \
+      cout << x << endl;                        \
+      return 4;                                 \
+    }                                           \
+  }
+
+// Like ARGS_MAIN but for use in unit tests.
+#define ARGS_TEST_MAIN                          \
+  int main(int argc, char *argv[])              \
+  {                                             \
+    g_abortUponDevWarning = true;               \
+    try {                                       \
+      entry(argc, argv);                        \
+      return 0;                                 \
+    }                                           \
+    catch (xBase &x) {                          \
+      cout << x << endl;                        \
+      return 4;                                 \
+    }                                           \
+  }
 
 
 // convenient for printing the value of a variable or expression

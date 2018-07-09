@@ -7,6 +7,12 @@
 #include "str.h"                       // stringbc
 
 
+// When true, any call to 'devWarning' will abort().  This is meant for
+// use in unit tests so the test fails if a warning is printed.  It is
+// initially false.
+extern bool g_abortUponDevWarning;
+
+
 // Print or log a warning originating at file/line.  This is something
 // that the developer thinks should not or cannot happen, but is
 // recoverable (no need to abort or throw), and the end user would not

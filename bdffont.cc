@@ -958,14 +958,12 @@ void writeBDFFile(char const *fname, BDFFont const &font)
 // -------------------------- test code ---------------------------
 #ifdef TEST_BDFFONT
 
-#include "test.h"            // USUAL_MAIN
+#include "test.h"            // USUAL_TEST_MAIN
 
-USUAL_MAIN
 
-void entry()
+static void entry()
 {
   cout << "bdffont tests" << endl;
-  CheckObjectCount::s_exitUponFailure = true;
 
   // parse a file
   //
@@ -1000,5 +998,8 @@ void entry()
 
   cout << "bdffont ok\n";
 }
+
+USUAL_TEST_MAIN
+
 
 #endif // TEST_BDFFONT
