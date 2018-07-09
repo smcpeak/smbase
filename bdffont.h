@@ -40,6 +40,7 @@
 #define BDFFONT_H
 
 #include "array.h"           // ArrayStack
+#include "macros.h"          // NO_OBJECT_COPIES
 #include "objlist.h"         // ObjList
 #include "point.h"           // point
 #include "str.h"             // string
@@ -50,6 +51,12 @@ class Bit2d;                 // bit2d.h
 // storage of the information.  Global functions (declared below) then
 // operate upon the font objects for purposes such as parsing.
 class BDFFont {
+  // Copying could be added if needed, but is not currently implemented.
+  NO_OBJECT_COPIES(BDFFont);
+
+public:      // static data
+  static int s_objectCount;
+
 public:      // types
   // This type is used to store values identified in the spec as
   // having type "number".  I would like to use a general 'rational'

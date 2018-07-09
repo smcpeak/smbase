@@ -5,6 +5,7 @@
 
 #include "bit2d.h"           // Bit2d
 #include "exc.h"             // xformat
+#include "objcount.h"        // CHECK_OBJECT_COUNT
 #include "owner.h"           // Owner
 #include "strutil.h"         // readStringFromFile
 
@@ -85,6 +86,11 @@ int BDFFont::Glyph::getCharacterIndex() const
 
 
 // -------------------------- BDFFont -----------------------------
+int BDFFont::s_objectCount = 0;
+
+CHECK_OBJECT_COUNT(BDFFont);
+
+
 BDFFont::BDFFont()
   : fileFormatVersion(),
     comments(),
@@ -96,10 +102,14 @@ BDFFont::BDFFont()
     metricsSet(0),
     properties(),
     glyphs()
-{}
+{
+  s_objectCount++;
+}
 
 BDFFont::~BDFFont()
-{}
+{
+  s_objectCount--;
+}
 
 
 int BDFFont::maxValidGlyph() const
@@ -955,7 +965,8 @@ USUAL_MAIN
 void entry()
 {
   cout << "bdffont tests" << endl;
-  
+  CheckObjectCount::s_exitUponFailure = true;
+
   // parse a file
   //
   // Amusingly, the actual sample input in the spec is missing a
