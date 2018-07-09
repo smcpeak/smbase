@@ -142,6 +142,7 @@ OBJS += objcount.o
 OBJS += ofstreamts.o
 OBJS += point.o
 OBJS += pprint.o
+OBJS += refct-serf.o
 OBJS += sm-file-util.o
 OBJS += smregexp.o
 OBJS += srcloc.o
@@ -210,6 +211,7 @@ TESTS += taillist_test
 TESTS += tarray2d
 TESTS += tarrayqueue
 TESTS += test-datetime
+TESTS += test-refct-serf
 TESTS += test-sm-file-util
 TESTS += test-stringset
 TESTS += testarray
@@ -402,6 +404,7 @@ check: $(TESTS)
 	$(RUN)./bdffont$(EXE)
 	$(RUN)./tarray2d$(EXE)
 	$(RUN)./test-datetime$(EXE)
+	$(RUN)./test-refct-serf$(EXE)
 	$(RUN)./test-sm-file-util$(EXE)
 	$(RUN)./test-stringset$(EXE)
 	$(RUN)./datablok$(EXE)
