@@ -1,10 +1,12 @@
 // test-refct-serf.cc
-// Test code for 'test-refct' module.
+// Test code for 'refct-serf' and 'rcserflist' modules.
 
+#include "rcserflist.h"                // module to test
 #include "refct-serf.h"                // module to test
 
 #include "array.h"                     // ArrayStack
 #include "macros.h"                    // Restorer
+#include "objlist.h"                   // ObjList
 #include "owner.h"                     // Owner
 #include "sm-iostream.h"               // cout, etc.
 #include "test.h"                      // USUAL_TEST_MAIN
@@ -431,6 +433,167 @@ static void testConstVersionFailure()
   xassert(failCount == 1);
 }
 
+
+static void expectSum(RCSerfList<Integer> const &list, int expect)
+{
+  int sum=0;
+  FOREACH_RCSERFLIST(Integer, list, iter) {
+    sum += iter.data()->m_i;
+  }
+  EXPECT_EQ(sum, expect);
+}
+
+// Basic test of RCSerfList.
+static void testListSuccess()
+{
+  Integer o1(1);
+  Integer o2(2);
+  Integer o4(4);
+
+  RCSerfList<Integer> list;
+  expectSum(list, 0);
+
+  list.appendUnique(&o1);
+  expectSum(list, 1);
+  EXPECT_EQ(o1.getRefCount(), 1);
+  EXPECT_EQ(o2.getRefCount(), 0);
+  EXPECT_EQ(o4.getRefCount(), 0);
+
+  list.appendUnique(&o2);
+  expectSum(list, 3);
+
+  list.appendUnique(&o4);
+  expectSum(list, 7);
+  EXPECT_EQ(list.indexOf(&o1), 0);
+  EXPECT_EQ(list.indexOf(&o2), 1);
+  EXPECT_EQ(list.indexOf(&o4), 2);
+  EXPECT_EQ(list.indexOf(NULL), -1);
+  EXPECT_EQ(o1.getRefCount(), 1);
+  EXPECT_EQ(o2.getRefCount(), 1);
+  EXPECT_EQ(o4.getRefCount(), 1);
+
+  list.removeItem(&o2);
+  expectSum(list, 5);
+  EXPECT_EQ(list.indexOf(&o1), 0);
+  EXPECT_EQ(list.indexOf(&o2), -1);
+  EXPECT_EQ(list.indexOf(&o4), 1);
+
+  list.removeItem(&o1);
+  expectSum(list, 4);
+  EXPECT_EQ(list.indexOf(&o1), -1);
+  EXPECT_EQ(list.indexOf(&o2), -1);
+  EXPECT_EQ(list.indexOf(&o4), 0);
+
+  list.appendUnique(&o2);
+  expectSum(list, 6);
+  EXPECT_EQ(list.indexOf(&o1), -1);
+  EXPECT_EQ(list.indexOf(&o2), 1);
+  EXPECT_EQ(list.indexOf(&o4), 0);
+
+  list.appendUnique(&o1);
+  expectSum(list, 7);
+  EXPECT_EQ(list.indexOf(&o1), 2);
+  EXPECT_EQ(list.indexOf(&o2), 1);
+  EXPECT_EQ(list.indexOf(&o4), 0);
+
+  try {
+    cout << "should throw:" << endl;
+    list.appendUnique(&o4);
+    cout << "should have failed" << endl;
+    abort();
+  }
+  catch (xBase &x)
+  {}
+
+  try {
+    cout << "should throw:" << endl;
+    list.removeItem(NULL);
+    cout << "should have failed" << endl;
+    abort();
+  }
+  catch (xBase &x)
+  {}
+}
+
+static void testListFailure()
+{
+  RCSerfList<Integer> list;
+  PREPARE_TO_FAIL();
+
+  {
+    Owner<Integer> o1(new Integer(17));
+    Owner<Integer> o2(new Integer(18));
+
+    list.appendUnique(o1);
+    list.appendUnique(o2);
+
+    PUSH_FAIL_SERF(list.nthRef(0));
+    PUSH_FAIL_SERF(list.nthRef(1));
+
+    // Let o1 and o2 pass out of scope.
+  }
+
+  xassert(failCount == 1);
+}
+
+
+// If 'removeElements', remove the elements from the list explicitly
+// before the end.  Otherwise let the RCSerfList destructor remove them.
+static void testLongList(bool removeElements, bool failure)
+{
+  PREPARE_TO_FAIL();      // ok even if !failure
+
+  {
+    ObjList<Integer> olist;
+    RCSerfList<Integer> slist;
+
+    int const CT=100;
+
+    for (int i=0; i < CT; i++) {
+      Integer *obj = new Integer(i);
+      olist.prepend(obj);
+      EXPECT_EQ(obj->getRefCount(), 0);
+      slist.appendUnique(obj);
+      EXPECT_EQ(obj->getRefCount(), 1);
+    }
+
+    EXPECT_EQ(slist.count(), CT);
+
+    if (removeElements) {
+      for (int i=0; i < CT; i++) {
+        Integer *obj = olist.nth(i);
+        EXPECT_EQ(obj->getRefCount(), 1);
+        if (failure && i==(CT/2)) {
+          // Leave this one.
+        }
+        else {
+          slist.removeItem(obj);
+          EXPECT_EQ(obj->getRefCount(), 0);
+        }
+      }
+
+      EXPECT_EQ(slist.count(), (failure? 1 : 0));
+    }
+
+    if (failure) {
+      PUSH_FAIL_SERF(slist.nthRef(0));
+    }
+
+    if (removeElements) {
+      // In the success case, we cleared slist.  In the failure case,
+      // we left one in it.  Trigger olist destructor now.
+      olist.deleteAll();
+    }
+    else {
+      // We will let the slist destructor remove its elements, and then
+      // let the olist destructor trigger naturally.
+    }
+  }
+
+  EXPECT_EQ(failCount, (failure? 1 : 0));
+}
+
+
 static void entry()
 {
   testOperatorsInteger();
@@ -450,6 +613,11 @@ static void entry()
   testRelease();
   testConstVersionSuccess();
   testConstVersionFailure();
+  testListSuccess();
+  testListFailure();
+  testLongList(true /*removeElements*/, false /*failure*/);
+  testLongList(false /*removeElements*/, false /*failure*/);
+  testLongList(true /*removeElements*/, true /*failure*/);
 
   cout << "test-refct-serf ok" << endl;
 }
