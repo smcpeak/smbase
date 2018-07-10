@@ -104,9 +104,6 @@ private:     // funcs
   // refct if not NULL.
   void acquire(SerfRefCount *ptr);
 
-  // Set m_ptr to NULL, decrementing refct if not already NULL.
-  void release();
-
 public:      // funcs
   // Initialize as NULL.
   RCSerfBase() : m_ptr(NULL) {}
@@ -137,6 +134,17 @@ public:      // funcs
   // constness forward to the referent.  (In contrast, owner pointers
   // do carry constness forward.)
   SerfRefCount *ptr() const { return m_ptr; }
+
+  // Set m_ptr to NULL, decrementing refct if not already NULL.
+  // Return the value m_ptr had before the call, which may be NULL.
+  //
+  // This is meant for cases where we want to pass the pointer to a
+  // function that will deallocate the object.  It is not a transfer of
+  // ownership, since the serf pointer does not own the object, but the
+  // serf pointer is being used as a *name* for something that something
+  // else owns, and is being used to instruct that thing to deallocate
+  // the object.
+  SerfRefCount *release();
 };
 
 
@@ -207,6 +215,13 @@ public:      // funcs
   T* operator-> () const
   {
     return this->ptr();
+  }
+
+  // Get the pointer, setting 'this' to NULL simultaneously.  May
+  // return NULL.
+  T* release()
+  {
+    return static_cast<T*>(RCSerfBase::release());
   }
 
   // Get the underlying RCSerfBase.  Among the reasons it is unsafe is

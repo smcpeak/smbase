@@ -394,6 +394,15 @@ static void testSwapWithFailure()
 }
 
 
+static void testRelease()
+{
+  RCSerf<Integer> i = new Integer(18);
+  EXPECT_EQ(!!i, true);
+  delete i.release();
+  EXPECT_EQ(!!i, false);
+}
+
+
 static void entry()
 {
   testOperatorsInteger();
@@ -410,6 +419,7 @@ static void entry()
   testManyPointersFailure();
   testSwapWithSuccess();
   testSwapWithFailure();
+  testRelease();
 
   cout << "test-refct-serf ok" << endl;
 }

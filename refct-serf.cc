@@ -79,8 +79,9 @@ void RCSerfBase::acquire(SerfRefCount *ptr)
 }
 
 
-void RCSerfBase::release()
+SerfRefCount *RCSerfBase::release()
 {
+  SerfRefCount *ret = m_ptr;
   if (m_ptr) {
     m_ptr->m_serfRefCount--;
 
@@ -100,6 +101,7 @@ void RCSerfBase::release()
 
     m_ptr = NULL;
   }
+  return ret;
 }
 
 
