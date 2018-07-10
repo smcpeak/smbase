@@ -20,8 +20,6 @@
 // has all the operations pointers do but automatically maintains the
 // reference count.
 //
-// In place of T const *, use RCSerfC<T>.
-//
 // The term "serf" is meant as opposed to "owner".  An owner pointer is
 // one that has the obligation to deallocate its referent when it goes
 // away.  In contrast, a serf pointer does not.  Serf pointers also do
@@ -92,7 +90,8 @@ public:      // funcs
   // Same rationale as for the copy constructor.
   SerfRefCount& operator= (SerfRefCount const &) { return *this; }
 
-  // Possibly useful for testing or debugging.
+  // Possibly useful for testing or debugging.  Correct programs should
+  // *not* change their behavior based on this value.
   int getRefCount() const { return m_serfRefCount; }
 
   // The reference count is not considered part of any object's
@@ -102,14 +101,15 @@ public:      // funcs
 };
 
 
-// The base class of RCSerf[C].  Maintains the reference count inside
+// The base class of RCSerf.  Maintains the reference count inside
 // SerfRefCount objects.  Otherwise, acts like a pointer to
 // SerfRefCount.
 //
-// The trailing "C" means 'const'.  This is the version whose interface
-// uses pointers to const.  RCSerfBase exposes a non-const interface.
+// The trailing "C" means 'const'.  It exposes an interface that uses
+// pointers to const.
 //
-// This is not meant to be used directly by clients.
+// However, that doesn't mean much because this is not meant to be used
+// directly by clients.
 class RCSerfBaseC {
 private:     // data
   // Pointer to the object whose reference count we are tracking.  This
@@ -162,163 +162,68 @@ public:      // funcs
 };
 
 
-// Reference-counted serf pointer to const T.  T must inherit
-// SerfRefCount.  Aside from refct behavior, acts like T const *.
+// Reference-counted serf pointer to T.  T must inherit SerfRefCount.
+// Aside from refct behavior, acts like T*.
+//
+// NOTE: You can use RCSerf<Foo const> to get something that acts like
+// Foo const *.
 template <class T>
-class RCSerfC : private RCSerfBaseC {
+class RCSerf : private RCSerfBaseC {
 public:      // funcs
   // Initialize as NULL.
-  RCSerfC() : RCSerfBaseC() {}
+  RCSerf() : RCSerfBaseC() {}
 
   // Store 'ptr', and increment its refct if not NULL.
-  RCSerfC(T const *ptr)
+  RCSerf(T *ptr)
     : RCSerfBaseC(ptr)
   {}
 
   // Copy the pointer in 'obj', incrementing refct if not NULL.
-  RCSerfC(RCSerfC const &obj)
+  RCSerf(RCSerf const &obj)
     : RCSerfBaseC(obj)
   {}
 
   // Decrement refct if not NULL.  Aborts program if refct goes negative.
-  ~RCSerfC()
+  ~RCSerf()
   {
     // The work is done by ~RCSerfBaseC().
   }
 
   // Copy pointer value, adjusting refcts as appropriate.
-  RCSerfC& operator= (RCSerfC const &obj)
+  RCSerf& operator= (RCSerf const &obj)
   {
     RCSerfBaseC::operator=(obj);
     return *this;
   }
 
   // Update pointer value, adjusting refcts as appropriate.
-  RCSerfC& operator= (T const *ptr)
+  RCSerf& operator= (T *ptr)
   {
     RCSerfBaseC::operator=(ptr);
     return *this;
   }
 
   // Exchange pointers with 'other'.  No refcts change.
-  void swapWith(RCSerfC &other) NOEXCEPT
+  void swapWith(RCSerf &other) NOEXCEPT
   {
     RCSerfBaseC::swapWith(other);
   }
 
   // Get the pointer as an ordinary C++ pointer.
-  T const *ptr() const
+  T *ptr() const
   {
-    return static_cast<T const *>(RCSerfBaseC::ptr());
+    // The static_cast downcasts to 'T' and maintains the constness of
+    // the underlying ptr() result.  The const_cast then strips that
+    // constness *if* T does not itself have 'const'.
+    //
+    // Note that C++ allows one to write "T const *" even if T itself
+    // is something like "Foo const".  The extra 'const' arising from
+    // template parameter substitution is discarded, even though
+    // explicitly writing "Foo const const *" is invalid.
+    return const_cast<T*>(static_cast<T const *>(RCSerfBaseC::ptr()));
   }
 
   // Implicit conversion operator to act like T const *.
-  operator T const * () const
-  {
-    return this->ptr();
-  }
-
-  T const & operator* () const
-  {
-    return *(this->ptr());
-  }
-
-  T const * operator-> () const
-  {
-    return this->ptr();
-  }
-
-  // Get the pointer, setting 'this' to NULL simultaneously.  May
-  // return NULL.
-  T const * release()
-  {
-    return static_cast<T const *>(RCSerfBaseC::release());
-  }
-
-  // Get the underlying RCSerfBase.  Among the reasons it is unsafe is
-  // it would allow one to substitute anything that inherits
-  // SerfRefCount for the current pointer, thus violating type safety.
-  // This is exposed only for the use of unit test code.
-  RCSerfBaseC& unsafe_getRCSerfBaseC()
-  {
-    return *this;
-  }
-};
-
-
-template <class T>
-void swap(RCSerfC<T> &a, RCSerfC<T> &b) NOEXCEPT
-{
-  a.swapWith(b);
-}
-
-
-// Reference-counted serf pointer to T.  T must inherit SerfRefCount.
-// Aside from refct behavior, acts like T*.
-//
-// The reason I chose to define both RCSerf and RCSerfC, rather than,
-// say, have the user just write RCSerf<Foo const> is that allowing the
-// latter would have meant that RCSerf would speculatively need
-// const_cast<static_cast<...> > everywhere (both places...) it
-// currently has static_cast, and I didn't like that.  I prefer all the
-// static_casts to be in RCSerfC, and all the const_casts here in
-// RCSerf.
-template <class T>
-class RCSerf {
-private:     // data
-  // Implement on top of RCSerfC.
-  RCSerfC<T> impl;
-
-public:      // funcs
-  // Initialize as NULL.
-  RCSerf() : impl() {}
-
-  // Store 'ptr', and increment its refct if not NULL.
-  RCSerf(T *ptr)
-    : impl(ptr)
-  {}
-
-  // Copy the pointer in 'obj', incrementing refct if not NULL.
-  RCSerf(RCSerf const &obj)
-    : impl(obj.impl)
-  {}
-
-  // Decrement refct if not NULL.  Aborts program if refct goes negative.
-  ~RCSerf()
-  {
-    // The work is done when 'impl' is destroyed.
-  }
-
-  // Copy pointer value, adjusting refcts as appropriate.
-  RCSerf& operator= (RCSerf const &obj)
-  {
-    impl.operator=(obj);
-    return *this;
-  }
-
-  // Update pointer value, adjusting refcts as appropriate.
-  RCSerf& operator= (T *ptr)
-  {
-    impl.operator=(ptr);
-    return *this;
-  }
-
-  // Exchange pointers with 'other'.  No refcts change.
-  void swapWith(RCSerf &other) NOEXCEPT
-  {
-    impl.swapWith(other.impl);
-  }
-
-  // Get the pointer as an ordinary C++ pointer.  This is 'const'
-  // because my convention is const serf pointers do not carry the
-  // constness forward to the referent.  (In contrast, owner pointers
-  // do carry constness forward.)
-  T *ptr() const
-  {
-    return const_cast<T*>(impl.ptr());
-  }
-
-  // Implicit conversion operator to act like T*.
   operator T* () const
   {
     return this->ptr();
@@ -336,18 +241,18 @@ public:      // funcs
 
   // Get the pointer, setting 'this' to NULL simultaneously.  May
   // return NULL.
-  T* release()
+  T *release()
   {
-    return const_cast<T*>(impl.release());
+    return const_cast<T*>(static_cast<T const *>(RCSerfBaseC::release()));
   }
 
-  // Get the underlying RCSerfBase.  Among the reasons it is unsafe is
+  // Get the underlying RCSerfBaseC.  Among the reasons it is unsafe is
   // it would allow one to substitute anything that inherits
   // SerfRefCount for the current pointer, thus violating type safety.
   // This is exposed only for the use of unit test code.
   RCSerfBaseC& unsafe_getRCSerfBaseC()
   {
-    return impl.unsafe_getRCSerfBaseC();
+    return *this;
   }
 };
 

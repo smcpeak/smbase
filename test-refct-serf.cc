@@ -411,17 +411,17 @@ static void testRelease()
 static void testConstVersionSuccess()
 {
   Owner<Integer> o(new Integer(23));
-  RCSerfC<Integer> s(o);
+  RCSerf<Integer const> s(o);
   EXPECT_EQ(s->m_i, 23);
 
-  // Manually test that compiler rejects this.
+  // Manually test that compiler rejects this by uncommenting it.
   //s->m_i = 44;
 }
 
 static void testConstVersionFailure()
 {
   Owner<Integer> o(new Integer(23));
-  RCSerfC<Integer> s(o);
+  RCSerf<Integer const> s(o);
   EXPECT_EQ(s->m_i, 23);
 
   PREPARE_TO_FAIL();
