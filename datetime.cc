@@ -18,8 +18,8 @@
 // ------------------------ OSDateTimeProvider ----------------------
 class OSDateTimeProvider : public DateTimeProvider {
 public:      // funcs
-  UnixTime getCurrentUnixTime() override;
-  int getLocalTzOffsetMinutes() override;
+  UnixTime getCurrentUnixTime() OVERRIDE;
+  int getLocalTzOffsetMinutes() OVERRIDE;
 };
 
 

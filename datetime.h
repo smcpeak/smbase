@@ -5,6 +5,7 @@
 #define DATETIME_H
 
 #include "macros.h"                    // NOTEQUAL_OPERATOR
+#include "sm-override.h"               // OVERRIDE
 #include "str.h"                       // string
 
 #include <iostream>                    // std::ostream
@@ -60,8 +61,8 @@ public:      // funcs
       tzOffsetMinutes(t)
   {}
 
-  UnixTime getCurrentUnixTime() override;
-  int getLocalTzOffsetMinutes() override;
+  UnixTime getCurrentUnixTime() OVERRIDE;
+  int getLocalTzOffsetMinutes() OVERRIDE;
 };
 
 
