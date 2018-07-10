@@ -72,7 +72,7 @@ static int failCount = 0;
 
 // Set of outstanding serf pointers that need to be cleared when we
 // detect a failure.
-static ArrayStack<RCSerfBase*> failingSerfs;
+static ArrayStack<RCSerfBaseC*> failingSerfs;
 
 // Called when an expected failure happens.  It has to repair the
 // condition causing the failure so we don't actually abort.
@@ -80,7 +80,7 @@ static void incFailCount()
 {
   failCount++;
   while (failingSerfs.isNotEmpty()) {
-    RCSerfBase *s = failingSerfs.pop();
+    RCSerfBaseC *s = failingSerfs.pop();
 
     // Nullify the RCSerf so it decrements the refct and releases the
     // object.
@@ -97,7 +97,7 @@ static void incFailCount()
 // Add an RCSerf to the set of those that we know are about to dangle
 // due to an intentional failure.
 #define PUSH_FAIL_SERF(serf) \
-  failingSerfs.push(&( (serf).unsafe_getRCSerfBase() )) /* user ; */
+  failingSerfs.push(&( (serf).unsafe_getRCSerfBaseC() )) /* user ; */
 
 
 // Exercise the operators.
@@ -134,6 +134,10 @@ static void testOperatorsInteger()
   s3 = s1;
   EXPECT_EQ(o1->getRefCount(), 3);
   EXPECT_EQ(s3->m_i, 3);
+
+  // Confirm we can modify the object through the pointer.
+  s1->m_i = 33;
+  EXPECT_EQ(s3->m_i, 33);
 
   // Let it all clean up automatically.
 }
@@ -390,6 +394,7 @@ static void testSwapWithFailure()
     delete o2;
   }
 
+  xassert(failCount == 1);
   delete o1;
 }
 
@@ -402,6 +407,29 @@ static void testRelease()
   EXPECT_EQ(!!i, false);
 }
 
+
+static void testConstVersionSuccess()
+{
+  Owner<Integer> o(new Integer(23));
+  RCSerfC<Integer> s(o);
+  EXPECT_EQ(s->m_i, 23);
+
+  // Manually test that compiler rejects this.
+  //s->m_i = 44;
+}
+
+static void testConstVersionFailure()
+{
+  Owner<Integer> o(new Integer(23));
+  RCSerfC<Integer> s(o);
+  EXPECT_EQ(s->m_i, 23);
+
+  PREPARE_TO_FAIL();
+  PUSH_FAIL_SERF(s);
+  o.del();
+
+  xassert(failCount == 1);
+}
 
 static void entry()
 {
@@ -420,6 +448,8 @@ static void entry()
   testSwapWithSuccess();
   testSwapWithFailure();
   testRelease();
+  testConstVersionSuccess();
+  testConstVersionFailure();
 
   cout << "test-refct-serf ok" << endl;
 }

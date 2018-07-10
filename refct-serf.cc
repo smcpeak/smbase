@@ -69,21 +69,21 @@ SerfRefCount::~SerfRefCount()
 }
 
 
-// --------------------------- RCSerfBase ---------------------------
-void RCSerfBase::acquire(SerfRefCount *ptr)
+// --------------------------- RCSerfBaseC ---------------------------
+void RCSerfBaseC::acquire(SerfRefCount const *ptr)
 {
   m_ptr = ptr;
   if (m_ptr) {
-    m_ptr->m_serfRefCount++;
+    m_ptr->m_serfRefCount++;           // refct is mutable
   }
 }
 
 
-SerfRefCount *RCSerfBase::release()
+SerfRefCount const *RCSerfBaseC::release()
 {
-  SerfRefCount *ret = m_ptr;
+  SerfRefCount const *ret = m_ptr;
   if (m_ptr) {
-    m_ptr->m_serfRefCount--;
+    m_ptr->m_serfRefCount--;           // refct is mutable
 
     if (m_ptr->m_serfRefCount < 0) {
       SerfRefCount::callPreAbortFunction();
@@ -105,33 +105,33 @@ SerfRefCount *RCSerfBase::release()
 }
 
 
-RCSerfBase::RCSerfBase(SerfRefCount *ptr)
+RCSerfBaseC::RCSerfBaseC(SerfRefCount const *ptr)
   : m_ptr(NULL)
 {
   this->acquire(ptr);
 }
 
 
-RCSerfBase::RCSerfBase(RCSerfBase const &obj)
+RCSerfBaseC::RCSerfBaseC(RCSerfBaseC const &obj)
   : m_ptr(NULL)
 {
   this->acquire(obj.m_ptr);
 }
 
 
-RCSerfBase::~RCSerfBase()
+RCSerfBaseC::~RCSerfBaseC()
 {
   this->release();
 }
 
 
-RCSerfBase& RCSerfBase::operator= (RCSerfBase const &obj)
+RCSerfBaseC& RCSerfBaseC::operator= (RCSerfBaseC const &obj)
 {
   return operator=(obj.m_ptr);
 }
 
 
-RCSerfBase& RCSerfBase::operator= (SerfRefCount *ptr)
+RCSerfBaseC& RCSerfBaseC::operator= (SerfRefCount const *ptr)
 {
   if (m_ptr != ptr) {
     this->release();
@@ -141,7 +141,7 @@ RCSerfBase& RCSerfBase::operator= (SerfRefCount *ptr)
 }
 
 
-void RCSerfBase::swapWith(RCSerfBase &other) NOEXCEPT
+void RCSerfBaseC::swapWith(RCSerfBaseC &other) NOEXCEPT
 {
   if (this != &other) {
     swap(m_ptr, other.m_ptr);
