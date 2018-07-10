@@ -64,66 +64,6 @@ public:      // funcs
 };
 
 
-static void testOperators()
-{
-  Owner<Integer> o1(new Integer(3));
-  RCSerf<Integer> s1(o1);
-  EXPECT_EQ(o1->m_i, 3);
-
-  // operator Integer*
-  Integer *p1 = s1;
-  EXPECT_EQ(p1->m_i, 3);
-
-  // Use operator Integer* as part of conversion to bool.
-  EXPECT_EQ(!!s1, true);
-
-  // operator->
-  EXPECT_EQ(s1->m_i, 3);
-
-  // operator*
-  EXPECT_EQ((*s1).m_i, 3);
-
-  // ptr() method
-  EXPECT_EQ(s1.ptr()->m_i, 3);
-
-  // Let it all clean up automatically.
-}
-
-
-static void testLocalObj()
-{
-  Integer i(5);
-  RCSerf<Integer> s(&i);
-  EXPECT_EQ(s->m_i, 5);
-}
-
-
-static void testNull()
-{
-  Integer i(7);
-  RCSerf<Integer> s1(&i);
-  EXPECT_EQ(!!s1, true);
-
-  s1 = NULL;
-  EXPECT_EQ(!!s1, false);
-}
-
-
-static void paramCallee(RCSerf<Integer> s)
-{
-  EXPECT_EQ(s->m_i, 8);
-}
-
-static void testParam()
-{
-  Integer i(8);
-  paramCallee(&i);
-
-  RCSerf<Integer> s(&i);
-  paramCallee(s);
-}
-
-
 // Number of times we have "aborted".
 static int failCount = 0;
 
@@ -157,26 +97,34 @@ static void incFailCount()
   failingSerfs.push(&( (serf).unsafe_getRCSerfBase() )) /* user ; */
 
 
-static void testDangleLocal()
+// Test RCSerf pointing at something that has an Owner pointer.  Also
+// exercise the operators.
+static void testOwnerPointerSuccess()
 {
-  {
-    RCSerf<Integer> s;
-    PREPARE_TO_FAIL();
-    PUSH_FAIL_SERF(s);
+  Owner<Integer> o1(new Integer(3));
+  RCSerf<Integer> s1(o1);
+  EXPECT_EQ(o1->m_i, 3);
 
-    Integer i(9);
-    s = &i;
-    EXPECT_EQ(s->m_i, 9);
+  // operator Integer*
+  Integer *p1 = s1;
+  EXPECT_EQ(p1->m_i, 3);
 
-    // Let both go out of scope, causing a failure since 'i' is
-    // destroyed first.
-  }
+  // Use operator Integer* as part of conversion to bool.
+  EXPECT_EQ(!!s1, true);
 
-  xassert(failCount == 1);
+  // operator->
+  EXPECT_EQ(s1->m_i, 3);
+
+  // operator*
+  EXPECT_EQ((*s1).m_i, 3);
+
+  // ptr() method
+  EXPECT_EQ(s1.ptr()->m_i, 3);
+
+  // Let it all clean up automatically.
 }
 
-
-static void testDangleHeap()
+static void testOwnerPointerFailure()
 {
   {
     RCSerf<Integer> s;
@@ -195,12 +143,41 @@ static void testDangleHeap()
 }
 
 
+// Test RCSerf pointing at a local.
+static void testLocalObjSuccess()
+{
+  Integer i(5);
+  RCSerf<Integer> s(&i);
+  EXPECT_EQ(s->m_i, 5);
+}
+
+static void testLocalObjFailure()
+{
+  {
+    RCSerf<Integer> s;
+    PREPARE_TO_FAIL();
+    PUSH_FAIL_SERF(s);
+
+    Integer i(9);
+    s = &i;
+    EXPECT_EQ(s->m_i, 9);
+
+    // Let both go out of scope, causing a failure since 'i' is
+    // destroyed first.
+  }
+
+  xassert(failCount == 1);
+}
+
+
 static void deallocate(Integer *i)
 {
   delete i;
 }
 
-static void testDangleDeallocate()
+// Test RCSerf pointing at something allocate with 'new' and
+// deallocated with 'delete' in a callee.
+static void testPlainPointerFailure()
 {
   {
     Integer *i = new Integer(12);
@@ -214,6 +191,35 @@ static void testDangleDeallocate()
 }
 
 
+// Test nullifying a serf.
+static void testNullify()
+{
+  Integer i(7);
+  RCSerf<Integer> s1(&i);
+  EXPECT_EQ(!!s1, true);
+
+  s1 = NULL;
+  EXPECT_EQ(!!s1, false);
+}
+
+
+static void paramCallee(RCSerf<Integer> s)
+{
+  EXPECT_EQ(s->m_i, 8);
+}
+
+// Test passing RCSerf as a parameter.
+static void testParam()
+{
+  Integer i(8);
+  paramCallee(&i);
+
+  RCSerf<Integer> s(&i);
+  paramCallee(s);
+}
+
+
+// Test storing RCSerfs in a container.
 static void testManyPointersSuccess()
 {
   Integer obj(14);
@@ -223,7 +229,7 @@ static void testManyPointersSuccess()
   }
 }
 
-static void testManyPointersFail()
+static void testManyPointersFailure()
 {
   Integer *obj = new Integer(14);
   ArrayStack<RCSerf<Integer> > arr;
@@ -245,15 +251,15 @@ static void testManyPointersFail()
 
 static void entry()
 {
-  testOperators();
-  testLocalObj();
-  testNull();
+  testOwnerPointerSuccess();
+  testOwnerPointerFailure();
+  testLocalObjSuccess();
+  testLocalObjFailure();
+  testPlainPointerFailure();
+  testNullify();
   testParam();
-  testDangleLocal();
-  testDangleHeap();
-  testDangleDeallocate();
   testManyPointersSuccess();
-  testManyPointersFail();
+  testManyPointersFailure();
 
   cout << "test-refct-serf ok" << endl;
 }
