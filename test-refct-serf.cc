@@ -3,6 +3,7 @@
 
 #include "refct-serf.h"                // module to test
 
+#include "array.h"                     // ArrayStack
 #include "macros.h"                    // Restorer
 #include "owner.h"                     // Owner
 #include "sm-iostream.h"               // cout, etc.
@@ -126,40 +127,42 @@ static void testParam()
 // Number of times we have "aborted".
 static int failCount = 0;
 
-// Address of the outstanding serf that causes the failure.  We need to
-// nullify it in the abort function before letting the object actually
-// be deallocated.
-static RCSerfBase *failingSerf = NULL;
+// Set of outstanding serf pointers that need to be cleared when we
+// detect a failure so that we don't actually abort.
+static ArrayStack<RCSerfBase*> failingSerfs;
 
 // Called when an expected failure happens.  It has to repair the
 // condition causing the failure so we don't actually abort.
 static void incFailCount()
 {
   failCount++;
-  if (failingSerf) {
+  while (failingSerfs.isNotEmpty()) {
+    RCSerfBase *s = failingSerfs.pop();
+
     // Nullify the RCSerf so it decrements the refct and releases the
     // object.
-    failingSerf->operator=(NULL);
-
-    // Don't hang onto the serf since it will be deallocated soon too.
-    failingSerf = NULL;
+    s->operator=(NULL);
   }
 }
 
-// Prepare for a failure caused by 'serf'.
-#define PREPARE_TO_FAIL(serf)                                   \
+// Prepare for a failure to be reported.
+#define PREPARE_TO_FAIL()                                       \
   failCount = 0;                                                \
-  Restorer< RCSerfBase* > serfRestorer(                         \
-    failingSerf, &( (serf).unsafe_getRCSerfBase() ));           \
   Restorer< void (*)() > abortRestorer(                         \
     SerfRefCount::s_preAbortFunction, &incFailCount) /* user ; */
+
+// Add an RCSerf to the set of those that we know are about to dangle
+// due to an intentional failure.
+#define PUSH_FAIL_SERF(serf) \
+  failingSerfs.push(&( (serf).unsafe_getRCSerfBase() )) /* user ; */
 
 
 static void testDangleLocal()
 {
   {
     RCSerf<Integer> s;
-    PREPARE_TO_FAIL(s);
+    PREPARE_TO_FAIL();
+    PUSH_FAIL_SERF(s);
 
     Integer i(9);
     s = &i;
@@ -177,7 +180,8 @@ static void testDangleHeap()
 {
   {
     RCSerf<Integer> s;
-    PREPARE_TO_FAIL(s);
+    PREPARE_TO_FAIL();
+    PUSH_FAIL_SERF(s);
 
     Owner<Integer> i(new Integer(9));
     s = i;
@@ -201,10 +205,40 @@ static void testDangleDeallocate()
   {
     Integer *i = new Integer(12);
     RCSerf<Integer> s(i);
-    PREPARE_TO_FAIL(s);
+    PREPARE_TO_FAIL();
+    PUSH_FAIL_SERF(s);
     deallocate(i);
   }
 
+  xassert(failCount == 1);
+}
+
+
+static void testManyPointersSuccess()
+{
+  Integer obj(14);
+  ArrayStack<RCSerf<Integer> > arr;
+  for (int i=0; i < 10; i++) {
+    arr.push(RCSerf<Integer>(&obj));
+  }
+}
+
+static void testManyPointersFail()
+{
+  Integer *obj = new Integer(14);
+  ArrayStack<RCSerf<Integer> > arr;
+  for (int i=0; i < 10; i++) {
+    arr.push(RCSerf<Integer>(obj));
+  }
+
+  // Push the fail serfs now, after all have been allocated in the
+  // stack, since the array is done resizing.
+  for (int i=0; i < 10; i++) {
+    PUSH_FAIL_SERF(arr[i]);
+  }
+
+  PREPARE_TO_FAIL();
+  delete obj;
   xassert(failCount == 1);
 }
 
@@ -218,6 +252,8 @@ static void entry()
   testDangleLocal();
   testDangleHeap();
   testDangleDeallocate();
+  testManyPointersSuccess();
+  testManyPointersFail();
 
   cout << "test-refct-serf ok" << endl;
 }
