@@ -220,6 +220,13 @@ public:      // funcs
 };
 
 
+template <class T>
+void swap(RCSerf<T> &a, RCSerf<T> &b) NOEXCEPT
+{
+  a.swapWith(b);
+}
+
+
 // TODO: Define const versions of RCSerfBase and RCSerf.
 
 

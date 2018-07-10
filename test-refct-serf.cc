@@ -323,6 +323,77 @@ static void testManyPointersFailure()
 }
 
 
+// Exercise both 'swapWith' method and 'swap' global function.
+static void testSwapWithSuccess()
+{
+  Integer *o1 = new Integer(16);
+  Integer *o2 = new Integer(17);
+
+  {
+    RCSerf<Integer> s1(o1);
+    EXPECT_EQ(o1->getRefCount(), 1);
+    EXPECT_EQ(s1->m_i, 16);
+
+    RCSerf<Integer> s2(o2);
+    EXPECT_EQ(o1->getRefCount(), 1);
+    EXPECT_EQ(s2->m_i, 17);
+
+    s1.swapWith(s2);
+    EXPECT_EQ(s1->m_i, 17);
+    EXPECT_EQ(s2->m_i, 16);
+    EXPECT_EQ(o1->getRefCount(), 1);
+    EXPECT_EQ(o2->getRefCount(), 1);
+
+    RCSerf<Integer> s3;
+    swap(s3, s1);
+    EXPECT_EQ(!!s1, false);
+    EXPECT_EQ(s3->m_i, 17);
+    EXPECT_EQ(s2->m_i, 16);
+    EXPECT_EQ(o1->getRefCount(), 1);
+    EXPECT_EQ(o2->getRefCount(), 1);
+  }
+
+  delete o2;
+  delete o1;
+}
+
+static void testSwapWithFailure()
+{
+  Integer *o1 = new Integer(16);
+  Integer *o2 = new Integer(17);
+
+  {
+    RCSerf<Integer> s1(o1);
+    EXPECT_EQ(o1->getRefCount(), 1);
+    EXPECT_EQ(s1->m_i, 16);
+
+    RCSerf<Integer> s2(o2);
+    EXPECT_EQ(o1->getRefCount(), 1);
+    EXPECT_EQ(s2->m_i, 17);
+
+    s1.swapWith(s2);
+    EXPECT_EQ(s1->m_i, 17);
+    EXPECT_EQ(s2->m_i, 16);
+    EXPECT_EQ(o1->getRefCount(), 1);
+    EXPECT_EQ(o2->getRefCount(), 1);
+
+    RCSerf<Integer> s3;
+    swap(s3, s1);
+    EXPECT_EQ(!!s1, false);
+    EXPECT_EQ(s3->m_i, 17);
+    EXPECT_EQ(s2->m_i, 16);
+    EXPECT_EQ(o1->getRefCount(), 1);
+    EXPECT_EQ(o2->getRefCount(), 1);
+
+    PREPARE_TO_FAIL();
+    PUSH_FAIL_SERF(s3);
+    delete o2;
+  }
+
+  delete o1;
+}
+
+
 static void entry()
 {
   testOperatorsInteger();
@@ -337,6 +408,8 @@ static void entry()
   testParam();
   testManyPointersSuccess();
   testManyPointersFailure();
+  testSwapWithSuccess();
+  testSwapWithFailure();
 
   cout << "test-refct-serf ok" << endl;
 }
