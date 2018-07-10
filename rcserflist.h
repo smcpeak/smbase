@@ -45,6 +45,8 @@ public:      // funcs
 
   void appendUnique(T *newItem);
   void removeItem(T const *item);
+
+  void removeAll();
 };
 
 
@@ -74,8 +76,22 @@ void RCSerfList<T>::removeItem(T const *item)
   int i = this->indexOf(item);
   xassert(i >= 0);
   m_arr.moveElement(i, m_arr.length()-1);
+
+  // This must be done explicitly because 'pop' just moves the end
+  // pointer back, leaving the array element untouched.
   m_arr.top() = NULL;
+
   m_arr.pop();
+}
+
+
+template <class T>
+void RCSerfList<T>::removeAll()
+{
+  while (m_arr.isNotEmpty()) {
+    m_arr.top() = NULL;
+    m_arr.pop();
+  }
 }
 
 

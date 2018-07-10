@@ -547,11 +547,18 @@ static void testListFailure()
 }
 
 
-// If 'removeElements', remove the elements from the list explicitly
-// before the end.  Otherwise let the RCSerfList destructor remove them.
-static void testLongList(bool removeElements, bool failure)
+// Variants of 'testLongList'.
+enum LLMode {
+  LL_BASE,         // Let the dtor remove the items.
+  LL_REMOVE,       // Use removeItem.
+  LL_REMOVE_ALL,   // Use removeAll.
+  LL_FAILURE,      // Use removeItem but forget one.
+};
+
+static void testLongList(LLMode mode)
 {
-  PREPARE_TO_FAIL();      // ok even if !failure
+  PREPARE_TO_FAIL();      // ok even if not LL_FAILURE
+  int isFailure = (mode==LL_FAILURE? 1 : 0);
 
   {
     ObjList<Integer> olist;
@@ -569,11 +576,11 @@ static void testLongList(bool removeElements, bool failure)
 
     EXPECT_EQ(slist.count(), CT);
 
-    if (removeElements) {
+    if (mode==LL_REMOVE || mode==LL_FAILURE) {
       for (int i=0; i < CT; i++) {
         Integer *obj = olist.nth(i);
         EXPECT_EQ(obj->getRefCount(), 1);
-        if (failure && i==(CT/2)) {
+        if (isFailure && i==(CT/2)) {
           // Leave this one.
         }
         else {
@@ -582,25 +589,28 @@ static void testLongList(bool removeElements, bool failure)
         }
       }
 
-      EXPECT_EQ(slist.count(), (failure? 1 : 0));
+      EXPECT_EQ(slist.count(), isFailure);
+    }
+    else if (mode==LL_REMOVE_ALL) {
+      slist.removeAll();
     }
 
-    if (failure) {
+    if (isFailure) {
       PUSH_FAIL_SERF(slist.nthRef(0));
     }
 
-    if (removeElements) {
-      // In the success case, we cleared slist.  In the failure case,
-      // we left one in it.  Trigger olist destructor now.
-      olist.deleteAll();
-    }
-    else {
+    if (mode==LL_BASE) {
       // We will let the slist destructor remove its elements, and then
       // let the olist destructor trigger naturally.
     }
+    else {
+      // In the success cases, we cleared slist.  In the failure case,
+      // we left one in it.  Trigger olist destructor now.
+      olist.deleteAll();
+    }
   }
 
-  EXPECT_EQ(failCount, (failure? 1 : 0));
+  EXPECT_EQ(failCount, isFailure);
 }
 
 
@@ -625,9 +635,10 @@ static void entry()
   testConstVersionFailure();
   testListSuccess();
   testListFailure();
-  testLongList(true /*removeElements*/, false /*failure*/);
-  testLongList(false /*removeElements*/, false /*failure*/);
-  testLongList(true /*removeElements*/, true /*failure*/);
+  testLongList(LL_BASE);
+  testLongList(LL_REMOVE);
+  testLongList(LL_REMOVE_ALL);
+  testLongList(LL_FAILURE);
 
   cout << "test-refct-serf ok" << endl;
 }
