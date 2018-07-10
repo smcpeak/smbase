@@ -43,7 +43,9 @@ public:      // funcs
   int indexOf(T const *item) const;
   bool contains(T const *item) const   { return this->indexOf(item) >= 0; }
 
-  void appendUnique(T *newItem);
+  // Append an item not already in the list.
+  void appendNewItem(T *newItem);
+
   void removeItem(T const *item);
 
   void removeAll();
@@ -63,7 +65,7 @@ int RCSerfList<T>::indexOf(T const *item) const
 
 
 template <class T>
-void RCSerfList<T>::appendUnique(T *newItem)
+void RCSerfList<T>::appendNewItem(T *newItem)
 {
   xassert(!this->contains(newItem));
   m_arr.push(newItem);

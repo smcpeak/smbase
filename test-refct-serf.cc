@@ -462,16 +462,16 @@ static void testListSuccess()
   RCSerfList<Integer> list;
   expectSum(list, 0);
 
-  list.appendUnique(&o1);
+  list.appendNewItem(&o1);
   expectSum(list, 1);
   EXPECT_EQ(o1.getRefCount(), 1);
   EXPECT_EQ(o2.getRefCount(), 0);
   EXPECT_EQ(o4.getRefCount(), 0);
 
-  list.appendUnique(&o2);
+  list.appendNewItem(&o2);
   expectSum(list, 3);
 
-  list.appendUnique(&o4);
+  list.appendNewItem(&o4);
   expectSum(list, 7);
   expectSumNC(list, 7);
   EXPECT_EQ(list.indexOf(&o1), 0);
@@ -494,13 +494,13 @@ static void testListSuccess()
   EXPECT_EQ(list.indexOf(&o2), -1);
   EXPECT_EQ(list.indexOf(&o4), 0);
 
-  list.appendUnique(&o2);
+  list.appendNewItem(&o2);
   expectSum(list, 6);
   EXPECT_EQ(list.indexOf(&o1), -1);
   EXPECT_EQ(list.indexOf(&o2), 1);
   EXPECT_EQ(list.indexOf(&o4), 0);
 
-  list.appendUnique(&o1);
+  list.appendNewItem(&o1);
   expectSum(list, 7);
   EXPECT_EQ(list.indexOf(&o1), 2);
   EXPECT_EQ(list.indexOf(&o2), 1);
@@ -508,7 +508,7 @@ static void testListSuccess()
 
   try {
     cout << "should throw:" << endl;
-    list.appendUnique(&o4);
+    list.appendNewItem(&o4);
     cout << "should have failed" << endl;
     abort();
   }
@@ -534,8 +534,8 @@ static void testListFailure()
     Owner<Integer> o1(new Integer(17));
     Owner<Integer> o2(new Integer(18));
 
-    list.appendUnique(o1);
-    list.appendUnique(o2);
+    list.appendNewItem(o1);
+    list.appendNewItem(o2);
 
     PUSH_FAIL_SERF(list.nthRef(0));
     PUSH_FAIL_SERF(list.nthRef(1));
@@ -570,7 +570,7 @@ static void testLongList(LLMode mode)
       Integer *obj = new Integer(i);
       olist.prepend(obj);
       EXPECT_EQ(obj->getRefCount(), 0);
-      slist.appendUnique(obj);
+      slist.appendNewItem(obj);
       EXPECT_EQ(obj->getRefCount(), 1);
     }
 
