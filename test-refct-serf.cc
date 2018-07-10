@@ -36,7 +36,9 @@ public:      // funcs
 // Another placeholder data class, explicitly calling SerfRefCount.
 class Float : public SerfRefCount {
 public:      // data
-  float m_f;
+  // 'double' rather than 'float' just because that is what the literals
+  // are, avoiding some overloading issues.
+  double m_f;
 
 public:      // funcs
   Float(float f) :
@@ -64,11 +66,12 @@ public:      // funcs
 };
 
 
-// Number of times we have "aborted".
+// Number of times we have "aborted".  This gets cleared during each
+// test's setup phase to ensure independence of tests.
 static int failCount = 0;
 
 // Set of outstanding serf pointers that need to be cleared when we
-// detect a failure so that we don't actually abort.
+// detect a failure.
 static ArrayStack<RCSerfBase*> failingSerfs;
 
 // Called when an expected failure happens.  It has to repair the
@@ -97,19 +100,19 @@ static void incFailCount()
   failingSerfs.push(&( (serf).unsafe_getRCSerfBase() )) /* user ; */
 
 
-// Test RCSerf pointing at something that has an Owner pointer.  Also
-// exercise the operators.
-static void testOwnerPointerSuccess()
+// Exercise the operators.
+static void testOperatorsInteger()
 {
   Owner<Integer> o1(new Integer(3));
   RCSerf<Integer> s1(o1);
   EXPECT_EQ(o1->m_i, 3);
+  EXPECT_EQ(o1->getRefCount(), 1);
 
-  // operator Integer*
+  // operator T*
   Integer *p1 = s1;
   EXPECT_EQ(p1->m_i, 3);
 
-  // Use operator Integer* as part of conversion to bool.
+  // Use operator T* as part of conversion to bool.
   EXPECT_EQ(!!s1, true);
 
   // operator->
@@ -121,7 +124,65 @@ static void testOwnerPointerSuccess()
   // ptr() method
   EXPECT_EQ(s1.ptr()->m_i, 3);
 
+  // Copy constructor.
+  RCSerf<Integer> s2(s1);
+  EXPECT_EQ(o1->getRefCount(), 2);
+  EXPECT_EQ(s2->m_i, 3);
+
+  // Copy assignment operator.
+  RCSerf<Integer> s3;
+  s3 = s1;
+  EXPECT_EQ(o1->getRefCount(), 3);
+  EXPECT_EQ(s3->m_i, 3);
+
   // Let it all clean up automatically.
+}
+
+// Same thing but using Float.
+static void testOperatorsFloat()
+{
+  Owner<Float> o1(new Float(3.75));
+  RCSerf<Float> s1(o1);
+  EXPECT_EQ(o1->m_f, 3.75);
+
+  // operator T*
+  Float *p1 = s1;
+  EXPECT_EQ(p1->m_f, 3.75);
+
+  // Use operator T* as part of conversion to bool.
+  EXPECT_EQ(!!s1, true);
+
+  // operator->
+  EXPECT_EQ(s1->m_f, 3.75);
+
+  // operator*
+  EXPECT_EQ((*s1).m_f, 3.75);
+
+  // ptr() method
+  EXPECT_EQ(s1.ptr()->m_f, 3.75);
+
+  // Copy constructor.
+  RCSerf<Float> s2(s1);
+  EXPECT_EQ(o1->getRefCount(), 2);
+  EXPECT_EQ(s2->m_f, 3.75);
+
+  // Copy assignment operator.
+  RCSerf<Float> s3;
+  s3 = s1;
+  EXPECT_EQ(o1->getRefCount(), 3);
+  EXPECT_EQ(s3->m_f, 3.75);
+
+  // Let it all clean up automatically.
+}
+
+
+// Test RCSerf referring to Owner.
+static void testOwnerPointerSuccess()
+{
+  Owner<Integer> i(new Integer(9));
+  RCSerf<Integer> s;
+  s = i;
+  EXPECT_EQ(s->m_i, 9);
 }
 
 static void testOwnerPointerFailure()
@@ -177,11 +238,22 @@ static void deallocate(Integer *i)
 
 // Test RCSerf pointing at something allocate with 'new' and
 // deallocated with 'delete' in a callee.
+static void testPlainPointerSuccess()
+{
+  Integer *i = new Integer(12);
+  {
+    RCSerf<Integer> s(i);
+    EXPECT_EQ(s->m_i, 12);
+  }
+  deallocate(i);
+}
+
 static void testPlainPointerFailure()
 {
   {
     Integer *i = new Integer(12);
     RCSerf<Integer> s(i);
+    EXPECT_EQ(s->m_i, 12);
     PREPARE_TO_FAIL();
     PUSH_FAIL_SERF(s);
     deallocate(i);
@@ -197,9 +269,11 @@ static void testNullify()
   Integer i(7);
   RCSerf<Integer> s1(&i);
   EXPECT_EQ(!!s1, true);
+  EXPECT_EQ(i.getRefCount(), 1);
 
   s1 = NULL;
   EXPECT_EQ(!!s1, false);
+  EXPECT_EQ(i.getRefCount(), 0);
 }
 
 
@@ -251,10 +325,13 @@ static void testManyPointersFailure()
 
 static void entry()
 {
+  testOperatorsInteger();
+  testOperatorsFloat();
   testOwnerPointerSuccess();
   testOwnerPointerFailure();
   testLocalObjSuccess();
   testLocalObjFailure();
+  testPlainPointerSuccess();
   testPlainPointerFailure();
   testNullify();
   testParam();
