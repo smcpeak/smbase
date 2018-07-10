@@ -215,7 +215,9 @@ static void testArrayNegativeLength()
 
 void entry()
 {
-  for (int i=0; i<20; i++) {
+  // With the optimizer disabled, the test takes about 1s to run
+  // two iterations, so at 5, this takes about 2.5s.
+  for (int i=0; i<5; i++) {
     round(1000);
   }
 
