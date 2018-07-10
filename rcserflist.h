@@ -10,8 +10,8 @@
 
 
 // Forward in this file.
-template <class T>
-class RCSerfListIter;
+template <class T> class RCSerfListIter;
+template <class T> class RCSerfListIterNC;
 
 
 // This is a container with an interface similar to SObjList, except
@@ -24,6 +24,7 @@ class RCSerfListIter;
 template <class T>
 class RCSerfList {
   friend class RCSerfListIter<T>;
+  friend class RCSerfListIterNC<T>;
 
 protected:   // data
   // List elements.
@@ -78,7 +79,7 @@ void RCSerfList<T>::removeItem(T const *item)
 }
 
 
-// Iterator for RCSerfList.
+// Const iterator for RCSerfList.
 template <class T>
 class RCSerfListIter {
   // Merely not implemented.
@@ -119,6 +120,46 @@ public:      // funcs
 
 #define FOREACH_RCSERFLIST(T, list, iter) \
   for(RCSerfListIter< T > iter(list); !iter.isDone(); iter.adv())
+
+
+// Non-const iterator for RCSerfList.  Copied from RCSerfListIter,
+// comments deleted to avoid duplication.
+template <class T>
+class RCSerfListIterNC {
+  NO_OBJECT_COPIES(RCSerfListIterNC);
+
+protected:
+  RCSerfList<T> &m_list;
+  int m_index;
+
+public:
+  RCSerfListIterNC(RCSerfList<T> &list)
+    : m_list(list),
+      m_index(0)
+  {}
+
+  ~RCSerfListIterNC()
+  {}
+
+  bool isDone() const
+  {
+    return m_index >= m_list.count();
+  }
+
+  void adv()
+  {
+    xassert(!isDone());
+    m_index++;
+  }
+
+  T *data() const
+  {
+    return m_list.m_arr[m_index];
+  }
+};
+
+#define FOREACH_RCSERFLIST_NC(T, list, iter) \
+  for(RCSerfListIterNC< T > iter(list); !iter.isDone(); iter.adv())
 
 
 #endif // RCSERFLIST_H

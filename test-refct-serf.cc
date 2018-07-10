@@ -443,6 +443,15 @@ static void expectSum(RCSerfList<Integer> const &list, int expect)
   EXPECT_EQ(sum, expect);
 }
 
+static void expectSumNC(RCSerfList<Integer> &list, int expect)
+{
+  int sum=0;
+  FOREACH_RCSERFLIST_NC(Integer, list, iter) {
+    sum += iter.data()->m_i;
+  }
+  EXPECT_EQ(sum, expect);
+}
+
 // Basic test of RCSerfList.
 static void testListSuccess()
 {
@@ -464,6 +473,7 @@ static void testListSuccess()
 
   list.appendUnique(&o4);
   expectSum(list, 7);
+  expectSumNC(list, 7);
   EXPECT_EQ(list.indexOf(&o1), 0);
   EXPECT_EQ(list.indexOf(&o2), 1);
   EXPECT_EQ(list.indexOf(&o4), 2);
