@@ -354,6 +354,21 @@ void SMFileUtil::splitPath(string /*OUT*/ &dir, string /*OUT*/ &base,
 }
 
 
+string SMFileUtil::splitPathDir(string const &inputPath)
+{
+  string dir, base;
+  splitPath(dir, base, inputPath);
+  return dir;
+}
+
+string SMFileUtil::splitPathBase(string const &inputPath)
+{
+  string dir, base;
+  splitPath(dir, base, inputPath);
+  return base;
+}
+
+
 // ----------------------- TestSMFileUtil ------------------------
 bool TestSMFileUtil::windowsPathSemantics()
 {

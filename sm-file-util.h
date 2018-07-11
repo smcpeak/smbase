@@ -82,8 +82,14 @@ public:      // funcs
   //     is true.
   //   * 'base' is the longest string such that the above are true.
   //
-  virtual void splitPath(string /*OUT*/ &dir, string /*OUT*/ &base,
-                         string const &inputPath);
+  void splitPath(string /*OUT*/ &dir, string /*OUT*/ &base,
+                 string const &inputPath);
+
+  // Get the 'dir' output of 'splitPath'.
+  string splitPathDir(string const &inputPath);
+
+  // Get the 'base' output of 'splitPath'.
+  string splitPathBase(string const &inputPath);
 };
 
 

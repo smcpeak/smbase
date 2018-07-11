@@ -153,6 +153,9 @@ static void expectSplit(SMFileUtil &sfu,
 
   EXPECT_EQ(actualDir, string(expectDir));
   EXPECT_EQ(actualBase, string(expectBase));
+
+  EXPECT_EQ(sfu.splitPathDir(inputPath), string(expectDir));
+  EXPECT_EQ(sfu.splitPathBase(inputPath), string(expectBase));
 }
 
 
