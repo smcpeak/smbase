@@ -136,5 +136,8 @@ struct DelimStr {
 int compareStrings(const void *a, const void *b);
 void qsortStringArray(char const **strings, int size);
 
+// Variant for use with ArrayStack::sort.
+int compareStringPtrs(string const *a, string const *b);
+
 
 #endif // STRUTIL_H

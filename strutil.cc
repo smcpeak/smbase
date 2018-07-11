@@ -554,6 +554,12 @@ void qsortStringArray(char const **strings, int size) {
 }
 
 
+int compareStringPtrs(string const *a, string const *b)
+{
+  return a->compareTo(*b);
+}
+
+
 // ----------------------- test code -----------------------------
 #ifdef TEST_STRUTIL
 
@@ -674,6 +680,14 @@ void entry()
   pluralVector(2, "was", "were");
 
   translateAscii();
+
+  {
+    string x("x");
+    string y("y");
+    xassert(compareStringPtrs(&x, &y) < 0);
+    xassert(compareStringPtrs(&y, &y) == 0);
+    xassert(compareStringPtrs(&y, &x) > 0);
+  }
 }
 
 
