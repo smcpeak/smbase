@@ -56,6 +56,13 @@ static void printSomeStuff()
     cout << "  " << entries[i] << endl;
   }
 
+  // Repeat with a directory separator appended, expect same results.
+  int numEntries = entries.length();
+  entries.clear();
+  entries.push("---");     // Make sure 'entries' gets cleared.
+  sfu.getDirectoryEntries(entries, stringb(wd << '/'));
+  xassert(numEntries == entries.length());
+
   try {
     cout << "Should throw:" << endl;
     sfu.getDirectoryEntries(entries, "nonexist-dir");
