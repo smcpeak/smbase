@@ -3,16 +3,25 @@
 
 #include "sm-file-util.h"              // this module
 
+// smbase
 #include "array.h"                     // Array
 #include "strtokp.h"                   // StrtokParse
 #include "syserr.h"                    // xsyserror
 
+// libc++
 #include <algorithm>                   // std::max
 
+// libc
 #include <string.h>                    // strlen
 
+// POSIX fragment evidently portable enough to unconditionally include.
+#include <sys/stat.h>                  // stat
+
 // Use the Windows API?  I want an easy way to switch it so I can test
-// both ways under cygwin.
+// both ways under cygwin, although my intent *is* to use it normally
+// whenever running on Windows.  (Using the POSIX API on cygwin is
+// basically a quick, moderately accurate way to test if the code will
+// work on linux.)
 //#define SM_FILE_UTIL_USE_WINDOWS_API 0
 #ifndef SM_FILE_UTIL_USE_WINDOWS_API
 #  ifdef __WIN32__
@@ -33,6 +42,7 @@
 #endif
 
 
+// ----------------------- SMFileUtil ------------------------
 bool SMFileUtil::windowsPathSemantics()
 {
 #ifdef __WIN32__
@@ -204,6 +214,64 @@ string SMFileUtil::getAbsolutePath(string const &path)
   }
 
   return cwd & "/" & path;
+}
+
+
+bool SMFileUtil::absolutePathExists(string const &path)
+{
+  // I do not want to call 'stat' with a relative path because that
+  // would not use the value of 'currentDirectory()'.
+  if (!isAbsolutePath(path)) {
+    return false;
+  }
+
+  // Crude implementation copied from nonport.cpp.
+  struct stat st;
+  if (0!=stat(path.c_str(), &st)) {
+    return false;     // assume error is because of nonexistence
+  }
+  else {
+    return true;
+  }
+}
+
+
+string SMFileUtil::joinFilename(string const &prefix,
+                                string const &suffix)
+{
+  if (prefix.isempty()) {
+    return suffix;
+  }
+  if (suffix.isempty()) {
+    return prefix;
+  }
+
+  if (!this->isDirectorySeparator(suffix[0]) &&
+      !this->isDirectorySeparator(prefix[prefix.length()-1])) {
+    // Add a separator.
+    return stringb(prefix << '/' << suffix);
+  }
+
+  if (this->isDirectorySeparator(suffix[0]) &&
+      this->isDirectorySeparator(prefix[prefix.length()-1])) {
+    // Remove a separator.
+    return stringb(prefix.substring(0, prefix.length()-1) << suffix);
+  }
+
+  return stringb(prefix << suffix);
+}
+
+
+// ----------------------- TestSMFileUtil ------------------------
+bool TestSMFileUtil::windowsPathSemantics()
+{
+  return false;
+}
+
+
+bool TestSMFileUtil::absolutePathExists(string const &path)
+{
+  return m_existingPaths.contains(path);
 }
 
 

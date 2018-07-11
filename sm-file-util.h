@@ -12,7 +12,9 @@
 #define SM_FILE_UTIL_H
 
 #include "macros.h"                    // NO_OBJECT_COPIES
+#include "sm-override.h"               // OVERRIDE
 #include "str.h"                       // string
+#include "stringset.h"                 // StringSet
 
 
 // Collection of file system utilities.
@@ -49,9 +51,36 @@ public:      // funcs
 
   // Convert 'path' to an absolute path.
   virtual string getAbsolutePath(string const &path);
+
+  // Return true if 'path' is absolute and names an existing entity
+  // (file, directory, etc.) on disk.
+  virtual bool absolutePathExists(string const &path);
+
+  // Return prefix+suffix, except if neither is empty, add a directory
+  // separator if none is present, and remove an extra trailing
+  // directory separator from 'prefix'.
+  virtual string joinFilename(string const &prefix,
+                              string const &suffix);
 };
 
 
+// Variant of SMFileUtil that returns specific values in response to
+// certain queries.  This is only meant for use in test code.
+class TestSMFileUtil : public SMFileUtil {
+public:      // data
+  // For 'absolutePathExists'.
+  StringSet m_existingPaths;
+
+public:      // funcs
+  TestSMFileUtil() {}
+  ~TestSMFileUtil() {}
+
+  // Returns false.
+  virtual bool windowsPathSemantics() OVERRIDE;
+
+  // Returns true iff 'path' is in 'm_existingPaths'.
+  virtual bool absolutePathExists(string const &path) OVERRIDE;
+};
 
 
 #endif // SM_FILE_UTIL_H
