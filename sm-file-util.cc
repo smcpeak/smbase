@@ -333,6 +333,27 @@ void SMFileUtil::getDirectoryEntries(ArrayStack<string> /*OUT*/ &entries,
 }
 
 
+void SMFileUtil::splitPath(string /*OUT*/ &dir, string /*OUT*/ &base,
+                           string const &inputPath)
+{
+  if (inputPath.isempty()) {
+    dir = "";
+    base = "";
+    return;
+  }
+
+  // Where to split 'inputPath'.  Everything from 's' and beyond will
+  // go into 'base'.
+  int s = inputPath.length();
+  while (s > 0 && !this->isDirectorySeparator(inputPath[s-1])) {
+    s--;
+  }
+
+  dir = inputPath.substring(0, s);
+  base = inputPath.substring(s, inputPath.length() - s);
+}
+
+
 // ----------------------- TestSMFileUtil ------------------------
 bool TestSMFileUtil::windowsPathSemantics()
 {

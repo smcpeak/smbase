@@ -131,12 +131,47 @@ static void testTestSMFileUtil()
 }
 
 
+static void expectSplit(SMFileUtil &sfu,
+  char const *expectDir,
+  char const *expectBase,
+  char const *inputPath)
+{
+  PVAL(inputPath);
+
+  // Make sure 'splitPath' changes these.
+  string actualDir = "---";
+  string actualBase = "---";
+
+  sfu.splitPath(actualDir, actualBase, inputPath);
+
+  EXPECT_EQ(actualDir, string(expectDir));
+  EXPECT_EQ(actualBase, string(expectBase));
+}
+
+
+static void testSplitPath()
+{
+  TestSMFileUtil sfu;
+
+  expectSplit(sfu, "", "", "");
+  expectSplit(sfu, "", "a", "a");
+  expectSplit(sfu, "/", "a", "/a");
+  expectSplit(sfu, "a/", "b", "a/b");
+  expectSplit(sfu, "/a/", "b", "/a/b");
+  expectSplit(sfu, "a/", "", "a/");
+  expectSplit(sfu, "/a/", "", "/a/");
+  expectSplit(sfu, "/a/b/", "", "/a/b/");
+  expectSplit(sfu, "/", "", "/");
+}
+
+
 static void entry()
 {
   printSomeStuff();
   testJoinFilename();
   testAbsolutePathExists();
   testTestSMFileUtil();
+  testSplitPath();
 
   cout << "test-sm-file-util ok" << endl;
 }

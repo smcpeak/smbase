@@ -74,6 +74,16 @@ public:      // funcs
   // they exist in the given directory.
   virtual void getDirectoryEntries(ArrayStack<string> /*OUT*/ &entries,
                                    string const &directory);
+
+  // Split 'inputPath' into two strings, 'dir' and 'base', such that:
+  //
+  //   * 'dir' + 'base' == 'inputPath'.
+  //   * 'base' has no characters for which 'isDirectorySeparator()'
+  //     is true.
+  //   * 'base' is the longest string such that the above are true.
+  //
+  virtual void splitPath(string /*OUT*/ &dir, string /*OUT*/ &base,
+                         string const &inputPath);
 };
 
 
