@@ -11,6 +11,7 @@
 #ifndef SM_FILE_UTIL_H
 #define SM_FILE_UTIL_H
 
+#include "array.h"                     // ArrayStack
 #include "macros.h"                    // NO_OBJECT_COPIES
 #include "sm-override.h"               // OVERRIDE
 #include "str.h"                       // string
@@ -49,7 +50,8 @@ public:      // funcs
   // "<letter>:/", or the equivalent with backslash.
   virtual bool isAbsolutePath(string const &path);
 
-  // Convert 'path' to an absolute path.
+  // Convert 'path' to an absolute path.  If it is relative, we
+  // prepend 'currentDirectory()'.
   virtual string getAbsolutePath(string const &path);
 
   // Return true if 'path' is absolute and names an existing entity
@@ -65,6 +67,13 @@ public:      // funcs
   // directory separator from 'prefix'.
   virtual string joinFilename(string const &prefix,
                               string const &suffix);
+
+  // Get the entries in 'directory'.  If an error is encountered, throw
+  // xSysError (syserr.h).  The entries are not guaranteed to be
+  // returned in any particular order.  They may include "." and ".." if
+  // they exist in the given directory.
+  virtual void getDirectoryEntries(ArrayStack<string> /*OUT*/ &entries,
+                                   string const &directory);
 };
 
 

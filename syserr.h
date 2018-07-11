@@ -96,5 +96,10 @@ string sysErrorCodeString(int systemErrorCode, rostring syscallName,
 string sysErrorString(char const *syscallName, char const *context=NULL);
 
 
+// Issue a "developer warning" about a system call that just failed.
+void devWarningSysError(char const *file, int line,
+                        char const *syscallName, char const *context=NULL);
+
+
 #endif // __SYSERR_H
 

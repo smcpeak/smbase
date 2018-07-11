@@ -47,6 +47,23 @@ static void printSomeStuff()
   PVAL(sfu.absoluteFileExists("d:/wrk/editor"));
   PVAL(sfu.absolutePathExists("d:/wrk/editor/main.h"));
   PVAL(sfu.absoluteFileExists("d:/wrk/editor/main.h"));
+
+  ArrayStack<string> entries;
+  string wd = sfu.currentDirectory();
+  sfu.getDirectoryEntries(entries, wd);
+  cout << wd << " has " << entries.length() << " entries:" << endl;
+  for (int i=0; i < entries.length(); i++) {
+    cout << "  " << entries[i] << endl;
+  }
+
+  try {
+    cout << "Should throw:" << endl;
+    sfu.getDirectoryEntries(entries, "nonexist-dir");
+    cout << "nonexist-dir exists?!" << endl;
+  }
+  catch (xBase &x) {
+    cout << "Attempting to read nonexist-dir: " << x.why() << endl;
+  }
 }
 
 

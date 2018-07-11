@@ -12,16 +12,19 @@
 #include <algorithm>                   // std::max
 
 // libc
+#include <errno.h>                     // errno
 #include <string.h>                    // strlen
 
-// POSIX fragment evidently portable enough to unconditionally include.
+// POSIX fragment evidently portable enough to unconditionally include,
+// at least for Windows (mingw, cygwin) and Linux.
+#include <dirent.h>                    // opendir, readdir, etc.
 #include <sys/stat.h>                  // stat
 
 // Use the Windows API?  I want an easy way to switch it so I can test
 // both ways under cygwin, although my intent *is* to use it normally
 // whenever running on Windows.  (Using the POSIX API on cygwin is
 // basically a quick, moderately accurate way to test if the code will
-// work on linux.)
+// work on Linux.)
 //#define SM_FILE_UTIL_USE_WINDOWS_API 0
 #ifndef SM_FILE_UTIL_USE_WINDOWS_API
 #  ifdef __WIN32__
@@ -35,7 +38,6 @@
 #  define WIN32_LEAN_AND_MEAN
 #  include <windows.h>                 // GetCurrentDirectoryA
 #else
-#  include <errno.h>                   // errno
 #  include <limits.h>                  // PATH_MAX
 #  include <stdlib.h>                  // getcwd
 #  include <unistd.h>                  // pathconf
@@ -278,6 +280,56 @@ string SMFileUtil::joinFilename(string const &prefix,
   }
 
   return stringb(prefix << suffix);
+}
+
+
+// Call 'closedir' in the destructor.
+struct CallCloseDir {
+  DIR *m_dirp;
+
+  CallCloseDir(DIR *d) : m_dirp(d) {}
+
+  ~CallCloseDir()
+  {
+    if (0 != closedir(m_dirp)) {
+      devWarningSysError(__FILE__, __LINE__, "closedir");
+    }
+  }
+};
+
+
+// Rationale for not filtering out "." and "..": the fact that those
+// names are special is a POSIX and Windows convention.  It is my intent
+// that this module's interface be free of system-specific assumptions.
+// Filtering those two names would consistitute such an assumption.
+void SMFileUtil::getDirectoryEntries(ArrayStack<string> /*OUT*/ &entries,
+                                     string const &directory)
+{
+  entries.clear();
+
+  DIR *dirp = opendir(directory.c_str());
+  if (!dirp) {
+    xsyserror("opendir", directory);
+  }
+  CallCloseDir callCloseDir(dirp);
+
+  // I am not using readdir_r here because mingw does not provide it.
+  errno = 0;
+  struct dirent *ent = readdir(dirp);
+  while (ent) {
+    entries.push(ent->d_name);
+
+    errno = 0;
+    ent = readdir(dirp);
+  }
+
+  if (errno) {
+    xsyserror("readdir", directory);
+  }
+
+  // End of stream.
+
+  // 'dirp' is closed by 'callCloseDir'.
 }
 
 

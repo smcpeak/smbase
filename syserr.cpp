@@ -2,7 +2,10 @@
 // code for syserr.h
 // Scott McPeak, 1999-2000  This file is public domain.
 
-#include "syserr.h"       // this module
+#include "syserr.h"                    // this module
+
+#include "dev-warning.h"               // devWarning
+
 
 // ---------------- portable code ----------------
 char const * const xSysError::reasonStrings[] = {
@@ -143,6 +146,13 @@ string sysErrorString(char const *syscallName, char const *context)
 {
   return sysErrorCodeString(xSysError::getSystemErrorCode(),
                             syscallName, context);
+}
+
+
+void devWarningSysError(char const *file, int line,
+                        char const *syscallName, char const *context)
+{
+  devWarning(file, line, sysErrorString(syscallName, context).c_str());
 }
 
 
