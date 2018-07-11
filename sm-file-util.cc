@@ -236,6 +236,25 @@ bool SMFileUtil::absolutePathExists(string const &path)
 }
 
 
+bool SMFileUtil::absoluteFileExists(string const &path)
+{
+  if (!isAbsolutePath(path)) {
+    return false;
+  }
+
+  struct stat st;
+  if (0!=stat(path.c_str(), &st)) {
+    return false;     // assume error is because of nonexistence
+  }
+  else if (S_ISREG(st.st_mode)) {
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
+
 string SMFileUtil::joinFilename(string const &prefix,
                                 string const &suffix)
 {

@@ -56,6 +56,10 @@ public:      // funcs
   // (file, directory, etc.) on disk.
   virtual bool absolutePathExists(string const &path);
 
+  // Like above, except it specifically has to be an ordinary file
+  // (or a symlink? not sure).
+  virtual bool absoluteFileExists(string const &path);
+
   // Return prefix+suffix, except if neither is empty, add a directory
   // separator if none is present, and remove an extra trailing
   // directory separator from 'prefix'.

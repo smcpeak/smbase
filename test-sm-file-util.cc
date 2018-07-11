@@ -42,6 +42,11 @@ static void printSomeStuff()
   PVAL(sfu.getAbsolutePath("a"));
   PVAL(sfu.getAbsolutePath("/a"));
   PVAL(sfu.getAbsolutePath("d:/a/b"));
+
+  PVAL(sfu.absolutePathExists("d:/wrk/editor"));
+  PVAL(sfu.absoluteFileExists("d:/wrk/editor"));
+  PVAL(sfu.absolutePathExists("d:/wrk/editor/main.h"));
+  PVAL(sfu.absoluteFileExists("d:/wrk/editor/main.h"));
 }
 
 
