@@ -614,6 +614,52 @@ static void testLongList(LLMode mode)
 }
 
 
+// Build a multiple-inheritance hierarchy.  This replicates a scenario
+// where I have two "observer" interfaces, each of which inherits
+// SerfRefCount, and then I have another class that implements both of
+// the observer interfaces.  We then check that RCSerf is happy and can
+// access everything.
+class Super1 : virtual public SerfRefCount {
+public:
+  int x;
+};
+
+class Super2 : virtual public SerfRefCount {
+public:
+  int y;
+};
+
+class Sub : public Super1, public Super2 {
+public:
+  int z;
+};
+
+static void testMultipleInheritance()
+{
+  Super1 s1;
+  s1.x = 1;
+
+  Super2 s2;
+  s2.y = 2;
+
+  Sub sub;
+  sub.x = 3;
+  sub.y = 4;
+  sub.z = 5;
+
+  RCSerf<Super1> ps1 = &s1;
+  EXPECT_EQ(ps1->x, 1);
+
+  RCSerf<Super2> ps2 = &s2;
+  EXPECT_EQ(ps2->y, 2);
+
+  RCSerf<Sub> psub = &sub;
+  EXPECT_EQ(psub->x, 3);
+  EXPECT_EQ(psub->y, 4);
+  EXPECT_EQ(psub->z, 5);
+}
+
+
 static void entry()
 {
   testOperatorsInteger();
@@ -639,6 +685,7 @@ static void entry()
   testLongList(LL_REMOVE);
   testLongList(LL_REMOVE_ALL);
   testLongList(LL_FAILURE);
+  testMultipleInheritance();
 
   cout << "test-refct-serf ok" << endl;
 }

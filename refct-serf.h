@@ -25,15 +25,22 @@
 // away.  In contrast, a serf pointer does not.  Serf pointers also do
 // not propagate constness onto their referent.
 //
-// The term originates from the term in feudal peasant societies for a
+// There is no reference-counting "owner" counterpart to RCSerf.  Just
+// use ordinary Owner (see owner.h) and it will interoperate correctly
+// so long as all serfs are nullified before the Owner deallocates.  The
+// same applies to any other explicit memory management scheme,
+// including stack allocation, other smart pointer classes, or direct
+// manual heap allocation.  When used with a conservative garbage
+// collector, holding an RCSerf will prevent an object from being
+// deallocated, just like an ordinary pointer would, since internally
+// that is all it is.
+//
+// The name originates from the term in feudal peasant societies for a
 // person who works the land but does not own it.  One might object to
 // the hint of social injustice in the name, but of course "slave" is
 // also used somewhat routinely in technical contexts, and anyway it is
-// merely intended as a convenient, short, memorable name.
-//
-// There is no reference-counting "owner" counterpart to RCSerf.  Just
-// use ordinary Owner (see owner.h) and it will interoperate correctly
-// so long as all serfs are nullified before the Owner deallocates.
+// merely intended as a convenient, short, memorable name, not an
+// endorsement of any social structure.
 
 #ifndef REFCT_SERF_H
 #define REFCT_SERF_H
@@ -52,7 +59,8 @@ class SerfRefCount {
   friend class RCSerfBaseC;
 
 public:      // class data
-  // Constructions minus destructions.
+  // Constructions minus destructions.  This is used to check for
+  // memory leaks when the program terminates.
   static int s_objectCount;
 
   // If non-NULL, this function is called prior to abort() when a fatal
@@ -85,7 +93,13 @@ public:      // funcs
 
   // Aborts the program if the reference count is not zero, since the
   // alternative is to risk memory corruption.
-  ~SerfRefCount();
+  //
+  // This is virtual so that RCSerf can use dynamic_cast to convert from
+  // SerfRefCount to T*.  dynamic_cast is in turn required in multiple
+  // inheritance scenarios, where virtual inheritance of SerfRefCount is
+  // also required.  That makes the machinery a little bit heavier than
+  // I would have liked, but detecting dangling references is worth it.
+  virtual ~SerfRefCount();
 
   // Same rationale as for the copy constructor.
   SerfRefCount& operator= (SerfRefCount const &) { return *this; }
@@ -95,7 +109,8 @@ public:      // funcs
   int getRefCount() const { return m_serfRefCount; }
 
   // The reference count is not considered part of any object's
-  // identity.
+  // identity.  Again, base classes do not have to call these, they just
+  // exist in case they want to for uniformity.
   bool operator== (SerfRefCount const &) const { return true; }
   bool operator!= (SerfRefCount const &) const { return false; }
 };
@@ -108,8 +123,8 @@ public:      // funcs
 // The trailing "C" means 'const'.  It exposes an interface that uses
 // pointers to const.
 //
-// However, that doesn't mean much because this is not meant to be used
-// directly by clients.
+// However, that doesn't matter much because this is not meant to be
+// used directly by clients.
 class RCSerfBaseC {
 private:     // data
   // Pointer to the object whose reference count we are tracking.  This
@@ -212,15 +227,15 @@ public:      // funcs
   // Get the pointer as an ordinary C++ pointer.
   T *ptr() const
   {
-    // The static_cast downcasts to 'T' and maintains the constness of
+    // The dynamic_cast downcasts to 'T' and maintains the constness of
     // the underlying ptr() result.  The const_cast then strips that
     // constness *if* T does not itself have 'const'.
     //
     // Note that C++ allows one to write "T const *" even if T itself
     // is something like "Foo const".  The extra 'const' arising from
     // template parameter substitution is discarded, even though
-    // explicitly writing "Foo const const *" is invalid.
-    return const_cast<T*>(static_cast<T const *>(RCSerfBaseC::ptr()));
+    // explicitly writing "Foo const const *" is invalid.  (7.1.6.1/1)
+    return const_cast<T*>(dynamic_cast<T const *>(RCSerfBaseC::ptr()));
   }
 
   // Implicit conversion operator to act like T const *.
@@ -243,7 +258,7 @@ public:      // funcs
   // return NULL.
   T *release()
   {
-    return const_cast<T*>(static_cast<T const *>(RCSerfBaseC::release()));
+    return const_cast<T*>(dynamic_cast<T const *>(RCSerfBaseC::release()));
   }
 
   // Get the underlying RCSerfBaseC.  Among the reasons it is unsafe is
