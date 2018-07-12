@@ -69,82 +69,32 @@ SerfRefCount::~SerfRefCount()
 }
 
 
-// --------------------------- RCSerfBaseC ---------------------------
-void RCSerfBaseC::acquire(SerfRefCount const *ptr)
+// --------------------- RCSerfPrivateHelpers -----------------------
+/*static*/ void RCSerfPrivateHelpers::incRefct(SerfRefCount const *p)
 {
-  m_ptr = ptr;
-  if (m_ptr) {
-    m_ptr->m_serfRefCount++;           // refct is mutable
+  if (p) {
+    p->m_serfRefCount++;               // refct is mutable
   }
 }
 
 
-SerfRefCount const *RCSerfBaseC::release()
+/*static*/ void RCSerfPrivateHelpers::decRefct(SerfRefCount const *p)
 {
-  SerfRefCount const *ret = m_ptr;
-  if (m_ptr) {
-    m_ptr->m_serfRefCount--;           // refct is mutable
+  if (p) {
+    p->m_serfRefCount--;               // refct is mutable
 
-    if (m_ptr->m_serfRefCount < 0) {
+    if (p->m_serfRefCount < 0) {
       SerfRefCount::callPreAbortFunction();
-      if (m_ptr->m_serfRefCount < 0) {
+      if (p->m_serfRefCount < 0) {
         fprintf(stderr,
-          "FATAL: Pointer at %p was pointing at object at %p which "
+          "FATAL: RCSerf was pointing at object at %p which "
           "has negative refct %d after decrementing.  Aborting.\n",
-          this,
-          m_ptr,
-          m_ptr->m_serfRefCount);
+          p,
+          p->m_serfRefCount);
         fflush(stderr);
         abort();
       }
     }
-
-    m_ptr = NULL;
-  }
-  return ret;
-}
-
-
-RCSerfBaseC::RCSerfBaseC(SerfRefCount const *ptr)
-  : m_ptr(NULL)
-{
-  this->acquire(ptr);
-}
-
-
-RCSerfBaseC::RCSerfBaseC(RCSerfBaseC const &obj)
-  : m_ptr(NULL)
-{
-  this->acquire(obj.m_ptr);
-}
-
-
-RCSerfBaseC::~RCSerfBaseC()
-{
-  this->release();
-}
-
-
-RCSerfBaseC& RCSerfBaseC::operator= (RCSerfBaseC const &obj)
-{
-  return operator=(obj.m_ptr);
-}
-
-
-RCSerfBaseC& RCSerfBaseC::operator= (SerfRefCount const *ptr)
-{
-  if (m_ptr != ptr) {
-    this->release();
-    this->acquire(ptr);
-  }
-  return *this;
-}
-
-
-void RCSerfBaseC::swapWith(RCSerfBaseC &other) NOEXCEPT
-{
-  if (this != &other) {
-    swap(m_ptr, other.m_ptr);
   }
 }
 

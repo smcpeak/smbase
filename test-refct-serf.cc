@@ -68,27 +68,73 @@ public:      // funcs
 };
 
 
+// Build a multiple-inheritance hierarchy.  This replicates a scenario
+// where I have two "observer" interfaces, each of which inherits
+// SerfRefCount, and then I have another class that implements both of
+// the observer interfaces.  We then check that RCSerf is happy and can
+// access everything.
+class Super1 : virtual public SerfRefCount {
+public:
+  int x;
+};
+
+class Super2 : virtual public SerfRefCount {
+public:
+  int y;
+  virtual ~Super2() {}       // Give this one a vtable.
+};
+
+class Sub : public Super1, public Super2 {
+public:
+  int z;
+};
+
+
 // Number of times we have "aborted".  This gets cleared during each
 // test's setup phase to ensure independence of tests.
 static int failCount = 0;
 
-// Set of outstanding serf pointers that need to be cleared when we
-// detect a failure.
-static ArrayStack<RCSerfBaseC*> failingSerfs;
+// Set of outstanding serf pointer objects that need to be cleared when
+// we detect a failure.
+static ArrayStack<RCSerf<Integer>*> failingIntegerSerfs;
+
+// Similar for other RCSerf types.  (It is not possible, or at least
+// not easy, to make a single structure that works for all of them
+// because the location of the SerfRefCount within the containing type
+// depends on that type.)
+static ArrayStack<RCSerf<Float>*> failingFloatSerfs;
+static ArrayStack<RCSerf<Integer const>*> failingIntegerConstSerfs;
+static ArrayStack<RCSerf<Super1>*> failingSuper1Serfs;
+static ArrayStack<RCSerf<Super2>*> failingSuper2Serfs;
+static ArrayStack<RCSerf<Sub>*> failingSubSerfs;
+
+
+template <class T>
+void emptyFailingSerfs(ArrayStack<RCSerf<T>*> &failingSerfs)
+{
+  while (failingSerfs.isNotEmpty()) {
+    RCSerf<T> *s = failingSerfs.pop();
+
+    // Nullify the pointer, decrementing the refct.
+    *s = NULL;
+  }
+}
+
 
 // Called when an expected failure happens.  It has to repair the
 // condition causing the failure so we don't actually abort.
 static void incFailCount()
 {
   failCount++;
-  while (failingSerfs.isNotEmpty()) {
-    RCSerfBaseC *s = failingSerfs.pop();
 
-    // Nullify the RCSerf so it decrements the refct and releases the
-    // object.
-    s->operator=(NULL);
-  }
+  emptyFailingSerfs(failingIntegerSerfs);
+  emptyFailingSerfs(failingIntegerConstSerfs);
+  emptyFailingSerfs(failingFloatSerfs);
+  emptyFailingSerfs(failingSuper1Serfs);
+  emptyFailingSerfs(failingSuper2Serfs);
+  emptyFailingSerfs(failingSubSerfs);
 }
+
 
 // Prepare for a failure to be reported.
 #define PREPARE_TO_FAIL()                                       \
@@ -98,8 +144,11 @@ static void incFailCount()
 
 // Add an RCSerf to the set of those that we know are about to dangle
 // due to an intentional failure.
+//
+// This macro only works for 'failingIntegerSerfs', which is the one I
+// use in most places.  The others have to be pushed directly.
 #define PUSH_FAIL_SERF(serf) \
-  failingSerfs.push(&( (serf).unsafe_getRCSerfBaseC() )) /* user ; */
+  failingIntegerSerfs.push(&(serf)) /* user ; */
 
 
 // Exercise the operators.
@@ -145,7 +194,7 @@ static void testOperatorsInteger()
 }
 
 // Same thing but using Float.
-static void testOperatorsFloat()
+static void testOperatorsFloat(bool failure)
 {
   Owner<Float> o1(new Float(3.75));
   RCSerf<Float> s1(o1);
@@ -177,6 +226,15 @@ static void testOperatorsFloat()
   s3 = s1;
   EXPECT_EQ(o1->getRefCount(), 3);
   EXPECT_EQ(s3->m_f, 3.75);
+
+  if (failure) {
+    PREPARE_TO_FAIL();
+    failingFloatSerfs.push(&s1);
+    failingFloatSerfs.push(&s2);
+    failingFloatSerfs.push(&s3);
+    o1.del();
+    xassert(failCount == 1);
+  }
 
   // Let it all clean up automatically.
 }
@@ -427,7 +485,7 @@ static void testConstVersionFailure()
   EXPECT_EQ(s->m_i, 23);
 
   PREPARE_TO_FAIL();
-  PUSH_FAIL_SERF(s);
+  failingIntegerConstSerfs.push(&s);
   o.del();
 
   xassert(failCount == 1);
@@ -614,56 +672,56 @@ static void testLongList(LLMode mode)
 }
 
 
-// Build a multiple-inheritance hierarchy.  This replicates a scenario
-// where I have two "observer" interfaces, each of which inherits
-// SerfRefCount, and then I have another class that implements both of
-// the observer interfaces.  We then check that RCSerf is happy and can
-// access everything.
-class Super1 : virtual public SerfRefCount {
-public:
-  int x;
-};
-
-class Super2 : virtual public SerfRefCount {
-public:
-  int y;
-};
-
-class Sub : public Super1, public Super2 {
-public:
-  int z;
-};
-
-static void testMultipleInheritance()
+static void testMultipleInheritance(int failure)
 {
-  Super1 s1;
-  s1.x = 1;
+  Owner<Super1> s1(new Super1);
+  s1->x = 1;
 
-  Super2 s2;
-  s2.y = 2;
+  Owner<Super2> s2(new Super2);
+  s2->y = 2;
 
-  Sub sub;
-  sub.x = 3;
-  sub.y = 4;
-  sub.z = 5;
+  Owner<Sub> sub(new Sub);
+  sub->x = 3;
+  sub->y = 4;
+  sub->z = 5;
 
-  RCSerf<Super1> ps1 = &s1;
+  RCSerf<Super1> ps1(s1);
   EXPECT_EQ(ps1->x, 1);
 
-  RCSerf<Super2> ps2 = &s2;
+  RCSerf<Super2> ps2(s2);
   EXPECT_EQ(ps2->y, 2);
 
-  RCSerf<Sub> psub = &sub;
+  RCSerf<Sub> psub(sub);
   EXPECT_EQ(psub->x, 3);
   EXPECT_EQ(psub->y, 4);
   EXPECT_EQ(psub->z, 5);
+
+  if (failure == 1) {
+    PREPARE_TO_FAIL();
+    failingSuper1Serfs.push(&ps1);
+    s1.del();
+    xassert(failCount == 1);
+  }
+  else if (failure == 1) {
+    PREPARE_TO_FAIL();
+    failingSuper2Serfs.push(&ps2);
+    s2.del();
+    xassert(failCount == 1);
+  }
+  else if (failure == 3) {
+    PREPARE_TO_FAIL();
+    failingSubSerfs.push(&psub);
+    sub.del();
+    xassert(failCount == 1);
+  }
 }
 
 
 static void entry()
 {
   testOperatorsInteger();
-  testOperatorsFloat();
+  testOperatorsFloat(false /*failure*/);
+  testOperatorsFloat(true /*failure*/);
   testOwnerPointerSuccess();
   testOwnerPointerFailure();
   testLocalObjSuccess();
@@ -685,7 +743,8 @@ static void entry()
   testLongList(LL_REMOVE);
   testLongList(LL_REMOVE_ALL);
   testLongList(LL_FAILURE);
-  testMultipleInheritance();
+  testMultipleInheritance(false /*failure*/);
+  testMultipleInheritance(true /*failure*/);
 
   cout << "test-refct-serf ok" << endl;
 }

@@ -50,13 +50,13 @@
 #include <stddef.h>                    // NULL
 
 
-// Forward declarations in this file.
-class RCSerfBaseC;
+// Forward in this file.
+class RCSerfPrivateHelpers;
 
 
 // Base class of objects to which RCSerf can point.
 class SerfRefCount {
-  friend class RCSerfBaseC;
+  friend class RCSerfPrivateHelpers;
 
 public:      // class data
   // Constructions minus destructions.  This is used to check for
@@ -93,13 +93,7 @@ public:      // funcs
 
   // Aborts the program if the reference count is not zero, since the
   // alternative is to risk memory corruption.
-  //
-  // This is virtual so that RCSerf can use dynamic_cast to convert from
-  // SerfRefCount to T*.  dynamic_cast is in turn required in multiple
-  // inheritance scenarios, where virtual inheritance of SerfRefCount is
-  // also required.  That makes the machinery a little bit heavier than
-  // I would have liked, but detecting dangling references is worth it.
-  virtual ~SerfRefCount();
+  ~SerfRefCount();
 
   // Same rationale as for the copy constructor.
   SerfRefCount& operator= (SerfRefCount const &) { return *this; }
@@ -116,129 +110,101 @@ public:      // funcs
 };
 
 
-// The base class of RCSerf.  Maintains the reference count inside
-// SerfRefCount objects.  Otherwise, acts like a pointer to
-// SerfRefCount.
+// Helper functions for RCSerf.  They are not templatized so they can be
+// compiled once, separately.  They are packaged into a class in order
+// to reduce namespace pollution and simplify 'friend' nomination.
+class RCSerfPrivateHelpers {
+protected:   // funcs
+  // If 'ptr' is not NULL, increment its reference count.
+  static void incRefct(SerfRefCount const *p);
+
+  // If 'ptr' is not NULL, decrement its reference count.  If it becomes
+  // negative, abort.
+  static void decRefct(SerfRefCount const *p);
+};
+
+
+// Reference-counted, nullable serf pointer to T.  Aside from refct
+// behavior, acts like T*.  You can use RCSerf<Foo const> to get
+// something that acts like Foo const *.
 //
-// The trailing "C" means 'const'.  It exposes an interface that uses
-// pointers to const.
+// T must inherit SerfRefCount.
 //
-// However, that doesn't matter much because this is not meant to be
-// used directly by clients.
-class RCSerfBaseC {
+// If T inherits SerfRefCount more than once (via multiple inheritance),
+// the inheritance of SerfRefCount must be virtual.  Otherwise, the
+// conversion from T* to SerfRefCount* will fail due to am ambiguous
+// base class.
+template <class T>
+class RCSerf : private RCSerfPrivateHelpers {
 private:     // data
   // Pointer to the object whose reference count we are tracking.  This
   // object acts as a wrapper for this pointer.  Can be NULL.
-  SerfRefCount const *m_ptr;
-
-private:     // funcs
-  // Discarding the current m_ptr, set it to 'ptr', and increment the
-  // refct if not NULL.
-  void acquire(SerfRefCount const *ptr);
+  T *m_ptr;
 
 public:      // funcs
   // Initialize as NULL.
-  RCSerfBaseC() : m_ptr(NULL) {}
+  RCSerf() : m_ptr(NULL) {}
 
   // Store 'ptr', and increment its refct if not NULL.  It is
   // intentional that this is not 'explicit'.
-  RCSerfBaseC(SerfRefCount const *ptr);
+  RCSerf(T *p)
+    : m_ptr(p)
+  {
+    RCSerfPrivateHelpers::incRefct(m_ptr);
+  }
 
   // Copy the pointer in 'obj', incrementing refct if not NULL.
-  RCSerfBaseC(RCSerfBaseC const &obj);
+  RCSerf(RCSerf const &obj)
+    : m_ptr(obj.m_ptr)
+  {
+    RCSerfPrivateHelpers::incRefct(m_ptr);
+  }
 
   // Decrement refct if not NULL.  If the refct goes negative, abort
   // the program, since it means the counts are wrong and thus we are
   // at risk of memory corruption.
-  ~RCSerfBaseC();
-
-  // Copy pointer value, adjusting refcts as appropriate.
-  RCSerfBaseC& operator= (RCSerfBaseC const &obj);
-
-  // Update pointer value, adjusting refcts as appropriate.
-  RCSerfBaseC& operator= (SerfRefCount const *ptr);
-
-  // Exchange pointers with 'other'.  No refcts change.
-  void swapWith(RCSerfBaseC &other) NOEXCEPT;
-
-  // Get the pointer as an ordinary C++ pointer.
-  SerfRefCount const *ptr() const { return m_ptr; }
-
-  // Set m_ptr to NULL, decrementing refct if not already NULL.
-  // Return the value m_ptr had before the call, which may be NULL.
-  //
-  // This is meant for cases where we want to pass the pointer to a
-  // function that will deallocate the object.  It is not a transfer of
-  // ownership, since the serf pointer does not own the object, but the
-  // serf pointer is being used as a *name* for something that something
-  // else owns, and is being used to instruct that thing to deallocate
-  // the object.
-  SerfRefCount const *release();
-};
-
-
-// Reference-counted serf pointer to T.  T must inherit SerfRefCount.
-// Aside from refct behavior, acts like T*.
-//
-// NOTE: You can use RCSerf<Foo const> to get something that acts like
-// Foo const *.
-template <class T>
-class RCSerf : private RCSerfBaseC {
-public:      // funcs
-  // Initialize as NULL.
-  RCSerf() : RCSerfBaseC() {}
-
-  // Store 'ptr', and increment its refct if not NULL.
-  RCSerf(T *ptr)
-    : RCSerfBaseC(ptr)
-  {}
-
-  // Copy the pointer in 'obj', incrementing refct if not NULL.
-  RCSerf(RCSerf const &obj)
-    : RCSerfBaseC(obj)
-  {}
-
-  // Decrement refct if not NULL.  Aborts program if refct goes negative.
   ~RCSerf()
   {
-    // The work is done by ~RCSerfBaseC().
+    RCSerfPrivateHelpers::decRefct(m_ptr);
   }
 
   // Copy pointer value, adjusting refcts as appropriate.
   RCSerf& operator= (RCSerf const &obj)
   {
-    RCSerfBaseC::operator=(obj);
+    this->operator=(obj.m_ptr);
     return *this;
   }
 
   // Update pointer value, adjusting refcts as appropriate.
-  RCSerf& operator= (T *ptr)
+  RCSerf& operator= (T *p)
   {
-    RCSerfBaseC::operator=(ptr);
+    if (m_ptr != p) {
+      RCSerfPrivateHelpers::decRefct(m_ptr);
+      m_ptr = p;
+      RCSerfPrivateHelpers::incRefct(m_ptr);
+    }
     return *this;
   }
 
   // Exchange pointers with 'other'.  No refcts change.
   void swapWith(RCSerf &other) NOEXCEPT
   {
-    RCSerfBaseC::swapWith(other);
+    if (this != &other) {
+      // I do not want to impose the cost of #including sm-swap.h on all
+      // clients, so I will do the swap myself here.
+      T *tmp = other.m_ptr;
+      other.m_ptr = this->m_ptr;
+      this->m_ptr = tmp;
+    }
   }
 
   // Get the pointer as an ordinary C++ pointer.
   T *ptr() const
   {
-    // The dynamic_cast downcasts to 'T' and maintains the constness of
-    // the underlying ptr() result.  The const_cast then strips that
-    // constness *if* T does not itself have 'const'.
-    //
-    // Note that C++ allows one to write "T const *" even if T itself
-    // is something like "Foo const".  The extra 'const' arising from
-    // template parameter substitution is discarded, even though
-    // explicitly writing "Foo const const *" is invalid.  (7.1.6.1/1)
-    return const_cast<T*>(dynamic_cast<T const *>(RCSerfBaseC::ptr()));
+    return m_ptr;
   }
 
-  // Implicit conversion operator to act like T const *.
+  // Implicit conversion operator to act like T*.
   operator T* () const
   {
     return this->ptr();
@@ -254,20 +220,21 @@ public:      // funcs
     return this->ptr();
   }
 
-  // Get the pointer, setting 'this' to NULL simultaneously.  May
-  // return NULL.
+  // Set m_ptr to NULL, decrementing refct if not already NULL.
+  // Return the value m_ptr had before the call, which may be NULL.
+  //
+  // This is meant for cases where we want to pass the pointer to a
+  // function that will deallocate the object.  It is not a transfer of
+  // ownership, since the serf pointer does not own the object, but the
+  // serf pointer is being used as a *name* for something that another
+  // object owns, and is being used as part of an operation that will
+  // result in that thing being deallocated.
   T *release()
   {
-    return const_cast<T*>(dynamic_cast<T const *>(RCSerfBaseC::release()));
-  }
-
-  // Get the underlying RCSerfBaseC.  Among the reasons it is unsafe is
-  // it would allow one to substitute anything that inherits
-  // SerfRefCount for the current pointer, thus violating type safety.
-  // This is exposed only for the use of unit test code.
-  RCSerfBaseC& unsafe_getRCSerfBaseC()
-  {
-    return *this;
+    T *ret = m_ptr;
+    RCSerfPrivateHelpers::decRefct(m_ptr);
+    m_ptr = NULL;
+    return ret;
   }
 };
 
