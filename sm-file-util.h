@@ -49,6 +49,10 @@ public:      // funcs
   // directory separator, append '/' and return that.
   string ensureEndsWithDirectorySeparator(string const &dir);
 
+  // Remove a trailing separator from a directory unless it is "/" or,
+  // on Windows, "<letter>:<separator".
+  string stripTrailingDirectorySeparator(string const &dir);
+
   // True if the given path is absolute.  On unix, an absolute path
   // starts with '/'.  On Windows, it starts with '//' (UNC path) or
   // "<letter>:/", or the equivalent with backslash.

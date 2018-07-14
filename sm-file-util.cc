@@ -160,6 +160,31 @@ string SMFileUtil::ensureEndsWithDirectorySeparator(string const &dir)
 }
 
 
+string SMFileUtil::stripTrailingDirectorySeparator(string const &dir)
+{
+  int len = dir.length();
+  if (len <= 1) {
+    // Empty or "/" or just some letter.
+    return dir;
+  }
+
+  if (this->windowsPathSemantics() &&
+      len == 3 &&
+      dir[1] == ':' &&
+      isDirectorySeparator(dir[2])) {
+    // Windows absolute path.
+    return dir;
+  }
+
+  if (isDirectorySeparator(dir[len-1])) {
+    // Strip final separator.
+    return dir.substring(0, len-1);
+  }
+
+  return dir;
+}
+
+
 bool SMFileUtil::isAbsolutePath(string const &path)
 {
   if (path[0] == 0) {

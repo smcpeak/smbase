@@ -181,7 +181,6 @@ static void expectEEWDS(SMFileUtil &sfu, char const *dir, char const *expect)
   EXPECT_EQ(actual, string(expect));
 }
 
-
 static void testEnsureEndsWith()
 {
   TestSMFileUtil sfu;
@@ -209,6 +208,41 @@ static void testEnsureEndsWith()
 }
 
 
+static void expectSTDS(SMFileUtil &sfu, char const *dir, char const *expect)
+{
+  string actual = sfu.stripTrailingDirectorySeparator(dir);
+  EXPECT_EQ(actual, string(expect));
+}
+
+static void testStripTrailing()
+{
+  TestSMFileUtil sfu;
+
+  // Unix semantics for things that differ from Windows.
+  expectSTDS(sfu, "a\\", "a\\");
+
+  // Things to test both ways.
+  for (int i=0; i < 2; i++) {
+    expectSTDS(sfu, "", "");
+    expectSTDS(sfu, "/", "/");
+    expectSTDS(sfu, "a", "a");
+    expectSTDS(sfu, "a/", "a");
+    expectSTDS(sfu, "aa", "aa");
+    expectSTDS(sfu, "/a", "/a");
+    expectSTDS(sfu, "/a/", "/a");
+
+    sfu.m_windowsPathSemantics = true;
+  }
+
+  // Windows semantics tests.
+  expectSTDS(sfu, "a\\", "a");
+  expectSTDS(sfu, "c:\\", "c:\\");
+  expectSTDS(sfu, "c:", "c:");
+  expectSTDS(sfu, "c:\\a", "c:\\a");
+  expectSTDS(sfu, "c:\\a\\", "c:\\a");
+}
+
+
 static void entry()
 {
   printSomeStuff();
@@ -217,6 +251,7 @@ static void entry()
   testTestSMFileUtil();
   testSplitPath();
   testEnsureEndsWith();
+  testStripTrailing();
 
   cout << "test-sm-file-util ok" << endl;
 }
