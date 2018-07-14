@@ -149,6 +149,17 @@ bool SMFileUtil::isDirectorySeparator(char c)
 }
 
 
+string SMFileUtil::ensureEndsWithDirectorySeparator(string const &dir)
+{
+  if (dir.empty() || !isDirectorySeparator(dir[dir.length()-1])) {
+    return stringb(dir << '/');
+  }
+  else {
+    return dir;
+  }
+}
+
+
 bool SMFileUtil::isAbsolutePath(string const &path)
 {
   if (path[0] == 0) {
@@ -372,7 +383,7 @@ string SMFileUtil::splitPathBase(string const &inputPath)
 // ----------------------- TestSMFileUtil ------------------------
 bool TestSMFileUtil::windowsPathSemantics()
 {
-  return false;
+  return m_windowsPathSemantics;
 }
 
 

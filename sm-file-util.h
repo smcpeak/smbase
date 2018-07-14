@@ -45,6 +45,10 @@ public:      // funcs
   // True if 'c' is considered a directory separator for the platform.
   virtual bool isDirectorySeparator(char c);
 
+  // Given an ostensible directory name, if it does not end with a
+  // directory separator, append '/' and return that.
+  string ensureEndsWithDirectorySeparator(string const &dir);
+
   // True if the given path is absolute.  On unix, an absolute path
   // starts with '/'.  On Windows, it starts with '//' (UNC path) or
   // "<letter>:/", or the equivalent with backslash.
@@ -97,14 +101,17 @@ public:      // funcs
 // certain queries.  This is only meant for use in test code.
 class TestSMFileUtil : public SMFileUtil {
 public:      // data
+  // For 'windowsPathSemantics'.
+  bool m_windowsPathSemantics;
+
   // For 'absolutePathExists'.
   StringSet m_existingPaths;
 
 public:      // funcs
-  TestSMFileUtil() {}
+  TestSMFileUtil() : m_windowsPathSemantics(false) {}
   ~TestSMFileUtil() {}
 
-  // Returns false.
+  // Returns 'm_windowsPathSemantics'.
   virtual bool windowsPathSemantics() OVERRIDE;
 
   // Returns true iff 'path' is in 'm_existingPaths'.

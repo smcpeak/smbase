@@ -175,6 +175,40 @@ static void testSplitPath()
 }
 
 
+static void expectEEWDS(SMFileUtil &sfu, char const *dir, char const *expect)
+{
+  string actual = sfu.ensureEndsWithDirectorySeparator(dir);
+  EXPECT_EQ(actual, string(expect));
+}
+
+
+static void testEnsureEndsWith()
+{
+  TestSMFileUtil sfu;
+
+  expectEEWDS(sfu, "", "/");
+  expectEEWDS(sfu, "/", "/");
+  expectEEWDS(sfu, "\\", "\\/");
+  expectEEWDS(sfu, "a", "a/");
+  expectEEWDS(sfu, "a/", "a/");
+  expectEEWDS(sfu, "a\\", "a\\/");
+
+  // At least for now, I do not remove extra separators.
+  expectEEWDS(sfu, "a//", "a//");
+
+  sfu.m_windowsPathSemantics = true;
+
+  expectEEWDS(sfu, "", "/");
+  expectEEWDS(sfu, "/", "/");
+  expectEEWDS(sfu, "\\", "\\");
+  expectEEWDS(sfu, "a", "a/");
+  expectEEWDS(sfu, "a/", "a/");
+  expectEEWDS(sfu, "a\\", "a\\");
+  expectEEWDS(sfu, "a//", "a//");
+  expectEEWDS(sfu, "a\\\\", "a\\\\");
+}
+
+
 static void entry()
 {
   printSomeStuff();
@@ -182,6 +216,7 @@ static void entry()
   testAbsolutePathExists();
   testTestSMFileUtil();
   testSplitPath();
+  testEnsureEndsWith();
 
   cout << "test-sm-file-util ok" << endl;
 }
