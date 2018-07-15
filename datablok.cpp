@@ -8,6 +8,7 @@
 #include "syserr.h"       // xsyserror
 
 #include <stdio.h>        // printf
+#include <stdlib.h>       // abort
 #include <string.h>       // memcpy
 #include <ctype.h>        // isprint
     
