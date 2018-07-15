@@ -20,6 +20,12 @@
 class CheckObjectCount {
   NO_OBJECT_COPIES(CheckObjectCount);
 
+public:      // class data
+  // If true, do *not* print object count warnings.  This is useful in
+  // cases where we have no choice but to leak some memory for a known
+  // reason and there is no need to alarm the user.
+  static bool s_suppressLeakReports;
+
 public:      // instance data
   // Name of the class whose count I am watching.
   char const *m_className;
