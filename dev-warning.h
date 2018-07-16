@@ -7,10 +7,17 @@
 #include "str.h"                       // stringbc
 
 
-// When true, any call to 'devWarning' will abort().  This is meant for
-// use in unit tests so the test fails if a warning is printed.  It is
-// initially false.
+// When true, and 'g_devWarningHandler' is NULL, any call to
+// 'devWarning' will abort().  This is meant for use in unit tests so
+// the test fails if a warning is printed.  It is initially false.
 extern bool g_abortUponDevWarning;
+
+
+// When non-NULL, call this function instead of printing or aborting.
+// This is meant for use within an application that more sophisticated
+// mechanisms for communicating or logging issues.  Initially NULL.
+extern void (*g_devWarningHandler)(char const *file, int line,
+                                   char const *msg);
 
 
 // Print or log a warning originating at file/line.  This is something

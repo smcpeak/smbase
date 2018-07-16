@@ -11,8 +11,17 @@
 bool g_abortUponDevWarning = false;
 
 
+void (*g_devWarningHandler)(char const *file, int line,
+                            char const *msg) = NULL;
+
+
 void devWarning(char const *file, int line, char const *msg)
 {
+  if (g_devWarningHandler != NULL) {
+    (*g_devWarningHandler)(file, line, msg);
+    return;
+  }
+
   // For now we just print to stderr.
   cerr << "DEV_WARNING: " << file << ':' << line << ": " << msg << endl;
 
