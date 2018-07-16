@@ -63,6 +63,13 @@ void decodeEscapes(ArrayStack<char> &dest, rostring src,
 string parseQuotedString(rostring text);
 
 
+// Return a string that, in the POSIX shell syntax, denotes 's'.  If no
+// quoting is needed, returns 's'.  This uses double-quotes when 's'
+// needs quoting, which is when 's' contains a shell metacharacter or
+// any character outside the printable ASCII range.
+string shellDoubleQuote(string const &s);
+
+
 // 2018-06-30: I moved 'localTimeString' into datetime.h
 
 

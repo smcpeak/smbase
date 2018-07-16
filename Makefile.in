@@ -30,6 +30,10 @@ AR     := ar
 RANLIB := ranlib
 
 
+# Eliminate all implicit rules.
+.SUFFIXES:
+
+
 # compile .cc to .o
 %.o: %.cc
 	$(CXX) -c -o $@ $< $(CCFLAGS)
@@ -121,6 +125,7 @@ OBJS += bit2d.o
 OBJS += bitarray.o
 OBJS += boxprint.o
 OBJS += breaker.o
+OBJS += codepoint.o
 OBJS += crc.o
 OBJS += cycles.o
 OBJS += d2vector.o

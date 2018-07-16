@@ -1,16 +1,20 @@
 // strutil.cc            see license.txt for copyright and terms of use
 // code for strutil.h
 
-#include "strutil.h"     // this module
-#include "exc.h"         // xformat
-#include "autofile.h"    // AutoFILE
-#include "array.h"       // Array
+#include "strutil.h"                   // this module
 
-#include <ctype.h>       // isspace
-#include <string.h>      // strstr, memcmp
-#include <stdio.h>       // sprintf
-#include <stdlib.h>      // strtoul, qsort
-#include <time.h>        // time, asctime, localtime
+// smbase
+#include "array.h"                     // Array
+#include "autofile.h"                  // AutoFILE
+#include "codepoint.h"                 // isPrintableASCII, isShellMetacharacter
+#include "exc.h"                       // xformat
+
+// libc
+#include <ctype.h>                     // isspace
+#include <stdio.h>                     // sprintf
+#include <stdlib.h>                    // strtoul, qsort
+#include <string.h>                    // strstr, memcmp
+#include <time.h>                      // time, asctime, localtime
 
 
 // replace all instances of oldstr in src with newstr, return result
@@ -336,6 +340,57 @@ string parseQuotedString(rostring text)
 }
 
 
+static bool hasShellMetaOrNonprint(string const &s)
+{
+  int len = s.length();
+  for (int i=0; i<len; i++) {
+    int c = (unsigned char)s[i];
+    if (!isPrintableASCII(c)) {
+      return true;
+    }
+    if (isShellMetacharacter(c)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Reference on shell double-quote syntax in the POSIX shell:
+// http://pubs.opengroup.org/onlinepubs/009695399/utilities/xcu_chap02.html#tag_02_02_03
+string shellDoubleQuote(string const &s)
+{
+  if (s.empty() || hasShellMetaOrNonprint(s)) {
+    stringBuilder sb;
+    sb << '"';
+
+    int len = s.length();
+    for (int i=0; i<len; i++) {
+      char c = s[i];
+      switch (c) {
+        // Within a double-quoted string, only these four characters
+        // need to or can be escaped.
+        case '$':
+        case '`':
+        case '"':
+        case '\\':
+          sb << '\\' << c;
+          break;
+
+        default:
+          sb << c;
+          break;
+      }
+    }
+
+    sb << '"';
+    return sb;
+  }
+  else {
+    return s;
+  }
+}
+
+
 string sm_basename(rostring origSrc)
 {
   char const *src = toCStr(origSrc);
@@ -645,6 +700,36 @@ void translateAscii()
 }
 
 
+static void expectSDQ(string const &s, string const &expect)
+{
+  string actual = shellDoubleQuote(s);
+#if 0
+  cout << "shellDoubleQuote:\n"
+       << "  s     : " << s << "\n"
+       << "  actual: " << actual << "\n"
+       << "  expect: " << expect << endl;
+#endif // 0
+  EXPECT_EQ(actual, expect);
+}
+
+static void testShellDoubleQuote()
+{
+  expectSDQ("", "\"\"");
+
+  expectSDQ("a", "a");
+  expectSDQ("abc", "abc");
+  expectSDQ("abczAZ01239@-_+:,./", "abczAZ01239@-_+:,./");
+
+  expectSDQ(" ", "\" \"");
+  expectSDQ(" a", "\" a\"");
+  expectSDQ("x y", "\"x y\"");
+  expectSDQ("$`\"\\", "\"\\$\\`\\\"\\\\\"");
+  expectSDQ("\n\t ", "\"\n\t \"");
+  expectSDQ("\x7F", "\"\x7F\"");
+  expectSDQ("\xFF", "\"\xFF\"");
+}
+
+
 void entry()
 {
   expRangeVector("abcd", "abcd");
@@ -688,9 +773,13 @@ void entry()
     xassert(compareStringPtrs(&y, &y) == 0);
     xassert(compareStringPtrs(&y, &x) > 0);
   }
+
+  testShellDoubleQuote();
+
+  cout << "strutil ok" << endl;
 }
 
 
-USUAL_MAIN
+USUAL_TEST_MAIN
 
 #endif // TEST_STRUTIL
