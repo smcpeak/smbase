@@ -293,6 +293,28 @@ bool SMFileUtil::absoluteFileExists(string const &path)
 }
 
 
+bool SMFileUtil::directoryExists(string const &path)
+{
+  if (path.empty()) {
+    return false;
+  }
+
+  // Above, I avoided calling 'stat' with a relative path, but that is
+  // an annoying restriction and now does not seem important, so I am
+  // just doing it.
+  struct stat st;
+  if (0!=stat(path.c_str(), &st)) {
+    return false;     // assume error is because of nonexistence
+  }
+  else if (S_ISDIR(st.st_mode)) {
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
+
 string SMFileUtil::joinFilename(string const &prefix,
                                 string const &suffix)
 {

@@ -70,6 +70,10 @@ public:      // funcs
   // (or a symlink? not sure).
   virtual bool absoluteFileExists(string const &path);
 
+  // True if 'path' names a directory.  Relative paths are relative to
+  // the current working directory.
+  virtual bool directoryExists(string const &path);
+
   // Return prefix+suffix, except if neither is empty, add a directory
   // separator if none is present, and remove an extra trailing
   // directory separator from 'prefix'.

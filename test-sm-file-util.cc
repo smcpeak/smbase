@@ -243,6 +243,37 @@ static void testStripTrailing()
 }
 
 
+static void expectDE(SMFileUtil &sfu, string const &path, bool expect)
+{
+  PVAL(path);
+  bool actual = sfu.directoryExists(path);
+  EXPECT_EQ(actual, expect);
+}
+
+static void testDirectoryExists()
+{
+  SMFileUtil sfu;
+
+  expectDE(sfu, "", false);
+  expectDE(sfu, ".", true);
+  expectDE(sfu, "..", true);
+  expectDE(sfu, "/", true);
+  if (sfu.windowsPathSemantics()) {
+    expectDE(sfu, "c:/", true);
+    expectDE(sfu, "c:/nonexistent-directory", false);
+    PVAL(sfu.directoryExists("c:/Windows"));
+  }
+  else {
+    expectDE(sfu, "/tmp", true);
+    expectDE(sfu, "/nonexistent-directory", false);
+  }
+  expectDE(sfu, "fonts", true);
+  expectDE(sfu, "fonts/", true);
+  expectDE(sfu, "sm-file-util.h", false);
+  expectDE(sfu, "nonexist", false);
+}
+
+
 static void entry()
 {
   printSomeStuff();
@@ -252,6 +283,7 @@ static void entry()
   testSplitPath();
   testEnsureEndsWith();
   testStripTrailing();
+  testDirectoryExists();
 
   cout << "test-sm-file-util ok" << endl;
 }
