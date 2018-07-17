@@ -4,6 +4,7 @@
 #ifndef ARRAY_H
 #define ARRAY_H
 
+#include "macros.h"                    // NO_OBJECT_COPIES
 #include "sm-swap.h"                   // swap
 #include "xassert.h"                   // xassert
 
@@ -448,11 +449,14 @@ public:
 
 template <class T> class ObjArrayStackIterNC;
 
+
 // ------------------- ObjArrayStack -----------------
 // an ArrayStack of owner pointers
 template <class T>
 class ObjArrayStack {
+  NO_OBJECT_COPIES(ObjArrayStack);
   friend class ObjArrayStackIterNC<T>;
+
 private:    // data
   ArrayStack<T*> arr;
 
