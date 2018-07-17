@@ -327,7 +327,7 @@ public:      // funcs
 
   void popMany(int ct)
     { len -= ct; xassert(len >= 0); }
-  void empty()
+  void empty()        // TODO: Rename this!  STL collision.
     { len = 0; }
   void clear()
     { len = 0; }
