@@ -354,7 +354,7 @@ stringBuilder& stringBuilder::operator<< (char c)
   {                                                      \
     char buf[60];      /* big enough for all types */    \
     int len = sprintf(buf, fmt, arg);                    \
-    if (len >= 60) {					 \
+    if (len >= 60) {                                     \
       abort();    /* too big */                          \
     }                                                    \
     return *this << buf;                                 \
@@ -365,9 +365,25 @@ MAKE_LSHIFT(unsigned long long, "%llu")
 MAKE_LSHIFT(long, "%ld")
 MAKE_LSHIFT(unsigned long, "%lu")
 MAKE_LSHIFT(double, "%g")
-MAKE_LSHIFT(void*, "%p")
 
 #undef MAKE_LSHIFT
+
+
+stringBuilder& stringBuilder::operator<< (void* arg)
+{
+  char buf[60];
+
+#ifdef __MINGW32__
+  // The MSVCRT %p specifier is annoying because it prints all of the
+  // leading zeroes.
+  int len = sprintf(buf, "0x%llx", (unsigned long long)arg);
+#else
+  int len = sprintf(buf, "%p", arg);
+#endif
+
+  if (len >= 60) { abort(); }
+  return *this << buf;
+}
 
 
 stringBuilder& stringBuilder::operator<< (
@@ -499,7 +515,7 @@ void test(unsigned long val)
   cout << stringb(val << " in hex: " << SBHex(val)) << endl;
 }
 
-int main()
+int main(int argc, char **argv)
 {
   // for the moment I just want to test the hex formatting
   test(64);
@@ -510,6 +526,8 @@ int main()
 
   cout << "stringf: " << stringf("int=%d hex=%X str=%s char=%c float=%f",
                                  5, 0xAA, "hi", 'f', 3.4) << endl;
+
+  cout << "ptr: " << stringb(argv) << endl;
 
   cout << "tests passed\n";
 
