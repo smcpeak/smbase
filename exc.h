@@ -152,6 +152,8 @@ public:
 // compact way to throw an xFormat
 void xformat(rostring condition) NORETURN;
 
+#define xformatsb(msg) xformat(stringb(msg))
+
 // convenient combination of condition and human-readable message
 #define checkFormat(cond, message) \
   ((cond)? (void)0 : xformat(message))
