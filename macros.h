@@ -9,6 +9,13 @@
 
 #include "typ.h"        // bool
 
+
+// Concatenate tokens.  Unlike plain '##', this works for __LINE__.  It
+// is the same as BOOST_PP_CAT.
+#define SMBASE_PP_CAT(a,b) SMBASE_PP_CAT2(a,b)
+#define SMBASE_PP_CAT2(a,b) a##b
+
+
 // complement of ==
 #define NOTEQUAL_OPERATOR(T)             \
   bool operator != (T const &obj) const  \
@@ -217,6 +224,11 @@ public:
     variable = prevValue;
   }
 };
+
+
+// Declare a restorer for 'variable', of 'type'.
+#define RESTORER(type, variable, value) \
+  Restorer< type > SMBASE_PP_CAT(restorer,__LINE__)((variable), (value)) /* user ; */
 
 
 // declare a bunch of a set-like operators for enum types
