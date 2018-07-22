@@ -513,6 +513,24 @@ bool suffixEquals(rostring str, rostring suffix)
 }
 
 
+bool hasSubstring(string const &haystack, string const &needle)
+{
+  return indexOfSubstring(haystack, needle) >= 0;
+}
+
+int indexOfSubstring(string const &haystack, string const &needle)
+{
+  char const *h = haystack.c_str();
+  char const *occ = strstr(h, needle.c_str());
+  if (occ) {
+    return occ - h;
+  }
+  else {
+    return -1;
+  }
+}
+
+
 void writeStringToFile(rostring str, rostring fname)
 {
   AutoFILE fp(toCStr(fname), "w");
@@ -730,6 +748,33 @@ static void testShellDoubleQuote()
 }
 
 
+static void expectIndexOfSubstring(string const &haystack,
+  string const &needle, int expect)
+{
+  int actual = indexOfSubstring(haystack, needle);
+  EXPECT_EQ(actual, expect);
+
+  // Make sure 'hasSubstring' agrees.
+  EXPECT_EQ(hasSubstring(haystack, needle), expect != -1);
+}
+
+static void testIndexOfSubstring()
+{
+  cout << "testIndexOfSubstring" << endl;
+  expectIndexOfSubstring("", "", 0);
+  expectIndexOfSubstring("", "x", -1);
+  expectIndexOfSubstring("x", "", 0);
+  expectIndexOfSubstring("x", "x", 0);
+  expectIndexOfSubstring("abcdcde", "c", 2);
+  expectIndexOfSubstring("abcdcde", "e", 6);
+  expectIndexOfSubstring("abcdcde", "cd", 2);
+  expectIndexOfSubstring("abcdcde", "ce", -1);
+  expectIndexOfSubstring("foofoobar", "foobar", 3);
+  expectIndexOfSubstring("foofoofoobar", "foofoobar", 3);
+  expectIndexOfSubstring("foofoofooba", "foofoobar", -1);
+}
+
+
 void entry()
 {
   expRangeVector("abcd", "abcd");
@@ -775,6 +820,7 @@ void entry()
   }
 
   testShellDoubleQuote();
+  testIndexOfSubstring();
 
   cout << "strutil ok" << endl;
 }

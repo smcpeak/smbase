@@ -114,6 +114,15 @@ bool prefixEquals(rostring str, rostring prefix);
 bool suffixEquals(rostring str, rostring suffix);
 
 
+// True if 'needle' occurs as a substring within 'haystack'.  If
+// 'needle' is empty, this always returns true.
+bool hasSubstring(string const &haystack, string const &needle);
+
+// If 'needle' occurs within 'haystack', return the byte offset of the
+// first byte of the first occurrence.  Otherwise, return -1.
+int indexOfSubstring(string const &haystack, string const &needle);
+
+
 // read/write strings <-> files
 void writeStringToFile(rostring str, rostring fname);
 string readStringFromFile(rostring fname);
