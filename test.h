@@ -11,6 +11,8 @@
 #include "sm-iostream.h"   // cout
 #include "str.h"           // stringb
 
+#include <iomanip>         // std::hex, std::dec
+
 #include <stdio.h>         // printf
 
 
@@ -86,6 +88,10 @@ int main(int argc, char *argv[])                \
 // Same, but also print the file and line.
 #define DEBUG_PVAL(val) cout << __FILE__ << ":" << __LINE__ << \
   ": " #val << " = " << (val) << endl
+
+// As hexadecimal.
+#define PVAL_HEX(val) \
+  cout << #val << " = " << "0x" << std::hex << (val) << std::dec << endl
 
 
 // easy way to time a section of code
