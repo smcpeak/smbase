@@ -38,6 +38,22 @@ char getConsoleChar();
 // get a millisecond count, where 0 is an unspecified event
 long getMilliseconds();
 
+// Simple start/stop time accumulator.
+struct GetMillisecondsAccumulator {
+  long m_start;
+  long &m_acc;
+
+  GetMillisecondsAccumulator(long &acc)
+    : m_start(getMilliseconds()),
+      m_acc(acc)
+  {}
+
+  ~GetMillisecondsAccumulator()
+  {
+    m_acc += getMilliseconds() - m_start;
+  }
+};
+
 
 // remove all priviledges to a file, except for read/write
 // access by the file's owner; returns false on error
