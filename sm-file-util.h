@@ -13,6 +13,7 @@
 
 #include "array.h"                     // ArrayStack
 #include "macros.h"                    // NO_OBJECT_COPIES
+#include "sm-iostream.h"               // ostream
 #include "sm-override.h"               // OVERRIDE
 #include "str.h"                       // string
 #include "stringset.h"                 // StringSet
@@ -26,6 +27,35 @@
 // SMFileUtil itself in the ordinary way.
 class SMFileUtil {
   NO_OBJECT_COPIES(SMFileUtil);
+
+public:      // types
+  // Kinds of files.
+  enum FileKind {
+    FK_NONE,                 // Not a file.
+    FK_REGULAR,              // Regular file.
+    FK_DIRECTORY,            // Directory.
+    FK_OTHER,                // Something else I haven't categorized.
+
+    NUM_FILE_KINDS
+  };
+
+  // Information about a directory entry.
+  class DirEntryInfo {
+  public:    // data
+    // Name of the directory entry, not including any path.
+    string m_name;
+
+    // What sort of file it is.
+    FileKind m_kind;
+
+  public:
+    DirEntryInfo(string const &name, FileKind kind);
+    DirEntryInfo(DirEntryInfo const &obj);
+    DirEntryInfo();      // Empty name, FK_NONE.
+    ~DirEntryInfo();
+
+    DirEntryInfo& operator= (DirEntryInfo const &obj);
+  };
 
 public:      // funcs
   SMFileUtil();
@@ -63,16 +93,23 @@ public:      // funcs
   virtual string getAbsolutePath(string const &path);
 
   // Return true if 'path' is absolute and names an existing entity
-  // (file, directory, etc.) on disk.
+  // (file, directory, etc.) on disk.  Throws xSysError on permission
+  // errors or the like.
   virtual bool absolutePathExists(string const &path);
 
-  // Like above, except it specifically has to be an ordinary file
-  // (or a symlink? not sure).
+  // Like above, except it specifically has to be an ordinary file.
+  // Throws xSysError on permission errors or the like.
   virtual bool absoluteFileExists(string const &path);
 
   // True if 'path' names a directory.  Relative paths are relative to
-  // the current working directory.
+  // the current working directory.  Throws xSysError on permission
+  // errors or the like.
   virtual bool directoryExists(string const &path);
+
+  // Get the file kind, or FK_NONE if it does not exist.  Relative paths
+  // are relative to the current working directory.  Throws xSysError on
+  // permission errors or the like.
+  virtual FileKind getFileKind(string const &path);
 
   // Return prefix+suffix, except if neither is empty, add a directory
   // separator if none is present, and remove an extra trailing
@@ -80,12 +117,17 @@ public:      // funcs
   virtual string joinFilename(string const &prefix,
                               string const &suffix);
 
-  // Get the entries in 'directory'.  If an error is encountered, throw
-  // xSysError (syserr.h).  The entries are not guaranteed to be
-  // returned in any particular order.  They may include "." and ".." if
-  // they exist in the given directory.
-  virtual void getDirectoryEntries(ArrayStack<string> /*OUT*/ &entries,
-                                   string const &directory);
+  // Get the names of entries in 'directory'.  If an error is
+  // encountered, throw xSysError (syserr.h).  The entries are not
+  // guaranteed to be returned in any particular order.  They may
+  // include "." and ".." if they exist in the given directory.
+  virtual void getDirectoryNames(ArrayStack<string> /*OUT*/ &entries,
+                                 string const &directory);
+
+  // Get names and file kinds.  This may be more expensive than just
+  // getting the names.
+  virtual void getDirectoryEntries(
+    ArrayStack<DirEntryInfo> /*OUT*/ &entries, string const &directory);
 
   // Split 'inputPath' into two strings, 'dir' and 'base', such that:
   //
@@ -103,6 +145,20 @@ public:      // funcs
   // Get the 'base' output of 'splitPath'.
   string splitPathBase(string const &inputPath);
 };
+
+
+// Return a string like "FK_REGULAR".
+char const *toString(SMFileUtil::FileKind kind);
+
+inline ostream& operator<< (ostream &os, SMFileUtil::FileKind kind)
+{
+  return os << toString(kind);
+}
+
+inline stringBuilder& operator<< (stringBuilder &sb, SMFileUtil::FileKind kind)
+{
+  return sb << toString(kind);
+}
 
 
 // Variant of SMFileUtil that returns specific values in response to

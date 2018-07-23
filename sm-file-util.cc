@@ -44,6 +44,58 @@
 #endif
 
 
+static char const * const s_fileKindNames[] = {
+  "FK_NONE",
+  "FK_REGULAR",
+  "FK_DIRECTORY",
+  "FK_OTHER",
+};
+
+char const *toString(SMFileUtil::FileKind kind)
+{
+  ASSERT_TABLESIZE(s_fileKindNames, SMFileUtil::NUM_FILE_KINDS);
+  if ((unsigned)kind < TABLESIZE(s_fileKindNames)) {
+    return s_fileKindNames[kind];
+  }
+  else {
+    return "unknown FileKind";
+  }
+}
+
+
+
+// ---------------- SMFileUtil::DirEntryInfo -----------------
+SMFileUtil::DirEntryInfo::DirEntryInfo(string const &name, FileKind kind)
+  : m_name(name),
+    m_kind(kind)
+{}
+
+
+SMFileUtil::DirEntryInfo::DirEntryInfo(DirEntryInfo const &obj)
+  : DMEMB(m_name),
+    DMEMB(m_kind)
+{}
+
+
+SMFileUtil::DirEntryInfo::DirEntryInfo()
+  : m_name(""),
+    m_kind(FK_NONE)
+{}
+
+
+SMFileUtil::DirEntryInfo::~DirEntryInfo()
+{}
+
+
+SMFileUtil::DirEntryInfo&
+SMFileUtil::DirEntryInfo::operator= (SMFileUtil::DirEntryInfo const &obj)
+{
+  CMEMB(m_name);
+  CMEMB(m_kind);
+  return *this;
+}
+
+
 // ----------------------- SMFileUtil ------------------------
 bool SMFileUtil::windowsPathSemantics()
 {
@@ -257,20 +309,11 @@ string SMFileUtil::getAbsolutePath(string const &path)
 
 bool SMFileUtil::absolutePathExists(string const &path)
 {
-  // I do not want to call 'stat' with a relative path because that
-  // would not use the value of 'currentDirectory()'.
   if (!isAbsolutePath(path)) {
     return false;
   }
 
-  // Crude implementation copied from nonport.cpp.
-  struct stat st;
-  if (0!=stat(path.c_str(), &st)) {
-    return false;     // assume error is because of nonexistence
-  }
-  else {
-    return true;
-  }
+  return this->getFileKind(path) != FK_NONE;
 }
 
 
@@ -280,37 +323,37 @@ bool SMFileUtil::absoluteFileExists(string const &path)
     return false;
   }
 
-  struct stat st;
-  if (0!=stat(path.c_str(), &st)) {
-    return false;     // assume error is because of nonexistence
-  }
-  else if (S_ISREG(st.st_mode)) {
-    return true;
-  }
-  else {
-    return false;
-  }
+  return this->getFileKind(path) == FK_REGULAR;
 }
 
 
 bool SMFileUtil::directoryExists(string const &path)
 {
+  return this->getFileKind(path) == FK_DIRECTORY;
+}
+
+
+SMFileUtil::FileKind SMFileUtil::getFileKind(string const &path)
+{
   if (path.empty()) {
-    return false;
+    return FK_NONE;
   }
 
-  // Above, I avoided calling 'stat' with a relative path, but that is
-  // an annoying restriction and now does not seem important, so I am
-  // just doing it.
   struct stat st;
   if (0!=stat(path.c_str(), &st)) {
-    return false;     // assume error is because of nonexistence
+    if (errno != ENOENT) {
+      xsyserror("stat", path);
+    }
+    return FK_NONE;
   }
   else if (S_ISDIR(st.st_mode)) {
-    return true;
+    return FK_DIRECTORY;
+  }
+  else if (S_ISREG(st.st_mode)) {
+    return FK_REGULAR;
   }
   else {
-    return false;
+    return FK_OTHER;
   }
 }
 
@@ -350,7 +393,7 @@ struct CallCloseDir {
   ~CallCloseDir()
   {
     if (0 != closedir(m_dirp)) {
-      devWarningSysError(__FILE__, __LINE__, "closedir");
+      DEV_WARNING_SYSERROR("closedir");
     }
   }
 };
@@ -360,8 +403,8 @@ struct CallCloseDir {
 // names are special is a POSIX and Windows convention.  It is my intent
 // that this module's interface be free of system-specific assumptions.
 // Filtering those two names would consistitute such an assumption.
-void SMFileUtil::getDirectoryEntries(ArrayStack<string> /*OUT*/ &entries,
-                                     string const &directory)
+void SMFileUtil::getDirectoryNames(ArrayStack<string> /*OUT*/ &entries,
+                                   string const &directory)
 {
   entries.clear();
 
@@ -388,6 +431,100 @@ void SMFileUtil::getDirectoryEntries(ArrayStack<string> /*OUT*/ &entries,
   // End of stream.
 
   // 'dirp' is closed by 'callCloseDir'.
+}
+
+
+// This is defined as an external function so it can be called by
+// the test code.  It works on all platforms but is relatively slow
+// on Windows.
+void getDirectoryEntries_scanThenStat(SMFileUtil &sfu,
+  ArrayStack<SMFileUtil::DirEntryInfo> /*OUT*/ &entries, string const &directory)
+{
+  entries.clear();
+
+  // First get the names.
+  ArrayStack<string> names;
+  sfu.getDirectoryNames(names, directory);
+
+  // Probe each one to get its file type.
+  for (int i=0; i < names.length(); i++) {
+    string const &name = names[i];
+
+    SMFileUtil::FileKind kind =
+      sfu.getFileKind(sfu.joinFilename(directory, name));
+    if (kind == SMFileUtil::FK_NONE) {
+      // The file disappeared between when we scanned the directory and
+      // when we checked the particular file.
+    }
+    else {
+      entries.push(SMFileUtil::DirEntryInfo(name, kind));
+    }
+  }
+}
+
+
+void SMFileUtil::getDirectoryEntries(
+  ArrayStack<DirEntryInfo> /*OUT*/ &entries, string const &directory)
+{
+#ifdef __MINGW32__
+  struct CallFindClose {
+    HANDLE m_hFind;
+    string const &m_dir;
+
+    CallFindClose(HANDLE h, string const &d)
+      : m_hFind(h),
+        m_dir(d)
+    {}
+
+    ~CallFindClose()
+    {
+      if (!FindClose(m_hFind)) {
+        DEV_WARNING_SYSERROR_CTXT("FindClose", m_dir.c_str());
+      }
+    }
+  };
+
+  entries.clear();
+
+  // Path to search.  FindFirstFileA has an odd interface, demanding
+  // an explicit wildcard to search a directory.
+  string searchPath = this->joinFilename(directory, "*");
+
+  // Begin iterating over directory entries.
+  WIN32_FIND_DATA fileData;
+  HANDLE hFind = FindFirstFileA(searchPath.c_str(), &fileData);
+  if (hFind == INVALID_HANDLE_VALUE) {
+    if (GetLastError() == ERROR_FILE_NOT_FOUND) {
+      // The directory is empty.  (Although, we never get here on
+      // Windows and Linux since there is always "." and "..".)
+      return;
+    }
+    xsyserror("FindFirstFileA", directory);
+  }
+
+  // Call 'FindClose' when we return or throw.
+  CallFindClose cfc(hFind, directory);
+
+  do {
+    // Add the information in 'fileData' to 'entries'.
+    FileKind kind =
+      (fileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)? FK_DIRECTORY :
+      (fileData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)? FK_OTHER :
+      /*else*/ FK_REGULAR;
+    entries.push(DirEntryInfo(fileData.cFileName, kind));
+
+    // Get next entry.
+  } while (FindNextFileA(hFind, &fileData));
+
+  if (GetLastError() != ERROR_NO_MORE_FILES) {
+    xsyserror("FindNextFileA", directory);
+  }
+
+#else
+  // The POSIX API does not have a faster way to do this.
+  getDirectoryEntries_scanThenStat(*this, entries, directory);
+
+#endif // !__MINGW32__
 }
 
 
