@@ -115,6 +115,16 @@ void printUnhandled(xBase const &x);
   }
 
 
+// Define a subclass of xBase.  All methods are inline.
+#define DEFINE_XBASE_SUBCLASS(SubclassName)                          \
+  class SubclassName : public xBase {                                \
+  public:                                                            \
+    SubclassName(char const *p) : xBase(p) {}                        \
+    SubclassName(string const &s) : xBase(s) {}                      \
+    SubclassName(SubclassName const &obj) : xBase(obj) {}            \
+  } /* user ; */
+
+
 // -------------------- x_assert -----------------------
 // thrown by _xassert_fail, declared in xassert.h
 // throwing this corresponds to detecting a bug in the program

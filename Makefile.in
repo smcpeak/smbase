@@ -145,6 +145,7 @@ OBJS += mysig.o
 OBJS += nonport.o
 OBJS += objcount.o
 OBJS += ofstreamts.o
+OBJS += parsestring.o
 OBJS += point.o
 OBJS += pprint.o
 OBJS += refct-serf.o
@@ -215,6 +216,7 @@ TESTS += svdict
 TESTS += taillist_test
 TESTS += tarray2d
 TESTS += tarrayqueue
+TESTS += test-codepoint
 TESTS += test-datetime
 TESTS += test-refct-serf
 TESTS += test-sm-file-util
@@ -225,6 +227,7 @@ TESTS += tobjlist
 TESTS += tobjpool
 TESTS += trdelete
 TESTS += tsobjlist
+TESTS += unit-tests
 TESTS += vdtllist
 TESTS += voidlist
 TESTS += vptrmap
@@ -360,6 +363,18 @@ tarray2d$(EXE): tarray2d.cc array2d.h $(THIS)
 datablok$(EXE): datablok.cpp datablok.h $(THIS)
 	$(TESTCXX) -o $@ -DTEST_DATABLOK datablok.cpp $(TESTFLAGS)
 
+UNIT_TEST_OBJS :=
+UNIT_TEST_OBJS += test-overflow.o
+UNIT_TEST_OBJS += test-parsestring.o
+UNIT_TEST_OBJS += unit-tests.o
+
+-include $(UNIT_TEST_OBJS:.o=.d)
+
+unit-tests$(EXE): $(UNIT_TEST_OBJS) $(THIS)
+	$(TESTCXX) -o $@ $(UNIT_TEST_OBJS) $(TESTFLAGS)
+
+all: unit-tests$(EXE)
+
 # Rule for tests that have dedicated .cc files, which is what I
 # would like to transition toward.
 test-%$(EXE): test-%.cc $(THIS)
@@ -408,11 +423,13 @@ check: $(TESTS)
 	$(RUN)./d2vector$(EXE)
 	$(RUN)./bdffont$(EXE)
 	$(RUN)./tarray2d$(EXE)
+	$(RUN)./test-codepoint$(EXE)
 	$(RUN)./test-datetime$(EXE)
 	$(RUN)./test-refct-serf$(EXE)
 	$(RUN)./test-sm-file-util$(EXE)
 	$(RUN)./test-stringset$(EXE)
 	$(RUN)./datablok$(EXE)
+	$(RUN)./unit-tests$(EXE)
 ifeq ($(TARGET_PLATFORM_IS_MINGW),0)
 	$(RUN)./mysig$(EXE)
 	$(RUN)./testmalloc$(EXE) >/dev/null 2>&1

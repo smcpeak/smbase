@@ -3,13 +3,11 @@
 
 #include "overflow.h"                  // this module
 
-#include "macros.h"                    // PVAL
-#include "types.h"                     // int64_t, uint64_t
+#include "sm-iostream.h"               // cout
+#include "test.h"                      // PVAL
+#include "typ.h"                       // int64_t, uint64_t, INT64_C
 
 #include <assert.h>                    // assert
-#include <iostream>                    // std::cout
-
-using namespace std;
 
 
 // Add, and expect success.
@@ -18,6 +16,15 @@ void testOneAdd(NUM a, NUM b, NUM expect)
 {
   NUM actual = addWithOverflowCheck(a, b);
   assert(actual == expect);
+}
+
+
+template <class NUM>
+ostream& insertAsDigits(ostream &os, NUM n)
+{
+  stringBuilder sb;
+  insertAsDigits(sb, n);
+  return os << sb.str();
 }
 
 
@@ -36,7 +43,7 @@ void testOneAddOv(NUM a, NUM b, int verbose = 1)
   }
   catch (XOverflow &x) {
     if (verbose) {
-      cout << "As expected: " << x.msg << endl;
+      cout << "As expected: " << x.why() << endl;
     }
   }
 }
@@ -66,7 +73,7 @@ void testOneMultiplyOv(NUM a, NUM b, int verbose = 1)
   }
   catch (XOverflow &x) {
     if (verbose) {
-      cout << "As expected: " << x.msg << endl;
+      cout << "As expected: " << x.why() << endl;
     }
   }
 }
@@ -202,6 +209,9 @@ static void testAddAndMultiply()
 
 int test_overflow()
 {
+  // This test throws many exceptions.
+  RESTORER(bool, xBase::logExceptions, false);
+
   testAddAndMultiply();
 
   cout << "test-overflow: PASSED" << endl;

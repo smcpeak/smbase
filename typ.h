@@ -5,8 +5,15 @@
 #ifndef __TYP_H
 #define __TYP_H
 
-// These days stdint.h should be common enough to rely on.
+// These days stdint.h should be common enough to rely on.  But for
+// C++98 and C++03, at least on mingw, I need to explicitly request
+// the limit and constant macros.
+#define __STDC_LIMIT_MACROS            // INT64_MAX, etc.
+#define __STDC_CONSTANT_MACROS         // INT64_C, etc.
 #include <stdint.h>                    // uintptr_t
+
+#include <stddef.h>                    // NULL
+
 
 // byte
 typedef unsigned char byte;
@@ -15,12 +22,6 @@ typedef signed char signed_byte;
 
 // int32 used to be here, but defined nonportably, and I don't use
 // it anyway, so I ripped it out
-
-
-// NULL
-#ifndef NULL
-#  define NULL 0
-#endif // NULL
 
 
 // bool

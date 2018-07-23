@@ -3,6 +3,8 @@
 
 #include "codepoint.h"                 // this module
 
+#include "str.h"                       // stringf
+
 
 bool isUppercaseLetter(int c)
 {
@@ -41,9 +43,15 @@ bool isCIdentifierCharacter(int c)
 }
 
 
-bool isPrintableASCII(int c)
+bool isASCIIPrintable(int c)
 {
   return 32 <= c && c <= 126;
+}
+
+
+bool isASCIIDigit(int c)
+{
+  return '0' <= c && c <= '9';
 }
 
 

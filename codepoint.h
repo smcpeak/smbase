@@ -37,7 +37,10 @@ bool isCIdentifierCharacter(int c);
 // True if 'c' is one of the printable ASCII characters.  Note that, as
 // best I can tell, the printable range is the same for all national
 // ASCII variants as it is for US-ASCII, namely [32,126].
-bool isPrintableASCII(int c);
+bool isASCIIPrintable(int c);
+
+// True if 'c' is in ['0','9'].
+bool isASCIIDigit(int c);
 
 // True if 'c' is a POSIX or Bash shell metacharacter, including space,
 // under the assumption that IFS has its usual value.

@@ -14,8 +14,8 @@
 #ifndef OVERFLOW_H
 #define OVERFLOW_H
 
-#include "stringb.h"                   // ostringstream
-#include "xmsg.h"                      // DEFINE_XMSG_SUBCLASS
+#include "exc.h"                       // DEFINE_XBASE_SUBCLASS
+#include "str.h"                       // stringBuilder
 
 #include <limits>                      // std::numeric_limits
 #include <typeinfo>                    // typeid
@@ -32,12 +32,12 @@ using std::numeric_limits;
 
 
 // Exception thrown when there would be an arithmetic overflow.
-DEFINE_XMSG_SUBCLASS(XOverflow);
+DEFINE_XBASE_SUBCLASS(XOverflow);
 
 
 // Print 'n' to 'os' as digits rather than a character.
 template <class NUM>
-ostream &insertAsDigits(ostream &os, NUM n)
+stringBuilder &insertAsDigits(stringBuilder &os, NUM n)
 {
   if (sizeof(n) == 1) {
     os << (int)n;
@@ -53,16 +53,16 @@ ostream &insertAsDigits(ostream &os, NUM n)
 template <class NUM>
 void detectedOverflow(NUM a, NUM b, char op)
 {
-  ostringstream oss;
+  stringBuilder sb;
 
   // Note: On GCC, name() returns a mangled type name, so for the
   // primitive types it will be like "i" for "int", "a" for "char",
   // etc.  That's not ideal for human readability.
-  oss << "Arithmetic overflow of type \"" << typeid(b).name() << "\": ";
+  sb << "Arithmetic overflow of type \"" << typeid(b).name() << "\": ";
 
-  insertAsDigits(oss, a) << ' ' << op << ' ';
-  insertAsDigits(oss, b) << " would overflow.";
-  throw XOverflow(oss.str());
+  insertAsDigits(sb, a) << ' ' << op << ' ';
+  insertAsDigits(sb, b) << " would overflow.";
+  throw XOverflow(sb.str());
 }
 
 
@@ -111,7 +111,7 @@ NUM multiplyWithOverflowCheck(NUM a, NUM b)
       }
     }
   }
-  else if (a == -1) {
+  else if (a < 0 /*implies 'a' is signed*/ && -a == 1) {
     // Here I am assuming the number is represented in two's complement
     // form, which implies the magnitude of min() is one less than the
     // magnitude of max().  I'm not sure how to generalize this logic

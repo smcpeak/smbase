@@ -63,6 +63,11 @@ void decodeEscapes(ArrayStack<char> &dest, rostring src,
 string parseQuotedString(rostring text);
 
 
+// For printable ASCII other than single quote or backslash, return 'c'.
+// Otherwise, return '\'', '\\', '\xNN', '\uNNNN', or '\UNNNNNNNN'.
+string quoteCharacter(int c);
+
+
 // Return a string that, in the POSIX shell syntax, denotes 's'.  If no
 // quoting is needed, returns 's'.  This uses double-quotes when 's'
 // needs quoting, which is when 's' contains a shell metacharacter or

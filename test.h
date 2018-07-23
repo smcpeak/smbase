@@ -124,4 +124,11 @@ void expectEq(char const *label, T const &actual, T const &expect)
   expectEq(#actual, actual, expect) /* user ; */
 
 
+// Special case for 'expect' being a string literal.
+inline void expectEq(char const *label, string const &actual, char const *expect)
+{
+  expectEq(label, actual, string(expect));
+}
+
+
 #endif // __TEST_H
