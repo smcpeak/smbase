@@ -96,6 +96,22 @@ SMFileUtil::DirEntryInfo::operator= (SMFileUtil::DirEntryInfo const &obj)
 }
 
 
+int SMFileUtil::DirEntryInfo::compareTo(DirEntryInfo const &obj) const
+{
+  int res = m_name.compareTo(obj.m_name);
+  if (res) { return res; }
+
+  return (int)m_kind - (int)obj.m_kind;
+}
+
+
+/*static*/ int SMFileUtil::DirEntryInfo::compare(
+  DirEntryInfo const *a, DirEntryInfo const *b)
+{
+  return a->compareTo(*b);
+}
+
+
 // ----------------------- SMFileUtil ------------------------
 bool SMFileUtil::windowsPathSemantics()
 {
@@ -525,6 +541,14 @@ void SMFileUtil::getDirectoryEntries(
   getDirectoryEntries_scanThenStat(*this, entries, directory);
 
 #endif // !__MINGW32__
+}
+
+
+void SMFileUtil::getSortedDirectoryEntries(
+  ArrayStack<DirEntryInfo> /*OUT*/ &entries, string const &directory)
+{
+  this->getDirectoryEntries(entries, directory);
+  entries.sort(&DirEntryInfo::compare);
 }
 
 

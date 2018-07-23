@@ -53,7 +53,7 @@ static void printSomeStuff()
 
   ArrayStack<SMFileUtil::DirEntryInfo> entries;
   string wd = sfu.currentDirectory();
-  sfu.getDirectoryEntries(entries, wd);
+  sfu.getSortedDirectoryEntries(entries, wd);
   cout << wd << " has " << entries.length() << " entries:" << endl;
   for (int i=0; i < entries.length(); i++) {
     cout << "  " << entries[i].m_name << ": " << entries[i].m_kind << endl;
@@ -66,7 +66,7 @@ static void printSomeStuff()
   // Add some initial chaff to make sure 'entries' gets cleared.
   entries.push(SMFileUtil::DirEntryInfo("---", SMFileUtil::FK_NONE));
 
-  sfu.getDirectoryEntries(entries, stringb(wd << '/'));
+  sfu.getSortedDirectoryEntries(entries, stringb(wd << '/'));
   xassert(numEntries == entries.length());
 
   try {

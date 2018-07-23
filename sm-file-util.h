@@ -55,6 +55,10 @@ public:      // types
     ~DirEntryInfo();
 
     DirEntryInfo& operator= (DirEntryInfo const &obj);
+
+    // strcmp-style result.  Lexicographic comparison, name first.
+    int compareTo(DirEntryInfo const &obj) const;
+    static int compare(DirEntryInfo const *a, DirEntryInfo const *b);
   };
 
 public:      // funcs
@@ -127,6 +131,10 @@ public:      // funcs
   // Get names and file kinds.  This may be more expensive than just
   // getting the names.
   virtual void getDirectoryEntries(
+    ArrayStack<DirEntryInfo> /*OUT*/ &entries, string const &directory);
+
+  // Same, but return in alphabetical order.
+  void getSortedDirectoryEntries(
     ArrayStack<DirEntryInfo> /*OUT*/ &entries, string const &directory);
 
   // Split 'inputPath' into two strings, 'dir' and 'base', such that:
