@@ -5,6 +5,7 @@
 #include "syserr.h"                    // this module
 
 #include "dev-warning.h"               // devWarning
+#include "strutil.h"                   // quoted
 
 
 // ---------------- portable code ----------------
@@ -66,7 +67,15 @@ STATICDEF string xSysError::
 {
   // build string; start with syscall that failed
   stringBuilder sb;
-  sb << syscall << ": ";
+  sb << syscall;
+  if (!ctx.empty()) {
+    // Printing the context here makes it clearly associated with the
+    // syscall.  There is a danger of thinking it is literally an
+    // argument to that syscall, which may or may not be the case, but
+    // I think that is tolerable.
+    sb << '(' << quoted(ctx) << ')';
+  }
+  sb << ": ";
 
   // now a failure reason string
   if (r != R_UNKNOWN) {
@@ -78,11 +87,6 @@ STATICDEF string xSysError::
   else {
     // no useful info, use the R_UNKNOWN string
     sb << getReasonString(r);
-  }
-
-  // finally, the context
-  if (!ctx.empty()) {
-    sb << ", " << ctx;
   }
 
   return sb;
