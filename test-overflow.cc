@@ -8,6 +8,7 @@
 #include "typ.h"                       // int64_t, uint64_t, INT64_C
 
 #include <assert.h>                    // assert
+#include <limits.h>                    // INT_MIN
 
 
 // Add, and expect success.
