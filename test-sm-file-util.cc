@@ -280,6 +280,15 @@ static void testDirectoryExists()
 }
 
 
+static void testIsReadOnly()
+{
+  SMFileUtil sfu;
+  EXPECT_EQ(sfu.isReadOnly("test-sm-file-util.cc"), false);
+  EXPECT_EQ(sfu.isReadOnly("Makefile"), true);
+  EXPECT_EQ(sfu.isReadOnly("nonexistent-file"), false);
+}
+
+
 // Defined in sm-file-util.cc.
 void getDirectoryEntries_scanThenStat(SMFileUtil &sfu,
   ArrayStack<SMFileUtil::DirEntryInfo> /*OUT*/ &entries, string const &directory);
@@ -328,6 +337,7 @@ static void entry(int argc, char **argv)
   testEnsureEndsWith();
   testStripTrailing();
   testDirectoryExists();
+  testIsReadOnly();
 
   cout << "test-sm-file-util ok" << endl;
 }

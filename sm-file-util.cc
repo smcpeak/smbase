@@ -37,6 +37,7 @@
 #if SM_FILE_UTIL_USE_WINDOWS_API
 #  define WIN32_LEAN_AND_MEAN
 #  include <windows.h>                 // GetCurrentDirectoryA
+#  include <aclapi.h>                  // GetNamedSecurityInfo
 #else
 #  include <limits.h>                  // PATH_MAX
 #  include <stdlib.h>                  // getcwd
@@ -374,6 +375,197 @@ SMFileUtil::FileKind SMFileUtil::getFileKind(string const &path)
 }
 
 
+bool SMFileUtil::isReadOnly(string const &path) NOEXCEPT
+{
+#if SM_FILE_UTIL_USE_WINDOWS_API
+  // This is a nasty bit of code.  The Windows security API is a mess
+  // and MSDN is utterly unhelpful.  I found this code that does
+  // something similar and borrowed a number of ideas from it:
+  //
+  // https://www.ncbi.nlm.nih.gov/IEB/ToolBox/CPP_DOC/lxr/source/src/corelib/ncbi_os_mswin.cpp
+
+  // ----------------- part 0: closing handles -------------------
+  struct CallCloseHandle {
+    HANDLE m_handle;
+    string m_context;
+
+    CallCloseHandle(HANDLE h, string const &context)
+      : m_handle(h),
+        m_context(context)
+    {}
+
+    ~CallCloseHandle()
+    {
+      if (!CloseHandle(m_handle)) {
+        DEV_WARNING_SYSERROR_CTXT("CloseHandle", m_context.c_str());
+      }
+    }
+  };
+
+  struct CallLocalFree {
+    HLOCAL m_handle;
+
+    CallLocalFree(HLOCAL h)
+      : m_handle(h)
+    {}
+
+    ~CallLocalFree()
+    {
+      if (NULL != LocalFree(m_handle)) {
+        DEV_WARNING_SYSERROR("LocalFree");
+      }
+    }
+  };
+
+  struct CallRevertToSelf {
+    CallRevertToSelf()
+    {}
+
+    ~CallRevertToSelf()
+    {
+      if (!RevertToSelf()) {
+        DEV_WARNING_SYSERROR("RevertToSelf");
+      }
+    }
+  };
+
+  // --------------- part 1: get file security info ----------------
+  // Query the file's security attributes.
+  PSECURITY_DESCRIPTOR pSecurityDescriptor = NULL;
+  DWORD res = GetNamedSecurityInfoA(
+    path.c_str(),                      // pObjectName
+    SE_FILE_OBJECT,                    // ObjectType
+
+    // We have to ask for everything (except the SACL, which would be
+    // denied) so that the security descriptor is sufficiently populated
+    // to allow 'AccessCheck' to work properly.  But we do not actually
+    // need these details ourselves, which is why we pass NULL for all
+    // of the other pointers like 'ppDacl'.
+    DACL_SECURITY_INFORMATION |        // SecurityInfo
+      GROUP_SECURITY_INFORMATION |
+      OWNER_SECURITY_INFORMATION,
+
+    NULL,                              // ppsidOwner
+    NULL,                              // ppsidGroup
+    NULL,                              // ppDacl
+    NULL,                              // ppSacl
+    &pSecurityDescriptor);             // ppSecurityDescriptor
+  if (res != ERROR_SUCCESS) {
+    // A failure here generally means the file does not exist or we lack
+    // permissions to query it.
+    return false;
+  }
+
+  // Arrange to free the security descriptor structure.
+  CallLocalFree callLocalFree(pSecurityDescriptor);
+
+  // --------------- part 2: get a thread token ----------------
+  // This is some black magic that is required in order for
+  // OpenThreadToken to work.  I would not have figured this out without
+  // looking at the NIH code linked above.  MSDN barely hints at it.
+  if (!ImpersonateSelf(SecurityImpersonation)) {
+    // Can this fail?  The world may never know.
+    DEV_WARNING_SYSERROR("ImpersonateSelf");
+    return false;
+  }
+
+  // Arrange to call RevertToSelf.
+  CallRevertToSelf callRevertToSelf;
+
+  // Get access token for the current thread.  Why not the process?
+  // Well, I tried that first and it didn't work.  I don't remember the
+  // error message anymore but it made no sense.  NIH code to the
+  // rescue!  (Except they do this twice for some reason.)
+  HANDLE hThread = GetCurrentThread(); // Does not need to be closed.
+  HANDLE hThreadToken = INVALID_HANDLE_VALUE;
+  BOOL bres = OpenThreadToken(
+    hThread,        // ThreadHandle
+
+    // MSDN 'AccessCheck' mentions needing TOKEN_QUERY.
+    TOKEN_QUERY,    // DesiredAccess
+
+    // This parameter is total black magic.  Try making sense of this
+    // quote from MSDN:
+    //
+    //   "Without this parameter, the calling thread cannot open the
+    //   access token on the specified thread because it is impossible
+    //   to open executive-level objects by using the
+    //   SecurityIdentification impersonation level."
+    //
+    // Uh, right.  Well, the NIH code passes FALSE so I will too.
+    FALSE,          // OpenAsSelf
+
+    &hThreadToken); // TokenHandle
+  if (!bres) {
+    // This should only fail if I messed up API calls above.
+    DEV_WARNING_SYSERROR("OpenThreadToken");
+    return false;
+  }
+
+  // Arrange to close the process token.
+  CallCloseHandle callCloseHandle_hThreadToken(hThreadToken, "thread token");
+
+  // --------------- part 3: call AccessCheck ----------------
+  // This is a mysterious pile of goo.  MSDN is worthless, but it seems
+  // you can just pass zeroes and it works.  I probably would have
+  // figured out this part on my own.
+  GENERIC_MAPPING genericMapping;
+  memset(&genericMapping, 0, sizeof(genericMapping));
+  PRIVILEGE_SET privilegeSet;
+  memset(&privilegeSet, 0, sizeof(privilegeSet));
+  DWORD privilegeSetLength = sizeof(privilegeSet);
+
+  // Output of 'AccessCheck'.
+  ACCESS_MASK grantedAccess = 0;
+  BOOL accessStatus = FALSE;
+
+  // One reading of MSDN would suggest I could pass FILE_WRITE_DATA (see
+  // below) instead of MAXIMUM_ALLOWED.  But there is this passage: "If
+  // access is granted, the requested access mask becomes the object's
+  // granted access mask."  What does that mean?  It could mean that
+  // passing less than MAXIMUM_ALLOWED somehow permanently restricts my
+  // thread or process in future interactions with the file.  NIH code
+  // passes MAXIMUM_ALLOWED, I follow suit.
+  bres = AccessCheck(
+    pSecurityDescriptor,               // pSecurityDescriptor
+    hThreadToken,                      // ClientToken
+    MAXIMUM_ALLOWED,                   // DesiredAccess
+    &genericMapping,                   // GenericMapping
+    &privilegeSet,                     // PrivilegeSet
+    &privilegeSetLength,               // PrivilegeSetLength
+    &grantedAccess,                    // GrantedAccess
+    &accessStatus);                    // AccessStatus
+  if (!bres) {
+    // I think the only way this fails is if I messed up my API calls
+    // above, which of course is certainly possible.
+    DEV_WARNING_SYSERROR_CTXT("AccessCheck", path.c_str());
+    return false;
+  }
+
+  // --------------- part 4: interpret the result ----------------
+  // It is far from obvious which bit to test here.  There are many
+  // bits, varying in meaning depending on the kind of object.  I got to
+  // FILE_WRITE_DATA through a combination of experimentation and
+  // clicking around in the MSDN maze.
+  return !(grantedAccess & FILE_WRITE_DATA);
+
+#else
+  if (access(path.c_str(), W_OK) == 0) {
+    // File exists and is writable.
+    return false;
+  }
+  else if (errno == EACCES || errno == EROFS) {
+    // File exists but is not writable.
+    return true;
+  }
+  else {
+    // File does not exist, or permission error, or something else.
+    return false;
+  }
+#endif // !SM_FILE_UTIL_USE_WINDOWS_API
+}
+
+
 string SMFileUtil::joinFilename(string const &prefix,
                                 string const &suffix)
 {
@@ -482,7 +674,7 @@ void getDirectoryEntries_scanThenStat(SMFileUtil &sfu,
 void SMFileUtil::getDirectoryEntries(
   ArrayStack<DirEntryInfo> /*OUT*/ &entries, string const &directory)
 {
-#ifdef __MINGW32__
+#if SM_FILE_UTIL_USE_WINDOWS_API
   struct CallFindClose {
     HANDLE m_hFind;
     string const &m_dir;
@@ -540,7 +732,7 @@ void SMFileUtil::getDirectoryEntries(
   // The POSIX API does not have a faster way to do this.
   getDirectoryEntries_scanThenStat(*this, entries, directory);
 
-#endif // !__MINGW32__
+#endif // !SM_FILE_UTIL_USE_WINDOWS_API
 }
 
 

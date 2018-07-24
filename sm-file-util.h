@@ -14,6 +14,7 @@
 #include "array.h"                     // ArrayStack
 #include "macros.h"                    // NO_OBJECT_COPIES
 #include "sm-iostream.h"               // ostream
+#include "sm-noexcept.h"               // NOEXCEPT
 #include "sm-override.h"               // OVERRIDE
 #include "str.h"                       // string
 #include "stringset.h"                 // StringSet
@@ -114,6 +115,11 @@ public:      // funcs
   // are relative to the current working directory.  Throws xSysError on
   // permission errors or the like.
   virtual FileKind getFileKind(string const &path);
+
+  // True if 'path' exists, but the current user does not have write
+  // permission for it.  This does not throw; it returns false for
+  // conditions that prevent determining the file's existence.
+  virtual bool isReadOnly(string const &path) NOEXCEPT;
 
   // Return prefix+suffix, except if neither is empty, add a directory
   // separator if none is present, and remove an extra trailing
