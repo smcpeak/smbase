@@ -293,4 +293,37 @@ public:
 #define CLOSE_ANONYMOUS_NAMESPACE } /* anon */
 
 
+// My recollection is there is a way to do what this macro does without
+// using variadic macros.  (I think Boost PP has a way.)  For now I'll
+// just assume there is, and hence it would be possible to redefine this
+// macro if needed.
+#define SMBASE_PP_UNWRAP_PARENS(...) __VA_ARGS__
+
+// Define a 'toString' method for an enumeration.  Use like this:
+//
+//   DEFINE_ENUMERATION_TO_STRING(
+//     DocumentProcessStatus,
+//     NUM_DOCUMENT_PROCESS_STATUSES,
+//     (
+//       "DPS_NONE",
+//       "DPS_RUNNING",
+//       "DPS_FINISHED"
+//     )
+//   )
+//
+#define DEFINE_ENUMERATION_TO_STRING(Enumeration, NUM_VALUES, nameList) \
+  char const *toString(Enumeration value)                               \
+  {                                                                     \
+    static char const * const names[] =                                 \
+      { SMBASE_PP_UNWRAP_PARENS nameList };                             \
+    ASSERT_TABLESIZE(names, (NUM_VALUES));                              \
+    if ((unsigned)value < TABLESIZE(names)) {                           \
+      return names[value];                                              \
+    }                                                                   \
+    else {                                                              \
+      return "unknown";                                                 \
+    }                                                                   \
+  }
+
+
 #endif // __MACROS_H
