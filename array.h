@@ -269,7 +269,7 @@ private:     // funcs
   void bc(int i) const { xassert((unsigned)i < (unsigned)len); }
 
 public:      // funcs
-  ArrayStack(int initArraySize = 10)
+  ArrayStack(int initArraySize = 0)
     : GrowArray<T>(initArraySize),
       len(0)
     {}
@@ -461,7 +461,7 @@ private:    // data
   ArrayStack<T*> arr;
 
 public:     // funcs
-  ObjArrayStack(int initArraySize = 10)
+  ObjArrayStack(int initArraySize = 0)
     : arr(initArraySize)
     {}
   ~ObjArrayStack() { deleteAll(); }
