@@ -3,11 +3,11 @@
 
 #include "overflow.h"                  // this module
 
+#include "exc.h"                       // xassert
 #include "sm-iostream.h"               // cout
 #include "test.h"                      // PVAL
 #include "typ.h"                       // int64_t, uint64_t, INT64_C
 
-#include <assert.h>                    // assert
 #include <limits.h>                    // INT_MIN
 
 
@@ -16,7 +16,7 @@ template <class NUM>
 void testOneAdd(NUM a, NUM b, NUM expect)
 {
   NUM actual = addWithOverflowCheck(a, b);
-  assert(actual == expect);
+  xassert(actual == expect);
 }
 
 
@@ -40,7 +40,7 @@ void testOneAddOv(NUM a, NUM b, int verbose = 1)
     insertAsDigits(cout, a) << endl;
     cout << "b: ";
     insertAsDigits(cout, b) << endl;
-    assert(!"testOneAddOv: that should have failed");
+    xassert(!"testOneAddOv: that should have failed");
   }
   catch (XOverflow &x) {
     if (verbose) {
@@ -55,7 +55,7 @@ template <class NUM>
 void testOneMultiply(NUM a, NUM b, NUM expect)
 {
   NUM actual = multiplyWithOverflowCheck(a, b);
-  assert(actual == expect);
+  xassert(actual == expect);
 }
 
 
@@ -70,7 +70,7 @@ void testOneMultiplyOv(NUM a, NUM b, int verbose = 1)
     insertAsDigits(cout, a) << endl;
     cout << "b: ";
     insertAsDigits(cout, b) << endl;
-    assert(!"testOneMultiplyOv: that should have failed");
+    xassert(!"testOneMultiplyOv: that should have failed");
   }
   catch (XOverflow &x) {
     if (verbose) {
@@ -98,7 +98,7 @@ void testOneAddSmallUsingInt64(SMALL_NUM a, SMALL_NUM b, int verbose = 1)
 
     // Check for correctness using the larger type.
     int64_t largeActual(actual);
-    assert(largeActual == result);
+    xassert(largeActual == result);
   }
   else {
     testOneAddOv(a, b, verbose);
@@ -123,7 +123,7 @@ void testOneMultiplySmallUsingInt64(SMALL_NUM a, SMALL_NUM b, int verbose = 1)
 
     // Check for correctness using the larger type.
     int64_t largeActual(actual);
-    assert(largeActual == result);
+    xassert(largeActual == result);
   }
   else {
     testOneMultiplyOv(a, b, verbose);
