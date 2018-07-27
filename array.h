@@ -24,7 +24,7 @@ private:     // not allowed
   void operator=(Array&);
 
 public:
-  Array(int len)
+  explicit Array(int len)
     : arr(new T[(len>=0? len :
                   (xfailure("Array with negative length"), 0) )])
   {}
@@ -86,7 +86,7 @@ private:     // disallowed
   void operator==(GrowArray&);
 
 public:      // funcs
-  GrowArray(int initSz);
+  explicit GrowArray(int initSz);
   GrowArray(GrowArray const &obj) : arr(0), sz(0) { copyFrom(obj); }
   ~GrowArray();
 
@@ -106,9 +106,12 @@ public:      // funcs
   // set size, reallocating if old size is different; if the
   // array gets bigger, existing elements are preserved; if the
   // array gets smaller, elements are truncated
+  void setAllocatedSize(int newSz);
+
+  // Old name for compatibility.
   //
-  // TODO: This should be renamed!
-  void setSize(int newSz);
+  // TODO: This should be removed.
+  void setSize(int newSz) { this->setAllocatedSize(newSz); }
 
   // make sure there are at least 'minSz' elements in the array;
   void ensureAtLeast(int minSz)
@@ -183,7 +186,7 @@ void GrowArray<T>::copyFrom_limit(GrowArray<T> const &obj, int limit)
 
 
 template <class T>
-void GrowArray<T>::setSize(int newSz)
+void GrowArray<T>::setAllocatedSize(int newSz)
 {
   if (newSz != sz) {
     // keep track of old
@@ -269,7 +272,7 @@ private:     // funcs
   void bc(int i) const { xassert((unsigned)i < (unsigned)len); }
 
 public:      // funcs
-  ArrayStack(int initArraySize = 0)
+  explicit ArrayStack(int initArraySize = 0)
     : GrowArray<T>(initArraySize),
       len(0)
     {}
@@ -418,7 +421,8 @@ private:     // data
   int index;                      // current element
 
 public:      // funcs
-  ArrayStackIterNC(ArrayStack<T> /*const*/ &a) : arr(a), index(0) {}
+  explicit ArrayStackIterNC(ArrayStack<T> /*const*/ &a)
+    : arr(a), index(0) {}
 
   // iterator actions
   bool isDone() const             { return index >= arr.length(); }
@@ -440,7 +444,7 @@ private:
   ArrayStack<T> &stk;
 
 public:
-  ArrayStackPopper(ArrayStack<T> &s) : stk(s) {}
+  explicit ArrayStackPopper(ArrayStack<T> &s) : stk(s) {}
   ArrayStackPopper(ArrayStack<T> &s, T const &pushVal)
     : stk(s) { stk.push(pushVal); }
   ~ArrayStackPopper()
@@ -461,7 +465,7 @@ private:    // data
   ArrayStack<T*> arr;
 
 public:     // funcs
-  ObjArrayStack(int initArraySize = 0)
+  explicit ObjArrayStack(int initArraySize = 0)
     : arr(initArraySize)
     {}
   ~ObjArrayStack() { deleteAll(); }
@@ -558,7 +562,8 @@ private:     // data
   int index;                      // current element
 
 public:      // funcs
-  ObjArrayStackIterNC(ObjArrayStack<T> /*const*/ &a) : arr(a), index(0) {}
+  explicit ObjArrayStackIterNC(ObjArrayStack<T> /*const*/ &a)
+    : arr(a), index(0) {}
 
   // iterator actions
   bool isDone() const             { return index >= arr.length(); }
