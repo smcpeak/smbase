@@ -31,7 +31,7 @@ public:     // funcs
 
   // add a mapping from 'key' to 'value'; must not be mapped already
   void add(KEY *key, VALUE *value)        { xassert(!map.get(key)); map.add(key, value); }
-  
+
   // add with replacement
   void addReplace(KEY *key, VALUE *value)
   {
@@ -44,7 +44,7 @@ public:     // funcs
 
   // remove all mappings, and deallocate all VALUEs
   void empty();
-  
+
   // copy the whole map, including making copies of the VALUEs
   ObjMap& operator=(ObjMap const &src);
 
@@ -109,7 +109,7 @@ ObjMap<KEY,VALUE>& ObjMap<KEY,VALUE>::operator=(ObjMap const &src)
 {
   if (this != &src) {
     empty();
-    
+
     // insert copies
     IterC iter(src);
     for (; !iter.isDone(); iter.adv()) {

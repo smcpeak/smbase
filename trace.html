@@ -24,10 +24,10 @@
 <h1>Introduction</h1>
 
 <p>
-The trace (<a href="trace.h">trace.h</a>, <a href="trace.cc">trace.cc</a>) 
-module is designed to support a refinement of printf-style 
+The trace (<a href="trace.h">trace.h</a>, <a href="trace.cc">trace.cc</a>)
+module is designed to support a refinement of printf-style
 debugging.  While I do not use printf-style debugging exclusively,
-it is nevertheless an important and often effective technique.  
+it is nevertheless an important and often effective technique.
 
 <p>
 The main difficulty with traditional <tt>printf</tt> is that you
@@ -56,11 +56,11 @@ Several things are noteworthy about the expansion:
 <ul>
 <li>The output is going to stdout.  I prefer it that way, but feel free to
     add a global variable that sends it to stderr if you really want.
-<li>It is prefixed by "<tt>%%% weapons</tt>" (or whatever) so you can easily 
+<li>It is prefixed by "<tt>%%% weapons</tt>" (or whatever) so you can easily
     recognize it amongst other output, grep it in/out, etc.
 <li>Since it's using the C++ iostreams to do output, you can add extra
     information, like <tt>torpNum</tt> above.  If you need <tt>printf</tt>-style
-    formatting, use the <tt>stringf</tt> function in the 
+    formatting, use the <tt>stringf</tt> function in the
     <a href="str.h">str</a> module.
 <li>Since it ends with <tt>endl</tt>, it prints the newline automatically,
     <em>and</em> flushes the output stream.  That way you'll see the output
@@ -73,7 +73,7 @@ Several things are noteworthy about the expansion:
 Now, the above is a slight simplification.  In fact, the second argument
 to <TT>TRACE</TT> is actually evaluated <em>regardless</em> of whether
 the flag is turned on.  This is so that if the evaluation itself has a
-bug (e.g. it segfaults), it will be found quickly, rather than waiting 
+bug (e.g. it segfaults), it will be found quickly, rather than waiting
 to bite someone who is trying to debug something else.
 
 <h1>Enabling Flags</h1>
@@ -123,7 +123,7 @@ some terminology:
 
 <p>
 I advocate using the tracing module for <em>debugging</em> only.  Since
-the tracing activity (even when no output is produced) is typically 
+the tracing activity (even when no output is produced) is typically
 prohibitively expensive, one cannot ship to users an executable that
 has them in.  And, since it is a good idea to "ship what you test",
 testing should be done with <tt>NDEBUG</tt> turned on, and
@@ -134,7 +134,7 @@ hence tracing disabled.  (See also the note about this in
 Of course, there is nothing wrong with doing some testing with tracing
 enabled.  In fact, when I am the one developing the code, I do most of
 my testing with it enabled.  But the program <em>must</em> also be tested
-with tracing disabled if that's how users will use it, and to the 
+with tracing disabled if that's how users will use it, and to the
 extent there is dedicated QA activities in your project I recommend
 they be performed on the <TT>NDEBUG</TT> build.
 

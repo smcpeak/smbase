@@ -62,7 +62,7 @@ public:      // funcs
   // these assert which state we're in
   void writeInt(int i);
   int readInt();
-   
+
   // ------------- owner/serf ------------
   // take note of an owner pointer where we expect to xfer serfs to it
   virtual void noteOwner(void *ownerPtr) = 0;

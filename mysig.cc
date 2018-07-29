@@ -83,7 +83,7 @@ void printAddrHandler(int signum, siginfo_t *info, void *)
   setHandler(signum, SIG_DFL);
   raise(signum);
 }
-   
+
 
 // unfortunately, linux 2.4.18 seems to have some bugs w.r.t.
 // sigalstack... anytime MYSZ is as small as 4096, the test program
@@ -115,7 +115,7 @@ void printSegfaultAddrs()
   if (0 > sigaltstack(&sas, NULL)) {
     perror("sigaltstack");
     exit(2);
-  }    
+  }
   #endif // 0
 
 

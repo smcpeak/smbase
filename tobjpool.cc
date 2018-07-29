@@ -36,14 +36,14 @@ void Foo::checkInvariant(int index) const
   xassert(y == x+1);
   xassert(z == y+1);
 }
-                             
+
 
 enum { SMALL=30, BIG=100, ITERS=10000 };
 
 int main()
 {
   ObjectPool<Foo> pool(SMALL);
-  int i;    
+  int i;
   int numAllocated=0;
 
   // keep track of what I've allocated

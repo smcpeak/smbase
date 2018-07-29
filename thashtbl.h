@@ -80,7 +80,7 @@ public:     // funcs
 // NOTE: you can't change the table while an iter exists
 template <class KEY, class DATA>
 class THashTableIter {
-private:      // data         
+private:      // data
   HashTableIter iter;            // underlying iter
 
 public:       // funcs

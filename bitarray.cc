@@ -64,7 +64,7 @@ bool BitArray::operator== (BitArray const &obj) const
   if (numBits != obj.numBits) {
     return false;
   }
-  
+
   // this relies on the invariant that the unused trailing
   // bits are always set to 0
   return 0==memcmp(bits, obj.bits, allocdBytes());
@@ -136,7 +136,7 @@ bool BitArray::anyEvenOddBitPair() const
       return true;
     }
   }
-  
+
   return false;    // no such pair
 }
 
@@ -200,7 +200,7 @@ void BitArray::Iter::adv()
 #include "test.h"     // USUAL_MAIN
 
 string toStringViaIter(BitArray const &b)
-{ 
+{
   stringBuilder sb;
   int index = 0;
 
@@ -212,18 +212,18 @@ string toStringViaIter(BitArray const &b)
     sb << "1";
     index++;
   }
-  
+
   while (index < b.length()) {
     sb << "0";
     index++;
   }
-  
+
   return sb;
 }
 
 
 void testIter(char const *str)
-{                             
+{
   BitArray b = stringToBitArray(str);
   b.selfCheck();
 
@@ -240,8 +240,8 @@ void testIter(char const *str)
   // also test the inverter
   BitArray c = ~b;
   c.selfCheck();
-  
-  stringBuilder inv;                 
+
+  stringBuilder inv;
   int len = strlen(str);
   for (int i=0; i<len; i++) {
     inv << (str[i]=='0'? '1' : '0');
@@ -269,10 +269,10 @@ void testUnionIntersection(char const *s1, char const *s2)
     expectUnion        << ((s1[i]=='1' || s2[i]=='1')? '1' : '0');
     expectIntersection << ((s1[i]=='1' && s2[i]=='1')? '1' : '0');
   }
-  
+
   BitArray u = b1 | b2;
   BitArray i = b1 & b2;
-  
+
   string uStr = toString(u);
   string iStr = toString(i);
 
@@ -335,7 +335,7 @@ void entry()
   testIter("111111111111111000000000000011111111");
   testIter("10010110010101010100101010101010100110001000100001010101111");
 
-  testUnionIntersection("", 
+  testUnionIntersection("",
                         "");
 
   testUnionIntersection("1",
@@ -352,7 +352,7 @@ void entry()
 
   testUnionIntersection("0000111111000001111110000011110000",
                         "1111000000111110000001111100001111");
-            
+
   testAnyEvenOddBitPair("0000", false);
   testAnyEvenOddBitPair("0001", false);
   testAnyEvenOddBitPair("0010", false);

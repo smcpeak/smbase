@@ -132,7 +132,7 @@ public:      // funcs
     alloc();
     copyFrom(obj);
   }
-  
+
   // Copy an array.  Elements copied using operator=.  This will
   // require deallocating and allocating again the elements of 'this'
   // if the sizes differ initially.
@@ -145,9 +145,9 @@ public:      // funcs
         columns = obj.columns;
         alloc();
       }
-      
+
       copyFrom(obj);
-    }            
+    }
 
     return *this;
   }
@@ -168,7 +168,7 @@ public:      // funcs
   {
     return const_cast<T&>(eltRefC(i,j));
   }
-  
+
   // Get an element (copy).  Returned object is initialized using
   // T's copy constructor.
   T getElt(long i, long j) const
@@ -181,7 +181,7 @@ public:      // funcs
   {
     eltRef(i,j) = elt;
   }
-  
+
   // Set all elements.  Uses T's operator=.
   void setAll(T const &elt)
   {
@@ -208,7 +208,7 @@ public:      // funcs
         }
       }
     }
-    
+
     return true;
   }
 

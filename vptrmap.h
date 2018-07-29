@@ -34,7 +34,7 @@ private:     // data
   // number of (allocated) slots in the hash table; this is always a
   // power of 2
   int tableSize;
-  
+
   // tableSize always equals 1 << tableSizeBits
   int tableSizeBits;
 
@@ -48,7 +48,7 @@ private:     // data
 public:      // data
   // total # of lookups
   static int lookups;
-  
+
   // total # of entries examined during lookups; perfect hashing
   // would yield lookups==probes
   static int probes;
@@ -89,8 +89,8 @@ public:      // funcs
 
   // remove all mappings
   void empty();
-  
-  
+
+
 public:      // iterators
   // iterate over all stored values in a VoidPtrMap
   // NOTE: you can't change the table while an iter exists

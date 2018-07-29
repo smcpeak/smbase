@@ -13,7 +13,7 @@ class BitArray {
 private:    // data
   unsigned char *bits;
   int numBits;              // # of bits in the array
-  
+
   // invariant: the bits in the last allocated byte that are beyond
   // 'numBits' (if any) are always 0
 
@@ -60,16 +60,16 @@ public:     // funcs
 
   // clear all bits
   void clearAll();
-  
+
   // invert the bits
   void invert();
 
   // bitwise OR ('obj' must be same length)
   void unionWith(BitArray const &obj);
-  
+
   // bitwise AND
   void intersectWith(BitArray const &obj);
-                                 
+
   // true if there is any pair of bits 2n,2n+1 where both are set
   bool anyEvenOddBitPair() const;
 

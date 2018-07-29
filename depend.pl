@@ -69,7 +69,7 @@ if ($? != 0) {
 
 
 # if we know the gcc output file name, insert that in the
-# right place 
+# right place
 if ($outputName) {
   $deps[0] =~ s|.*:|$outputName:|;
 }

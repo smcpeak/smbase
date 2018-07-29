@@ -52,7 +52,7 @@ struct BreakInfo {
   BreakInfo(int pp, int pc, int pi)
     : p(pp), pCol(pc), pInd(pi) {}
   BreakInfo() {}      // for use in arrays
-    
+
   // when choosing breaks, we maximize this sum: the # of chars
   // that will be on this line, and the # of chars available to
   // fill on the next line
@@ -64,10 +64,10 @@ struct BreakInfo {
   }
 
   // decision between two breaks
-  bool betterThan(BreakInfo const &obj /*, int margin*/) { 
-    if (sum(/*margin*/) > obj.sum(/*margin*/)) 
+  bool betterThan(BreakInfo const &obj /*, int margin*/) {
+    if (sum(/*margin*/) > obj.sum(/*margin*/))
       { return true; }
-      
+
     // tiebreaker: prefer more space on the next line, since that's
     // likely to become the space available on the line after that,
     // etc.
@@ -92,7 +92,7 @@ void PPrint::Setter::set()
 {
   // initialize the indentation stack with the line-start indentation
   indentGroups.push(pprint.lineIndent);
-    
+
   // loop over the actual emitted lines
   while (lineIndex < pprint.line.length()) {
     // indent the line by the amount at the top of the stack
@@ -205,7 +205,7 @@ PPrint::Setter::~Setter()
 {
   if (indentGroups.length() != 1) {
     // unbalanced groups
-    breaker();          
+    breaker();
     if (warnWhenUnbalanced) {
       cout << "warning: unbalanced indentation grouping in pprint input\n";
     }
@@ -353,9 +353,9 @@ int main()
         "}\n";
   pp.ind(-2);
   pp << "}\n";
-  
+
   cout << pp.sb;
-  
+
   return 0;
 }
 

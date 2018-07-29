@@ -58,7 +58,7 @@ void verifySorted(ObjList<Integer> const &list)
 
 
 void print(ObjList<Integer> const &list)
-{   
+{
   printf("{ ");
   ObjListIter<Integer> iter(list);
   for (; !iter.isDone(); iter.adv()) {
@@ -142,7 +142,7 @@ void entry()
              list.nth(2) == d
            );
     list.selfCheck();
-             
+
     // 'list' will delete the integers
   }
 

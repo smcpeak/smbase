@@ -26,9 +26,9 @@ private:    // data
 public:     // funcs
   OwnerKHashTable(GetKeyFn gk, HashFn hf, EqualKeyFn ek,
                   int initSize = HashTable::defaultSize)
-    : table((HashTable::GetKeyFn)gk, 
-            (HashTable::HashFn)hf, 
-            (HashTable::EqualKeyFn)ek, 
+    : table((HashTable::GetKeyFn)gk,
+            (HashTable::HashFn)hf,
+            (HashTable::EqualKeyFn)ek,
             initSize) {}
   ~OwnerKHashTable() { empty(1); }
 

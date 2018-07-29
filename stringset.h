@@ -7,10 +7,10 @@
 #include "strsobjdict.h"       // StringSObjDict
 
 class StringSet {
-private:     // data        
+private:     // data
   // represent using a dictionary of pointers to nothing
   StringSObjDict<int> elts;
-  
+
 public:      // funcs
   StringSet() : elts() {}
   ~StringSet();

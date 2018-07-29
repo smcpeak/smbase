@@ -76,7 +76,7 @@ public:     // funcs
     obj.ptr = tmp;
   }
 };
-   
+
 
 template <class T>
 void swap(Owner<T> &obj1, Owner<T> &obj2)

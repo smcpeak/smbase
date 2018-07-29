@@ -117,7 +117,7 @@ public:
     { return list.equalAsPointerSets(otherList.list); }
 
   // debugging: two additional invariants
-  void selfCheck() const { 
+  void selfCheck() const {
     list.selfCheck();
     list.checkHeapDataPtrs();
     list.checkUniqueDataPtrs();

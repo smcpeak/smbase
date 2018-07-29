@@ -11,8 +11,8 @@
 #include <stdlib.h>       // abort
 #include <string.h>       // memcpy
 #include <ctype.h>        // isprint
-    
-    
+
+
 // define the endpost byte as something we hope is
 // unlikely to coincidentally be written during an
 // overrun
@@ -20,7 +20,7 @@
 
 /*static*/ void (*DataBlock::s_memoryCorruptionOverrideHandler)() = NULL;
 
-    
+
 void DataBlock::init(int allocatedSize)
 {
   xassert(allocatedSize >= 0);
@@ -32,19 +32,19 @@ void DataBlock::init(int allocatedSize)
   else {
     data = NULL;
   }
-    
+
   SELFCHECK();
 }
-    
-    
+
+
 STATICDEF byte *DataBlock::allocate(int size)
 {
   byte *ret = new byte[size+1];
   ret[size] = endpost;
   return ret;
 }
-    
-    
+
+
 void DataBlock::selfCheck() const
 {
   this->checkEndpost();
@@ -81,13 +81,13 @@ void DataBlock::checkEndpost() const
   }
 }
 
-    
+
 DataBlock::DataBlock(int allocatedSize)
 {
   init(allocatedSize);
   SELFCHECK();
 }
-    
+
 
 DataBlock::DataBlock(char const *srcString)
 {
@@ -95,8 +95,8 @@ DataBlock::DataBlock(char const *srcString)
   setFromString(srcString);
   SELFCHECK();
 }
-    
-    
+
+
 void DataBlock::ctor(byte const *srcData, int dataLen)
 {
   init(0);
@@ -112,8 +112,8 @@ void DataBlock::ctor(byte const *srcData, int srcDataLen, int allocatedSize)
   memcpy(data, srcData, dataLen);
   SELFCHECK();
 }
-    
-    
+
+
 DataBlock::DataBlock(DataBlock const &obj)
 {
   init(obj.allocated);
@@ -135,8 +135,8 @@ DataBlock::DataBlock(DataBlock const &obj, int minToAllocate)
   init(max(obj.getAllocated(), minToAllocate));
   copyCtorShared(obj);
 }
-    
-    
+
+
 DataBlock::~DataBlock()
 {
   // Do not do a full self-check, since that might throw an
@@ -148,8 +148,8 @@ DataBlock::~DataBlock()
     delete[] data;
   }
 }
-    
-    
+
+
 bool DataBlock::allEqual(DataBlock const &obj) const
 {
   SELFCHECK();
@@ -180,8 +180,8 @@ void DataBlock::setDataLen(int newLen)
   dataLen = newLen;
   SELFCHECK();
 }
-    
-    
+
+
 void DataBlock::setAllocated(int newAllocated)
 {
   SELFCHECK();
@@ -197,12 +197,12 @@ void DataBlock::setAllocated(int newAllocated)
     if (dataLen > newAllocated) {
       dataLen = newAllocated;
     }
-    
+
     // transfer data
     if (dataLen > 0) {
       memcpy(newData, data, dataLen);
     }
-    
+
     // deallocate old buffer and replace with new buffer
     delete[] data;
     data = newData;
@@ -210,7 +210,7 @@ void DataBlock::setAllocated(int newAllocated)
   }
   SELFCHECK();
 }
-    
+
 
 void DataBlock::ensureAtLeast(int minAllocated)
 {
@@ -234,7 +234,7 @@ void DataBlock::addNull()
   setDataLen(dataLen + 1);
   SELFCHECK();
 }
-    
+
 
 void DataBlock::setFromString(char const *srcString)
 {
@@ -244,7 +244,7 @@ void DataBlock::setFromString(char const *srcString)
   setFromBlock((byte const*)srcString, len);
   SELFCHECK();
 }
-    
+
 void DataBlock::setFromBlock(byte const *srcData, int len)
 {
   SELFCHECK();
@@ -519,11 +519,11 @@ int doit()
 
     testMemoryCorruption();
   }
-    
+
   printf("datablok test succeeded\n");
   return 0;
 }
-    
+
 int main()
 {
   try {
@@ -533,5 +533,5 @@ int main()
     return printf("failed: %s\n", x.why().c_str());
   }
 }
-    
+
 #endif // TEST_DATABLOK

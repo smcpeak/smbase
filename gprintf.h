@@ -1,6 +1,6 @@
 /* gprintf.h
  * generalized printf interface
- * http://www.efgh.com/software/gprintf.htm 
+ * http://www.efgh.com/software/gprintf.htm
  * this file is in the public domain */
 
 #ifndef GPRINTF_H

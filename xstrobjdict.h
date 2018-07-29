@@ -243,7 +243,7 @@ outputCond([[[m4_dnl
   bool query(char const *key, TPTR &value) const         { return dict.query(key, (void*&)value); }
   TPTR queryf(char const *key) const                     { return (TPTR)dict.queryf(key); }
   TPTR queryif(char const *key) const                    { return (TPTR)dict.queryif(key); }
-  
+
   // parallel functions for API consistency
   bool queryC(char const *key, TPTR &value) const { return query(key, value); }
   TPTR queryfC(char const *key) const { return queryf(key); }

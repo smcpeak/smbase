@@ -43,7 +43,7 @@ foreach $optionAndValue (@ARGV) {
   ($option, $value) =
     ($optionAndValue =~ m/^-*([^-][^=]*)=?(.*)$/);
                       #      option     = value
-                      
+
   my $arg = $option;
 
   if (handleStandardOption()) {
@@ -84,7 +84,7 @@ foreach $optionAndValue (@ARGV) {
     #  1419: external declaration in primary source file
     push @CCFLAGS, "-wd444,1418,810,271,981,279,383,327,1419";
   }
-  
+
   else {
     print STDERR ("unknown option: $arg\n");
     exit(2);

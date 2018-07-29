@@ -48,7 +48,7 @@ inline unsigned VoidPtrMap::hashFunc(unsigned multiplier, unsigned key) const
   // we want to extract the 'tableSizeBits' most sigificant bits
   ret = ret >> ((sizeof(unsigned)*8) - tableSizeBits);
   ret = ret & (tableSize-1);
-  
+
   return ret;
 }
 

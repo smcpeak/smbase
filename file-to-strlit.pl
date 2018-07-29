@@ -12,7 +12,7 @@ sub usage {
   print(<<"EOF");
 usage: $0 <arrayName> <inFile> <outHeader> <outCode>
 
-Reads <inFile>, writes <outHeader> and <outCode>.  
+Reads <inFile>, writes <outHeader> and <outCode>.
 <outHeader> declares a char array called <arrayName>.
 <outCode> defines that char array.
 
@@ -147,7 +147,7 @@ foreach my $encLine (@outLines) {
 
 print OUT (<<"EOF");
   ;
-  
+
 // EOF
 EOF
 

@@ -18,12 +18,12 @@ FILE *xfopen(char const *fname, char const *mode);
 // automatically close a file in the destructor
 class AutoFclose {
 private:       // data
-  FILE *fp;           
-  
+  FILE *fp;
+
 private:       // disallowed
   AutoFclose(AutoFclose&);
   void operator=(AutoFclose&);
-  
+
 public:
   AutoFclose(FILE *f) : fp(f) {}
   ~AutoFclose() { fclose(fp); }

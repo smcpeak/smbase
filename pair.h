@@ -27,13 +27,13 @@ struct pair {
   // the header synopsis in 20.2 puts all the operators into
   // the namespace, but I like them in the class and it should
   // not make a difference
-  
+
   // equality
   bool operator==(pair<T1,T2> const &obj)
     { return first == obj.first && second == obj.second; }
   bool operator!=(pair<T1,T2> const &obj)
     { return !operator==(obj); }
-             
+
   // inequalities; note that this is the lexicographic order
   // with 'first' dominating
   bool operator <(pair<T1,T2> const &obj)
@@ -46,7 +46,7 @@ struct pair {
   bool operator>=(pair<T1,T2> const &obj)
     { return operator>(obj) || operator==(obj); }
 };
-  
+
 
 // I do not know why the standard uses 'T1' instead of 'T1 const &' here.
 template <class T1, class T2>

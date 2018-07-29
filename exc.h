@@ -73,7 +73,7 @@ public:
   // dsw: sometimes I want the context to be, say a "file:line" number
   // on the left
   void addContextLeft(rostring context);
-  
+
   // Like 'addContextLeft', except it also puts ": " between 'context'
   // and the existing 'msg'.
   void prependContext(rostring context);

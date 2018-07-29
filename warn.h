@@ -29,7 +29,7 @@ enum WarnLevel {
 
   WARN_INFORMATION     = 0x10,
     // I'm not sure when/why this would be used...
-    // Note: This is *not* to be used as a diagnostic 'printf'. 
+    // Note: This is *not* to be used as a diagnostic 'printf'.
 
   WARN_ALL             = 0x1F,
     // logical-or of all flags

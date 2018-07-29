@@ -9,7 +9,7 @@
 # of three ways:
 #   1. direct #inclusion, using quotes to delimit the filename
 #      (assuption is that angle brackets are used to refer to
-#      system headers, and we don't want to see those 
+#      system headers, and we don't want to see those
 #      dependencies)
 #   2. implicit link dependency of foo.h on foo.{c,cc,cpp},
 #      whichever exists, if any
@@ -38,7 +38,7 @@
 
 # NOTE: throughout, when file names are passed or stored, they
 # are stored *without* path qualification; all files are in
-# either the current directory or one of the directories 
+# either the current directory or one of the directories
 # specified with -I (and hence in @incdirs)
 
 
@@ -74,7 +74,7 @@ $debug = 0;
 
 # true to suppress warning messages
 $quiet = 0;
-                     
+
 # list of extensions to try when looking for implicit link dependencies
 @extensions = (".cc", ".cpp", ".c");
 
@@ -310,7 +310,7 @@ sub addEdge {
     if ($allowed == 0) {
       diagnostic("skipping $dest because it is excluded");
       return;
-    }                      
+    }
     $allowed--;
     diagnostic("$allowed more links will be allowed for $dest");
     $excluded{$dest} = $allowed;
@@ -344,7 +344,7 @@ sub addEdge {
 # without path
 sub exploreFile {
   my ($filename) = @_;
-  
+
   # since we expect a filename without path, qualify it now
   # so we can open the file
   my $withPath = fileExists($filename);

@@ -1,6 +1,6 @@
 // testmalloc.cc            see license.txt for copyright and terms of use
 // test malloc, test heap walk, etc.
-  
+
 #include <stdio.h>     // printf
 #include <unistd.h>    // write
 #include <string.h>    // strlen
@@ -49,7 +49,7 @@ void heapWalk(char const *context)
 void test1()
 {
   printf("--------- test1 ---------\n");
-  
+
   void *p1, *p2, *p3, *p4, *p5, *p6;
 
   heapWalk("start");
@@ -59,7 +59,7 @@ void test1()
   TRACERET(p3 = malloc(1000));
   TRACERET(p4 = malloc(10000));
   TRACERET(p5 = malloc(100000));
-  
+
   // this last size is potentially interesting because it's
   // beyond the 128k default threshold for when dlmalloc
   // uses mmap() instead of sbrk() to get memory from the OS
@@ -108,7 +108,7 @@ void test2()
   }
 
   // snapshot now
-  heapWalk("snapshot after test2");  
+  heapWalk("snapshot after test2");
 
   // free the rest
   for (int j=0; j<100; j++) {

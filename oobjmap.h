@@ -3,7 +3,7 @@
 // maps pointer-to-key-object to pointer-to-value-object, and owns
 // all instances of value-object (they are deallocated when the
 // map itself goes away)
-                        
+
 // I had envisioned an interface which didn't require the function
 // that maps values back to keys.. given that OwnerHashTable requires
 // this, I'll suspend this line of work for now and keep using
@@ -22,7 +22,7 @@ class OObjMap {
 public:     // types
   friend class OObjMapIter<Key, Value>;
 
-private:    // data 
+private:    // data
   OwnerHashTable<Value> table;            // implementation
 
 public:     // funcs

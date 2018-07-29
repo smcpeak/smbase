@@ -721,7 +721,7 @@ void ArrayStackEmbed<T,n>::moveElement(int oldIndex, int newIndex)
 // STL-style iterator for ArrayStackEmbed
 template <class T, int n>
 class ArrayStackEmbedIter {
-public:      // data          
+public:      // data
   // Array over which we're iterating.
   ArrayStackEmbed<T,n> *array;
 
@@ -774,7 +774,7 @@ public:      // funcs
   }
 
   RELATIONAL_OPERATORS(ArrayStackEmbedIter)
-  
+
   ArrayStackEmbedIter const &operator++(/*preincrement*/)
   {
     index++;

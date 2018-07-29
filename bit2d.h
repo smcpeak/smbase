@@ -9,7 +9,7 @@
 
 class Flatten;
 
-class Bit2d {        
+class Bit2d {
 private:     // data
   byte *data;  	    // bits; [0..stride-1] is first row, etc.
   bool owning;      // when false, 'data' is not owned by this object

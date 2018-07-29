@@ -50,8 +50,8 @@ public:     // funcs
     { HashTable::remove(key); }
 
   // drop all entries
-  void empty() 
-    { HashTable::empty(); }  
+  void empty()
+    { HashTable::empty(); }
 
   // check the data structure's invariants, and throw an exception
   // if there is a problem
@@ -60,7 +60,7 @@ public:     // funcs
 };
 
 
-// type-safe template wrapper          
+// type-safe template wrapper
 template <class T>
 class TStringHash : public StringHash {
 public:      // types

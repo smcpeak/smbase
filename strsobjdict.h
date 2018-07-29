@@ -149,7 +149,7 @@ public:
   bool query(char const *key, T * &value) const         { return dict.query(key, (void*&)value); }
   T * queryf(char const *key) const                     { return (T *)dict.queryf(key); }
   T * queryif(char const *key) const                    { return (T *)dict.queryif(key); }
-  
+
   // parallel functions for API consistency
   bool queryC(char const *key, T * &value) const { return query(key, value); }
   T * queryfC(char const *key) const { return queryf(key); }

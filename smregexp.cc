@@ -53,7 +53,7 @@ Regexp::Regexp(rostring exp, CFlags flags)
   PAT = new regex_t;
 
   int f = REG_EXTENDED;    // "extended" language
-  
+
   // if the values I chose line up perfectly with the values used by
   // libc, then I don't have to interpret them (hopefully the
   // optimizer will discover that the 'if' test is constant
@@ -93,7 +93,7 @@ void Regexp::err(int code)
 bool Regexp::match(rostring str, EFlags flags)
 {
   int f = 0;
-  
+
   // same thing as above
   if (REG_NOTBOL==NOTBOL && REG_NOTEOL==NOTEOL) {
     f = (int)flags;
@@ -129,7 +129,7 @@ bool regexpMatch(rostring str, rostring exp)
 
 // ----------------- test code --------------------
 #ifdef TEST_SMREGEXP
-                         
+
 #include <stdlib.h>    // exit
 #include <stdio.h>     // printf
 
@@ -137,7 +137,7 @@ bool regexpMatch(rostring str, rostring exp)
 void matchVector(char const *str, char const *exp, bool expect)
 {
   bool actual = regexpMatch(str, exp);
-  if (actual != expect) {       
+  if (actual != expect) {
     printf("regexp failure\n");
     printf("  str: %s\n", str);
     printf("  exp: %s\n", exp);

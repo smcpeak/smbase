@@ -109,7 +109,7 @@ void T::insertOstream(ostream &os) const
 #define ASSERT_TABLESIZE(table, size) \
   STATIC_ASSERT(TABLESIZE(table) == (size))
 
-  
+
 // for silencing variable-not-used warnings
 template <class T>
 inline void pretendUsedFn(T const &) {}
@@ -121,7 +121,7 @@ inline void pretendUsedFn(T const &) {}
 //   void exit(int code) NORETURN;
 #ifdef __GNUC__
   #define NORETURN __attribute__((noreturn))
-#else             
+#else
   // just let the warnings roll if we can't suppress them
   #define NORETURN
 #endif
@@ -167,7 +167,7 @@ inline void pretendUsedFn(T const &) {}
 // about switches on enums where not all cases are
 // covered .... what is this, f-ing ML??
 #define INCL_SWITCH \
-  default: break; /*silence warning*/ 
+  default: break; /*silence warning*/
 
 
 // for a class that maintains allocated-node stats
@@ -195,7 +195,7 @@ inline void pretendUsedFn(T const &) {}
 #define ALLOC_STATS_IN_DTOR                     \
   numAllocd--;
 
-  
+
 // ----------- automatic data value restorer -------------
 // used when a value is to be set to one thing now, but restored
 // to its original value on return (even when the return is by
@@ -204,7 +204,7 @@ template <class T>
 class Restorer {
   T &variable;
   T prevValue;
-  
+
 public:
   Restorer(T &var, T newValue)
     : variable(var),
@@ -212,7 +212,7 @@ public:
   {
     variable = newValue;
   }
-   
+
   // this one does not set it to a new value, just remembers the current
   Restorer(T &var)
     : variable(var),

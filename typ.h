@@ -37,7 +37,7 @@ typedef signed char signed_byte;
 inline uintptr_t pointerToInteger(void const *p)
   { return (uintptr_t)p; }
 
-  
+
 // This can be used to compare two pointers, even when they do not point
 // into the same object.
 inline int comparePointerAddresses(void const *p, void const *q)
@@ -57,7 +57,7 @@ inline int comparePointerAddresses(void const *p, void const *q)
 // min, max
 #undef min
 #undef max
-       
+
 template <class T>
 inline T min(T const &a, T const &b)
 {
@@ -147,7 +147,7 @@ inline T div_up(T const &x, T const &y)
   a = b;          \
   b = temp /*user supplies semicolon*/
 
-  
+
 // verify something is true at compile time (will produce
 // a compile error if it isn't)
 // update: use STATIC_ASSERT defined in macros.h instead

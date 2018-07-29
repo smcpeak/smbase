@@ -32,7 +32,7 @@ void entry()
   }
 
   xassert(arr1 == arr2);
-  
+
   // Test getting.
   xassert(arr1.getElt(1,1) == 11);
   xassert(arr1.eltRef(1,1) == 11);
@@ -42,7 +42,7 @@ void entry()
 
   xassert(arr1.getElt(1,1) != 11);
   xassert(arr1.getElt(1,1) == 55);
-                               
+
   // Nearby elements unchanged despite setting (1,1).
   xassert(arr1.getElt(2,1) == 21);
   xassert(arr1.getElt(0,1) == 1);

@@ -150,7 +150,7 @@ public:
   bool query(char const *key, long &value) const         { return dict.query(key, (void*&)value); }
   long queryf(char const *key) const                     { return (long)dict.queryf(key); }
   long queryif(char const *key) const                    { return (long)dict.queryif(key); }
-  
+
   // parallel functions for API consistency
   bool queryC(char const *key, long &value) const { return query(key, value); }
   long queryfC(char const *key) const { return queryf(key); }

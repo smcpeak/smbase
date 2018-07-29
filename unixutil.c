@@ -50,7 +50,7 @@ int writeAll(int fd, void const *buf, int len)
 
 
 int readString(int fd, char *str, int len)
-{ 
+{
   int count = read(fd, str, len-1);
   if (count < 0) {
     return 0;      // failure
@@ -86,7 +86,7 @@ int canRead(int fd)
     perror("select");     // not ideal...
     return 0;
   }
-  
+
   return res;             // 0 or 1
 }
 

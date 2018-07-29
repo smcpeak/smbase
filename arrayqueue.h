@@ -104,10 +104,10 @@ void ArrayQueue<T>::enqueue(T const &t)
     head = 0;
     tail = oldLength;
   }
-  
+
   // store the new element where 'tail' points
   arr[tail] = t;
-  
+
   // advance 'tail'
   if (++tail == arrSize) {
     tail = 0;
@@ -133,10 +133,10 @@ T ArrayQueue<T>::dequeue()
   }
 }
 
-  
+
 template <class T>
 T const &ArrayQueue<T>::eltC(int index) const
-{                         
+{
   xassert(0 <= index && index < length());
 
   if (head+index < arrSize) {
@@ -166,7 +166,7 @@ void ArrayQueue<T>::reverse()
 
 template <class T>
 bool ArrayQueue<T>::contains(T const &t) const
-{                                 
+{
   int len=length();
   for (int i=0; i<len; i++) {
     if (t == eltC(i)) {

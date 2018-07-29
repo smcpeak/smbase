@@ -32,7 +32,7 @@ STATICDEF void const* BFlatten::getOwnerPtrKeyFn(OwnerMapping *data)
 }
 
 STATICDEF void const* BFlatten::getIntNameKeyFn(OwnerMapping *data)
-{ 
+{
   return (void const*)(intptr_t)(data->intName);
 }
 
@@ -59,7 +59,7 @@ void BFlatten::noteOwner(void *ownerPtr)
   map->ownerPtr = ownerPtr;
   map->intName = nextUniqueName++;
 
-  // add it to the table 
+  // add it to the table
   if (writing()) {
     // index by pointer
     ownerTable.add(ownerPtr, map);
@@ -75,7 +75,7 @@ void BFlatten::xferSerf(void *&serfPtr, bool isNullable)
 {
   if (writing()) {
     xassert(isNullable || serfPtr!=NULL);
-                                       
+
     if (serfPtr == NULL) {
       // encode as 0; the names start with 1
       writeInt(0);
@@ -117,7 +117,7 @@ void BFlatten::xferSerf(void *&serfPtr, bool isNullable)
 #include "test.h"      // USUAL_MAIN
 
 void entry()
-{                    
+{
   // make up some data
   int x = 9, y = 22;
   string s("foo bar");
@@ -161,7 +161,7 @@ void entry()
 
   // delete the temp file
   remove("bflat.tmp");
-  
+
   printf("bflatten works\n");
 }
 

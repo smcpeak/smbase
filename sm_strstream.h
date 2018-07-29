@@ -10,7 +10,7 @@
 
 #  undef string            // in case the string->mystring definition is active
 #  include <string>        // std::string
-  
+
   typedef std::istringstream istrstream;
   typedef std::ostringstream ostrstream;
 

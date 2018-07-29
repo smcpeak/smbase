@@ -77,7 +77,7 @@ bool tracingSys(char const *sysName)
 void traceRemoveAll()
 {
   tracers.deleteAll();
-}  
+}
 
 
 ostream &trace(char const *sysName)
@@ -121,7 +121,7 @@ void traceAddMultiSys(char const *systemNames)
     if (tok[i][0] == '-') {
       // treat a leading '-' as a signal to *remove*
       // a tracing flag, e.g. from some defaults specified
-      // statically      
+      // statically
       char const *name = tok[i]+1;
       if (tracingSys(name)) {      // be forgiving here
         traceRemoveSys(name);
@@ -130,7 +130,7 @@ void traceAddMultiSys(char const *systemNames)
         cout << "Currently, `" << name << "' is not being traced.\n";
       }
     }
-    
+
     else {
       // normal behavior: add things to the trace list
       traceAddSys(tok[i]);

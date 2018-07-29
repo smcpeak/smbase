@@ -65,12 +65,12 @@ no help for eliminating that first allocation.
 
 
 My (straightforward) idea is to use the following 'rostring':
-         
+
   // str.h
   typedef string const &rostring;
-  
-This type, normally used as a function parameter type, conveys both 
-(1) that the user promises not to modify the string, and also 
+
+This type, normally used as a function parameter type, conveys both
+(1) that the user promises not to modify the string, and also
 (2) that the address of the object passed will *not* "escape", i.e.
 be stored in the heap or a global after the function returns.  These
 semantics have always been associated with my use of 'char const *'
@@ -107,7 +107,7 @@ Transition guide for new string interface:
 
     Non-performance-critical uses include debugging info, error
     messages, etc.
-    
+
     If an interface is both performance-critical and also heavily
     used with constructed strings (obviously not on the same code
     paths), then it is reasonable to overload the function to
@@ -117,13 +117,13 @@ Transition guide for new string interface:
     boundary line between 'rostring' and 'char const *', and all
     its functions should consistently use one or the other (with
     only well-motivated exceptions).
-    
+
     See also the discussion below.
 
   - Be careful when converting code to use 'rostring':
-    - It is usually *not* a good idea to change the types of local 
+    - It is usually *not* a good idea to change the types of local
       variables to 'rostring'.
-    - It will certainly not work to change 'char const *&' to 
+    - It will certainly not work to change 'char const *&' to
       'rostring&', since the latter will be an invalid type.
     - Watch out for return types; if the function is returning a
       locally-constructed string, a return type of 'rostring' will
@@ -141,7 +141,7 @@ Transition guide for new string interface:
     to maintain the vague hope that 'rostring' could at some point
     be yet some other type (perhaps even 'char const *' again).
     For example:
-    
+
       void foo(rostring s)
       {
         FILE *fp = fopen(toCStr(s), "r");       // yes
@@ -155,7 +155,7 @@ Transition guide for new string interface:
     latter, then use c_str() instead.  This makes it clear that the
     'rostring' is really being treated as 'string const &', not simply
     "something vaguely similar to char const *".  For example:
-    
+
       int foo(char const *s);                        // real function
       int foo(rostring s) { return foo(s.c_str()); } // yes
       int foo(rostring s) { return foo(toCStr(s)); } // no
@@ -182,7 +182,7 @@ Transition guide for new string interface:
     use stringBuilder instead.  If the former is needed, use
     Array<char> instead, but remember to explicitly allocate
     one extra byte for the NUL terminator.
-    
+
   - To convert code that iteratively scans a 'char const *', such as
       void foo(char const *src)
       {
@@ -193,7 +193,7 @@ Transition guide for new string interface:
       }
     use something like the following:
       void foo(rostring origSrc)
-      {                      
+      {
         char const *src = toCStr(origSrc);
 
         while (*src) {
@@ -232,31 +232,31 @@ Basically, there are three sources of strings in a typical program:
     But that is easy to fix, e.g., by changing
 
       foo("hi there")
-      
+
     to
-    
+
       static const string hi_there("hi there");
       foo(hi_there)
-      
+
     unwieldy though it may be.  (This should not be needed often.)
 
   - Constructed strings.
-  
+
     Constructing strings, like
 
       stringc << "hello" << ' ' << "world!"
 
     requires lots of allocation, and the result is a 'string'.
     Passing this to an 'rostring' won't incur any penalty.
-    
+
   - Strings in program input data.
-  
+
     These are the strings I am worried about.  In the 'char const *'
     regime, these strings are typically first read into an I/O
     buffer first.  From there, the strings are either processed
     in-place and discarded, or else copied to a more permanent
     storage location, but not copied again.
-    
+
     It would be very bad for performance if the transition to
     'rostring' caused processing of such strings (and there are
     lots of them) to incur additional allocation.  That is why I
@@ -264,7 +264,7 @@ Basically, there are three sources of strings in a typical program:
     raw 'char const *' pointers: it ought to be possible to do all
     the processing on input data strings without them taking any
     trips through the allocator.
-    
+
 So the principles I advocate are:
 
   (1) Make sure input data strings don't have to make extra trips

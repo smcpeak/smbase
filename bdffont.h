@@ -67,23 +67,23 @@ public:      // types
   //
   // All initial values for fields of type Number are "".
   typedef string Number;
-  
+
   // A single "property", which consists of a name and a value, where
   // the value is either an integer or a string.
   class Property {
   public:    // data
     // Property name.
     string name;
-                  
+
     // True if the value is an integer, false if it is a string.
     bool isInteger;
-    
+
     // The integer value, if 'isInteger' is true.
     int intValue;
-    
+
     // The string value, if 'isInteger' is false.
     string stringValue;
-    
+
   public:    // funcs
     Property(rostring name, int intValue);
     Property(rostring name, string stringValue);
@@ -122,7 +122,7 @@ public:      // types
     // font-wide values can be overridden by individual glyphs.
     // Initially both 0.
     point dWidth;
-    
+
     // True if DWIDTH appeared for this glyph.  Initially false, which
     // means the font-width DWIDTH should be used for this glyph.
     bool dWidthSpecified;
@@ -145,7 +145,7 @@ public:      // types
   public:    // funcs
     GlyphMetrics();
     ~GlyphMetrics();
-    
+
     // Return true if the 'dWidth' is specified.
     bool hasDWidth() const { return dWidthSpecified; }
   };
@@ -157,18 +157,18 @@ public:      // types
     // may be a number rendered in decimal, and in such cases, that
     // number is to be used as the glyph index.
     string name;
-    
+
     // The first value following ENCODING.  Initially -1, which means
     // that the 'nonstdEncoding' value is to be used.
     int stdEncoding;
 
     // The second value following ENCODING, or (and initially) -1.
     int nonstdEncoding;
-                         
+
     // The per-glyph metrics from the BBX, SWIDTH, DWIDTH, SWITDH1,
     // DWIDTH1, and VVECTOR keywords.
     GlyphMetrics metrics;
-    
+
     // Bitmap of black pixels, where 0 means white (non-printing) and
     // 1 means black (printing).  Initially NULL.  Once built,
     // 'bitmap' should be non-NULL, and 'bitmap->Size()' should equal
@@ -185,7 +185,7 @@ public:      // types
   public:
     Glyph();
     ~Glyph();
-    
+
     // Return the character index this glyph seems to want to use
     // based on the field values.
     int getCharacterIndex() const;
@@ -202,10 +202,10 @@ public:      // data
 
   // The integer specified for CONTENTVERSION, or 0 if absent.
   int contentVersion;
-  
+
   // Font name following FONT keyword.
   string fontName;
-                
+
   // First value after SIZE keyword.  Unfortunately the spec does not
   // say whether this is a "number" or an "integer", so I am inferring
   // from the example that it is an integer.  Initially 0.
@@ -260,7 +260,7 @@ public:      // funcs
   //
   // Returns NULL if 'charIndex' is negative.
   Glyph const * /*nullable*/ getGlyph(int charIndex) const;
-  
+
   // Return one greater than the maximum valid glyph index, or 0 if
   // none are valid.
   int glyphIndexLimit() const;

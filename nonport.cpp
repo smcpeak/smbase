@@ -455,7 +455,7 @@ bool ensurePath(char const *filename, bool isDirectory)
   return true;
 }
 
- 
+
 // underlying test
 bool hsrcHelper()
 {
@@ -488,7 +488,7 @@ bool hasSystemCryptoRandom()
     cachedAnswer = hsrcHelper();
     cached = true;
   }
-  
+
   return cachedAnswer;
 }
 
@@ -571,7 +571,7 @@ int getProcessId()
 #ifndef HAS_C99_VSNPRINTF
   // no vsnprintf, will use gprintf (which is slow, and overestimates sometimes)
   #include "gprintf.h"        // general_vprintf
-  
+
   static int counting_output_function(void *extra, int ch)
   {
     // 'extra' is a pointer to the count
@@ -657,7 +657,7 @@ void nprintfVector(char const *format, ...)
   va_start(args, format);
   int len = vsprintf(buf, format, args);
   va_end(args);
-  
+
   if (len > est) {
     printf("nprintf failed to conservatively estimate!\n");
     printf("    format: %s\n", format);
@@ -817,7 +817,7 @@ int main(int argc, char **argv)
   }
   else {
     printf("yes\n");
-    
+
     printf("three random numbers: %u %u %u\n",
            getSystemCryptoRandom(),
            getSystemCryptoRandom(),

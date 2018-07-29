@@ -136,15 +136,15 @@ byte Bit2d::get8(point const &p) const
   if (p.x + 8 > size.x) {
     int numPadBits = (p.x + 8) - size.x;
     xassert(0 < numPadBits && numPadBits < 8);
-    
+
     byte padMask = 0xFF << (8 - numPadBits);
     ret &= ~padMask;
   }
-  
+
   return ret;
 }
 
- 
+
 // Count the number of digits required to represent a non-negative
 // integer in base 10.
 static int digits(int value)
@@ -195,7 +195,7 @@ void Bit2d::print() const
   for (int row=0; row<size.y; row++) {
     printf("%*d [ ", rowLabelWidth, row);
     loopi(size.x) {
-      printf("%*s ", colLabelWidth, 
+      printf("%*s ", colLabelWidth,
                      get(point(i, row))? "1" : ".");    // "." so easier to see patterns
     }
     printf("]\n");
@@ -215,7 +215,7 @@ Bit2d::Bit2d(byte * /*serf*/ d, point const &sz, int str)
 
 
 byte byteBitSwapLsbMsb(byte b)
-{       
+{
   // Map from [0,15] to the result of swapping the bit order.
   static const byte swapMap[] = {
     // input   output   hex-output
@@ -245,7 +245,7 @@ byte byteBitSwapLsbMsb(byte b)
   // swap each nibble
   hi = swapMap[hi];
   lo = swapMap[lo];
-  
+
   // combine into a byte in opposite nibble order
   return (lo << 4) | hi;
 }
@@ -284,7 +284,7 @@ int main()
     xassert(*another == bits);
     delete another;
   }
-  
+
   // test set8 and get8
   xassert(bits.get8(point(8,0)) == 0);
   xassert(bits.get8(point(0,0)) == 0x04);  // 00000100
@@ -309,7 +309,7 @@ int main()
   xassert(bits.get(point(7,0)) == 0);
 
   for (int w=1; w <= 8; w++) {
-    Bit2d bits(point(w,1));             
+    Bit2d bits(point(w,1));
 
     bits.set8(point(0,0), 0);
     xassert(bits.get8(point(0,0)) == 0);
@@ -321,7 +321,7 @@ int main()
   // test byteBitSwapLsbMsb (exhaustively)
   for (int i=0; i < 256; i++) {
     byte input = i;
-    
+
     // naively bit swap it
     byte output = 0;
     for (int bit = 0; bit < 8; bit++) {
@@ -329,12 +329,12 @@ int main()
         output |= (1 << (7 - bit));
       }
     }
-    
+
     // compare to the faster function
     byte actual = byteBitSwapLsbMsb(input);
     xassert(actual == output);
   }
-  
+
   // one concrete vector to make sure the above test is not
   // totally borked
   xassert(byteBitSwapLsbMsb(0xC7) == 0xE3);

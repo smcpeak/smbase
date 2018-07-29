@@ -162,7 +162,7 @@ double intersectD2Lines(D2Line const *pvline, D2Line const *qwline)
             // -----------------------------------------------
                       (v->x - (w->x / w->y) * v->y) ;
 
-    if (isSpecial(s)) {    
+    if (isSpecial(s)) {
       // the lines must be parallel
       return d2_nan;
     }

@@ -280,7 +280,7 @@ int main()
       printf("child exited with status %d\n", stat);
     }
   }
-  
+
   printf("mypopen worked!\n");
   return 0;
 }

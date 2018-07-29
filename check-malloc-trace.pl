@@ -4,7 +4,7 @@
 use strict 'subs';
 
 $mallocs=0;
-$frees=0;                           
+$frees=0;
 $verbose=0;
 
 if ($#ARGV >= 0 && $ARGV[0] eq "-v") {
@@ -41,7 +41,7 @@ while ($line = <STDIN>) {
 
 if ($verbose) {
   # print all unfreed addresses
-  foreach $addr (sort keys %valid) {          
+  foreach $addr (sort keys %valid) {
     $size = $valid{$addr};
     if ($size) {
       print ("unfreed addr $addr, size was $size\n");

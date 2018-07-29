@@ -117,7 +117,7 @@ public:
 
   void modify(char const *key, char const *newValue);
     // change the existing value for 'key', which must exist, to 'newValue'
-    
+
   void addOrModify(char const *key, char const *value);
     // map 'key' to 'value'; works regardless of any current mapping
 

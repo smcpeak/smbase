@@ -31,7 +31,7 @@ void round(int ops)
       xassert(index == arrayQueue.length());
       xassert(arrayQueue.isEmpty() == listQueue.isEmpty());
       xassert(arrayQueue.isNotEmpty() == listQueue.isNotEmpty());
-      
+
       if (index > maxLength) {
         maxLength = index;
       }

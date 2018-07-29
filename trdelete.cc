@@ -52,7 +52,7 @@ void trashingDelete(void *blk, size_t size)
   trash(blk, size);
 
   // use the global delete operator to free the memory;
-  // gratuitous cast to char* to silence gcc warning 
+  // gratuitous cast to char* to silence gcc warning
   // "not a pointer-to-object type"
   ::delete((char*)blk);
 }

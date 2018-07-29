@@ -36,7 +36,7 @@ public:      // funcs
   virtual void xferSerf(void *&serfPtr, bool nullable=false);
 };
 
-                  
+
 // for debugging, write and then read something
 template <class T>
 T *writeThenRead(T &obj)

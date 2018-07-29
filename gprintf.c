@@ -3,7 +3,7 @@
 /* this file is in the public domain */
 
 /* modified by Scott McPeak, April 2003:
- *   - use va_list instead of 'const int*' for the 
+ *   - use va_list instead of 'const int*' for the
  *     pointer-to-argument type (for portability)
  *   - implement conservative estimates for unknown format
  *     chars, particularly 'f' (CONSERVATIVE_ESTIMATE flag)
@@ -79,9 +79,9 @@ static void output_field(struct parameters *p, char const *s)
 }
 
 
-int general_vprintf(Gprintf_output_function output_function, 
+int general_vprintf(Gprintf_output_function output_function,
                     void *output_pointer,
-                    const char *control_string, 
+                    const char *control_string,
                     va_list argument_pointer)
 {
   struct parameters p;
@@ -210,7 +210,7 @@ int general_vprintf(Gprintf_output_function output_function,
       else
       {
         if (base == -1)  /* conversion type c */
-        {                
+        {
           /* 'char' is passed as 'int' through '...' */
           char c = (char)va_arg(argument_pointer, int);
           p.edited_string_length = 1;
@@ -232,7 +232,7 @@ int general_vprintf(Gprintf_output_function output_function,
           unsigned long x;
           char buffer[BITS_PER_BYTE * sizeof(unsigned long) + 1];
           p.edited_string_length = 0;
-          if (long_argument) 
+          if (long_argument)
           {
             x = va_arg(argument_pointer, unsigned long);
           }
@@ -245,7 +245,7 @@ int general_vprintf(Gprintf_output_function output_function,
             p.options |= MINUS_SIGN;
             x = - (long) x;
           }
-          do 
+          do
           {
             int c;
             c = x % base + '0';
@@ -285,7 +285,7 @@ int general_printf(Gprintf_output_function output,
   va_start(args, format);
   ret = general_vprintf(output, extra, format, args);
   va_end(args);
-  
+
   return ret;
 }
 
@@ -299,7 +299,7 @@ int general_printf(Gprintf_output_function output,
 
 
 int string_output(void *extra, int ch)
-{                          
+{
   /* the 'extra' argument is a pointer to a pointer to the
    * next character to write */
   char **s = (char**)extra;
@@ -388,7 +388,7 @@ int main()
   vector("a %s more", "little");
   vector("some %4d more %s complicated %c stuff",
          33, "yikes", 'f');
-                      
+
   /* test unknown format chars */
   expect_vector("XXXXXXXXXXXXXXXXXXXXXXXXXX", "%f", 3.4);
   expect_vector("XXXXXXXXXXXXXXXXXXXXXXX", "%.3f", 3.4);

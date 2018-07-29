@@ -75,7 +75,7 @@ int BDFFont::Glyph::getCharacterIndex() const
 {
   // The spec has text suggesting that perhaps 'name' should be
   // considered as an index, but I'm going to ignore that.
-  
+
   if (stdEncoding >= 0) {
     return stdEncoding;
   }
@@ -249,7 +249,7 @@ static int parseInteger(char const *&p)
 {
   int ret = 0;
   bool neg = false;
-  
+
   if (*p == '-') {
     neg = true;
     p++;
@@ -307,9 +307,9 @@ static string parseNumber(char const *&p)
   }
 
   string ret(orig, p-orig);
-  
+
   skipSpacesOpt(p);
-  
+
   return ret;
 }
 
@@ -333,7 +333,7 @@ static bool parseMetricsAttribute(char const *&p, rostring keyword,
     skipNewline(p);
     return true;
   }
-  
+
   else if (keyword == "DWIDTH") {
     metrics.dWidth = parsePoint(p);
     metrics.dWidthSpecified = true;
@@ -364,7 +364,7 @@ static bool parseMetricsAttribute(char const *&p, rostring keyword,
 static string parseQuotedString(char const *&p)
 {
   expect(p, "\"");
-    
+
   stringBuilder ret;
 
   for (;; p++) {
@@ -391,7 +391,7 @@ static string parseQuotedString(char const *&p)
       ret << *p;
     }
   }
-  
+
   return ret;
 }
 
@@ -430,7 +430,7 @@ static void parseProperties(char const *&p, int numProps,
 static void parseBoundingBox(char const *&p, BDFFont::GlyphMetrics &metrics)
 {
   metrics.bbSize = parsePoint(p);
-  
+
   if (metrics.bbSize.x < 0 || metrics.bbSize.y < 0) {
     XFORMAT("bounding box must have non-negative dimensions, but is " <<
             metrics.bbSize);
@@ -456,7 +456,7 @@ static byte parseHexDigit(char const *&p)
   if ('a' <= *p && *p <= 'f') {
     return *(p++) - 'a' + 10;
   }
-  
+
   XFORMAT("expected hex digit: '" << *p << "'");
   return 0;   // silence warning
 }
@@ -576,10 +576,10 @@ static void parseGlyph(char const *&p, BDFFont::Glyph *glyph,
         if (glyph->getCharacterIndex() == -1) {
           XFORMAT("missing ENCODING attribute");
         }
-        
+
         // TODO: Check with METRICSSET and 'font' to make sure
         // we have all the required metrics.
-        
+
         break;
       }
 
@@ -602,7 +602,7 @@ static void parseChars(char const *&p, int numChars, BDFFont &font)
     skipBlanks(p);
     expect(p, "STARTCHAR");
     skipSpaces(p);
-    
+
     // I store this in a local, in addition to 'glyph->name', so that
     // I can be sure it will be available in the exception handler
     // even after 'glyph' itself might become NULL.
@@ -648,7 +648,7 @@ static string getLineCol(char const *start, char const *end)
 {
   int line = 1;
   int col = 1;
-  
+
   for (char const *p = start; p < end; p++) {
     if (*p == '\n') {
       line++;
@@ -658,7 +658,7 @@ static string getLineCol(char const *start, char const *end)
       col++;
     }
   }
-  
+
   return stringb(line << ":" << col);
 }
 
@@ -675,7 +675,7 @@ void parseBDFString(BDFFont &font, char const *bdfSourceData)
     font.fileFormatVersion = parseString(p);
 
     // drop into loop reading font-wide characteristics
-    for (;;) {                            
+    for (;;) {
       skipBlanks(p);
       string keyword = parseWord(p);
 
@@ -755,7 +755,7 @@ void parseBDFString(BDFFont &font, char const *bdfSourceData)
       }
     }
   }
-  
+
   catch (xBase &x) {
     x.prependContext(getLineCol(bdfSourceData, p));
     throw;
@@ -853,7 +853,7 @@ static void writeBitmap(stringBuilder &dest, Bit2d const &bitmap)
 
       // flip order
       bits = byteBitSwapLsbMsb(bits);
-      
+
       dest << stringf("%02X", bits);
     }
     dest << EOL;
@@ -874,7 +874,7 @@ static void writeGlyph(stringBuilder &dest, BDFFont::Glyph const &glyph)
 
   // Write these before BBX to match fonts/sample2.bdf.
   writeMetrics(dest, glyph.metrics);
-  
+
   dest << "BBX " << writePoint(glyph.metrics.bbSize)
        << " " << writePoint(glyph.metrics.bbOffset) << EOL;
 
@@ -882,7 +882,7 @@ static void writeGlyph(stringBuilder &dest, BDFFont::Glyph const &glyph)
   if (glyph.bitmap) {
     writeBitmap(dest, *(glyph.bitmap));
   }
-  
+
   dest << "ENDCHAR" << EOL;
 }
 
@@ -909,9 +909,9 @@ void writeBDFString(stringBuilder &dest, BDFFont const &font)
        << " " << writePoint(font.metrics.bbOffset) << EOL;
 
   writeMetrics(dest, font.metrics);
-  
+
   dest << "METRICSSET " << font.metricsSet << EOL;
-    
+
   if (font.properties.isNotEmpty()) {
     dest << "STARTPROPERTIES " << font.properties.count() << EOL;
     FOREACH_OBJLIST(BDFFont::Property, font.properties, iter) {
@@ -919,7 +919,7 @@ void writeBDFString(stringBuilder &dest, BDFFont const &font)
     }
     dest << "ENDPROPERTIES" << EOL;
   }
-        
+
   // Write the glyphs to an intermediate buffer so we can count
   // them in the same loop.
   stringBuilder glyphBuf;
@@ -929,11 +929,11 @@ void writeBDFString(stringBuilder &dest, BDFFont const &font)
     if (!glyph) {
       continue;
     }
-    
+
     glyphCount++;
     writeGlyph(glyphBuf, *glyph);
   }
-  
+
   dest << "CHARS " << glyphCount << EOL;
   dest << glyphBuf.str();
   dest << "ENDFONT" << EOL;

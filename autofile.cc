@@ -37,7 +37,7 @@ AutoFILE::~AutoFILE()
 #include "sm-iostream.h"  // cout
 
 void entry(int argc, char *argv[])
-{                         
+{
   if (argc < 2) {
     cout << "usage: " << argv[0] << " filename [mode]\n";
     return;

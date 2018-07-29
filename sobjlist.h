@@ -123,7 +123,7 @@ public:
 
   // debugging: no invariants beyond VoidList
   void selfCheck() const                { list.selfCheck(); }
-  
+
   // but export the additional checks for cases where they apply anyway
   void checkHeapDataPtrs() const        { list.checkHeapDataPtrs(); }
   void checkUniqueDataPtrs() const      { list.checkUniqueDataPtrs(); }

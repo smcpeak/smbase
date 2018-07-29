@@ -3,7 +3,7 @@
 
 #ifndef SM_STDINT_H
 #define SM_STDINT_H
-                   
+
 // for now, just assume it exists
 #include <stdint.h>
 

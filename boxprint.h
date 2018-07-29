@@ -8,7 +8,7 @@
 #include "str.h"          // stringBuilder
 #include "astlist.h"      // ASTList
 #include "array.h"        // ObjArrayStack
-  
+
 
 // fwd
 class BoxPrint;
@@ -262,7 +262,7 @@ public:      // funcs
   // been closed; the builder is left in a state where it can be used
   // to build a new tree if desired, or it can be simply destroyed
   BPBox* /*owner*/ takeTree();
-  
+
   // print the current stack of trees
   void debugPrint(ostream &os) const;
   void debugPrintCout() const;      // for gdb

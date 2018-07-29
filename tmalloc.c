@@ -6,7 +6,7 @@
 
 #include "mysig.h"      // setHandler
 #include "ckheap.h"     // checkHeap
-                
+
 
 typedef void (*Fn)(void);
 
@@ -37,7 +37,7 @@ void offEndCheck()
 {
   char *p = malloc(10);
   p[10] = 7;    // oops
-  
+
   // instead of using free() to find the error,
   // find it with checkHeap
   checkHeap();
@@ -75,13 +75,13 @@ void doubleFree()
 }
 
 int main()
-{   
+{
   // do some benign things
   int i;
   for (i=0; i<10; i++) {
     int size = rand() % 100;
     char *p;
-    
+
     checkHeap();
     p = malloc(size);
     p[0] = i;

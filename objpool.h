@@ -56,7 +56,7 @@ public:      // funcs
 
   // available for diagnostic purposes
   int freeObjectsInPool() const;
-  
+
   // low-level access for heavily-optimized client code; clients that
   // use these functions accept the burden of possibly needing to
   // change if internals of ObjectPool change
