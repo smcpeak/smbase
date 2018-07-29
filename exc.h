@@ -87,7 +87,7 @@ void xbase(rostring msg) NORETURN;
 // do not have a good recovery available, but it might happen, and we
 // do not want to simply terminate.
 //
-// Print details about 'x' to stderr.
+// Print details about 'x' to stderr using DEV_WARNING (dev-warning.h).
 void printUnhandled(xBase const &x);
 
 

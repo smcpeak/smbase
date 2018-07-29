@@ -2,17 +2,21 @@
 // code for exc.h
 // Scott McPeak, 1996-1998  This file is public domain.
 
-#include "exc.h"          // this module
+#include "exc.h"                       // this module
 
-#include <string.h>       // strlen, strcpy
-#include "sm-iostream.h"  // clog
-#include <stdarg.h>       // va_xxx
-#include <ctype.h>        // toupper, tolower
+// smbase
+#include "dev-warning.h"               // DEV_WARNING
+#include "sm-iostream.h"               // clog
+
+// libc
+#include <ctype.h>                     // toupper, tolower
+#include <stdarg.h>                    // va_xxx
+#include <string.h>                    // strlen, strcpy
 
 
 void printUnhandled(xBase const &x)
 {
-  cerr << "WARNING: Unhandled exception: " << x.why() << endl;
+  DEV_WARNING("Unhandled exception: " << x.why());
 }
 
 
