@@ -6,6 +6,7 @@
 
 #include "macros.h"                    // NO_OBJECT_COPIES
 #include "sm-swap.h"                   // swap
+#include "str.h"                       // string
 #include "xassert.h"                   // xassert
 
 #include <stdlib.h>                    // qsort
@@ -316,6 +317,14 @@ public:      // funcs
   T &popAlt()     // returns item popped
     { return operator[](--len); }
 
+  // Push a block of 'numToPush' uninitialized elements and return a
+  // pointer to the first one.  The intended use is to immediately write
+  // into that pointer to set the value of these additional elements.
+  // The new objects are uninitialized in that they could be newly added
+  // and hence default-constructed but could also be left over from some
+  // prior use.
+  T *ptrToPushedMultipleAlt(int numToPush);
+
   // items stored
   int length() const
     { return len; }
@@ -365,6 +374,22 @@ ArrayStack<T>::~ArrayStack()
 
 
 template <class T>
+T *ArrayStack<T>::ptrToPushedMultipleAlt(int numToPush)
+{
+  // 'ensureIndexDoubler' is slightly awkward as it wants the maximum
+  // valid index rather than the length.
+  int oldLength = this->length();
+  this->ensureIndexDoubler(oldLength + numToPush - 1);
+
+  // Bump the length to include these new elements.
+  this->setLength(oldLength + numToPush);
+
+  // Return a pointer to the new area.
+  return this->getArrayNC() + oldLength;
+}
+
+
+template <class T>
 int ArrayStack<T>::indexOf(T const &t) const
 {
   for (int i=0; i < this->length(); i++) {
@@ -407,6 +432,12 @@ template <class T>
 bool operator!= (ArrayStack<T> const &a1, ArrayStack<T> const &a2)
 {
   return !operator==(a1, a2);
+}
+
+
+inline string toString(ArrayStack<char> const &arr)
+{
+  return string(arr.getArray(), arr.length());
 }
 
 
