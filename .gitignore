@@ -77,3 +77,8 @@ tarray2d
 test-datetime
 test-stringset
 .gdbinit
+datablok
+test-codepoint
+test-refct-serf
+test-sm-file-util
+unit-tests
