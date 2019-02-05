@@ -5,6 +5,7 @@
 
 // smbase
 #include "array.h"                     // Array
+#include "codepoint.h"                 // isLetter
 #include "strtokp.h"                   // StrtokParse
 #include "syserr.h"                    // xsyserror
 
@@ -45,6 +46,14 @@
 #endif
 
 
+static bool runningOnWindows =
+#ifdef __WIN32__
+  true;
+#else
+  false;
+#endif
+
+
 static char const * const s_fileKindNames[] = {
   "FK_NONE",
   "FK_REGULAR",
@@ -63,6 +72,247 @@ char const *toString(SMFileUtil::FileKind kind)
   }
 }
 
+
+// ---------------------- SMFileName -------------------------
+SMFileName::SMFileName()
+  : m_fileSystem(""),
+    m_isAbsolute(false),
+    m_pathComponents(),
+    m_trailingSlash(false)
+{}
+
+
+SMFileName::SMFileName(string const &path, Syntax syntax)
+  : m_fileSystem(""),
+    m_isAbsolute(false),
+    m_pathComponents(),
+    m_trailingSlash(false)
+{
+  bool windowsSyntax = isWindowsSyntax(syntax);
+
+  // Parse state.
+  enum State {
+    S_INIT,                            // Start of parsing.
+    S_AFTER_SLASH,                     // Just passed a slash.
+    S_IN_PATH_COMPONENT,               // Accumulating a path component.
+
+    // Windows-only states:
+    S_AFTER_INITIAL_LETTER,            // Saw an initial letter.
+    S_AFTER_INITIAL_SLASH,             // Saw an initial slash.
+    S_AFTER_FILE_SYSTEM,               // Saw a file system designator.
+  };
+  State state = S_INIT;
+
+  // Current path component being accumulated.
+  ArrayStack<unsigned char> curComponent;
+
+  for (unsigned char const *p = (unsigned char const*)path.c_str(); *p; p++) {
+    switch (state) {
+      case S_INIT:
+        if (isPathSeparator(*p, syntax)) {
+          xassert(!m_isAbsolute);       // Should only be set once.
+          m_isAbsolute = true;
+          if (windowsSyntax) {
+            state = S_AFTER_INITIAL_SLASH;
+          }
+          else {
+            state = S_AFTER_SLASH;
+          }
+        }
+        else if (isLetter(*p) && windowsSyntax) {
+          // Possible drive letter.
+          curComponent.push(*p);
+          state = S_AFTER_INITIAL_LETTER;
+        }
+        else {
+          // Element of path component.
+          curComponent.push(*p);
+          state = S_IN_PATH_COMPONENT;
+        }
+        break;
+
+      case S_AFTER_SLASH:
+      case S_AFTER_INITIAL_SLASH:
+        if (isPathSeparator(*p, syntax)) {
+          if (state == S_AFTER_INITIAL_SLASH) {
+            // UNC path.
+            xassert(m_fileSystem.empty());     // Only do once.
+            m_fileSystem = "/";
+            state = S_AFTER_SLASH;
+          }
+          else {
+            // We just saw a slash.  Ignore the repetition.
+          }
+        }
+        else {
+          curComponent.push(*p);
+          state = S_IN_PATH_COMPONENT;
+        }
+        break;
+
+      case S_IN_PATH_COMPONENT:
+        if (isPathSeparator(*p, syntax)) {
+          // Finish this path component.
+          m_pathComponents.push(::toString(curComponent));
+          curComponent.clear();
+          state = S_AFTER_SLASH;
+        }
+        else {
+          curComponent.push(*p);
+        }
+        break;
+
+      case S_AFTER_INITIAL_LETTER:
+        if (*p == ':') {
+          // Finish drive letter.
+          curComponent.push(*p);
+          m_fileSystem = ::toString(curComponent);
+          curComponent.clear();
+          state = S_AFTER_FILE_SYSTEM;
+        }
+        else if (isPathSeparator(*p, syntax)) {
+          // The letter is not a drive letter.
+          m_pathComponents.push(::toString(curComponent));
+          curComponent.clear();
+          state = S_AFTER_SLASH;
+        }
+        else {
+          // Not a drive letter.
+          curComponent.push(*p);
+          state = S_IN_PATH_COMPONENT;
+        }
+        break;
+
+      case S_AFTER_FILE_SYSTEM:
+        if (isPathSeparator(*p, syntax)) {
+          xassert(!m_isAbsolute);       // Should only be set once.
+          m_isAbsolute = true;
+          state = S_AFTER_SLASH;
+        }
+        else {
+          // Element of path component.
+          curComponent.push(*p);
+          state = S_IN_PATH_COMPONENT;
+        }
+        break;
+
+      default:
+        xfailure("invalid state");
+    }
+  }
+
+  if (state == S_AFTER_SLASH && m_pathComponents.isNotEmpty()) {
+    m_trailingSlash = true;
+  }
+
+  if (curComponent.isNotEmpty()) {
+    // Final path component.
+    m_pathComponents.push(::toString(curComponent));
+  }
+}
+
+
+SMFileName::SMFileName(string fileSystem, bool isAbsolute,
+                       ArrayStack<string> const &pathComponents,
+                       bool trailingSlash)
+  : m_fileSystem(fileSystem),
+    m_isAbsolute(isAbsolute),
+    m_pathComponents(pathComponents),
+    m_trailingSlash(trailingSlash)
+{}
+
+
+SMFileName::SMFileName(SMFileName const &obj)
+  : DMEMB(m_fileSystem),
+    DMEMB(m_isAbsolute),
+    DMEMB(m_pathComponents),
+    DMEMB(m_trailingSlash)
+{}
+
+
+SMFileName::~SMFileName()
+{}
+
+
+bool SMFileName::operator== (SMFileName const &obj) const
+{
+  return EMEMB(m_fileSystem) &&
+         EMEMB(m_isAbsolute) &&
+         EMEMB(m_pathComponents) &&
+         EMEMB(m_trailingSlash);
+}
+
+
+void SMFileName::getPathComponents(ArrayStack<string> /*OUT*/ &pathComponents) const
+{
+  pathComponents = m_pathComponents;
+}
+
+
+SMFileName SMFileName::withFileSystem(string const &newFileSystem) const
+{
+  return SMFileName(newFileSystem, m_isAbsolute,
+                    m_pathComponents, m_trailingSlash);
+}
+
+SMFileName SMFileName::withIsAbsolute(bool newIsAbsolute) const
+{
+  return SMFileName(m_fileSystem, newIsAbsolute,
+                    m_pathComponents, m_trailingSlash);
+}
+
+SMFileName SMFileName::withPathComponents(ArrayStack<string> const &newPathComponents) const
+{
+  return SMFileName(m_fileSystem, m_isAbsolute,
+                    newPathComponents, m_trailingSlash);
+}
+
+SMFileName SMFileName::withTrailingSlash(bool newTrailingSlash) const
+{
+  return SMFileName(m_fileSystem, m_isAbsolute,
+                    m_pathComponents, newTrailingSlash);
+}
+
+
+string SMFileName::toString(Syntax /*syntax*/) const
+{
+  stringBuilder sb;
+  sb << m_fileSystem;
+  if (m_isAbsolute) {
+    sb << '/';
+  }
+  sb << this->getPathComponentsString();
+  if (m_trailingSlash) {
+    sb << '/';
+  }
+  return sb.str();
+}
+
+
+string SMFileName::getPathComponentsString() const
+{
+  stringBuilder sb;
+  for (int i=0; i < m_pathComponents.length(); i++) {
+    sb << m_pathComponents[i];
+    if (i+1 < m_pathComponents.length()) {
+      sb << '/';
+    }
+  }
+  return sb.str();
+}
+
+
+/*static*/ bool SMFileName::isWindowsSyntax(Syntax syntax)
+{
+  return syntax == S_WINDOWS ||
+         (runningOnWindows && syntax == S_NATIVE);
+}
+
+
+/*static*/ bool SMFileName::isPathSeparator(unsigned char c, Syntax syntax)
+{
+  return c == '/' || (isWindowsSyntax(syntax) && c == '\\');
+}
 
 
 // ---------------- SMFileUtil::DirEntryInfo -----------------
@@ -116,11 +366,7 @@ int SMFileUtil::DirEntryInfo::compareTo(DirEntryInfo const &obj) const
 // ----------------------- SMFileUtil ------------------------
 bool SMFileUtil::windowsPathSemantics()
 {
-#ifdef __WIN32__
-  return true;
-#else
-  return false;
-#endif
+  return runningOnWindows;
 }
 
 
@@ -777,6 +1023,52 @@ string SMFileUtil::splitPathBase(string const &inputPath)
   string dir, base;
   splitPath(dir, base, inputPath);
   return base;
+}
+
+
+string SMFileUtil::collapseDots(string const &inputPath)
+{
+  // Parse into components.  Use S_WINDOWS since it should work fine in
+  // practice, for this purpose, on all platforms, and ensures this
+  // function behaves the same on all platforms, which is convenient.
+  SMFileName fn(inputPath, SMFileName::S_WINDOWS);
+  ArrayStack<string> inputComponents;
+  fn.getPathComponents(inputComponents);
+
+  // Rebuild the path components, discarding some in response to "." and "..".
+  ArrayStack<string> outputComponents;
+  for (int i=0; i < inputComponents.length(); i++) {
+    string const &comp = inputComponents[i];
+    if (comp == ".") {
+      // Discard.  (But we might add it back at the end.)
+    }
+    else if (comp == "..") {
+      if (outputComponents.isNotEmpty() && outputComponents.top() != "..") {
+        // Cancel the last output component with this "..".
+        outputComponents.pop();
+      }
+      else if (fn.isAbsolute()) {
+        // The path "/.." is equivalent to "/" since the ".." entry
+        // in the root of the file system points to itself.  Skip.
+      }
+      else {
+        // Retain as part of a prefix of ".." entries.
+        outputComponents.push(comp);
+      }
+    }
+    else {
+      outputComponents.push(comp);
+    }
+  }
+
+  if (!fn.isAbsolute() && inputComponents.isNotEmpty() && outputComponents.isEmpty()) {
+    // A non-empty relative path collapsed to nothing.  Yield "." to
+    // preserve the non-emptiness.  Example: "a/.." -> ".".
+    outputComponents.push(".");
+  }
+
+  SMFileName fn2(fn.withPathComponents(outputComponents));
+  return fn2.toString();
 }
 
 

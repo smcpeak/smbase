@@ -82,3 +82,6 @@ test-codepoint
 test-refct-serf
 test-sm-file-util
 unit-tests
+mut
+mutant-compile.sh
+mutant.cc

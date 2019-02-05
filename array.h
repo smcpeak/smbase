@@ -441,6 +441,12 @@ inline string toString(ArrayStack<char> const &arr)
 }
 
 
+inline string toString(ArrayStack<unsigned char> const &arr)
+{
+  return string((char const *)arr.getArray(), arr.length());
+}
+
+
 // iterator over contents of an ArrayStack, to make it easier to
 // switch between it and SObjList as a representation
 template <class T>

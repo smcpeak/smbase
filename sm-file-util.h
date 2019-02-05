@@ -20,6 +20,129 @@
 #include "stringset.h"                 // StringSet
 
 
+// Structured representation of a file name.
+//
+// Conventionally, file names are represented as strings, but of course
+// that creates various problems for reliably interpreting and
+// manipulating them.  This class captures the concept of a file name
+// in a more abstract, structured way.  It attempts to provide a union
+// of the file name features available on POSIX and Windows:
+//
+//   - optional file system designator (e.g., "c:")
+//   - absolute versus relative path indicator ("leading slash")
+//   - sequence of path components (non-empty strings)
+//   - optional "trailing slash", sometimes used to indicate that the
+//     name is intended to refer to a directory rather than file
+//
+// This class does *not* associate a particular path separator
+// character (e.g., forward slash versus backward slash) with each path
+// component.  Consequently, it loses some information present in the
+// string representation.
+//
+// Since all of the elements are effectively optional, there is an
+// "empty" file name, corresponding to the empty string.
+//
+// A file name is immutable once constructed.
+class SMFileName {
+private:     // data
+  // Optional file system designator.  Empty if there is none.  POSIX
+  // file names always lack this.  For a Windows file name like
+  // "C:/Windows", the file system is "C:" (two-character string).
+  // For a UNC path like "//server/share", the file system is "/".
+  string m_fileSystem;
+
+  // True if this path is absolute, i.e., has a leading slash.  This is
+  // true for UNC paths, and for the path "/".  It is false for "".
+  bool m_isAbsolute;
+
+  // Possibly empty sequence of path component strings.  It is empty
+  // for paths like "", "/", "c:", and "C:/".  But "." has a single
+  // path component, ".".  Each path component is a non-empty string.
+  // A path like "a//b" is treated the same as "a/b".
+  ArrayStack<string> m_pathComponents;
+
+  // True if the file name is intended to designate a directory.  This
+  // corresponds to a trailing slash in the string representation.
+  bool m_trailingSlash;
+
+public:      // types
+  // Specification of how to convert names to and from strings.
+  enum Syntax {
+    // POSIX file name.  File systems are not recognized during parsing,
+    // so "c:/windows" has two path components, "c:" and "windows".
+    // Only forward slash is recognized as a path separator.
+    S_POSIX,
+
+    // Windows file name.  Forward slash and backslash are both path
+    // separators, and file systems are recognized.  When printing,
+    // *forward* slashes are used for path separators.  (Windows
+    // recognizes both, and that improves system interoperability.)
+    //
+    // During parsing letter case is retained, even though most Windows
+    // file systems are case-insensitive.
+    S_WINDOWS,
+
+    // Equivalent to S_POSIX or S_WINDOWS, depending on the platform
+    // this code is running on.
+    S_NATIVE,
+
+    NUM_SYNTAXES
+  };
+
+private:     // unimplemented
+  // This does not exist because file names are immutable.
+  SMFileName& operator= (SMFileName const &obj);
+
+public:      // data
+  // Construct an empty name.
+  SMFileName();
+
+  // Parse a string as a path name.  If 'path' has an embedded NUL,
+  // parsing stops there, as if it was the end of the string.  Bytes
+  // with values outside [0,126] are regarded as valid but with no
+  // special significance.  This is compatible with both Latin-1 and
+  // UTF-8 encodings.
+  explicit SMFileName(string const &path, Syntax syntax = S_NATIVE);
+
+  // Construct from components.
+  SMFileName(string fileSystem, bool isAbsolute,
+             ArrayStack<string> const &pathComponents, bool trailingSlash);
+
+  SMFileName(SMFileName const &obj);
+
+  ~SMFileName();
+
+  // True if all components are equal, including letter case.
+  bool operator== (SMFileName const &obj) const;
+  NOTEQUAL_OPERATOR(SMFileName)
+
+  // Retrieve components.
+  string getFileSystem() const { return m_fileSystem; }
+  bool isAbsolute() const { return m_isAbsolute; }
+  void getPathComponents(ArrayStack<string> /*OUT*/ &pathComponents) const;
+  bool hasTrailingSlash() const { return m_trailingSlash; }
+
+  // Create new names by replacing components.
+  SMFileName withFileSystem(string const &newFileSystem) const;
+  SMFileName withIsAbsolute(bool newIsAbsolute) const;
+  SMFileName withPathComponents(ArrayStack<string> const &newPathComponents) const;
+  SMFileName withTrailingSlash(bool newTrailingSlash) const;
+
+  // Render as a string.
+  string toString(Syntax syntax = S_NATIVE) const;
+
+  // Get just the path components as a string separated by forward slashes.
+  string getPathComponentsString() const;
+
+  // True if 'syntax' is S_NATIVE and we are running under Windows,
+  // or is S_WINDOWS.
+  static bool isWindowsSyntax(Syntax syntax);
+
+  // True if 'c' is regarded as a path separator in 'syntax'.
+  static bool isPathSeparator(unsigned char c, Syntax syntax);
+};
+
+
 // Collection of file system utilities.
 //
 // These are packaged as a class with virtual methods mainly to allow
@@ -85,7 +208,7 @@ public:      // funcs
   string ensureEndsWithDirectorySeparator(string const &dir);
 
   // Remove a trailing separator from a directory unless it is "/" or,
-  // on Windows, "<letter>:<separator".
+  // on Windows, "<letter>:<separator>".
   string stripTrailingDirectorySeparator(string const &dir);
 
   // True if the given path is absolute.  On unix, an absolute path
@@ -158,6 +281,11 @@ public:      // funcs
 
   // Get the 'base' output of 'splitPath'.
   string splitPathBase(string const &inputPath);
+
+  // If 'inputPath' has any occurrences of "." or "..", collapse them
+  // as much as possible.  The result may have a sequence of "../" at
+  // the start, or consist entirely of ".", or have neither.
+  string collapseDots(string const &inputPath);
 };
 
 

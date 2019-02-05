@@ -14,6 +14,204 @@
 #include "test.h"                      // ARGS_TEST_MAIN, PVAL
 
 
+// Run some checks on the 'fn' object directly.
+static void checkFNObject(SMFileName const &fn, SMFileName::Syntax syntax)
+{
+  // Round trip through string should produce an equal object.
+  {
+    string path = fn.toString(syntax);
+    SMFileName fn2(path, syntax);
+    xassert(fn == fn2);
+  }
+
+  // Make variants with different components to test operator==.
+  xassert(fn.withFileSystem(stringb(fn.getFileSystem() << 'x')) != fn);
+  xassert(fn.withIsAbsolute(!fn.isAbsolute()) != fn);
+  ArrayStack<string> comps2;
+  fn.getPathComponents(comps2);
+  comps2.push("x");
+  xassert(fn.withPathComponents(comps2) != fn);
+  xassert(fn.withTrailingSlash(!fn.hasTrailingSlash()) != fn);
+}
+
+
+// Test file name parsing with S_POSIX.
+static void expectFNp(
+  string const &input,
+  bool expectIsAbsolute,
+  string const &expectPathComponents,
+  bool expectTrailingSlash)
+{
+  SMFileName fn(input, SMFileName::S_POSIX);
+  EXPECT_EQ(fn.getFileSystem(), "");
+  EXPECT_EQ(fn.isAbsolute(), expectIsAbsolute);
+  EXPECT_EQ(fn.getPathComponentsString(), expectPathComponents);
+  EXPECT_EQ(fn.hasTrailingSlash(), expectTrailingSlash);
+
+  checkFNObject(fn, SMFileName::S_POSIX);
+}
+
+
+// Test file name parsing with S_WINDOWS.
+static void expectFNw(
+  string const &input,
+  string const &expectFileSystem,
+  bool expectIsAbsolute,
+  string const &expectPathComponents,
+  bool expectTrailingSlash)
+{
+  SMFileName fn(input, SMFileName::S_WINDOWS);
+  EXPECT_EQ(fn.getFileSystem(), expectFileSystem);
+  EXPECT_EQ(fn.isAbsolute(), expectIsAbsolute);
+  EXPECT_EQ(fn.getPathComponentsString(), expectPathComponents);
+  EXPECT_EQ(fn.hasTrailingSlash(), expectTrailingSlash);
+
+  checkFNObject(fn, SMFileName::S_WINDOWS);
+}
+
+
+// Test file name parsing with S_NATIVE.
+static void expectFNn(
+  string const &input,
+  string const &expectFileSystem,
+  bool expectIsAbsolute,
+  string const &expectPathComponents,
+  bool expectTrailingSlash)
+{
+  SMFileName fn(input);     // means S_NATIVE
+  EXPECT_EQ(fn.getFileSystem(), expectFileSystem);
+  EXPECT_EQ(fn.isAbsolute(), expectIsAbsolute);
+  EXPECT_EQ(fn.getPathComponentsString(), expectPathComponents);
+  EXPECT_EQ(fn.hasTrailingSlash(), expectTrailingSlash);
+
+  checkFNObject(fn, SMFileName::S_NATIVE);
+}
+
+
+// Test with both, expecting the same result.
+static void expectFNsame(
+  string const &input,
+  bool expectIsAbsolute,
+  string const &expectPathComponents,
+  bool expectTrailingSlash)
+{
+  expectFNp(input, expectIsAbsolute, expectPathComponents, expectTrailingSlash);
+  expectFNw(input, "", expectIsAbsolute, expectPathComponents, expectTrailingSlash);
+}
+
+
+// Test with both, expecting different results.
+static void expectFNpw(
+  string const &input,
+  bool expectPosixIsAbsolute,
+  string const &expectPosixPathComponents,
+  bool expectPosixTrailingSlash,
+  string const &expectWindowsFileSystem,
+  bool expectWindowsIsAbsolute,
+  string const &expectWindowsPathComponents,
+  bool expectWindowsTrailingSlash)
+{
+  expectFNp(input, expectPosixIsAbsolute, expectPosixPathComponents,
+    expectPosixTrailingSlash);
+  expectFNw(input, expectWindowsFileSystem, expectWindowsIsAbsolute,
+    expectWindowsPathComponents, expectWindowsTrailingSlash);
+}
+
+
+static void testFileName()
+{
+  expectFNsame("", false, "", false);
+  expectFNsame("/", true, "", false);
+  expectFNpw("\\",
+    false, "\\", false,
+    "", true, "", false);
+  expectFNsame(".", false, ".", false);
+  expectFNpw("//",
+    true, "", false,
+    "/", true, "", false);
+  expectFNsame("a", false, "a", false);
+  expectFNsame("a/b", false, "a/b", false);
+  expectFNpw("a\\b",
+    false, "a\\b", false,
+    "", false, "a/b", false);
+  expectFNsame("a//b", false, "a/b", false);
+  expectFNpw("a/\\b",
+    false, "a/\\b", false,
+    "", false, "a/b", false);
+  expectFNpw("a\\/b",
+    false, "a\\/b", false,
+    "", false, "a/b", false);
+  expectFNsame("a/", false, "a", true);
+  expectFNpw("a\\",
+    false, "a\\", false,
+    "", false, "a", true);
+  expectFNsame("/./", true, ".", true);
+  expectFNsame("ab/cd", false, "ab/cd", false);
+  expectFNsame("x///", false, "x", true);
+  expectFNsame("..", false, "..", false);
+  expectFNpw("c:",
+    false, "c:", false,
+    "c:", false, "", false);
+  expectFNsame("cc:", false, "cc:", false);
+  expectFNpw("c:a",
+    false, "c:a", false,
+    "c:", false, "a", false);
+  expectFNpw("c:.",
+    false, "c:.", false,
+    "c:", false, ".", false);
+  expectFNpw("c:a/b",
+    false, "c:a/b", false,
+    "c:", false, "a/b", false);
+  expectFNpw("C:/",
+    false, "C:", true,
+    "C:", true, "", false);
+  expectFNpw("C://",
+    false, "C:", true,
+    "C:", true, "", false);
+  expectFNpw("C:/windows",
+    false, "C:/windows", false,
+    "C:", true, "windows", false);
+  expectFNpw("C:/windows/system",
+    false, "C:/windows/system", false,
+    "C:", true, "windows/system", false);
+  expectFNpw("C:/program files",
+    false, "C:/program files", false,
+    "C:", true, "program files", false);
+  expectFNpw("//server/share",
+    true, "server/share", false,
+    "/", true, "server/share", false);
+  expectFNpw("\\\\server\\share",
+    false, "\\\\server\\share", false,
+    "/", true, "server/share", false);
+  expectFNpw("//server",
+    true, "server", false,
+    "/", true, "server", false);
+  expectFNpw("///server/share",
+    true, "server/share", false,
+    "/", true, "server/share", false);
+
+  xassert(SMFileName::isPathSeparator('/', SMFileName::S_POSIX));
+  xassert(SMFileName::isPathSeparator('/', SMFileName::S_WINDOWS));
+  xassert(SMFileName::isPathSeparator('/', SMFileName::S_NATIVE));
+
+  xassert(!SMFileName::isPathSeparator('\\', SMFileName::S_POSIX));
+  xassert(SMFileName::isPathSeparator('\\', SMFileName::S_WINDOWS));
+
+  xassert(!SMFileName::isPathSeparator('x', SMFileName::S_POSIX));
+  xassert(!SMFileName::isPathSeparator('x', SMFileName::S_WINDOWS));
+  xassert(!SMFileName::isPathSeparator('x', SMFileName::S_NATIVE));
+
+  if (SMFileName::isWindowsSyntax(SMFileName::S_NATIVE)) {
+    expectFNn("\\", "", true, "", false);
+    xassert(SMFileName::isPathSeparator('\\', SMFileName::S_NATIVE));
+  }
+  else {
+    expectFNn("\\", "", false, "\\", false);
+    xassert(!SMFileName::isPathSeparator('\\', SMFileName::S_NATIVE));
+  }
+}
+
+
 static void printSomeStuff()
 {
   SMFileUtil sfu;
@@ -289,6 +487,48 @@ static void testIsReadOnly()
 }
 
 
+static void expectCD(SMFileUtil &sfu, string const &input, string const &expect)
+{
+  string actual = sfu.collapseDots(input);
+  EXPECT_EQ(actual, expect);
+}
+
+static void testCollapseDots()
+{
+  // normalize path separators
+
+  SMFileUtil sfu;
+  expectCD(sfu, "", "");
+  expectCD(sfu, "a", "a");
+  expectCD(sfu, "/", "/");
+  expectCD(sfu, "c:/", "c:/");
+  expectCD(sfu, ".", ".");
+  expectCD(sfu, "./", "./");
+  expectCD(sfu, "\\", "/");
+  expectCD(sfu, "a/.", "a");
+  expectCD(sfu, "a/..", ".");
+  expectCD(sfu, "a/../", "./");
+  expectCD(sfu, "a/b/..", "a");
+  expectCD(sfu, "a/./b", "a/b");
+  expectCD(sfu, "a/../b", "b");
+  expectCD(sfu, "a/b/../c", "a/c");
+  expectCD(sfu, "a/./b/../c", "a/c");
+  expectCD(sfu, "a/b/../..", ".");
+  expectCD(sfu, "a/b/c/../..", "a");
+  expectCD(sfu, "a/b/c/../../d", "a/d");
+  expectCD(sfu, "a/b/c/../d/../e", "a/b/e");
+  expectCD(sfu, "././././", "./");
+  expectCD(sfu, "..", "..");
+  expectCD(sfu, "../..", "../..");
+  expectCD(sfu, "../../a", "../../a");
+  expectCD(sfu, ".././../a/b/../c", "../../a/c");
+  expectCD(sfu, ".././../a/b/../../c", "../../c");
+  expectCD(sfu, "./../..", "../..");
+  expectCD(sfu, ".././..", "../..");
+  expectCD(sfu, "../../.", "../..");
+}
+
+
 // Defined in sm-file-util.cc.
 void getDirectoryEntries_scanThenStat(SMFileUtil &sfu,
   ArrayStack<SMFileUtil::DirEntryInfo> /*OUT*/ &entries, string const &directory);
@@ -329,6 +569,7 @@ static void entry(int argc, char **argv)
     return;
   }
 
+  testFileName();
   printSomeStuff();
   testJoinFilename();
   testAbsolutePathExists();
@@ -338,6 +579,7 @@ static void entry(int argc, char **argv)
   testStripTrailing();
   testDirectoryExists();
   testIsReadOnly();
+  testCollapseDots();
 
   cout << "test-sm-file-util ok" << endl;
 }
