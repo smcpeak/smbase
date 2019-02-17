@@ -593,6 +593,20 @@ string readStringFromFile(rostring fname)
 }
 
 
+void readLinesFromFile(ArrayStack<string> /*INOUT*/ &dest, rostring fname,
+                       bool doChomp)
+{
+  AutoFILE fp(toCStr(fname), "r");
+  string line;
+  while (readLine(line, fp)) {
+    if (doChomp) {
+      line = chomp(line);
+    }
+    dest.push(line);
+  }
+}
+
+
 bool readLine(string &dest, FILE *fp)
 {
   char buf[80];
@@ -609,13 +623,14 @@ bool readLine(string &dest, FILE *fp)
 
   // only got part of the string; need to iteratively construct
   stringBuilder sb;
+  sb << buf;
   while (buf[strlen(buf)-1] != '\n') {
-    sb << buf;
     if (!fgets(buf, 80, fp)) {
       // found eof after partial; return partial *without* eof
       // indication, since we did in fact read something
       break;
     }
+    sb << buf;
   }
 
   dest = sb;
@@ -838,6 +853,34 @@ static void testQuoteCharacter()
 }
 
 
+static void testReadLinesFromFile()
+{
+  ArrayStack<string> lines;
+  readLinesFromFile(lines, "test/trlff.txt");
+  EXPECT_EQ(lines.length(), 4);
+  EXPECT_EQ(lines[0], "This is test input for strutil.cc, testReadLinesFromFile().");
+  EXPECT_EQ(lines[1], "This line is longer than 80 characters in order to exercise that code in readLine.  It is sort of weird to have done it that way but whatever.  This is long enough that it will have to iterate more than once.  Also the next line is blank.");
+  EXPECT_EQ(lines[2], "");
+  EXPECT_EQ(lines[3], "Final line.  This file has exactly four lines.");
+
+  lines.clear();
+  readLinesFromFile(lines, "test/trlff2.txt");
+  EXPECT_EQ(lines.length(), 1);
+  EXPECT_EQ(lines[0], "One line, no newline terminator.");
+
+  lines.clear();
+  readLinesFromFile(lines, "test/trlff2.txt", false /*chomp*/);
+  EXPECT_EQ(lines.length(), 1);
+  EXPECT_EQ(lines[0], "One line, no newline terminator.");
+
+  lines.clear();
+  readLinesFromFile(lines, "test/trlff3.txt", false /*chomp*/);
+  EXPECT_EQ(lines.length(), 2);
+  EXPECT_EQ(lines[0], "Two lines.\n");
+  EXPECT_EQ(lines[1], "Last line has no newline terminator.");
+}
+
+
 void entry()
 {
   expRangeVector("abcd", "abcd");
@@ -885,6 +928,7 @@ void entry()
   testShellDoubleQuote();
   testIndexOfSubstring();
   testQuoteCharacter();
+  testReadLinesFromFile();
 
   cout << "strutil ok" << endl;
 }

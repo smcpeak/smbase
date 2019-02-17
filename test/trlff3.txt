@@ -1,0 +1,2 @@
+Two lines.
+Last line has no newline terminator.

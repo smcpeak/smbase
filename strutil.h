@@ -132,6 +132,13 @@ int indexOfSubstring(string const &haystack, string const &needle);
 void writeStringToFile(rostring str, rostring fname);
 string readStringFromFile(rostring fname);
 
+// Append to 'dest' all of the lines in 'fname'.  If 'chomp' is true,
+// each line has no newline terminator; otherwise, all but the last have
+// newlines, and the last may or may not depending on how the file ends.
+// Throws an exception on error, including XOpen for file-not-found.
+void readLinesFromFile(ArrayStack<string> /*INOUT*/ &dest, rostring fname,
+                       bool chomp = true);
+
 
 // read the next line from a FILE* (e.g. an AutoFILE); the
 // newline is returned if it is present (you can use 'chomp'

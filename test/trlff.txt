@@ -1,0 +1,4 @@
+This is test input for strutil.cc, testReadLinesFromFile().
+This line is longer than 80 characters in order to exercise that code in readLine.  It is sort of weird to have done it that way but whatever.  This is long enough that it will have to iterate more than once.  Also the next line is blank.
+
+Final line.  This file has exactly four lines.
