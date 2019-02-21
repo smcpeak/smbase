@@ -529,6 +529,33 @@ static void testCollapseDots()
 }
 
 
+static void expectGFK(SMFileUtil &sfu,
+                      string fname, SMFileUtil::FileKind expect)
+{
+  SMFileUtil::FileKind actual = sfu.getFileKind(fname);
+  EXPECT_EQ(actual, expect);
+}
+
+static void testGetFileKind()
+{
+  SMFileUtil sfu;
+
+  // Ordinary.
+  expectGFK(sfu, "sm-file-util.cc", SMFileUtil::FK_REGULAR);
+
+  // Directory.
+  expectGFK(sfu, "test", SMFileUtil::FK_DIRECTORY);
+
+  // Non-existent.
+  expectGFK(sfu, "nonexist", SMFileUtil::FK_NONE);
+  expectGFK(sfu, "nonexist/", SMFileUtil::FK_NONE);
+
+  // Specfically test with a path composed of an existing file name with
+  // a slash appended, since that seems to provoke ENOTDIR from 'stat'.
+  expectGFK(sfu, "sm-file-util.cc/", SMFileUtil::FK_NONE);
+}
+
+
 // Defined in sm-file-util.cc.
 void getDirectoryEntries_scanThenStat(SMFileUtil &sfu,
   ArrayStack<SMFileUtil::DirEntryInfo> /*OUT*/ &entries, string const &directory);
@@ -580,6 +607,7 @@ static void entry(int argc, char **argv)
   testDirectoryExists();
   testIsReadOnly();
   testCollapseDots();
+  testGetFileKind();
 
   cout << "test-sm-file-util ok" << endl;
 }

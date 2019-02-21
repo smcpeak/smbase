@@ -604,7 +604,7 @@ SMFileUtil::FileKind SMFileUtil::getFileKind(string const &path)
 
   struct stat st;
   if (0!=stat(path.c_str(), &st)) {
-    if (errno != ENOENT) {
+    if (errno != ENOENT && errno != ENOTDIR) {
       xsyserror("stat", path);
     }
     return FK_NONE;
