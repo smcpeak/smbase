@@ -111,9 +111,15 @@ string translate(rostring origSrc, rostring srcchars, rostring destchars)
 }
 
 
-// why is this necessary?
 string stringToupper(rostring src)
-  { return translate(src, "a-z", "A-Z"); }
+{
+  return translate(src, "a-z", "A-Z");
+}
+
+string stringTolower(rostring src)
+{
+  return translate(src, "A-Z", "a-z");
+}
 
 
 string trimWhitespace(rostring origStr)
