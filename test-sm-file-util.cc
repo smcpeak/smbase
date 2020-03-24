@@ -532,6 +532,7 @@ static void testCollapseDots()
 static void expectGFK(SMFileUtil &sfu,
                       string fname, SMFileUtil::FileKind expect)
 {
+  cout << "expectGFK: " << fname << endl;
   SMFileUtil::FileKind actual = sfu.getFileKind(fname);
   EXPECT_EQ(actual, expect);
 }
@@ -545,6 +546,7 @@ static void testGetFileKind()
 
   // Directory.
   expectGFK(sfu, "test", SMFileUtil::FK_DIRECTORY);
+  expectGFK(sfu, "test/", SMFileUtil::FK_DIRECTORY);
 
   // Non-existent.
   expectGFK(sfu, "nonexist", SMFileUtil::FK_NONE);

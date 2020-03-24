@@ -7,6 +7,7 @@
 #include "array.h"                     // Array
 #include "codepoint.h"                 // isLetter
 #include "strtokp.h"                   // StrtokParse
+#include "strutil.h"                   // suffixEquals
 #include "syserr.h"                    // xsyserror
 
 // libc++
@@ -613,6 +614,13 @@ SMFileUtil::FileKind SMFileUtil::getFileKind(string const &path)
     return FK_DIRECTORY;
   }
   else if (S_ISREG(st.st_mode)) {
+    if (suffixEquals(path, "/")) {
+      // On Linux, if you 'stat' a name with a trailing slash but it is
+      // a regular file, 'stat' returns ENOTDIR, which I map to FK_NONE
+      // above.  But on Windows, the same thing yields a 0 return and
+      // S_ISREG.  For uniformity, make that case FK_NONE too.
+      return FK_NONE;
+    }
     return FK_REGULAR;
   }
   else {
