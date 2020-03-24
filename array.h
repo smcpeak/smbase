@@ -491,6 +491,36 @@ public:
 template <class T> class ObjArrayStackIterNC;
 
 
+// Remove all elements from 'arr' for which 'condition' is false.
+template <class T, class FUNCTYPE>
+void applyFilter(ArrayStack<T> &arr, FUNCTYPE condition)
+{
+  // Where to place the next element that satisfies the condition.
+  int destIndex = 0;
+
+  // Next element to test.
+  int srcIndex = 0;
+
+  while (srcIndex < arr.length()) {
+    if (condition(arr[srcIndex])) {
+      // Keep the element.
+      if (destIndex != srcIndex) {
+        swap(arr[destIndex], arr[srcIndex]);
+      }
+      destIndex++;
+      srcIndex++;
+    }
+    else {
+      // Discard the element.
+      srcIndex++;
+    }
+  }
+
+  // Trim the array, removing all elements at or after 'destIndex'.
+  arr.popMany(srcIndex - destIndex);
+}
+
+
 // ------------------- ObjArrayStack -----------------
 // an ArrayStack of owner pointers
 template <class T>

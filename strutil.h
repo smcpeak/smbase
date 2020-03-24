@@ -26,6 +26,8 @@ string translate(rostring src, rostring srcchars, rostring destchars);
 string stringToupper(rostring src);
 //  { return translate(src, "a-z", "A-Z"); }
 
+string stringTolower(rostring src);
+
 
 // remove any whitespace at the beginning or end of the string
 string trimWhitespace(rostring str);

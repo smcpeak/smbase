@@ -3,8 +3,9 @@
 // based on tarrayqueue.cc
 
 #include "array.h"                     // module to test
-#include "objlist.h"                   // ObjList
 #include "ckheap.h"                    // malloc_stats
+#include "macros.h"                    // TABLESIZE
+#include "objlist.h"                   // ObjList
 #include "test.h"                      // PVAL, USUAL_MAIN
 
 #include <assert.h>                    // assert
@@ -213,6 +214,70 @@ static void testArrayNegativeLength()
 }
 
 
+static bool isOdd(int i)
+{
+  return (i % 2) == 1;
+}
+
+static bool isEven(int i)
+{
+  return (i % 2) == 0;
+}
+
+static bool isDivis3(int i)
+{
+  return (i % 3) == 0;
+}
+
+static bool isNotDivis3(int i)
+{
+  return !isDivis3(i);
+}
+
+static void checkEqual(ArrayStack<int> const &arr, int *expect, int expectLen)
+{
+  xassert(arr.length() == expectLen);
+  for (int i=0; i < expectLen; i++) {
+    xassert(arr[i] == expect[i]);
+  }
+}
+
+static void testOneApplyFilter(bool (*condition)(int), int *expect, int expectLen)
+{
+  ArrayStack<int> arr;
+  for (int i=0; i < 10; i++) {
+    arr.push(i);
+  }
+
+  applyFilter(arr, condition);
+
+  checkEqual(arr, expect, expectLen);
+}
+
+static void testApplyFilter()
+{
+  {
+    int expect[] = { 0, 2, 4, 6, 8 };
+    testOneApplyFilter(isEven, expect, TABLESIZE(expect));
+  }
+
+  {
+    int expect[] = { 1, 3, 5, 7, 9 };
+    testOneApplyFilter(isOdd, expect, TABLESIZE(expect));
+  }
+
+  {
+    int expect[] = { 0, 3, 6, 9 };
+    testOneApplyFilter(isDivis3, expect, TABLESIZE(expect));
+  }
+
+  {
+    int expect[] = { 1, 2, 4, 5, 7, 8 };
+    testOneApplyFilter(isNotDivis3, expect, TABLESIZE(expect));
+  }
+}
+
+
 void entry()
 {
   // With the optimizer disabled, the test takes about 1s to run
@@ -222,6 +287,7 @@ void entry()
   }
 
   testArrayNegativeLength();
+  testApplyFilter();
 
   malloc_stats();
   printf("arrayStack appears to work; maxLength=%d\n", maxLength);
