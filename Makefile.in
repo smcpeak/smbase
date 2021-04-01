@@ -62,14 +62,19 @@ config.status: configure.pl sm_config.pm
 # to force people to have m4 installed
 gensrc: sobjlist.h objlist.h
 
+# This rule first puts the output into 'tmp.h' in case 'm4' fails
+# (for example, by not existing).  That way I do not end up with
+# a wrong target file that has a recent timestamp.
 sobjlist.h: xobjlist.h
 	rm -f sobjlist.h
-	m4 -Dm4_output=sobjlist.h --prefix-builtins xobjlist.h > sobjlist.h
+	m4 -Dm4_output=sobjlist.h --prefix-builtins xobjlist.h > tmp.h
+	mv -f tmp.h sobjlist.h
 	chmod a-w sobjlist.h
 
 objlist.h: xobjlist.h
 	rm -f objlist.h
-	m4 -Dm4_output=objlist.h --prefix-builtins xobjlist.h > objlist.h
+	m4 -Dm4_output=objlist.h --prefix-builtins xobjlist.h > tmp.h
+	mv -f tmp.h objlist.h
 	chmod a-w objlist.h
 
 strobjdict.h strsobjdict.h strintdict.h: xstrobjdict.h
