@@ -3,7 +3,7 @@
 
 # main target
 THIS := libsmbase.a
-all: gensrc $(THIS)
+all: $(THIS)
 
 
 # C preprocessor, compiler and linker
@@ -58,29 +58,46 @@ config.status: configure.pl sm_config.pm
 
 
 # -------- experimenting with m4 for related files -------
-# I don't delete these during make clean because I don't want
-# to force people to have m4 installed
-gensrc: sobjlist.h objlist.h
+# This section is disabled by default because the generated files are
+# checked in to the repo, but when git checks them out, they have random
+# timestamps so 'make' usually thinks some are out of date.  If you
+# change the M4 sources, build with GENSRC=1 at least once.
 
-# This rule first puts the output into 'tmp.h' in case 'm4' fails
-# (for example, by not existing).  That way I do not end up with
-# a wrong target file that has a recent timestamp.
-sobjlist.h: xobjlist.h
-	rm -f sobjlist.h
-	m4 -Dm4_output=sobjlist.h --prefix-builtins xobjlist.h > tmp.h
-	mv -f tmp.h sobjlist.h
-	chmod a-w sobjlist.h
+ifeq ($(GENSRC),1)
 
-objlist.h: xobjlist.h
-	rm -f objlist.h
-	m4 -Dm4_output=objlist.h --prefix-builtins xobjlist.h > tmp.h
-	mv -f tmp.h objlist.h
-	chmod a-w objlist.h
+# Default target will refresh any out of date generated sources.
+all: gensrc
+gensrc: sobjlist.h objlist.h strobjdict.h strsobjdict.h strintdict.h
 
-strobjdict.h strsobjdict.h strintdict.h: xstrobjdict.h
-	rm -f $@
-	m4 -Dm4_output=$@ --prefix-builtins $< > $@
-	chmod a-w $@
+# Run M4 to generate a single file.  Parameters:
+#   $(1): Name of target file.
+#   $(2): Name of source file.
+define RUN_M4
+
+$(1): $(2)
+	@# Forcibly remove target, which may be read-only.
+	rm -f $(1)
+	@#
+	@# Generate tmp.h first.  That way, if m4 fails, we will not
+	@# have written an empty or partial target file.
+	m4 -Dm4_output=$(1) --prefix-builtins $(2) > tmp.h
+	@#
+	@# Now move tmp.h into the target location and make the latter
+	@# read-only so I don't accidentally edit it.
+	mv -f tmp.h $(1)
+	chmod a-w $(1)
+
+endef # RUN_M4
+
+# All of the M4 input files know what to do based on the name of the
+# output file, so do not need any additional parameters.
+$(eval $(call RUN_M4,sobjlist.h,xobjlist.h))
+$(eval $(call RUN_M4,objlist.h,xobjlist.h))
+$(eval $(call RUN_M4,strobjdict.h,xstrobjdict.h))
+$(eval $(call RUN_M4,strsobjdict.h,xstrobjdict.h))
+$(eval $(call RUN_M4,strintdict.h,xstrobjdict.h))
+
+endif # GENSRC==1
 
 
 # ----------------------- malloc ------------------------
