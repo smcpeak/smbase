@@ -344,12 +344,12 @@ void applyToDirContents(char const *dirName,
     while (!done) {
       if (!func(fb.name, extra)) {
         break;
-        }
-      done = _findnext(handle, &fb);
       }
+      done = _findnext(handle, &fb);
+    }
     if (handle != -1) {
       if (_findclose(handle)) fail("_findclose", dirName);
-      }
+    }
 
   #else     // unix and borland
     DIR *dir = opendir(dirName);
