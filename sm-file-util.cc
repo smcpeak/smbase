@@ -632,6 +632,34 @@ SMFileUtil::FileKind SMFileUtil::getFileKind(string const &path)
 bool SMFileUtil::isReadOnly(string const &path) NOEXCEPT
 {
 #if SM_FILE_UTIL_USE_WINDOWS_API
+  FileKind fileKind = getFileKind(path);
+  if (fileKind == FK_NONE) {
+    // File does not exist.
+    return false;
+  }
+
+  // One way a file can be read-only is with the read-only attribute.
+  // Cygwin "chmod a-w" does not use it, but MSYS "chmod a-w" does,
+  // and both recognize that it means the file cannot be written.
+  // Check this first since it's easier than what follows.
+  //
+  // We do not check this for directories because it has no effect:
+  // https://support.microsoft.com/en-us/topic/you-cannot-view-or-change-the-read-only-or-the-system-attributes-of-folders-in-windows-server-2003-in-windows-xp-in-windows-vista-or-in-windows-7-55bd5ec5-d19e-6173-0df1-8f5b49247165
+  //
+  if (fileKind != FK_DIRECTORY) {
+    DWORD attribs = GetFileAttributesA(path.c_str());
+    if (attribs == INVALID_FILE_ATTRIBUTES) {
+      DEV_WARNING_SYSERROR("GetFileAttributesA");
+    }
+    else if (attribs & FILE_ATTRIBUTE_READONLY) {
+      // Yes, it is read-only.  No need to check the ACLs.
+      return true;
+    }
+  }
+
+  // The other way it can be read-only is with ACL settings, which is
+  // what cygwin "chmod a-w" uses.  Check that next.
+
   // This is a nasty bit of code.  The Windows security API is a mess
   // and MSDN is utterly unhelpful.  I found this code that does
   // something similar and borrowed a number of ideas from it:
