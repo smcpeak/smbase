@@ -240,8 +240,8 @@ public:      // funcs
   virtual FileKind getFileKind(string const &path);
 
   // True if 'path' exists, but the current user does not have write
-  // permission for it.  This does not throw; it returns false for
-  // conditions that prevent determining the file's existence.
+  // permission for it.  This does not throw; it returns false if the
+  // file does not exist or we cannot determine whether it is read-only.
   virtual bool isReadOnly(string const &path) NOEXCEPT;
 
   // Return prefix+suffix, except if neither is empty, add a directory
