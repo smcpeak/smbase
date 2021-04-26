@@ -30,10 +30,10 @@ public:      // funcs
   virtual ~BFlatten();
 
   // Flatten funcs
-  virtual bool reading() const { return readMode; }
-  virtual void xferSimple(void *var, unsigned len);
-  virtual void noteOwner(void *ownerPtr);
-  virtual void xferSerf(void *&serfPtr, bool nullable=false);
+  virtual bool reading() const override { return readMode; }
+  virtual void xferSimple(void *var, unsigned len) override;
+  virtual void noteOwner(void *ownerPtr) override;
+  virtual void xferSerf(void *&serfPtr, bool nullable=false) override;
 };
 
 

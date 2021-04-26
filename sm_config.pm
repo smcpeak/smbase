@@ -20,6 +20,7 @@ sub get_sm_config_version {
   $main::no_dash_g = 0;
   $main::no_dash_O2 = 0;
   $main::exe = "";
+  $main::cxx11 = 1;
 
   # When true, we the executables created by the compiler are
   # assumed to not be runnable in the build host environment.
@@ -33,7 +34,7 @@ sub get_sm_config_version {
   # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66425
   push @main::CCFLAGS, ("-Wno-unused-result");
 
-  return 1.09;
+  return 1.10;
 
   # 1.01: first version
   #
@@ -50,6 +51,9 @@ sub get_sm_config_version {
   # 1.08: 2018-06-09: Add -cross.  Rename CROSSTARGET to TARGET_PLATFORM.
   #
   # 1.09: 2018-06-30: Remove -Wno-nonnull-compare.
+  #
+  # 1.10: 2021-04-25: Add C++11 choice, default is true.
+  #                   (Originally made on a side branch 2016-02-23.)
 }
 
 # standard prefix of the usage string
@@ -68,6 +72,7 @@ standard (sm_config) options:
   -cross[=0/1]:      indicate we are cross-compiling [$main::cross_compile]
   -no-dash-g:        disable -g
   -no-dash-O2:       disable -O2
+  -cxx11[=0/1]:      enable C++11 extensions [$main::cxx11]
 EOF
 
   if ($main::thisPackage ne "smbase") {
@@ -135,6 +140,11 @@ sub handleStandardOption {
     $main::no_dash_O2 = 1;
   }
 
+  elsif ($arg eq "cxx11") {
+    $main::cxx11 = getBoolArg();
+    return 1;
+  }
+
   else {
     return 0;
   }
@@ -145,6 +155,10 @@ sub handleStandardOption {
 sub finishedOptionProcessing {
   if (!$main::debug) {
     push @CCFLAGS, ("-O2", "-DNDEBUG");
+  }
+
+  if ($main::cxx11) {
+    push @CCFLAGS, ("-std=c++11");
   }
 
   if (!$main::target_platform) {
