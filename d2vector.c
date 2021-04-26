@@ -6,6 +6,9 @@
 //
 // This file is hereby placed in the public domain.
 
+// Get M_PI, a POSIX extension, from math.h.
+#define _USE_MATH_DEFINES
+
 #include "d2vector.h"   // this module
 
 #include <assert.h>     // assert
