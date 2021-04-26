@@ -21,6 +21,8 @@ sub get_sm_config_version {
   $main::no_dash_O2 = 0;
   $main::exe = "";
   $main::cxx11 = 1;
+  $main::suggest_override = 0;
+  $main::werror = 0;
 
   # When true, we the executables created by the compiler are
   # assumed to not be runnable in the build host environment.
@@ -54,6 +56,8 @@ sub get_sm_config_version {
   #
   # 1.10: 2021-04-25: Add C++11 choice, default is true.
   #                   (Originally made on a side branch 2016-02-23.)
+  #                   Add suggest_override and werror.
+  #                   (Originally made on a side branch 2016-02-25.)
 }
 
 # standard prefix of the usage string
@@ -73,6 +77,8 @@ standard (sm_config) options:
   -no-dash-g:        disable -g
   -no-dash-O2:       disable -O2
   -cxx11[=0/1]:      enable C++11 extensions [$main::cxx11]
+  -sugg-over[=0/1]:  enable -Wsuggest-override [$main::suggest_override]
+  -werror[=0/1]:     enable -Werror [$main::werror]
 EOF
 
   if ($main::thisPackage ne "smbase") {
@@ -145,6 +151,16 @@ sub handleStandardOption {
     return 1;
   }
 
+  elsif ($arg eq "sugg-over") {
+    $main::suggest_override = getBoolArg();
+    return 1;
+  }
+
+  elsif ($arg eq "werror") {
+    $main::werror = getBoolArg();
+    return 1;
+  }
+
   else {
     return 0;
   }
@@ -159,6 +175,14 @@ sub finishedOptionProcessing {
 
   if ($main::cxx11) {
     push @CCFLAGS, ("-std=c++11");
+  }
+
+  if ($main::suggest_override) {
+    push @CCFLAGS, ("-Wsuggest-override");
+  }
+
+  if ($main::werror) {
+    push @CCFLAGS, ("-Werror");
   }
 
   if (!$main::target_platform) {
@@ -427,8 +451,12 @@ EOF
           "but it might be a good idea to try that yourself\n");
   }
 
-  # make a variant, CFLAGS, that doesn't include -Wno-deprecated
-  @main::CFLAGS = grep { $_ ne "-Wno-deprecated" } @main::CCFLAGS;
+  # make a variant, CFLAGS, that doesn't include flags inapplicable to C
+  @main::CFLAGS = grep { 
+    $_ ne "-Wno-deprecated" and
+    $_ ne "-std=c++11" and
+    $_ ne "-Wsuggest-override"
+  } @main::CCFLAGS;
 }
 
 
@@ -446,6 +474,7 @@ echo ""
 echo "Compile flags:"
 echo "  CC:              $main::CC"
 echo "  CXX:             $main::CXX"
+echo "  CFLAGS:          @main::CFLAGS"
 echo "  CCFLAGS:         @main::CCFLAGS"
 echo "  CROSS_COMPILE:   $main::cross_compile"
 EOF

@@ -45,7 +45,7 @@ RANLIB := ranlib
 
 %.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS)
-	@perl ./depend.pl -o $@ $< $(CCFLAGS) > $*.d
+	@perl ./depend.pl -o $@ $< $(CFLAGS) > $*.d
 
 
 # remake the generated Makefile if its inputs have changed
