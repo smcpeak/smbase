@@ -343,8 +343,8 @@ void applyToDirContents(char const *dirName,
       fail("_findfirst", dirName);
     while (!done) {
       if (!func(fb.name, extra)) {
-	break;
-	}
+        break;
+        }
       done = _findnext(handle, &fb);
       }
     if (handle != -1) {
@@ -362,11 +362,11 @@ void applyToDirContents(char const *dirName,
       // grab next directory entry
       struct dirent *ent = readdir(dir);
       if (!ent) {
-	break;     // end of listing
+        break;     // end of listing
       }
 
       if (!func(ent->d_name, extra)) {
-	break;     // user wants to stop listing
+        break;     // user wants to stop listing
       }
     }
 
@@ -519,8 +519,8 @@ unsigned getSystemCryptoRandom()
     while (got < 4) {
       int ct = read(fd, c+got, 4-got);
       if (ct < 0) {
-       	perror("read");
-       	exit(2);
+        perror("read");
+        exit(2);
       }
       if (ct == 0) {
         fprintf(stderr, "got 0 bytes from /dev/random.. it's supposed to block!!\n");
@@ -725,7 +725,7 @@ int main(int argc, char **argv)
 
   if (interactive) {
     printf("Type some characters; you should see each\n"
-	   "character echoed once as you type it (q to stop):\n");
+           "character echoed once as you type it (q to stop):\n");
     setRawMode(true);
     char ch;
     do {
@@ -736,7 +736,7 @@ int main(int argc, char **argv)
     setRawMode(false);
 
     printf("\n\nYou typed for %ld milliseconds\n",
-	   getMilliseconds() - startTime);
+           getMilliseconds() - startTime);
   }
 
   limitFileAccess("chmod.test");
