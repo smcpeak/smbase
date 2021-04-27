@@ -2,11 +2,11 @@
 
 // quarl 2006-05-25 initial version, factored from 2006-05-16 astgen.cc
 
-#include "ofstreamts.h"
-#include "exc.h"
+#include "ofstreamts.h"                // this module
 
-#include <stdio.h>
-#include <unistd.h>
+#include "exc.h"                       // xfatal
+#include "sm-file-util.h"              // SMFileUtil
+
 
 size_t getFileSize(istream &i)
 {
@@ -68,22 +68,21 @@ const char *ofstreamTS::init_fname(string const &destFname0)
 }
 
 void ofstreamTS::save() {
+  SMFileUtil sfu;
+
   close();
   if (filesIdentical(destFname.c_str(), tmpFname.c_str())) {
     cout << "  file " << destFname << " unchanged, so not overwriting it.\n";
-    if (unlink(tmpFname.c_str())) {
-      cerr << "  unlink " << tmpFname << " failed\n";
-    }
-    return;
+    sfu.removeFile(tmpFname);
   }
-  if (rename(tmpFname.c_str(), destFname.c_str())) {
-    xfatal(stringc << "Rename " << tmpFname << " to " << destFname << " failed");
+  else {
+    sfu.atomicallyRenameFile(tmpFname, destFname);
   }
 }
 
 void ofstreamTS::deleteTmp() {
+  SMFileUtil sfu;
+
   close();
-  if (unlink(tmpFname.c_str())) {
-    cerr << "  unlink " << tmpFname << " failed\n";
-  }
+  sfu.removeFile(tmpFname);
 }
