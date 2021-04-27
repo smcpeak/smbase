@@ -53,13 +53,15 @@ $nobackup = 0;           # if true, require the scanner to be backup-free
 $makeMethodCopies = 0;   # if true, do step 2b above
 $outputFile = "";        # name of eventual output file
 $inputFile = "";         # name if input file
-@flexArgs = ("flex");    # arguments to pass to flex
+$flexProgram = "flex";   # name of flex executable
+@flexArgs = ();          # arguments to pass to flex
 
 if (@ARGV == 0) {
   print(<<"EOF");
-usage: $0 [-nobackup] [-copies] -o<fname> [flex-options] input.lex
+usage: $0 [-nobackup] [-copies] [-flex=<flex>] -o<fname> [flex-options] input.lex
   -nobackup: fail if the scanner can jam
   -copies:   make copies of methods that use per-lexer state
+  -flex:     specify flex program executable
   -o<fname>: specify output file name
 For details on other flex options, consult "man flex".
 EOF
@@ -84,7 +86,13 @@ for (; @ARGV; shift @ARGV) {
     next;
   }
 
-  my ($s) = ($ARGV[0] =~ m/^-o(.+)/);
+  my ($s) = ($ARGV[0] =~ m/^-flex=(.+)/);
+  if (defined($s)) {
+    $flexProgram = $s;
+    next;
+  }
+
+  ($s) = ($ARGV[0] =~ m/^-o(.+)/);
   if (defined($s)) {
     diagnostic("saw output file: $s\n");
     $outputFile = $s;
@@ -105,6 +113,7 @@ if (!$outputFile) {
 }
 
 # run flex
+unshift @flexArgs, $flexProgram;
 print(join(' ', @flexArgs) . "\n");
 if (0!=system(@flexArgs)) {
   print("flex failed, so removing output file $outputFile\n");
