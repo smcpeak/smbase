@@ -5,9 +5,6 @@
 // haphazard mix of stuff with poor error handling, so I have decided
 // to start over.
 
-// At some point I may introduce a structured file name class, but for
-// now I will just use strings to hold file names.
-
 #ifndef SM_FILE_UTIL_H
 #define SM_FILE_UTIL_H
 
