@@ -121,9 +121,14 @@ inline void pretendUsedFn(T const &) {}
 //   void exit(int code) NORETURN;
 #ifdef __GNUC__
   #define NORETURN __attribute__((noreturn))
+
+  // Declare that a variable may be unused, e.g.:
+  //   int UNUSED some_var = 5;
+  #define UNUSED __attribute__((unused))
 #else
   // just let the warnings roll if we can't suppress them
   #define NORETURN
+  #define UNUSED
 #endif
 
 
