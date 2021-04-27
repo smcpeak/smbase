@@ -283,6 +283,15 @@ public:      // funcs
   // as much as possible.  The result may have a sequence of "../" at
   // the start, or consist entirely of ".", or have neither.
   string collapseDots(string const &inputPath);
+
+  // Atomically rename 'oldPath' to 'newPath', replacing the latter if
+  // it exists.  This is meant to act like POSIX 'rename' even on
+  // Windows using MSVCRT.  It refuses to work on directories.
+  void atomicallyRenameFile(string const &oldPath, string const &newPath);
+
+  // Delete 'path'.  This is basically POSIX 'remove' except using
+  // exceptions to communicate errors.
+  void removeFile(string const &path);
 };
 
 

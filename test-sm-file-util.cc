@@ -558,6 +558,43 @@ static void testGetFileKind()
 }
 
 
+static void testAtomicallyRenameFile()
+{
+  string content("test content\n");
+  string srcFname("tarf.src.tmp");
+  string destFname("tarf.dest.tmp");
+
+  writeStringToFile(content, srcFname);
+  writeStringToFile("other content\n", destFname);
+
+  // Overwrite 'destFname'.
+  SMFileUtil sfu;
+  sfu.atomicallyRenameFile(srcFname, destFname);
+
+  // Check that the new content arrived.
+  string actual = readStringFromFile(destFname);
+  EXPECT_EQ(actual, content);
+
+  // Clean up 'destFname'.
+  sfu.removeFile(destFname);
+
+  // Check that both files are gone.
+  expectGFK(sfu, srcFname, SMFileUtil::FK_NONE);
+  expectGFK(sfu, destFname, SMFileUtil::FK_NONE);
+
+
+  // Verify that the function refuses to operate on directories.
+  try {
+    sfu.atomicallyRenameFile("fonts", "fonts");
+    xfailure("that should have failed!");
+  }
+  catch (XFatal &x) {
+    cout << "atomicallyRenameFile refused to move directory, as expected:\n"
+         << x.why() << endl;
+  }
+}
+
+
 // Defined in sm-file-util.cc.
 void getDirectoryEntries_scanThenStat(SMFileUtil &sfu,
   ArrayStack<SMFileUtil::DirEntryInfo> /*OUT*/ &entries, string const &directory);
@@ -610,6 +647,7 @@ static void entry(int argc, char **argv)
   testIsReadOnly();
   testCollapseDots();
   testGetFileKind();
+  testAtomicallyRenameFile();
 
   cout << "test-sm-file-util ok" << endl;
 }

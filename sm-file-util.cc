@@ -15,6 +15,7 @@
 
 // libc
 #include <errno.h>                     // errno
+#include <stdio.h>                     // rename
 #include <string.h>                    // strlen
 
 // POSIX fragment evidently portable enough to unconditionally include,
@@ -1105,6 +1106,44 @@ string SMFileUtil::collapseDots(string const &inputPath)
 
   SMFileName fn2(fn.withPathComponents(outputComponents));
   return fn2.toString();
+}
+
+
+void SMFileUtil::atomicallyRenameFile(string const &oldPath,
+                                      string const &newPath)
+{
+  // Prohibit operating on directories.  One issue with that is
+  // directory rename is not atomic on Windows.  (It is possible for
+  // another process to get a transient permission error when querying
+  // 'newPath' at just the wrong moment.)
+  if (directoryExists(oldPath)) {
+    xfatal(stringb("atomicallyRenameFile: " << quoted(oldPath) <<
+                   " is a directory but this can only be used"
+                   " with files"));
+  }
+
+#if SM_FILE_UTIL_USE_WINDOWS_API
+  if (!MoveFileExA(oldPath.c_str(), newPath.c_str(),
+                   MOVEFILE_REPLACE_EXISTING)) {
+    xsyserror("MoveFileExA",
+      stringb(oldPath << " -> " << newPath));
+  }
+
+#else
+  if (rename(oldPath.c_str(), newPath.c_str()) < 0) {
+    xsyserror("rename",
+      stringb(oldPath << " -> " << newPath));
+  }
+
+#endif // SM_FILE_UTIL_USE_WINDOWS_API
+}
+
+
+void SMFileUtil::removeFile(string const &path)
+{
+  if (remove(path.c_str()) < 0) {
+    xsyserror("remove", path);
+  }
 }
 
 
