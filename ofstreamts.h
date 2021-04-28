@@ -35,8 +35,12 @@ class ofstreamTS : public ofstream {
   // Initialize the member filenames; used internally by constructor
   const char *init_fname(string const &destFname0);
 
-  // Open the temporary file
-  void openTmp() { open(tmpFname.c_str()); }
+  // Open the temporary file.
+  //
+  // We open in binary mode so the file will consistently have LF line
+  // endings.  Otherwise, we get spurious revision control changes when
+  // CRLF line endings appear on Windows.
+  void openTmp() { open(tmpFname.c_str(), ios_base::binary); }
 
   // Close the temporary file and rename to the destination file
   void save();
