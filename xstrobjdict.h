@@ -17,16 +17,16 @@ m4_define(TCPTR, [T const *])m4_dnl
 m4_define(outputCondTemplate, [$1])m4_dnl
 ], [m4_dnl
 m4_ifelse(m4_output, strintdict.h, [m4_dnl
-// strintlist.h            see license.txt for copyright and terms of use
-// dictionary of longs (integers that fit into void*), indexed by string
+// strintdict.h            see license.txt for copyright and terms of use
+// dictionary of intptr_t (integers that fit into void*), indexed by string
 // (case-sensitive)
 m4_define(makeName, S[$1])m4_dnl
 m4_define(outputCond, [$1])m4_dnl       // select 1st arg
 m4_define(SPC, [ ])m4_dnl
 m4_define(XSTROBJDICT, [StringIntDict])m4_dnl
 m4_define(includeLatch, [STRINTDICT_H])m4_dnl
-m4_define(TPTR, [long])m4_dnl
-m4_define(TCPTR, [long])m4_dnl
+m4_define(TPTR, [intptr_t])m4_dnl
+m4_define(TCPTR, [intptr_t])m4_dnl
 m4_define(outputCondTemplate, [$2])m4_dnl
 ], [m4_dnl
 // strobjdict.h            see license.txt for copyright and terms of use
