@@ -1,5 +1,5 @@
-// strintlist.h            see license.txt for copyright and terms of use
-// dictionary of longs (integers that fit into void*), indexed by string
+// strintdict.h            see license.txt for copyright and terms of use
+// dictionary of intptr_t (integers that fit into void*), indexed by string
 // (case-sensitive)
 // (c) Scott McPeak, 2000
 // NOTE: automatically generated from xstrobjdict.h -- do not edit directly
@@ -11,19 +11,19 @@
 #ifndef STRINTDICT_H
 #define STRINTDICT_H
 
-#include "svdict.h"    // StringVoidDict
+#include "strutil.h"                   // qsortStringArray
+#include "svdict.h"                    // StringVoidDict
 
-void qsortStringArray(char const **strings, int size); // strutil.h
-
-// the dictionary object is considered to own all of the things
-// contained, so constness means constness of the contained objects
-// as well as the mapping from strings to them
+// since the dictionary does not own the pointed-to objects,
+// it has the same constness model as StringVoidDict, namely
+// that const means the *mapping* is constant but not the
+// pointed-to objects
 
 
 class StringIntDict {
 public:     // types
   // 'foreach' iterator functions
-  typedef bool (*ForeachFn)(string const &key, long value, void *extra);
+  typedef bool (*ForeachFn)(string const &key, intptr_t value, void *extra);
 
   // external iterator
   class Iter {
@@ -39,7 +39,7 @@ public:     // types
     Iter& next() { iter.next(); return *this; }
 
     string const &key() const { return iter.key(); }
-    long &value() const { return (long &)iter.value(); }
+    intptr_t &value() const { return (intptr_t &)iter.value(); }
 
     int private_getCurrent() const { return iter.private_getCurrent(); }
   };
@@ -58,7 +58,7 @@ public:     // types
     IterC& next() { iter.next(); return *this; }
 
     string const &key() const { return iter.key(); }
-    long value() const { return (long)iter.value(); }
+    intptr_t value() const { return (intptr_t)iter.value(); }
 
     int private_getCurrent() const { return iter.private_getCurrent(); }
   };
@@ -114,8 +114,8 @@ public:     // types
 //        xassert(map.isMapped(key));
       return key;
     }
-    long value() const {
-      return (long )map.queryfC(key());
+    intptr_t value() const {
+      return (intptr_t )map.queryfC(key());
     }
   };
 
@@ -147,31 +147,31 @@ public:
   bool isEmpty() const                                 { return dict.isEmpty(); }
   bool isNotEmpty() const                              { return !isEmpty(); }
 
-  bool query(char const *key, long &value) const         { return dict.query(key, (void*&)value); }
-  long queryf(char const *key) const                     { return (long)dict.queryf(key); }
-  long queryif(char const *key) const                    { return (long)dict.queryif(key); }
+  bool query(char const *key, intptr_t &value) const         { return dict.query(key, (void*&)value); }
+  intptr_t queryf(char const *key) const                     { return (intptr_t)dict.queryf(key); }
+  intptr_t queryif(char const *key) const                    { return (intptr_t)dict.queryif(key); }
 
   // parallel functions for API consistency
-  bool queryC(char const *key, long &value) const { return query(key, value); }
-  long queryfC(char const *key) const { return queryf(key); }
+  bool queryC(char const *key, intptr_t &value) const { return query(key, value); }
+  intptr_t queryfC(char const *key) const { return queryf(key); }
 
   bool isMapped(char const *key) const                 { return dict.isMapped(key); }
 
   // -------- mutators -----------
-  void add(char const *key, long value)                  { dict.add(key, (void*)value); }
-  long /*owner*/ remove(char const *key)                { return (long)dict.remove(key); }
-  long modify(char const *key, long newValue)              { return (long)dict.modify(key, (void*)newValue); }
+  void add(char const *key, intptr_t value)                  { dict.add(key, (void*)value); }
+  intptr_t /*owner*/ remove(char const *key)                { return (intptr_t)dict.remove(key); }
+  intptr_t modify(char const *key, intptr_t newValue)              { return (intptr_t)dict.modify(key, (void*)newValue); }
 
   void empty()                                         { dict.empty(); }
 
   // -------- parallel interface for 'rostring' --------
-  bool query(rostring key, long &value) const { return query(key.c_str(), value); }
-  long queryf(rostring key) const             { return queryf(key.c_str()); }
-  long queryif(rostring key) const            { return queryif(key.c_str()); }
+  bool query(rostring key, intptr_t &value) const { return query(key.c_str(), value); }
+  intptr_t queryf(rostring key) const             { return queryf(key.c_str()); }
+  intptr_t queryif(rostring key) const            { return queryif(key.c_str()); }
   bool isMapped(rostring key) const         { return isMapped(key.c_str()); }
-  void add(rostring key, long value)          { dict.add(key, (void*)value); }
-  long modify(rostring key, long newValue)      { return modify(key.c_str(), newValue); }
-  long remove(rostring key)                   { return remove(key.c_str()); }
+  void add(rostring key, intptr_t value)          { dict.add(key, (void*)value); }
+  intptr_t modify(rostring key, intptr_t newValue)      { return modify(key.c_str(), newValue); }
+  intptr_t remove(rostring key)                   { return remove(key.c_str()); }
 
   // --------- iters -------------
   void foreach(ForeachFn func, void *extra=NULL) const

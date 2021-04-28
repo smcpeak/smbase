@@ -10,13 +10,13 @@
 #ifndef STRSOBJLIST_H
 #define STRSOBJLIST_H
 
-#include "svdict.h"    // StringVoidDict
+#include "strutil.h"                   // qsortStringArray
+#include "svdict.h"                    // StringVoidDict
 
-void qsortStringArray(char const **strings, int size); // strutil.h
-
-// the dictionary object is considered to own all of the things
-// contained, so constness means constness of the contained objects
-// as well as the mapping from strings to them
+// since the dictionary does not own the pointed-to objects,
+// it has the same constness model as StringVoidDict, namely
+// that const means the *mapping* is constant but not the
+// pointed-to objects
 
 template <class T>
 class StringSObjDict {

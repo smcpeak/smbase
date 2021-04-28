@@ -1,6 +1,6 @@
 m4_dnl // xstrobjdict.h            see license.txt for copyright and terms of use
 m4_dnl // template file to be processed with m4 to generate one
-m4_dnl // of the wrappers around VoidList
+m4_dnl // of the wrappers around StringVoidDict
 m4_dnl
 m4_changequote([, ])m4_dnl      // for this section
 m4_changecom[]m4_dnl            // no m4 "comments"
@@ -14,7 +14,7 @@ m4_define(XSTROBJDICT, [StringSObjDict])m4_dnl
 m4_define(includeLatch, [STRSOBJLIST_H])m4_dnl
 m4_define(TPTR, [T *])m4_dnl
 m4_define(TCPTR, [T const *])m4_dnl
-m4_define(outputCondTemplate, [$1])m4_dnl
+m4_define(outputCondTemplate, [$1])m4_dnl        // 1st arg: is template
 ], [m4_dnl
 m4_ifelse(m4_output, strintdict.h, [m4_dnl
 // strintdict.h            see license.txt for copyright and terms of use
@@ -27,7 +27,7 @@ m4_define(XSTROBJDICT, [StringIntDict])m4_dnl
 m4_define(includeLatch, [STRINTDICT_H])m4_dnl
 m4_define(TPTR, [intptr_t])m4_dnl
 m4_define(TCPTR, [intptr_t])m4_dnl
-m4_define(outputCondTemplate, [$2])m4_dnl
+m4_define(outputCondTemplate, [$2])m4_dnl        // 2nd arg: is NOT template
 ], [m4_dnl
 // strobjdict.h            see license.txt for copyright and terms of use
 // dictionary of objects, indexed by string (case-sensitive)
@@ -38,7 +38,7 @@ m4_define(XSTROBJDICT, [StringObjDict])m4_dnl
 m4_define(includeLatch, [STROBJDICT_H])m4_dnl
 m4_define(TPTR, [T *])m4_dnl
 m4_define(TCPTR, [T const *])m4_dnl
-m4_define(outputCondTemplate, [$1])m4_dnl
+m4_define(outputCondTemplate, [$1])m4_dnl        // 1st arg: is template
 ])m4_dnl
 ])m4_dnl
 m4_dnl m4_define(XSTROBJDICT_type, XSTROBJDICT[]_type)m4_dnl
@@ -55,19 +55,18 @@ m4_changequote([[[, ]]])m4_dnl        // reduce likelihood of confusion
 #ifndef includeLatch
 #define includeLatch
 
-#include "svdict.h"    // StringVoidDict
+#include "strutil.h"                   // qsortStringArray
+#include "svdict.h"                    // StringVoidDict
 
-void qsortStringArray(char const **strings, int size); // strutil.h
-
-outputCond([[[m4_dnl
-// the dictionary object is considered to own all of the things
-// contained, so constness means constness of the contained objects
-// as well as the mapping from strings to them
-]]],[[[m4_dnl
+outputCond([[[m4_dnl                   // Non-owner case.
 // since the dictionary does not own the pointed-to objects,
 // it has the same constness model as StringVoidDict, namely
 // that const means the *mapping* is constant but not the
 // pointed-to objects
+]]],[[[m4_dnl                          // Owner case.
+// the dictionary object is considered to own all of the things
+// contained, so constness means constness of the contained objects
+// as well as the mapping from strings to them
 ]]])m4_dnl
 
 outputCondTemplate([[[template <class T>]]])

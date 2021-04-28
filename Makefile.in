@@ -386,6 +386,7 @@ datablok$(EXE): datablok.cpp datablok.h $(THIS)
 	$(TESTCXX) -o $@ -DTEST_DATABLOK datablok.cpp $(TESTFLAGS)
 
 UNIT_TEST_OBJS :=
+UNIT_TEST_OBJS += test-dict.o
 UNIT_TEST_OBJS += test-overflow.o
 UNIT_TEST_OBJS += test-parsestring.o
 UNIT_TEST_OBJS += unit-tests.o

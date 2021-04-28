@@ -11,11 +11,14 @@
 #include "parsestring.h"               // test_parsestring
 #include "test.h"                      // USUAL_TEST_MAIN
 
+void test_dict();                      // test-dict.cc
+
 
 static void entry()
 {
   test_overflow();
   test_parsestring();
+  test_dict();
 
   cout << "unit tests PASSED" << endl;
 }
