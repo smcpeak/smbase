@@ -452,7 +452,7 @@ EOF
   }
 
   # make a variant, CFLAGS, that doesn't include flags inapplicable to C
-  @main::CFLAGS = grep { 
+  @main::CFLAGS = grep {
     $_ ne "-Wno-deprecated" and
     $_ ne "-std=c++11" and
     $_ ne "-Wsuggest-override"
