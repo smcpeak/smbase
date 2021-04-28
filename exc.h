@@ -36,6 +36,9 @@
 //   unwinding
 //   unwinding_other
 //   CAUTIOUS_RELAY
+// The replacement to checking 'unwinding()' is to wrap the code in
+// GENERIC_CATCH_BEGIN and GENERIC_CATCH_END so exceptions do not
+// propagate out of destructors.
 
 
 // -------------------- xBase ------------------
