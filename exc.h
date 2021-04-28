@@ -49,8 +49,8 @@ protected:
   string msg;
 
 public:
-  // initially true; when true, we write a record of the thrown exception
-  // to clog
+  // Initially false.  When true, we write a record of the thrown
+  // exception to clog for debug assistance.
   static bool logExceptions;
 
   // current # of xBases running about; used to support unrolling()

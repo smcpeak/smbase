@@ -21,7 +21,7 @@ void printUnhandled(xBase const &x)
 
 
 // ------------------------- xBase -----------------
-bool xBase::logExceptions = true;
+bool xBase::logExceptions = false;
 int xBase::creationCount = 0;
 
 
