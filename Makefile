@@ -36,9 +36,6 @@ LIBS = $(THIS)
 # Flags for the linker.
 LDFLAGS = $(DEBUG_FLAGS) $(OPTIMIZATION_FLAGS) $(WARNING_FLAGS) $(LIBS)
 
-# Extension for executables, if any, including the ".".
-EXE = .exe
-
 # Some other tools.
 AR     = ar
 RANLIB = ranlib
@@ -253,55 +250,59 @@ $(THIS): $(OBJS)
 # ---------- module tests ----------------
 # test program targets
 TESTS :=
-TESTS += autofile
-TESTS += bdffont
-TESTS += bflatten
-TESTS += bit2d
-TESTS += bitarray
-TESTS += boxprint
-TESTS += crc
-TESTS += cycles
-TESTS += d2vector
-TESTS += datablok
-TESTS += gprintf
-TESTS += growbuf
-TESTS += hashline
-TESTS += mypopen
-TESTS += mysig
-TESTS += nonport
-TESTS += pprint
-TESTS += smregexp
-TESTS += srcloc
-TESTS += str
-TESTS += strdict
-TESTS += strhash
-TESTS += strutil
-TESTS += svdict
-TESTS += taillist_test
-TESTS += tarray2d
-TESTS += tarrayqueue
-TESTS += test-codepoint
-TESTS += test-datetime
-TESTS += test-refct-serf
-TESTS += test-sm-file-util
-TESTS += test-stringset
-TESTS += testarray
-TESTS += testmalloc
-TESTS += tobjlist
-TESTS += tobjpool
-TESTS += trdelete
-TESTS += tsobjlist
-TESTS += unit-tests
-TESTS += vdtllist
-TESTS += voidlist
-TESTS += vptrmap
+TESTS += autofile.exe
+TESTS += bdffont.exe
+TESTS += bflatten.exe
+TESTS += bit2d.exe
+TESTS += bitarray.exe
+TESTS += boxprint.exe
+TESTS += crc.exe
+TESTS += cycles.exe
+TESTS += d2vector.exe
+TESTS += datablok.exe
+TESTS += gprintf.exe
+TESTS += growbuf.exe
+TESTS += hashline.exe
+TESTS += mypopen.exe
+TESTS += mysig.exe
+TESTS += nonport.exe
+TESTS += pprint.exe
+TESTS += smregexp.exe
+TESTS += srcloc.exe
+TESTS += str.exe
+TESTS += strdict.exe
+TESTS += strhash.exe
+TESTS += strutil.exe
+TESTS += svdict.exe
+TESTS += taillist_test.exe
+TESTS += tarray2d.exe
+TESTS += tarrayqueue.exe
+TESTS += test-codepoint.exe
+TESTS += test-datetime.exe
+TESTS += test-refct-serf.exe
+TESTS += test-sm-file-util.exe
+TESTS += test-stringset.exe
+TESTS += testarray.exe
+TESTS += testmalloc.exe
+TESTS += tobjlist.exe
+TESTS += tobjpool.exe
+TESTS += trdelete.exe
+TESTS += tsobjlist.exe
+TESTS += unit-tests.exe
+TESTS += vdtllist.exe
+TESTS += voidlist.exe
+TESTS += vptrmap.exe
 
 # Some programs do not build on Mingw.
-ifeq ($(TARGET_PLATFORM_IS_MINGW),1)
-  TESTS := $(filter-out testmalloc mypopen mysig smregexp,$(TESTS))
-endif
+NON_MINGW_TESTS :=
+NON_MINGW_TESTS += mypopen.exe
+NON_MINGW_TESTS += mysig.exe
+NON_MINGW_TESTS += smregexp.exe
+NON_MINGW_TESTS += testmalloc.exe
 
-TESTS := $(addsuffix $(EXE),$(TESTS))
+ifeq ($(TARGET_PLATFORM_IS_MINGW),1)
+  TESTS := $(filter-out $(NON_MINGW_TESTS),$(TESTS))
+endif
 
 tests: $(TESTS)
 
@@ -314,117 +315,117 @@ TESTCXX := $(CXX) -g -Wall
 TESTFLAGS := $(CCFLAGS) $(LDFLAGS)
 
 # this one is explicitly *not* linked against $(THIS)
-nonport$(EXE): nonport.cpp nonport.h gprintf.o
+nonport.exe: nonport.cpp nonport.h gprintf.o
 	$(TESTCXX) -o $@ -DTEST_NONPORT nonport.cpp gprintf.o $(CCFLAGS)
 
-voidlist$(EXE): voidlist.cc voidlist.h $(THIS)
+voidlist.exe: voidlist.cc voidlist.h $(THIS)
 	$(TESTCXX) -o $@ -DTEST_VOIDLIST voidlist.cc $(TESTFLAGS)
 
-vdtllist$(EXE): vdtllist.cc vdtllist.h $(THIS)
+vdtllist.exe: vdtllist.cc vdtllist.h $(THIS)
 	$(TESTCXX) -o $@ -DTEST_VDTLLIST vdtllist.cc $(TESTFLAGS)
 
-taillist_test$(EXE): taillist_test.cc taillist.h $(THIS)
+taillist_test.exe: taillist_test.cc taillist.h $(THIS)
 	$(TESTCXX) -o $@ taillist_test.cc $(TESTFLAGS)
 
-tobjlist$(EXE): tobjlist.cc objlist.h voidlist.o $(THIS)
+tobjlist.exe: tobjlist.cc objlist.h voidlist.o $(THIS)
 	$(TESTCXX) -o $@ tobjlist.cc voidlist.o $(TESTFLAGS)
 
-tsobjlist$(EXE): tsobjlist.cc sobjlist.h voidlist.o $(THIS)
+tsobjlist.exe: tsobjlist.cc sobjlist.h voidlist.o $(THIS)
 	$(TESTCXX) -o $@ tsobjlist.cc voidlist.o $(TESTFLAGS)
 
-bit2d$(EXE): bit2d.cc bit2d.h $(THIS)
+bit2d.exe: bit2d.cc bit2d.h $(THIS)
 	$(TESTCXX) -o $@ -DTEST_BIT2D bit2d.cc $(TESTFLAGS)
 
-growbuf$(EXE): growbuf.cc growbuf.h $(THIS)
+growbuf.exe: growbuf.cc growbuf.h $(THIS)
 	$(TESTCXX) -o $@ -DTEST_GROWBUF growbuf.cc $(TESTFLAGS)
 
-strdict$(EXE): strdict.cc strdict.h $(THIS)
+strdict.exe: strdict.cc strdict.h $(THIS)
 	$(TESTCXX) -o $@ -DTEST_STRDICT strdict.cc $(TESTFLAGS)
 
-svdict$(EXE): svdict.cc svdict.h $(THIS)
+svdict.exe: svdict.cc svdict.h $(THIS)
 	$(TESTCXX) -o $@ -DTEST_SVDICT svdict.cc $(TESTFLAGS)
 
-str$(EXE): str.cpp str.h $(THIS)
+str.exe: str.cpp str.h $(THIS)
 	$(TESTCXX) -o $@ -DTEST_STR str.cpp $(TESTFLAGS)
 
-strutil$(EXE): strutil.cc strutil.h $(THIS)
+strutil.exe: strutil.cc strutil.h $(THIS)
 	$(TESTCXX) -o $@ -DTEST_STRUTIL strutil.cc $(TESTFLAGS)
 
-strhash$(EXE): strhash.cc strhash.h $(THIS)
+strhash.exe: strhash.cc strhash.h $(THIS)
 	$(TESTCXX) -o $@ -DTEST_STRHASH strhash.cc $(TESTFLAGS)
 
-trdelete$(EXE): trdelete.cc trdelete.h $(THIS)
+trdelete.exe: trdelete.cc trdelete.h $(THIS)
 	$(TESTCXX) -o $@ -DTEST_TRDELETE trdelete.cc $(TESTFLAGS)
 
-bflatten$(EXE): bflatten.cc bflatten.h $(THIS)
+bflatten.exe: bflatten.cc bflatten.h $(THIS)
 	$(TESTCXX) -o $@ -DTEST_BFLATTEN bflatten.cc $(TESTFLAGS)
 
-mysig$(EXE): mysig.cc mysig.h $(THIS)
+mysig.exe: mysig.cc mysig.h $(THIS)
 	$(TESTCXX) -o $@ -DTEST_MYSIG mysig.cc $(TESTFLAGS)
 
-testmalloc$(EXE): testmalloc.cc $(THIS)
+testmalloc.exe: testmalloc.cc $(THIS)
 	echo TESTS is $(TESTS)
 	$(TESTCXX) -o $@ testmalloc.cc $(TESTFLAGS)
 
-mypopen$(EXE): mypopen.c mypopen.h
+mypopen.exe: mypopen.c mypopen.h
 	$(TESTCC) -o $@ -DTEST_MYPOPEN mypopen.c
 
 # this test is only useful when malloc is compiled with DEBUG_HEAP
-tmalloc$(EXE): tmalloc.c libsmbase.a
+tmalloc.exe: tmalloc.c libsmbase.a
 	$(TESTCC) -o $@ tmalloc.c $(TESTFLAGS)
 
-tobjpool$(EXE): tobjpool.cc objpool.h
+tobjpool.exe: tobjpool.cc objpool.h
 	$(TESTCXX) -o $@ tobjpool.cc $(TESTFLAGS)
 
-cycles$(EXE): cycles.h cycles.c
+cycles.exe: cycles.h cycles.c
 	$(TESTCC) -o $@ -DTEST_CYCLES cycles.c
 
-crc$(EXE): crc.cpp
+crc.exe: crc.cpp
 	$(TESTCXX) -o $@ $(CCFLAGS) -DTEST_CRC crc.cpp
 
-srcloc$(EXE): srcloc.cc $(THIS)
+srcloc.exe: srcloc.cc $(THIS)
 	$(TESTCXX) -o $@ -DTEST_SRCLOC srcloc.cc $(TESTFLAGS)
 
-hashline$(EXE): hashline.cc $(THIS)
+hashline.exe: hashline.cc $(THIS)
 	$(TESTCXX) -o $@ -DTEST_HASHLINE hashline.cc $(TESTFLAGS)
 
-gprintf$(EXE): gprintf.c gprintf.h
+gprintf.exe: gprintf.c gprintf.h
 	$(TESTCC) -o $@ -DTEST_GPRINTF gprintf.c $(CFLAGS)
 
-smregexp$(EXE): smregexp.cc $(THIS)
+smregexp.exe: smregexp.cc $(THIS)
 	$(TESTCXX) -o $@ -DTEST_SMREGEXP smregexp.cc $(TESTFLAGS)
 
-vptrmap$(EXE): vptrmap.cc $(THIS)
+vptrmap.exe: vptrmap.cc $(THIS)
 	$(TESTCXX) -o $@ -DTEST_VPTRMAP vptrmap.cc $(TESTFLAGS)
 
-pprint$(EXE): pprint.cc $(THIS)
+pprint.exe: pprint.cc $(THIS)
 	$(TESTCXX) -o $@ -DTEST_PPRINT pprint.cc $(TESTFLAGS)
 
-boxprint$(EXE): boxprint.cc $(THIS)
+boxprint.exe: boxprint.cc $(THIS)
 	$(TESTCXX) -o $@ -DTEST_BOXPRINT boxprint.cc $(TESTFLAGS)
 
-tarrayqueue$(EXE): tarrayqueue.cc $(THIS)
+tarrayqueue.exe: tarrayqueue.cc $(THIS)
 	$(TESTCXX) -o $@ tarrayqueue.cc $(TESTFLAGS)
 
-testarray$(EXE): testarray.cc $(THIS)
+testarray.exe: testarray.cc $(THIS)
 	$(TESTCXX) -o $@ testarray.cc $(TESTFLAGS)
 
-autofile$(EXE): autofile.cc $(THIS)
+autofile.exe: autofile.cc $(THIS)
 	$(TESTCXX) -o $@ -DTEST_AUTOFILE autofile.cc $(TESTFLAGS)
 
-bitarray$(EXE): bitarray.cc $(THIS)
+bitarray.exe: bitarray.cc $(THIS)
 	$(TESTCXX) -o $@ -DTEST_BITARRAY bitarray.cc $(TESTFLAGS)
 
-d2vector$(EXE): d2vector.c $(THIS)
+d2vector.exe: d2vector.c $(THIS)
 	$(TESTCXX) -o $@ -DTEST_D2VECTOR d2vector.c $(TESTFLAGS)
 
-bdffont$(EXE): bdffont.cc $(THIS)
+bdffont.exe: bdffont.cc $(THIS)
 	$(TESTCXX) -o $@ -DTEST_BDFFONT bdffont.cc $(TESTFLAGS)
 
-tarray2d$(EXE): tarray2d.cc array2d.h $(THIS)
+tarray2d.exe: tarray2d.cc array2d.h $(THIS)
 	$(TESTCXX) -o $@ -DTEST_TARRAY2D tarray2d.cc $(TESTFLAGS)
 
-datablok$(EXE): datablok.cpp datablok.h $(THIS)
+datablok.exe: datablok.cpp datablok.h $(THIS)
 	$(TESTCXX) -o $@ -DTEST_DATABLOK datablok.cpp $(TESTFLAGS)
 
 UNIT_TEST_OBJS :=
@@ -435,14 +436,14 @@ UNIT_TEST_OBJS += unit-tests.o
 
 -include $(UNIT_TEST_OBJS:.o=.d)
 
-unit-tests$(EXE): $(UNIT_TEST_OBJS) $(THIS)
+unit-tests.exe: $(UNIT_TEST_OBJS) $(THIS)
 	$(TESTCXX) -o $@ $(UNIT_TEST_OBJS) $(TESTFLAGS)
 
-all: unit-tests$(EXE)
+all: unit-tests.exe
 
 # Rule for tests that have dedicated .cc files, which is what I
 # would like to transition toward.
-test-%$(EXE): test-%.cc $(THIS)
+test-%.exe: test-%.cc $(THIS)
 	$(TESTCXX) -o $@ test-$*.cc $(TESTFLAGS)
 
 
@@ -466,48 +467,48 @@ endif
 check-full: check
 
 check: $(TESTS)
-	$(RUN)./nonport$(EXE)
-	$(RUN)./voidlist$(EXE)
-	$(RUN)./vdtllist$(EXE)
-	$(RUN)./tobjlist$(EXE)
-	$(RUN)./bit2d$(EXE)
-	$(RUN)./growbuf$(EXE)
-	$(RUN)./strdict$(EXE)
-	$(RUN)./svdict$(EXE)
-	$(RUN)./str$(EXE)
-	$(RUN)./strutil$(EXE)
-	$(RUN)./strhash$(EXE)
-	$(RUN)./trdelete$(EXE)
-	$(RUN)./bflatten$(EXE)
-	$(RUN)./tobjpool$(EXE)
-	$(RUN)./cycles$(EXE)
-	$(RUN)./tsobjlist$(EXE)
-	$(RUN)./hashline$(EXE)
-	$(RUN)./srcloc$(EXE)
-	$(RUN)./gprintf$(EXE)
-	$(RUN)./vptrmap$(EXE)
-	$(RUN)./pprint$(EXE)
-	$(RUN)./boxprint$(EXE)
-	$(RUN)./tarrayqueue$(EXE)
-	$(RUN)./testarray$(EXE)
-	$(RUN)./taillist_test$(EXE)
-	$(RUN)./autofile$(EXE) autofile.cc
-	$(RUN)./bitarray$(EXE)
-	$(RUN)./d2vector$(EXE)
-	$(RUN)./bdffont$(EXE)
-	$(RUN)./tarray2d$(EXE)
-	$(RUN)./test-codepoint$(EXE)
-	$(RUN)./test-datetime$(EXE)
-	$(RUN)./test-refct-serf$(EXE)
-	$(RUN)./test-sm-file-util$(EXE)
-	$(RUN)./test-stringset$(EXE)
-	$(RUN)./datablok$(EXE)
-	$(RUN)./unit-tests$(EXE)
+	$(RUN)./nonport.exe
+	$(RUN)./voidlist.exe
+	$(RUN)./vdtllist.exe
+	$(RUN)./tobjlist.exe
+	$(RUN)./bit2d.exe
+	$(RUN)./growbuf.exe
+	$(RUN)./strdict.exe
+	$(RUN)./svdict.exe
+	$(RUN)./str.exe
+	$(RUN)./strutil.exe
+	$(RUN)./strhash.exe
+	$(RUN)./trdelete.exe
+	$(RUN)./bflatten.exe
+	$(RUN)./tobjpool.exe
+	$(RUN)./cycles.exe
+	$(RUN)./tsobjlist.exe
+	$(RUN)./hashline.exe
+	$(RUN)./srcloc.exe
+	$(RUN)./gprintf.exe
+	$(RUN)./vptrmap.exe
+	$(RUN)./pprint.exe
+	$(RUN)./boxprint.exe
+	$(RUN)./tarrayqueue.exe
+	$(RUN)./testarray.exe
+	$(RUN)./taillist_test.exe
+	$(RUN)./autofile.exe autofile.cc
+	$(RUN)./bitarray.exe
+	$(RUN)./d2vector.exe
+	$(RUN)./bdffont.exe
+	$(RUN)./tarray2d.exe
+	$(RUN)./test-codepoint.exe
+	$(RUN)./test-datetime.exe
+	$(RUN)./test-refct-serf.exe
+	$(RUN)./test-sm-file-util.exe
+	$(RUN)./test-stringset.exe
+	$(RUN)./datablok.exe
+	$(RUN)./unit-tests.exe
 ifneq ($(TARGET_PLATFORM_IS_MINGW),1)
-	$(RUN)./mysig$(EXE)
-	$(RUN)./testmalloc$(EXE) >/dev/null 2>&1
-	$(RUN)./mypopen$(EXE)
-	$(RUN)./smregexp$(EXE)
+	$(RUN)./mysig.exe
+	$(RUN)./testmalloc.exe >/dev/null 2>&1
+	$(RUN)./mypopen.exe
+	$(RUN)./smregexp.exe
 endif
 ifneq ($(CROSS_COMPILE),1)
 	@echo
@@ -569,12 +570,11 @@ doc: gendoc gendoc/dependencies.png
 # --------------------- clean --------------------
 # delete compiling/editing byproducts
 clean:
-	rm -f *.o *~ *.d gmon.out srcloc.tmp testcout
-	rm -f $(TESTS)
-	rm -f *.a
+	rm -f *.o *~ *.a *.d *.exe gmon.out srcloc.tmp testcout flattest.tmp
 	rm -rf test.dir
 
 distclean: clean
+	rm -f config.mk
 	rm -rf gendoc
 
 # remove crap that vc makes
