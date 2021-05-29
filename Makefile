@@ -17,17 +17,24 @@ CXX = g++
 # Flags to control generation of debug info.
 DEBUG_FLAGS = -g
 
-# Flags to control compiler warnings.
-WARNING_FLAGS =
+# Flags to enable dependency generation to .d files.
+GENDEPS_FLAGS = -MMD
 
 # Flags to control optimization.
 OPTIMIZATION_FLAGS = -O2
+
+# Flags to control compiler warnings.
+WARNING_FLAGS =
 
 # Flag for C or C++ standard to use.
 C_STD_FLAGS   = -std=c99
 CXX_STD_FLAGS = -std=c++11
 
-# Flags for the C and C++ compilers (and preprocessor),
+# Flags for the C and C++ compilers (and preprocessor).
+#
+# Note: $(GENDEPS_FLAGS) are not included because these flags are used
+# for linking too, and if that used $(GENDEPS_FLAGS) then the .d files
+# for .o files would be overwritten with info for .exe files.
 CFLAGS   = $(DEBUG_FLAGS) $(OPTIMIZATION_FLAGS) $(WARNING_FLAGS) $(C_STD_FLAGS)
 CXXFLAGS = $(DEBUG_FLAGS) $(OPTIMIZATION_FLAGS) $(WARNING_FLAGS) $(CXX_STD_FLAGS)
 
@@ -88,18 +95,15 @@ include config.mk
 .SUFFIXES:
 
 
-# compile .cc to .o
+# Compile .cc to .o, also generating dependency files.
 %.o: %.cc
-	$(CXX) -c -o $@ $(CXXFLAGS) $<
-	@perl ./depend.pl -o $@ $(CXXFLAGS) $< > $*.d
+	$(CXX) -c -o $@ $(GENDEPS_FLAGS) $(CXXFLAGS) $<
 
 %.o: %.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $<
-	@perl ./depend.pl -o $@ $(CXXFLAGS) $< > $*.d
+	$(CXX) -c -o $@ $(GENDEPS_FLAGS) $(CXXFLAGS) $<
 
 %.o: %.c
-	$(CC) -c -o $@ $(CFLAGS) $<
-	@perl ./depend.pl -o $@ $(CFLAGS) $< > $*.d
+	$(CC) -c -o $@ $(GENDEPS_FLAGS) $(CFLAGS) $<
 
 
 # -------- experimenting with m4 for related files -------
@@ -241,6 +245,7 @@ ifeq ($(TARGET_PLATFORM_IS_MINGW),1)
   OBJS := $(filter-out mypopen.o mysig.o smregexp.o,$(OBJS))
 endif
 
+# Pull in automatic dependencies created by $(GENDEPS_FLAGS).
 -include $(OBJS:.o=.d)
 
 $(THIS): $(OBJS)
