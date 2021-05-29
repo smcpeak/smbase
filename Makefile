@@ -309,124 +309,118 @@ endif
 tests: $(TESTS)
 
 
-# command to compile and link
-#
-# TODO: Remove these.
-TESTCC  := $(CC)
-TESTCXX := $(CXX)
-
 # this one is explicitly *not* linked against $(THIS)
 nonport.exe: nonport.cpp nonport.h gprintf.o
-	$(TESTCXX) -o $@ $(CCFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cpp gprintf.o
+	$(CXX) -o $@ $(CCFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cpp gprintf.o
 
 voidlist.exe: voidlist.cc voidlist.h $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) -DTEST_VOIDLIST $(LDFLAGS) voidlist.cc $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) -DTEST_VOIDLIST $(LDFLAGS) voidlist.cc $(LIBS)
 
 vdtllist.exe: vdtllist.cc vdtllist.h $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) -DTEST_VDTLLIST $(LDFLAGS) vdtllist.cc $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) -DTEST_VDTLLIST $(LDFLAGS) vdtllist.cc $(LIBS)
 
 taillist_test.exe: taillist_test.cc taillist.h $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) $(LDFLAGS) taillist_test.cc $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) $(LDFLAGS) taillist_test.cc $(LIBS)
 
 tobjlist.exe: tobjlist.cc objlist.h voidlist.o $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) $(LDFLAGS) tobjlist.cc voidlist.o $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) $(LDFLAGS) tobjlist.cc voidlist.o $(LIBS)
 
 tsobjlist.exe: tsobjlist.cc sobjlist.h voidlist.o $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) $(LDFLAGS) tsobjlist.cc voidlist.o $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) $(LDFLAGS) tsobjlist.cc voidlist.o $(LIBS)
 
 bit2d.exe: bit2d.cc bit2d.h $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) -DTEST_BIT2D $(LDFLAGS) bit2d.cc $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) -DTEST_BIT2D $(LDFLAGS) bit2d.cc $(LIBS)
 
 growbuf.exe: growbuf.cc growbuf.h $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) -DTEST_GROWBUF $(LDFLAGS) growbuf.cc $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) -DTEST_GROWBUF $(LDFLAGS) growbuf.cc $(LIBS)
 
 strdict.exe: strdict.cc strdict.h $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) -DTEST_STRDICT $(LDFLAGS) strdict.cc $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) -DTEST_STRDICT $(LDFLAGS) strdict.cc $(LIBS)
 
 svdict.exe: svdict.cc svdict.h $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) -DTEST_SVDICT $(LDFLAGS) svdict.cc $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) -DTEST_SVDICT $(LDFLAGS) svdict.cc $(LIBS)
 
 str.exe: str.cpp str.h $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) -DTEST_STR $(LDFLAGS) str.cpp $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) -DTEST_STR $(LDFLAGS) str.cpp $(LIBS)
 
 strutil.exe: strutil.cc strutil.h $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) -DTEST_STRUTIL $(LDFLAGS) strutil.cc $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) -DTEST_STRUTIL $(LDFLAGS) strutil.cc $(LIBS)
 
 strhash.exe: strhash.cc strhash.h $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) -DTEST_STRHASH $(LDFLAGS) strhash.cc $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) -DTEST_STRHASH $(LDFLAGS) strhash.cc $(LIBS)
 
 trdelete.exe: trdelete.cc trdelete.h $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) -DTEST_TRDELETE $(LDFLAGS) trdelete.cc $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) -DTEST_TRDELETE $(LDFLAGS) trdelete.cc $(LIBS)
 
 bflatten.exe: bflatten.cc bflatten.h $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) -DTEST_BFLATTEN $(LDFLAGS) bflatten.cc $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) -DTEST_BFLATTEN $(LDFLAGS) bflatten.cc $(LIBS)
 
 mysig.exe: mysig.cc mysig.h $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) -DTEST_MYSIG $(LDFLAGS) mysig.cc $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) -DTEST_MYSIG $(LDFLAGS) mysig.cc $(LIBS)
 
 testmalloc.exe: testmalloc.cc $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) $(LDFLAGS) testmalloc.cc $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) $(LDFLAGS) testmalloc.cc $(LIBS)
 
 mypopen.exe: mypopen.c mypopen.h
-	$(TESTCC) -o $@ $(CFLAGS) -DTEST_MYPOPEN $(LDFLAGS) mypopen.c
+	$(CC) -o $@ $(CFLAGS) -DTEST_MYPOPEN $(LDFLAGS) mypopen.c
 
 # this test is only useful when malloc is compiled with DEBUG_HEAP
 tmalloc.exe: tmalloc.c $(THIS)
-	$(TESTCC) -o $@ $(CFLAGS) $(LDFLAGS) tmalloc.c $(LIBS)
+	$(CC) -o $@ $(CFLAGS) $(LDFLAGS) tmalloc.c $(LIBS)
 
 tobjpool.exe: tobjpool.cc objpool.h $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) $(LDFLAGS) tobjpool.cc $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) $(LDFLAGS) tobjpool.cc $(LIBS)
 
 cycles.exe: cycles.h cycles.c
-	$(TESTCC) -o $@ $(CFLAGS) -DTEST_CYCLES $(LDFLAGS) cycles.c
+	$(CC) -o $@ $(CFLAGS) -DTEST_CYCLES $(LDFLAGS) cycles.c
 
 crc.exe: crc.cpp
-	$(TESTCXX) -o $@ $(CCFLAGS) -DTEST_CRC $(LDFLAGS) crc.cpp
+	$(CXX) -o $@ $(CCFLAGS) -DTEST_CRC $(LDFLAGS) crc.cpp
 
 srcloc.exe: srcloc.cc $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) -DTEST_SRCLOC $(LDFLAGS) srcloc.cc $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) -DTEST_SRCLOC $(LDFLAGS) srcloc.cc $(LIBS)
 
 hashline.exe: hashline.cc $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) -DTEST_HASHLINE $(LDFLAGS) hashline.cc $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) -DTEST_HASHLINE $(LDFLAGS) hashline.cc $(LIBS)
 
 gprintf.exe: gprintf.c gprintf.h
-	$(TESTCC) -o $@ $(CFLAGS) -DTEST_GPRINTF $(LDFLAGS) gprintf.c
+	$(CC) -o $@ $(CFLAGS) -DTEST_GPRINTF $(LDFLAGS) gprintf.c
 
 smregexp.exe: smregexp.cc $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) -DTEST_SMREGEXP $(LDFLAGS) smregexp.cc $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) -DTEST_SMREGEXP $(LDFLAGS) smregexp.cc $(LIBS)
 
 vptrmap.exe: vptrmap.cc $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) -DTEST_VPTRMAP $(LDFLAGS) vptrmap.cc $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) -DTEST_VPTRMAP $(LDFLAGS) vptrmap.cc $(LIBS)
 
 pprint.exe: pprint.cc $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) -DTEST_PPRINT $(LDFLAGS) pprint.cc $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) -DTEST_PPRINT $(LDFLAGS) pprint.cc $(LIBS)
 
 boxprint.exe: boxprint.cc $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) -DTEST_BOXPRINT $(LDFLAGS) boxprint.cc $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) -DTEST_BOXPRINT $(LDFLAGS) boxprint.cc $(LIBS)
 
 tarrayqueue.exe: tarrayqueue.cc $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) $(LDFLAGS) tarrayqueue.cc $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) $(LDFLAGS) tarrayqueue.cc $(LIBS)
 
 testarray.exe: testarray.cc $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) $(LDFLAGS) testarray.cc $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) $(LDFLAGS) testarray.cc $(LIBS)
 
 autofile.exe: autofile.cc $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) -DTEST_AUTOFILE $(LDFLAGS) autofile.cc $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) -DTEST_AUTOFILE $(LDFLAGS) autofile.cc $(LIBS)
 
 bitarray.exe: bitarray.cc $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) -DTEST_BITARRAY $(LDFLAGS) bitarray.cc $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) -DTEST_BITARRAY $(LDFLAGS) bitarray.cc $(LIBS)
 
 d2vector.exe: d2vector.c $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) -DTEST_D2VECTOR $(LDFLAGS) d2vector.c $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) -DTEST_D2VECTOR $(LDFLAGS) d2vector.c $(LIBS)
 
 bdffont.exe: bdffont.cc $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) -DTEST_BDFFONT $(LDFLAGS) bdffont.cc $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) -DTEST_BDFFONT $(LDFLAGS) bdffont.cc $(LIBS)
 
 tarray2d.exe: tarray2d.cc array2d.h $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) -DTEST_TARRAY2D $(LDFLAGS) tarray2d.cc $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) -DTEST_TARRAY2D $(LDFLAGS) tarray2d.cc $(LIBS)
 
 datablok.exe: datablok.cpp datablok.h $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) -DTEST_DATABLOK $(LDFLAGS) datablok.cpp $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) -DTEST_DATABLOK $(LDFLAGS) datablok.cpp $(LIBS)
 
 UNIT_TEST_OBJS :=
 UNIT_TEST_OBJS += test-dict.o
@@ -437,14 +431,14 @@ UNIT_TEST_OBJS += unit-tests.o
 -include $(UNIT_TEST_OBJS:.o=.d)
 
 unit-tests.exe: $(UNIT_TEST_OBJS) $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) $(LDFLAGS) $(UNIT_TEST_OBJS) $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) $(LDFLAGS) $(UNIT_TEST_OBJS) $(LIBS)
 
 all: unit-tests.exe
 
 # Rule for tests that have dedicated .cc files, which is what I
 # would like to transition toward.
 test-%.exe: test-%.cc $(THIS)
-	$(TESTCXX) -o $@ $(CCFLAGS) $(LDFLAGS) test-$*.cc $(LIBS)
+	$(CXX) -o $@ $(CCFLAGS) $(LDFLAGS) test-$*.cc $(LIBS)
 
 
 # Create a read-only file I can try to inspect in test-sm-file-util.cc.
