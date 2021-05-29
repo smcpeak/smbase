@@ -1,4 +1,4 @@
-# Makefile.in for libsmbase
+# smbase/Makefile
 # see license.txt for copyright and terms of use
 
 # main target
@@ -6,55 +6,101 @@ THIS := libsmbase.a
 all: $(THIS)
 
 
-# C preprocessor, compiler and linker
-CC := @CC@
+# ------------------------- Configuration --------------------------
+# ---- Running other programs ----
+# C preprocessor, compiler and linker.
+CC = gcc
 
 # C++ compiler, etc.
-CXX := @CXX@
+CXX = g++
 
-# flags for the C and C++ compilers (and preprocessor)
-CFLAGS  := @CFLAGS@
-CCFLAGS := @CCFLAGS@
+# Flags to control generation of debug info.
+DEBUG_FLAGS = -g
 
-# compile target platform info
-TARGET_PLATFORM := @TARGET_PLATFORM@
-CROSS_COMPILE   := @CROSS_COMPILE@
-EXE             := @EXE@
+# Flags to control compiler warnings.
+WARNING_FLAGS =
 
-# flags for the linker
-LDFLAGS := -g -Wall libsmbase.a
+# Flags to control optimization.
+OPTIMIZATION_FLAGS = -O2
+
+# Flag for C++ standard to use.
+CXX_STD_FLAGS = -std=c++11
+
+# Flags for the C and C++ compilers (and preprocessor),
+CFLAGS  = $(DEBUG_FLAGS) $(OPTIMIZATION_FLAGS) $(WARNING_FLAGS)
+CCFLAGS = $(DEBUG_FLAGS) $(OPTIMIZATION_FLAGS) $(CXX_STD_FLAGS) $(WARNING_FLAGS)
+
+# Libraries to link with when creating test executables.
+LIBS = $(THIS)
+
+# Flags for the linker.
+LDFLAGS = $(DEBUG_FLAGS) $(OPTIMIZATION_FLAGS) $(WARNING_FLAGS) $(LIBS)
+
+# Extension for executables, if any, including the ".".
+EXE = .exe
+
+# Some other tools.
+AR     = ar
+RANLIB = ranlib
 
 
-# some other tools
-AR     := ar
-RANLIB := ranlib
+# ---- Options within this Makefile ----
+# Set to 1 if we are building for MinGW.
+TARGET_PLATFORM_IS_MINGW = 0
+
+# Set to 1 if we are cross-compiling, meaning the executables we make
+# do not run on the build machine.
+CROSS_COMPILE = 0
+
+# Set to 1 to activate the rules that generate source code.
+GENSRC = 0
+
+# Set to 1 to activate debug heap mechanism.
+DEBUG_HEAP = 0
+
+# Set to 1 to activate tracing of heap allocation activity.
+TRACE_HEAP = 0
 
 
+# ---- Automatic Configuration ----
+# Pull in settings from ./configure.  They override the defaults above,
+# and are in turn overridden by personal.mk, below.
+ifeq ($(wildcard config.mk),)
+  $(error The file 'config.mk' does not exist.  Run './configure' before 'make'.)
+endif
+include config.mk
+
+
+# ---- Customization ----
+# Allow customization of the above variables in a separate file.  Just
+# create personal.mk with desired settings.
+#
+# Common things to set during development:
+#
+#   WERROR = -Werror
+#   WARNING_FLAGS = -Wall $(WERROR)
+#   OPTIMIZATION_FLAGS =
+#
+-include personal.mk
+
+
+# ----------------------------- Rules ------------------------------
 # Eliminate all implicit rules.
 .SUFFIXES:
 
 
 # compile .cc to .o
 %.o: %.cc
-	$(CXX) -c -o $@ $< $(CCFLAGS)
-	@perl ./depend.pl -o $@ $< $(CCFLAGS) > $*.d
+	$(CXX) -c -o $@ $(CCFLAGS) $<
+	@perl ./depend.pl -o $@ $(CCFLAGS) $< > $*.d
 
 %.o: %.cpp
-	$(CXX) -c -o $@ $< $(CCFLAGS)
-	@perl ./depend.pl -o $@ $< $(CCFLAGS) > $*.d
+	$(CXX) -c -o $@ $(CCFLAGS) $<
+	@perl ./depend.pl -o $@ $(CCFLAGS) $< > $*.d
 
 %.o: %.c
-	$(CC) -c -o $@ $< $(CFLAGS)
-	@perl ./depend.pl -o $@ $< $(CFLAGS) > $*.d
-
-
-# remake the generated Makefile if its inputs have changed
-Makefile: Makefile.in config.status
-	./config.status
-
-# reconfigure if the configure script has changed
-config.status: configure.pl sm_config.pm
-	./config.status -reconfigure
+	$(CC) -c -o $@ $(CFLAGS) $<
+	@perl ./depend.pl -o $@ $(CFLAGS) $< > $*.d
 
 
 # -------- experimenting with m4 for related files -------
@@ -117,13 +163,13 @@ MALLOC_CCFLAGS := -O3
 MALLOC_MODULE := malloc_stub
 
 # debug version (much slower, but *great* for finding memory errors)
-ifeq (@DEBUG_HEAP@,1)
+ifeq ($(DEBUG_HEAP),1)
   MALLOC_CCFLAGS := -DDEBUG -DDEBUG_HEAP
   MALLOC_MODULE := malloc
 endif
 
 # tracing messages
-ifeq (@TRACE_HEAP@,1)
+ifeq ($(TRACE_HEAP),1)
   MALLOC_CCFLAGS += -DTRACE_MALLOC_CALLS
   MALLOC_MODULE := malloc
 endif
@@ -191,16 +237,12 @@ OBJS += vptrmap.o
 OBJS += voidlist.o
 OBJS += warn.o
 
--include $(OBJS:.o=.d)
-
 # Some modules do not build on Mingw; for the moment I do not need them.
-TARGET_PLATFORM_IS_MINGW := 0
-ifeq ($(findstring mingw,$(TARGET_PLATFORM)),mingw)
-  TARGET_PLATFORM_IS_MINGW := 1
-endif
 ifeq ($(TARGET_PLATFORM_IS_MINGW),1)
   OBJS := $(filter-out mypopen.o mysig.o smregexp.o,$(OBJS))
 endif
+
+-include $(OBJS:.o=.d)
 
 $(THIS): $(OBJS)
 	rm -f $(THIS)
@@ -404,7 +446,15 @@ test-%$(EXE): test-%.cc $(THIS)
 	$(TESTCXX) -o $@ test-$*.cc $(TESTFLAGS)
 
 
-ifeq ($(CROSS_COMPILE),0)
+# Create a read-only file I can try to inspect in test-sm-file-util.cc.
+check: test.dir/read-only.txt
+test.dir/read-only.txt:
+	mkdir -p test.dir
+	echo "this file is read-only" >$@
+	chmod a-w $@
+
+
+ifneq ($(CROSS_COMPILE),1)
   RUN :=
 else
   # there is a necessary space at the end of the next line ...
@@ -453,13 +503,13 @@ check: $(TESTS)
 	$(RUN)./test-stringset$(EXE)
 	$(RUN)./datablok$(EXE)
 	$(RUN)./unit-tests$(EXE)
-ifeq ($(TARGET_PLATFORM_IS_MINGW),0)
+ifneq ($(TARGET_PLATFORM_IS_MINGW),1)
 	$(RUN)./mysig$(EXE)
 	$(RUN)./testmalloc$(EXE) >/dev/null 2>&1
 	$(RUN)./mypopen$(EXE)
 	$(RUN)./smregexp$(EXE)
 endif
-ifeq ($(CROSS_COMPILE),0)
+ifneq ($(CROSS_COMPILE),1)
 	@echo
 	@echo "make check: all the tests PASSED"
 else
@@ -510,12 +560,9 @@ dot:
 %.png: %.ps
 	convert -geometry 1000x700 $^ $@
 
-gendoc/configure.txt: configure
-	./configure --help >$@
-
 # build auto-generated documentation
 .PHONY: doc
-doc: gendoc gendoc/dependencies.png gendoc/configure.txt
+doc: gendoc gendoc/dependencies.png
 	@echo "built documentation"
 
 
@@ -528,7 +575,6 @@ clean:
 	rm -rf test.dir
 
 distclean: clean
-	rm -f Makefile config.status config.summary
 	rm -rf gendoc
 
 # remove crap that vc makes

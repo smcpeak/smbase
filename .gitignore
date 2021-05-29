@@ -39,10 +39,7 @@ tsobjlist
 *.i
 srcloc
 gprof.out
-config.status
-config.summary
 hide
-Makefile
 hashline
 srcloc.tmp
 gendoc
@@ -86,3 +83,5 @@ unit-tests
 mut
 mutant-compile.sh
 mutant.cc
+personal.mk
+config.mk

@@ -482,7 +482,7 @@ static void testIsReadOnly()
 {
   SMFileUtil sfu;
   EXPECT_EQ(sfu.isReadOnly("test-sm-file-util.cc"), false);
-  EXPECT_EQ(sfu.isReadOnly("Makefile"), true);
+  EXPECT_EQ(sfu.isReadOnly("test.dir/read-only.txt"), true);
   EXPECT_EQ(sfu.isReadOnly("nonexistent-file"), false);
 }
 
