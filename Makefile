@@ -286,6 +286,7 @@ TESTS += tarray2d.exe
 TESTS += tarrayqueue.exe
 TESTS += test-codepoint.exe
 TESTS += test-datetime.exe
+TESTS += test-owner.exe
 TESTS += test-refct-serf.exe
 TESTS += test-sm-file-util.exe
 TESTS += test-stringset.exe
@@ -498,6 +499,7 @@ check: $(TESTS)
 	$(RUN)./tarray2d.exe
 	$(RUN)./test-codepoint.exe
 	$(RUN)./test-datetime.exe
+	$(RUN)./test-owner.exe
 	$(RUN)./test-refct-serf.exe
 	$(RUN)./test-sm-file-util.exe
 	$(RUN)./test-stringset.exe
