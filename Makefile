@@ -17,7 +17,7 @@ CXX = g++
 # Flags to control generation of debug info.
 DEBUG_FLAGS = -g
 
-# Flags to enable dependency generation to .d files.
+# Flags to enable dependency generation of .d files.
 GENDEPS_FLAGS = -MMD
 
 # Flags to control optimization.
@@ -26,7 +26,7 @@ OPTIMIZATION_FLAGS = -O2
 # Flags to control compiler warnings.
 WARNING_FLAGS =
 
-# Flag for C or C++ standard to use.
+# Flags for C or C++ standard to use.
 C_STD_FLAGS   = -std=c99
 CXX_STD_FLAGS = -std=c++11
 
