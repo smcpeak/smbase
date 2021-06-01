@@ -71,6 +71,7 @@ void trashingDeleteArr(void *blk, size_t size)
 // ------------------------ test code ---------------------
 #ifdef TEST_TRDELETE
 
+#include <assert.h>     // assert
 #include <stdio.h>      // printf
 
 class Foo {
@@ -89,22 +90,32 @@ public:
 };
 
 
+// Pointer I can use to read memory after 'delete' has done its thing.
+// Using this does not avoid the undefined behavior, but it should
+// hide the UB from the compiler so the optimizer will not stray from
+// my intended behavior.
+int volatile * volatile fieldptr;
+
 int main()
 {
   printf("malloc: %p\n", malloc(10));
 
   Foo *f = new Foo;
   f->x = 5;
+  fieldptr = &(f->x);
+  assert(*fieldptr == 5);
   delete f;
-  if (f->x == 5) {
+  if (*fieldptr == 5) {
     printf("trashing-delete failed\n");
     return 2;
   }
 
   Bar *b = new Bar;
   b->x = 7;
+  fieldptr = &(b->x);
+  assert(*fieldptr == 7);
   delete b;
-  if ((unsigned)b->x == 0xAAAAAAAAu) {    // did it trash it anyway?
+  if ((unsigned)(*fieldptr) == 0xAAAAAAAAu) {    // did it trash it anyway?
     printf("non-trashing-delete failed\n");
     return 2;
   }
