@@ -94,6 +94,12 @@ include config.mk
 # Eliminate all implicit rules.
 .SUFFIXES:
 
+# Delete a target when its recipe fails.
+.DELETE_ON_ERROR:
+
+# Do not remove "intermediate" targets.
+.SECONDARY:
+
 
 # Compile .cc to .o, also generating dependency files.
 %.o: %.cc
