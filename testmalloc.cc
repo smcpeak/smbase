@@ -27,8 +27,6 @@ HeapWalkOpts deallocWalker(void *block, int size)
 }
 
 
-#define MSGOUT(str) write(1, str, strlen(str))
-
 void heapWalk(char const *context)
 {
   printf("%s: heap contents:\n", context);
@@ -124,7 +122,7 @@ int main()
   test1();
   test2();
 
-  MSGOUT("testmalloc finished\n");
+  printf("testmalloc finished\n");
   return 0;
 }
 
