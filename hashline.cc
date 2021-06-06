@@ -41,7 +41,7 @@ void HashLineMap::doneAdding()
 {
   // printf("## HashLineMap::doneAdding: directives.length() = %d, directives.size() = %d\n",
   //        directives.length(), directives.size());
-  directives.setSize(directives.length());
+  directives.setAllocatedSize(directives.length());
 
   // // make a new array of exactly the right size
   // ArrayStack<HashLine> tmp(directives.length());

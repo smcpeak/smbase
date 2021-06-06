@@ -75,7 +75,7 @@ private:     // funcs
 
   // make 'this' equal to 'obj'
   void copyFrom(GrowArray<T> const &obj) {
-    setSize(obj.size());     // not terribly efficient, oh well
+    setAllocatedSize(obj.allocatedSize()); // not terribly efficient, oh well
     copyFrom_limit(obj, sz);
   }
 
@@ -96,10 +96,6 @@ public:      // funcs
   // Allocated space, as number of elements in the array.
   int allocatedSize() const { return sz; }
 
-  // TODO: This should be removed!  It conflicts badly with the
-  // meaning of the 'size' method on standard C++ containers.
-  int size() const { return allocatedSize(); }
-
   // element access
   T const& operator[] (int i) const   { bc(i); return arr[i]; }
   T      & operator[] (int i)         { bc(i); return arr[i]; }
@@ -109,14 +105,9 @@ public:      // funcs
   // array gets smaller, elements are truncated
   void setAllocatedSize(int newSz);
 
-  // Old name for compatibility.
-  //
-  // TODO: This should be removed.
-  void setSize(int newSz) { this->setAllocatedSize(newSz); }
-
   // make sure there are at least 'minSz' elements in the array;
   void ensureAtLeast(int minSz)
-    { if (minSz > sz) { setSize(minSz); } }
+    { if (minSz > sz) { setAllocatedSize(minSz); } }
 
   // grab a read-only pointer to the raw array
   T const *getArray() const { return arr; }
@@ -237,7 +228,7 @@ void GrowArray<T>::eidLoop(int index)
     xassert(newSz > prevSz);        // otherwise overflow -> infinite loop
   }
 
-  setSize(newSz);
+  setAllocatedSize(newSz);
 }
 
 
@@ -349,7 +340,7 @@ public:      // funcs
   void setLength(int L) { len = L; }
 
   // consolidate allocated space to match length
-  void consolidate() { this->setSize(length()); }
+  void consolidate() { this->setAllocatedSize(length()); }
 
   // swap
   void swapWith(ArrayStack<T> &obj) {
