@@ -494,7 +494,10 @@ string vstringf(char const *format, va_list args)
     static char const msg[] =
       "fatal error: vnprintf failed to provide a conservative estimate,\n"
       "memory is most likely corrupted\n";
-    (void)write(2 /*stderr*/, msg, strlen(msg));
+
+    // To suppress the unused-result warning with GCC-5.4, it is
+    // necessary to both negate and cast to void.
+    (void)!write(2 /*stderr*/, msg, strlen(msg));
     abort();
   }
 
