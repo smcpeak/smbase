@@ -24,7 +24,9 @@ void extractArray(T *&array, int &size, ArrayStack<T> const &src)
 {
   size = src.length();
   array = new T[size];
-  memcpy(array, src.getArray(), size * sizeof(T));
+  for (int i=0; i < size; i++) {
+    array[i] = src[i];
+  }
 }
 
 
