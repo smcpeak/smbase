@@ -38,10 +38,10 @@
 #define DMEMB(var) var(obj.var)
 
 // member copy in operator =
-#define CMEMB(var) var = obj.var
+#define CMEMB(var) (var = obj.var)
 
 // member comparison in operator ==
-#define EMEMB(var) var == obj.var
+#define EMEMB(var) (var == obj.var)
 
 
 // standard insert operator
