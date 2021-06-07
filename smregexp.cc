@@ -33,7 +33,7 @@ static string regexpErrorString(regex_t const *pat, int code)
   regerror(code, pat, buf.ptr(), size);
   buf[size] = 0;     // paranoia
 
-  return string(buf);
+  return string(buf.ptrC());
 }
 
 // throw an exception

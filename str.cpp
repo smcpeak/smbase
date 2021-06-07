@@ -483,7 +483,7 @@ string vstringf(char const *format, va_list args)
   Array<char> buf(est+1);
 
   // render the string
-  int len = vsprintf(buf, format, args);
+  int len = vsprintf(buf.ptr(), format, args);
 
   // check the estimate, and fail *hard* if it was low, to avoid any
   // possibility that this might become exploitable in some context
@@ -502,7 +502,7 @@ string vstringf(char const *format, va_list args)
   }
 
   // happy
-  return string(buf);
+  return string(buf.ptrC());
 }
 
 

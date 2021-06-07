@@ -107,7 +107,7 @@ string translate(rostring origSrc, rostring srcchars, rostring destchars)
   }
   *dest = 0;    // final nul terminator
 
-  return string(ret);
+  return string(ret.ptrC());
 }
 
 

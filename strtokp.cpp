@@ -14,7 +14,7 @@ StrtokParse::StrtokParse(rostring origStr, rostring origDelim)
   char const *delim = toCStr(origDelim);
 
   // make local copy
-  strcpy(buf, str);
+  strcpy(buf.ptr(), str);
 
   // parse it first time to count # of tokens
   int ct=0;
@@ -25,7 +25,7 @@ StrtokParse::StrtokParse(rostring origStr, rostring origDelim)
   }
 
   // restore buf
-  strcpy(buf, str);
+  strcpy(buf.ptr(), str);
 
   // allocate storage
   _tokc = ct;
@@ -102,5 +102,5 @@ string StrtokParse::
 
 int StrtokParse::offset(int which) const
 {
-  return tokv(which) - (char const*)buf;
+  return tokv(which) - (char const*)buf.ptrC();
 }
