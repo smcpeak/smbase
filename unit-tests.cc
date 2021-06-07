@@ -7,6 +7,7 @@
 // the 'chess' repo, already works that way, it will be the first module
 // to be tested in the combined unit test program.
 
+#include "datablok.h"                  // test_datablok
 #include "overflow.h"                  // test_overflow
 #include "parsestring.h"               // test_parsestring
 #include "test.h"                      // USUAL_TEST_MAIN
@@ -16,9 +17,10 @@ void test_dict();                      // test-dict.cc
 
 static void entry()
 {
+  test_datablok();
+  test_dict();
   test_overflow();
   test_parsestring();
-  test_dict();
 
   cout << "unit tests PASSED" << endl;
 }

@@ -272,7 +272,6 @@ TESTS += boxprint.exe
 TESTS += crc.exe
 TESTS += cycles.exe
 TESTS += d2vector.exe
-TESTS += datablok.exe
 TESTS += gprintf.exe
 TESTS += growbuf.exe
 TESTS += hashline.exe
@@ -431,11 +430,9 @@ bdffont.exe: bdffont.cc $(THIS)
 tarray2d.exe: tarray2d.cc array2d.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_TARRAY2D $(LDFLAGS) tarray2d.cc $(LIBS)
 
-datablok.exe: datablok.cc datablok.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_DATABLOK $(LDFLAGS) datablok.cc $(LIBS)
-
 UNIT_TEST_OBJS :=
 UNIT_TEST_OBJS += test-dict.o
+UNIT_TEST_OBJS += test-datablok.o
 UNIT_TEST_OBJS += test-overflow.o
 UNIT_TEST_OBJS += test-parsestring.o
 UNIT_TEST_OBJS += unit-tests.o
@@ -509,7 +506,6 @@ check: $(TESTS)
 	$(RUN)./test-refct-serf.exe
 	$(RUN)./test-sm-file-util.exe
 	$(RUN)./test-stringset.exe
-	$(RUN)./datablok.exe
 	$(RUN)./unit-tests.exe
 ifneq ($(TARGET_PLATFORM_IS_MINGW),1)
 	$(RUN)./mysig.exe

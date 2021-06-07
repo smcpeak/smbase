@@ -2,8 +2,8 @@
 // arbitrary block of data
 // Scott McPeak, 1998-2000  This file is public domain.
 
-#ifndef __DATABLOK_H
-#define __DATABLOK_H
+#ifndef DATABLOK_H
+#define DATABLOK_H
 
 #include "typ.h"      // byte, bool
 
@@ -155,5 +155,9 @@ public:       // funcs
     // which 'isprint' is false
 };
 
-#endif // __DATABLOK_H
 
+// Unit test defined in test-datablok.cc.
+void test_datablok();
+
+
+#endif // DATABLOK_H
