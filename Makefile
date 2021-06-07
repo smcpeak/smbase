@@ -431,8 +431,8 @@ bdffont.exe: bdffont.cc $(THIS)
 tarray2d.exe: tarray2d.cc array2d.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_TARRAY2D $(LDFLAGS) tarray2d.cc $(LIBS)
 
-datablok.exe: datablok.cpp datablok.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_DATABLOK $(LDFLAGS) datablok.cpp $(LIBS)
+datablok.exe: datablok.cc datablok.h $(THIS)
+	$(CXX) -o $@ $(CXXFLAGS) -DTEST_DATABLOK $(LDFLAGS) datablok.cc $(LIBS)
 
 UNIT_TEST_OBJS :=
 UNIT_TEST_OBJS += test-dict.o
