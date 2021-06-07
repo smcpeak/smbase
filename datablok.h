@@ -5,13 +5,13 @@
 #ifndef DATABLOK_H
 #define DATABLOK_H
 
-#include <stddef.h>                    // NULL
+#include <stddef.h>                    // NULL, size_t, ptrdiff_t
 
 class DataBlock {
 private:      // data
   unsigned char *data;         // data itself (may be NULL)
-  int dataLen;                 // length of data, starting at data[0]
-  int allocated;               // amount of memory allocated at 'data'
+  size_t dataLen;              // length of data, starting at data[0]
+  size_t allocated;            // amount of memory allocated at 'data'
 
   // invariants: 0 <= dataLen <= allocated
   //             (data==NULL) == (allocated==0)
@@ -30,18 +30,18 @@ public:       // static data
 
 private:      // funcs
   // base ctor
-  void init(int allocatedSize);
+  void init(size_t allocatedSize);
 
   // allocate a block of memory, writing endpost
-  static unsigned char *allocate(int size);
+  static unsigned char *allocate(size_t size);
 
   // shared by both copy constructors (actually, only one is the true
   // copy ctor...)
   void copyCtorShared(DataBlock const &obj);
 
   // shared ctor calls as a workaround for char casting problems
-  void ctor(unsigned char const *srcData, int dataLen);
-  void ctor(unsigned char const *srcData, int dataLen, int allocatedSize);
+  void ctor(unsigned char const *srcData, size_t dataLen);
+  void ctor(unsigned char const *srcData, size_t dataLen, size_t allocatedSize);
 
   // confirm that invariants are true
   void selfCheck() const;
@@ -52,22 +52,22 @@ private:      // funcs
 public:       // funcs
   // make an empty datablock holder; when allocatedSize is 0, 'data'
   // is initially set to NULL
-  explicit DataBlock(int allocatedSize = 0);
+  explicit DataBlock(size_t allocatedSize = 0);
 
   // make a copy of 'srcString' data, which is null-terminated
   explicit DataBlock(char const *srcString);
 
   // make a copy of 'srcData', which is 'dataLen' bytes long
-  DataBlock(unsigned char const *srcData, int dataLen)
+  DataBlock(unsigned char const *srcData, size_t dataLen)
     { ctor(srcData, dataLen); }
-  DataBlock(char const *srcData, int dataLen)
+  DataBlock(char const *srcData, size_t dataLen)
     { ctor((unsigned char const*)srcData, dataLen); }
 
   // make a copy of 'srcData', which is 'dataLen' bytes long, in a buffer
   // that is 'allocatedSize' bytes long
-  DataBlock(unsigned char const *srcData, int dataLen, int allocatedSize)
+  DataBlock(unsigned char const *srcData, size_t dataLen, size_t allocatedSize)
     { ctor(srcData, dataLen, allocatedSize); }
-  DataBlock(char const *srcData, int dataLen, int allocatedSize)
+  DataBlock(char const *srcData, size_t dataLen, size_t allocatedSize)
     { ctor((unsigned char const*)srcData, dataLen, allocatedSize); }
 
   // copy data, allocate same amount as 'obj'
@@ -76,14 +76,14 @@ public:       // funcs
   // copy obj's contents; allocate either obj.getAllocated() or
   // minToAllocate, whichever is larger (this turns out to be a
   // common idiom)
-  DataBlock(DataBlock const &obj, int minToAllocate);
+  DataBlock(DataBlock const &obj, size_t minToAllocate);
 
   ~DataBlock();
 
   // selectors
   unsigned char const *getDataC() const { return data; }
-  int getDataLen() const { return dataLen; }
-  int getAllocated() const { return allocated; }
+  size_t getDataLen() const { return dataLen; }
+  size_t getAllocated() const { return allocated; }
 
   // compares data length and data-length bytes of data
   bool dataEqual(DataBlock const &obj) const;
@@ -104,27 +104,27 @@ public:       // funcs
   unsigned char *getData() { return data; }
 
   // asserts that 0 <= newLen <= allocated
-  void setDataLen(int newLen);
+  void setDataLen(size_t newLen);
 
-  void setAllocated(int newAllocated);     // i.e. realloc
+  void setAllocated(size_t newAllocated);     // i.e. realloc
 
   // add a null ('\0') to the end; there must be sufficient allocated space
   void addNull();
 
-  void changeDataLen(int changeAmount)
+  void changeDataLen(ptrdiff_t changeAmount)
     { setDataLen(getDataLen() + changeAmount); }
 
   // if 'allocated' is currently less than minAllocated, then
   // set 'allocated' to minAllocated (preserving existing contents)
-  void ensureAtLeast(int minAllocated);
+  void ensureAtLeast(size_t minAllocated);
 
   // grows allocated data if necessary, whereas changeDataLen will throw
   // an exception if there isn't already enough allocated space
-  void growDataLen(int changeAmount);
+  void growDataLen(ptrdiff_t changeAmount);
 
   void setFromString(char const *srcString);
-  void setFromBlock(unsigned char const *srcData, int dataLen);
-  void setFromBlock(char const *srcData, int dataLen)
+  void setFromBlock(unsigned char const *srcData, size_t dataLen);
+  void setFromBlock(char const *srcData, size_t dataLen)
     { setFromBlock((unsigned char const*)srcData, dataLen); }
 
   // causes data AND allocation length equality
@@ -151,11 +151,12 @@ public:       // funcs
   //
   // print 'length' bytes of 'data' in hex
   // blank-pad the output as if 'linelen' bytes were present
-  static void printHexLine(unsigned char const *data, int length, int lineLength);
+  static void printHexLine(unsigned char const *data, size_t length,
+                           size_t lineLength);
 
   // print 'length' bytes of 'data', substituting 'unprintable' for bytes for
   // which 'isprint' is false
-  static void printPrintableLine(unsigned char const *data, int length,
+  static void printPrintableLine(unsigned char const *data, size_t length,
                                  char unprintable = '.');
 };
 

@@ -8,14 +8,14 @@
 
 class GrowBuffer : public DataBlock {
 public:
-  GrowBuffer(int allocSize=0)
+  GrowBuffer(size_t allocSize=0)
     : DataBlock(allocSize) {}
   ~GrowBuffer() {}
 
   // append to the end, at least doubling allocated
   // size if growth is needed
-  void append(unsigned char const *str, int len);
-  void append(char const *str, int len)
+  void append(unsigned char const *str, size_t len);
+  void append(char const *str, size_t len)
     { append((unsigned char const*)str, len); }
 };
 

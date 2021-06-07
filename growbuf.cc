@@ -7,13 +7,13 @@
 
 #include <string.h>                    // memcpy
 
-void GrowBuffer::append(unsigned char const *str, int len)
+void GrowBuffer::append(unsigned char const *str, size_t len)
 {
   // test length
-  int newLen = getDataLen() + len;
+  size_t newLen = getDataLen() + len;
   if (newLen > getAllocated()) {
     // must grow
-    int newAlloc = std::max(getAllocated(), 16);
+    size_t newAlloc = std::max(getAllocated(), (size_t)16);
     while (newLen > newAlloc) {
       newAlloc *= 2;      // would like an overflow test here..
     }
@@ -34,7 +34,7 @@ void GrowBuffer::append(unsigned char const *str, int len)
 void entry()
 {
   unsigned char const str[] = "crazy like a mad cow!";
-  int len = sizeof(str);
+  size_t len = sizeof(str);
 
   GrowBuffer buf;
   loopi(10) {

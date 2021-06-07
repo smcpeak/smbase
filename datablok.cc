@@ -21,7 +21,7 @@
 /*static*/ void (*DataBlock::s_memoryCorruptionOverrideHandler)() = NULL;
 
 
-void DataBlock::init(int allocatedSize)
+void DataBlock::init(size_t allocatedSize)
 {
   xassert(allocatedSize >= 0);
   dataLen = 0;
@@ -37,7 +37,7 @@ void DataBlock::init(int allocatedSize)
 }
 
 
-STATICDEF unsigned char *DataBlock::allocate(int size)
+STATICDEF unsigned char *DataBlock::allocate(size_t size)
 {
   unsigned char *ret = new unsigned char[size+1];
   ret[size] = endpost;
@@ -60,8 +60,8 @@ void DataBlock::checkEndpost() const
     fprintf(stderr, "DataBlock: array overrun detected!\n"
                     "  this: %p\n"
                     "  data: %p\n"
-                    "  allocated: %d\n"
-                    "  dataLen: %d\n"
+                    "  allocated: %zu\n"
+                    "  dataLen: %zu\n"
                     "  data[allocated]: %d\n"
                     "Program will now terminate.\n",
                     this,
@@ -82,7 +82,7 @@ void DataBlock::checkEndpost() const
 }
 
 
-DataBlock::DataBlock(int allocatedSize)
+DataBlock::DataBlock(size_t allocatedSize)
 {
   init(allocatedSize);
   SELFCHECK();
@@ -97,7 +97,7 @@ DataBlock::DataBlock(char const *srcString)
 }
 
 
-void DataBlock::ctor(unsigned char const *srcData, int dataLen)
+void DataBlock::ctor(unsigned char const *srcData, size_t dataLen)
 {
   init(0);
   setFromBlock(srcData, dataLen);
@@ -105,7 +105,7 @@ void DataBlock::ctor(unsigned char const *srcData, int dataLen)
 }
 
 
-void DataBlock::ctor(unsigned char const *srcData, int srcDataLen, int allocatedSize)
+void DataBlock::ctor(unsigned char const *srcData, size_t srcDataLen, size_t allocatedSize)
 {
   init(allocatedSize);
   dataLen = srcDataLen;
@@ -130,7 +130,7 @@ void DataBlock::copyCtorShared(DataBlock const &obj)
 }
 
 
-DataBlock::DataBlock(DataBlock const &obj, int minToAllocate)
+DataBlock::DataBlock(DataBlock const &obj, size_t minToAllocate)
 {
   init(max(obj.getAllocated(), minToAllocate));
   copyCtorShared(obj);
@@ -173,7 +173,7 @@ bool DataBlock::dataEqual(DataBlock const &obj) const
 
 
 
-void DataBlock::setDataLen(int newLen)
+void DataBlock::setDataLen(size_t newLen)
 {
   SELFCHECK();
   xassert(0 <= newLen && newLen <= allocated);
@@ -182,7 +182,7 @@ void DataBlock::setDataLen(int newLen)
 }
 
 
-void DataBlock::setAllocated(int newAllocated)
+void DataBlock::setAllocated(size_t newAllocated)
 {
   SELFCHECK();
   xassert(newAllocated >= 0);
@@ -212,7 +212,7 @@ void DataBlock::setAllocated(int newAllocated)
 }
 
 
-void DataBlock::ensureAtLeast(int minAllocated)
+void DataBlock::ensureAtLeast(size_t minAllocated)
 {
   if (allocated < minAllocated) {
     setAllocated(minAllocated);
@@ -220,7 +220,7 @@ void DataBlock::ensureAtLeast(int minAllocated)
 }
 
 
-void DataBlock::growDataLen(int changeAmount)
+void DataBlock::growDataLen(ptrdiff_t changeAmount)
 {
   ensureAtLeast(getDataLen() + changeAmount);
   changeDataLen(changeAmount);
@@ -239,13 +239,13 @@ void DataBlock::addNull()
 void DataBlock::setFromString(char const *srcString)
 {
   SELFCHECK();
-  int len = strlen(srcString)+1;
+  size_t len = strlen(srcString)+1;
     // a string is its contents and the null terminator
   setFromBlock((unsigned char const*)srcString, len);
   SELFCHECK();
 }
 
-void DataBlock::setFromBlock(unsigned char const *srcData, int len)
+void DataBlock::setFromBlock(unsigned char const *srcData, size_t len)
 {
   SELFCHECK();
   if (len > allocated) {
@@ -278,14 +278,14 @@ void DataBlock::print(char const *label, int bytesPerLine) const
   SELFCHECK();
 
   if (label) {
-    printf("---- %s, length = %d, crc32 = 0x%lX ---- {\n",
+    printf("---- %s, length = %zu, crc32 = 0x%lX ---- {\n",
            label, getDataLen(),
            crc32(getDataC(), getDataLen()));
   }
 
-  int cursor = 0;
+  size_t cursor = 0;
   while (cursor < getDataLen()) {
-    int linelen = min(bytesPerLine, getDataLen() - cursor);
+    int linelen = (int)min((size_t)bytesPerLine, getDataLen() - cursor);
     xassert(linelen >= 1);    // ensure can't loop infinitely
 
     printf("  ");     // indent
@@ -309,13 +309,13 @@ void DataBlock::print(char const *label, int bytesPerLine) const
 // print 'length' bytes of 'data' in hex
 // blank-pad the output as if 'linelen' bytes were present
 STATICDEF void DataBlock::printHexLine(unsigned char const *data,
-                                       int length, int linelen)
+                                       size_t length, size_t linelen)
 {
   xassert(data != NULL &&
           length >= 1 &&
           linelen >= length);
 
-  for (int i=0; i<linelen; i++) {
+  for (size_t i=0; i<linelen; i++) {
     if (i < length) {
       printf("%02X ", *data);
       data++;
@@ -330,7 +330,7 @@ STATICDEF void DataBlock::printHexLine(unsigned char const *data,
 // print 'length' bytes of 'data', substituting 'unprintable' for bytes for
 // which 'isprint' is false
 STATICDEF void DataBlock::printPrintableLine(unsigned char const *data,
-                                             int length, char unprintable)
+                                             size_t length, char unprintable)
 {
   xassert(data != NULL &&
           length >= 1);
@@ -357,8 +357,8 @@ void DataBlock::print(char const *label) const
   }
 
   unsigned char *p = data;
-  int i;
-  int column=0;
+  size_t i;
+  size_t column=0;
   for (i=0; i<dataLen; i++, p++) {
     if (isprint(*p)) {
       if (*p != '\\') {
@@ -401,10 +401,7 @@ void DataBlock::writeToFile(char const *fname) const
     xsyserror("fopen", fname);
   }
 
-  // finally giving in and silencing those *stupid* g++ warnings
-  // about comparing signed and unsigned for EQUALITY!!!
-  // I'll get you yet, you big stinking GNU!!
-  if ((int)fwrite(getDataC(), 1, getDataLen(), fp) != getDataLen()) {
+  if (fwrite(getDataC(), 1, getDataLen(), fp) != getDataLen()) {
     xsyserror("fwrite", fname);
   }
 
