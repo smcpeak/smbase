@@ -16,7 +16,7 @@
 // define the endpost byte as something we hope is
 // unlikely to coincidentally be written during an
 // overrun
-/*static*/ byte const DataBlock::endpost = 0xBB;
+/*static*/ unsigned char const DataBlock::endpost = 0xBB;
 
 /*static*/ void (*DataBlock::s_memoryCorruptionOverrideHandler)() = NULL;
 
@@ -37,9 +37,9 @@ void DataBlock::init(int allocatedSize)
 }
 
 
-STATICDEF byte *DataBlock::allocate(int size)
+STATICDEF unsigned char *DataBlock::allocate(int size)
 {
-  byte *ret = new byte[size+1];
+  unsigned char *ret = new unsigned char[size+1];
   ret[size] = endpost;
   return ret;
 }
@@ -97,7 +97,7 @@ DataBlock::DataBlock(char const *srcString)
 }
 
 
-void DataBlock::ctor(byte const *srcData, int dataLen)
+void DataBlock::ctor(unsigned char const *srcData, int dataLen)
 {
   init(0);
   setFromBlock(srcData, dataLen);
@@ -105,7 +105,7 @@ void DataBlock::ctor(byte const *srcData, int dataLen)
 }
 
 
-void DataBlock::ctor(byte const *srcData, int srcDataLen, int allocatedSize)
+void DataBlock::ctor(unsigned char const *srcData, int srcDataLen, int allocatedSize)
 {
   init(allocatedSize);
   dataLen = srcDataLen;
@@ -188,7 +188,7 @@ void DataBlock::setAllocated(int newAllocated)
   xassert(newAllocated >= 0);
   if (allocated != newAllocated) {
     // allocate new buffer
-    byte *newData = NULL;
+    unsigned char *newData = NULL;
     if (newAllocated > 0) {
       newData = allocate(newAllocated);
     }
@@ -241,11 +241,11 @@ void DataBlock::setFromString(char const *srcString)
   SELFCHECK();
   int len = strlen(srcString)+1;
     // a string is its contents and the null terminator
-  setFromBlock((byte const*)srcString, len);
+  setFromBlock((unsigned char const*)srcString, len);
   SELFCHECK();
 }
 
-void DataBlock::setFromBlock(byte const *srcData, int len)
+void DataBlock::setFromBlock(unsigned char const *srcData, int len)
 {
   SELFCHECK();
   if (len > allocated) {
@@ -308,7 +308,8 @@ void DataBlock::print(char const *label, int bytesPerLine) const
 
 // print 'length' bytes of 'data' in hex
 // blank-pad the output as if 'linelen' bytes were present
-STATICDEF void DataBlock::printHexLine(byte const *data, int length, int linelen)
+STATICDEF void DataBlock::printHexLine(unsigned char const *data,
+                                       int length, int linelen)
 {
   xassert(data != NULL &&
           length >= 1 &&
@@ -316,7 +317,7 @@ STATICDEF void DataBlock::printHexLine(byte const *data, int length, int linelen
 
   for (int i=0; i<linelen; i++) {
     if (i < length) {
-      printf("%02X ", (byte)*data);
+      printf("%02X ", *data);
       data++;
     }
     else {
@@ -328,8 +329,8 @@ STATICDEF void DataBlock::printHexLine(byte const *data, int length, int linelen
 
 // print 'length' bytes of 'data', substituting 'unprintable' for bytes for
 // which 'isprint' is false
-STATICDEF void DataBlock::printPrintableLine(byte const *data, int length,
-                                             char unprintable)
+STATICDEF void DataBlock::printPrintableLine(unsigned char const *data,
+                                             int length, char unprintable)
 {
   xassert(data != NULL &&
           length >= 1);
@@ -355,7 +356,7 @@ void DataBlock::print(char const *label) const
     printf("------ %s (length=%d) -------\n", label, getDataLen());
   }
 
-  byte *p = data;
+  unsigned char *p = data;
   int i;
   int column=0;
   for (i=0; i<dataLen; i++, p++) {

@@ -1,17 +1,19 @@
 // growbuf.cc            see license.txt for copyright and terms of use
 // code for growbuf.h
 
-#include "growbuf.h"      // this module
+#include "growbuf.h"                   // this module
 
-#include <string.h>       // memcpy
+#include <algorithm>                   // std::max
 
-void GrowBuffer::append(byte const *str, int len)
+#include <string.h>                    // memcpy
+
+void GrowBuffer::append(unsigned char const *str, int len)
 {
   // test length
   int newLen = getDataLen() + len;
   if (newLen > getAllocated()) {
     // must grow
-    int newAlloc = max(getAllocated(), 16);
+    int newAlloc = std::max(getAllocated(), 16);
     while (newLen > newAlloc) {
       newAlloc *= 2;      // would like an overflow test here..
     }
@@ -31,7 +33,7 @@ void GrowBuffer::append(byte const *str, int len)
 
 void entry()
 {
-  byte const str[] = "crazy like a mad cow!";
+  unsigned char const str[] = "crazy like a mad cow!";
   int len = sizeof(str);
 
   GrowBuffer buf;

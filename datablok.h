@@ -5,11 +5,11 @@
 #ifndef DATABLOK_H
 #define DATABLOK_H
 
-#include "typ.h"      // byte, bool
+#include <stddef.h>                    // NULL
 
 class DataBlock {
 private:      // data
-  byte *data;                  // data itself (may be NULL)
+  unsigned char *data;         // data itself (may be NULL)
   int dataLen;                 // length of data, starting at data[0]
   int allocated;               // amount of memory allocated at 'data'
 
@@ -21,7 +21,7 @@ private:      // static data
   // end, where an endpost byte is written.  thus, we have another
   // invariant:
   //             (data!=NULL) implies data[allocated] == endpost
-  static byte const endpost;
+  static unsigned char const endpost;
 
 public:       // static data
   // Normally if we detect corrupted memory we abort().  But for
@@ -32,15 +32,15 @@ private:      // funcs
   void init(int allocatedSize);
     // base ctor
 
-  static byte *allocate(int size);
+  static unsigned char *allocate(int size);
     // allocate a block of memory, writing endpost
 
   void copyCtorShared(DataBlock const &obj);
     // shared by both copy constructors (actually, only one is the true
     // copy ctor...)
 
-  void ctor(byte const *srcData, int dataLen);
-  void ctor(byte const *srcData, int dataLen, int allocatedSize);
+  void ctor(unsigned char const *srcData, int dataLen);
+  void ctor(unsigned char const *srcData, int dataLen, int allocatedSize);
     // shared ctor calls as a workaround for char casting problems
 
   void selfCheck() const;
@@ -55,17 +55,19 @@ public:       // funcs
     // make an empty datablock holder; when allocatedSize is 0, 'data'
     // is initially set to NULL
 
-  EXPLICIT DataBlock(char const *srcString);
+  explicit DataBlock(char const *srcString);
     // make a copy of 'srcString' data, which is null-terminated
 
-  DataBlock(byte const *srcData, int dataLen) { ctor(srcData, dataLen); }
-  DataBlock(char const *srcData, int dataLen) { ctor((byte const*)srcData, dataLen); }
+  DataBlock(unsigned char const *srcData, int dataLen)
+    { ctor(srcData, dataLen); }
+  DataBlock(char const *srcData, int dataLen)
+    { ctor((unsigned char const*)srcData, dataLen); }
     // make a copy of 'srcData', which is 'dataLen' bytes long
 
-  DataBlock(byte const *srcData, int dataLen, int allocatedSize)
+  DataBlock(unsigned char const *srcData, int dataLen, int allocatedSize)
     { ctor(srcData, dataLen, allocatedSize); }
   DataBlock(char const *srcData, int dataLen, int allocatedSize)
-    { ctor((byte const*)srcData, dataLen, allocatedSize); }
+    { ctor((unsigned char const*)srcData, dataLen, allocatedSize); }
     // make a copy of 'srcData', which is 'dataLen' bytes long, in a buffer
     // that is 'allocatedSize' bytes long
 
@@ -80,7 +82,7 @@ public:       // funcs
   ~DataBlock();
 
   // selectors
-  byte const *getDataC() const { return data; }
+  unsigned char const *getDataC() const { return data; }
   int getDataLen() const { return dataLen; }
   int getAllocated() const { return allocated; }
 
@@ -100,7 +102,7 @@ public:       // funcs
     // is available as 'allEqual()'.
 
   // mutators
-  byte *getData() { return data; }
+  unsigned char *getData() { return data; }
   void setDataLen(int newLen);
     // asserts that 0 <= newLen <= allocated
   void setAllocated(int newAllocated);     // i.e. realloc
@@ -119,9 +121,9 @@ public:       // funcs
     // an exception if there isn't already enough allocated space
 
   void setFromString(char const *srcString);
-  void setFromBlock(byte const *srcData, int dataLen);
+  void setFromBlock(unsigned char const *srcData, int dataLen);
   void setFromBlock(char const *srcData, int dataLen)
-    { setFromBlock((byte const*)srcData, dataLen); }
+    { setFromBlock((unsigned char const*)srcData, dataLen); }
 
   DataBlock& operator= (DataBlock const &obj);
     // causes data AND allocation length equality
@@ -145,11 +147,11 @@ public:       // funcs
     //   2. plays a vital role in a g++ bug workaround (g++ sucks!!)
 
   // utility, defined here for no good reason
-  static void printHexLine(byte const *data, int length, int lineLength);
+  static void printHexLine(unsigned char const *data, int length, int lineLength);
     // print 'length' bytes of 'data' in hex
     // blank-pad the output as if 'linelen' bytes were present
 
-  static void printPrintableLine(byte const *data, int length,
+  static void printPrintableLine(unsigned char const *data, int length,
                                  char unprintable = '.');
     // print 'length' bytes of 'data', substituting 'unprintable' for bytes for
     // which 'isprint' is false

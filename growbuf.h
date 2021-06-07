@@ -14,9 +14,9 @@ public:
 
   // append to the end, at least doubling allocated
   // size if growth is needed
-  void append(byte const *str, int len);
+  void append(unsigned char const *str, int len);
   void append(char const *str, int len)
-    { append((byte const*)str, len); }
+    { append((unsigned char const*)str, len); }
 };
 
 #endif // __GROWBUF_H

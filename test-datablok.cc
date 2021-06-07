@@ -44,7 +44,7 @@ void test_datablok()
     {
       DataBlock b(260);
       for (int i=0; i<260; i++) {
-        b.getData()[i] = (byte)i;
+        b.getData()[i] = (unsigned char)i;
       }
       b.setDataLen(260);
       b.print("all bytes plus 4 extra");
@@ -53,7 +53,7 @@ void test_datablok()
     DataBlock block("yadda smacker");
     xassert(block.getDataLen() == 14);
 
-    DataBlock block2((byte*)"yadda smacker", 13, 14);
+    DataBlock block2((unsigned char*)"yadda smacker", 13, 14);
     block2.addNull();
     xassert(block == block2);
 
