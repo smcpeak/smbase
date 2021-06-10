@@ -31,7 +31,10 @@
 typedef char const *LPCSTR;
 typedef char *LPSTR;
 typedef bool BOOL;
+#define TRUE true
+#define FALSE false
 typedef unsigned DWORD;
+#define INFINITE ((DWORD)(-1))
 typedef DWORD *LPDWORD;
 typedef void *LPVOID;
 typedef void *HANDLE;
@@ -61,6 +64,8 @@ DWORD WaitForSingleObject(
   HANDLE hHandle,
   DWORD  dwMilliseconds
 );
+#define WAIT_OBJECT_0 ((DWORD)0)
+#define WAIT_FAILED ((DWORD)0xFFFFFFFF)
 BOOL GetExitCodeProcess(
   HANDLE  hProcess,
   LPDWORD lpExitCode
