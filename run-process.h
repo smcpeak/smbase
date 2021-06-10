@@ -25,7 +25,7 @@ private:     // data
   bool m_exitedNormally;
 
   // The exit code if 'm_exitedNormally', the signal otherwise.
-  int m_exitCodeOrSignal;
+  unsigned m_exitCodeOrSignal;
 
 public:      // methods
   RunProcess();
@@ -43,13 +43,14 @@ public:      // methods
   bool exitedNormally() const;
 
   // If 'exitedNormally()', the value passed to exit().
-  int getExitCode() const;
+  unsigned getExitCode() const;
 
   // If '!exitedNormally()', the signal number.
-  int getSignal() const;
+  unsigned getSignal() const;
 
   // True if the program was interrupted by Ctrl-C or similar.  This
-  // implies '!exitedNormally()'.
+  // implies '!exitedNormally()'.  This is useful in some cases where
+  // the parent wants to bail out if the child is interrupted.
   bool interrupted() const;
 
   // One of:
@@ -57,6 +58,12 @@ public:      // methods
   //   - "Interrupted"
   //   - "Signal N"
   string exitDescription() const;
+
+  // Apply the bizarre Windows API quoting rules to 'command' in order
+  // to form 'commandLine' that can be passed to CreateProcess.  The
+  // resulting vector ends with a NUL byte.
+  static void buildWindowsCommandLine(std::vector<char> &commandLine,
+    std::vector<string> const &command);
 };
 
 
