@@ -226,6 +226,7 @@ OBJS += parsestring.o
 OBJS += point.o
 OBJS += pprint.o
 OBJS += refct-serf.o
+OBJS += run-process.o
 OBJS += sm-file-util.o
 OBJS += smregexp.o
 OBJS += srcloc.o
@@ -293,6 +294,7 @@ TESTS += test-codepoint.exe
 TESTS += test-datetime.exe
 TESTS += test-owner.exe
 TESTS += test-refct-serf.exe
+TESTS += test-run-process.exe
 TESTS += test-sm-file-util.exe
 TESTS += test-stringset.exe
 TESTS += testarray.exe
@@ -504,6 +506,7 @@ check: $(TESTS)
 	$(RUN)./test-datetime.exe
 	$(RUN)./test-owner.exe
 	$(RUN)./test-refct-serf.exe
+	$(RUN)./test-run-process.exe --unit-test
 	$(RUN)./test-sm-file-util.exe
 	$(RUN)./test-stringset.exe
 	$(RUN)./unit-tests.exe
