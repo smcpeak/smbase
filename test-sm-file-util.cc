@@ -543,6 +543,7 @@ static void testGetFileKind()
 
   // Ordinary.
   expectGFK(sfu, "sm-file-util.cc", SMFileUtil::FK_REGULAR);
+  EXPECT_EQ(sfu.pathExists("sm-file-util.cc"), true);
 
   // Directory.
   expectGFK(sfu, "test", SMFileUtil::FK_DIRECTORY);
@@ -551,6 +552,7 @@ static void testGetFileKind()
   // Non-existent.
   expectGFK(sfu, "nonexist", SMFileUtil::FK_NONE);
   expectGFK(sfu, "nonexist/", SMFileUtil::FK_NONE);
+  EXPECT_EQ(sfu.pathExists("nonexist"), false);
 
   // Specfically test with a path composed of an existing file name with
   // a slash appended, since that seems to provoke ENOTDIR from 'stat'.

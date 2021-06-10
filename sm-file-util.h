@@ -236,6 +236,10 @@ public:      // funcs
   // permission errors or the like.
   virtual FileKind getFileKind(string const &path);
 
+  // True if 'path' exists.
+  bool pathExists(string const &path)
+    { return getFileKind(path) != FK_NONE; }
+
   // True if 'path' exists, but the current user does not have write
   // permission for it.  This does not throw; it returns false if the
   // file does not exist or we cannot determine whether it is read-only.
