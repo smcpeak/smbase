@@ -6,6 +6,7 @@
 // smbase
 #include "array.h"                     // Array
 #include "codepoint.h"                 // isLetter
+#include "sm-windows.h"                // PLATFORM_IS_WINDOWS
 #include "strtokp.h"                   // StrtokParse
 #include "strutil.h"                   // suffixEquals
 #include "syserr.h"                    // xsyserror
@@ -45,14 +46,6 @@
 #  include <limits.h>                  // PATH_MAX
 #  include <stdlib.h>                  // getcwd
 #  include <unistd.h>                  // pathconf
-#endif
-
-
-static bool runningOnWindows =
-#ifdef __WIN32__
-  true;
-#else
-  false;
 #endif
 
 
@@ -307,7 +300,7 @@ string SMFileName::getPathComponentsString() const
 /*static*/ bool SMFileName::isWindowsSyntax(Syntax syntax)
 {
   return syntax == S_WINDOWS ||
-         (runningOnWindows && syntax == S_NATIVE);
+         (PLATFORM_IS_WINDOWS && syntax == S_NATIVE);
 }
 
 
@@ -368,7 +361,7 @@ int SMFileUtil::DirEntryInfo::compareTo(DirEntryInfo const &obj) const
 // ----------------------- SMFileUtil ------------------------
 bool SMFileUtil::windowsPathSemantics()
 {
-  return runningOnWindows;
+  return PLATFORM_IS_WINDOWS;
 }
 
 
