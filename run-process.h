@@ -57,9 +57,14 @@ public:      // methods
   // the parent wants to bail out if the child is interrupted.
   bool interrupted() const;
 
+  // True if program aborted using 'abort()'.  Implies
+  // '!exitedNormally()'.
+  bool aborted() const;
+
   // One of:
   //   - "Exit N"
   //   - "Interrupted"
+  //   - "Aborted"
   //   - "Signal N"
   string exitDescription() const;
 

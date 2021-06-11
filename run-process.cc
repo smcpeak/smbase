@@ -229,17 +229,38 @@ unsigned RunProcess::getSignal() const
 bool RunProcess::interrupted() const
 {
   xassert(m_terminated);
+  if (exitedNormally()) {
+    return false;
+  }
 
   if (PLATFORM_IS_WINDOWS) {
-    return !exitedNormally() && getSignal() == STATUS_CONTROL_C_EXIT;
+    return getSignal() == STATUS_CONTROL_C_EXIT;
   }
   else if (PLATFORM_IS_POSIX) {
-    return !exitedNormally() && getSignal() == SIGINT;
+    return getSignal() == SIGINT;
   }
   else {
     xfailure("run-process.cc: unknown platform");
   }
 }
+
+
+bool RunProcess::aborted() const
+{
+  xassert(m_terminated);
+  if (exitedNormally()) {
+    return false;
+  }
+
+  if (PLATFORM_IS_POSIX) {
+    return getSignal() == SIGABRT;
+  }
+  else {
+    // TODO: Windows support.
+    xfailure("run-process.cc: unknown platform");
+  }
+}
+
 
 string RunProcess::exitDescription() const
 {
@@ -248,6 +269,9 @@ string RunProcess::exitDescription() const
   }
   else if (interrupted()) {
     return string("Interrupted");
+  }
+  else if (aborted()) {
+    return string("Aborted");
   }
   else {
     unsigned sig = getSignal();

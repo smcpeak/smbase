@@ -44,6 +44,8 @@ static void oneBwcl(string expect, char const **argv)
 
 static void testBuildWindowsCommandLine()
 {
+  cout << "-- testBuildWindowsCommandLine --\n";
+
   #define ONE_BWCL(expect, ...)              \
   {                                          \
     char const *cmd[] = {__VA_ARGS__, NULL}; \
@@ -124,8 +126,14 @@ static void runOne(string expect, char const **argv)
 }
 
 
+// Value of argv[0].
+static char const *programName;
+
+
 static void testRun()
 {
+  cout << "-- testRun --\n";
+
   #define RUN_ONE(expect, ...)               \
   {                                          \
     char const *cmd[] = {__VA_ARGS__, NULL}; \
@@ -152,20 +160,35 @@ static void testRun()
 }
 
 
+static void testAborted()
+{
+  cout << "-- testAborted --\n";
+  RunProcess rproc;
+  rproc.setCommand(std::vector<string>{programName, "--abort"});
+  rproc.runAndWait();
+  xassert(rproc.aborted());
+}
+
+
 static void unit_test()
 {
   testBuildWindowsCommandLine();
   testRun();
+  testAborted();
 }
 
 
 int main(int argc, char **argv)
 {
+  programName = argv[0];
   try {
     if (argc <= 1) {
       cout << "usage: " << argv[0] << " program [args...]\n"
               "  or\n"
-              "       " << argv[0] << " --unit-test\n";
+              "       " << argv[0] << " --unit-test\n"
+              "  or\n"
+              "       " << argv[0] << " --abort\n"
+              ;
       return 2;
     }
 
@@ -177,6 +200,13 @@ int main(int argc, char **argv)
     if (command[0] == "--unit-test") {
       unit_test();
       return 0;
+    }
+
+    // This is used in the tests to check that we can detect when a
+    // callee calls abort().
+    if (command[0] == "--abort") {
+      abort();
+      return 4;    // Not reached.
     }
 
     RunProcess rproc;
