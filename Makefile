@@ -437,6 +437,7 @@ UNIT_TEST_OBJS += test-dict.o
 UNIT_TEST_OBJS += test-datablok.o
 UNIT_TEST_OBJS += test-overflow.o
 UNIT_TEST_OBJS += test-parsestring.o
+UNIT_TEST_OBJS += test-vector-utils.o
 UNIT_TEST_OBJS += unit-tests.o
 
 -include $(UNIT_TEST_OBJS:.o=.d)

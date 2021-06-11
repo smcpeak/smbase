@@ -13,6 +13,7 @@
 #include "test.h"                      // USUAL_TEST_MAIN
 
 void test_dict();                      // test-dict.cc
+void test_vector_utils();              // test-vector-utils.cc
 
 
 static void entry()
@@ -21,6 +22,7 @@ static void entry()
   test_dict();
   test_overflow();
   test_parsestring();
+  test_vector_utils();
 
   cout << "unit tests PASSED" << endl;
 }
