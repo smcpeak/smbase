@@ -4,6 +4,7 @@
 # main target
 THIS := libsmbase.a
 all: $(THIS)
+.PHONY: all
 
 
 # ------------------------- Configuration --------------------------
@@ -11,7 +12,7 @@ all: $(THIS)
 # C preprocessor, compiler and linker.
 CC = gcc
 
-# C++ compiler, etc.
+# C++ compiler.
 CXX = g++
 
 # Flags to control generation of debug info.
@@ -30,13 +31,22 @@ WARNING_FLAGS =
 C_STD_FLAGS   = -std=c99
 CXX_STD_FLAGS = -std=c++11
 
-# Flags for the C and C++ compilers (and preprocessor).
+# -D flags to pass to preprocessor.
+DEFINES =
+
+# -I flags to pass to preprocessor.
+INCLUDES =
+
+# Preprocessing flags.
+CPPFLAGS = $(INCLUDES) $(DEFINES)
+
+# Flags for the C and C++ compiler and preprocessor.
 #
 # Note: $(GENDEPS_FLAGS) are not included because these flags are used
 # for linking too, and if that used $(GENDEPS_FLAGS) then the .d files
 # for .o files would be overwritten with info for .exe files.
-CFLAGS   = $(DEBUG_FLAGS) $(OPTIMIZATION_FLAGS) $(WARNING_FLAGS) $(C_STD_FLAGS)
-CXXFLAGS = $(DEBUG_FLAGS) $(OPTIMIZATION_FLAGS) $(WARNING_FLAGS) $(CXX_STD_FLAGS)
+CFLAGS   = $(DEBUG_FLAGS) $(OPTIMIZATION_FLAGS) $(WARNING_FLAGS) $(C_STD_FLAGS)   $(CPPFLAGS)
+CXXFLAGS = $(DEBUG_FLAGS) $(OPTIMIZATION_FLAGS) $(WARNING_FLAGS) $(CXX_STD_FLAGS) $(CPPFLAGS)
 
 # Libraries to link with when creating test executables.
 LIBS = $(THIS)
