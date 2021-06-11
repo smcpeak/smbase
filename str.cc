@@ -134,7 +134,7 @@ int string::compareTo(char const *src) const
 }
 
 
-string string::operator&(string const &tail) const
+string string::operator+(string const &tail) const
 {
   string dest(length() + tail.length(), SMBASE_STRING_FUNC);
   strcpy(dest.s, s);
@@ -142,9 +142,9 @@ string string::operator&(string const &tail) const
   return dest;
 }
 
-string& string::operator&=(string const &tail)
+string& string::operator+=(string const &tail)
 {
-  return *this = *this & tail;
+  return *this = *this + tail;
 }
 
 
@@ -284,7 +284,7 @@ void stringBuilder::truncate(int newLength)
 }
 
 
-stringBuilder& stringBuilder::operator&= (char const *tail)
+stringBuilder& stringBuilder::operator+= (char const *tail)
 {
   append(tail, strlen(tail));
   return *this;

@@ -544,7 +544,7 @@ string SMFileUtil::getAbsolutePath(string const &path)
       // We have a path that is absolute except it is missing the
       // drive letter or UNC share.  Get that from 'cwd'.
       if (cwd[1] == ':') {
-        return cwd.substring(0, 2) & path;
+        return cwd.substring(0, 2) + path;
       }
 
       if (isDirectorySeparator(cwd[0]) && isDirectorySeparator(cwd[1])) {
@@ -561,7 +561,7 @@ string SMFileUtil::getAbsolutePath(string const &path)
     }
   }
 
-  return cwd & "/" & path;
+  return cwd + "/" + path;
 }
 
 

@@ -138,18 +138,18 @@ public:	       // funcs
   MAKEOP(<=)  MAKEOP(<)
   #undef MAKEOP
 
-  // concatenation (properly handles string growth)
-  // uses '&' instead of '+' to avoid char* coercion problems
-  //
-  // TODO: Remove this in favor of '+' exclusively.
-  string operator& (string const &tail) const;
-  string& operator&= (string const &tail);
+  // 2021-06-10: I used to have operator& and operator&= here, but I
+  // have removed them as part of my effort to make this class have an
+  // interface compatible with std::string.
 
-  // Allow concatenation with '+' since std::string does.
-  string operator+ (string const &tail) const
-    { return operator& (tail); }
-  string& operator+= (string const &tail)
-    { return operator&= (tail); }
+  // Concatenation.
+  //
+  // This is inefficient since repeated concatenation takes quadratic
+  // time for N concatenations, that in turn because this 'string' does
+  // not separately track its allocated size.  For that, use
+  // 'stringBuilder'.
+  string operator+ (string const &tail) const;
+  string& operator+= (string const &tail);
 
   // input/output
   friend istream& operator>> (istream &is, string &obj)
@@ -287,7 +287,7 @@ public:
   void clear() { adjustend(s); }
 
   // concatenation, which is the purpose of this class
-  stringBuilder& operator&= (char const *tail);
+  stringBuilder& operator+= (char const *tail);
 
   // useful for appending substrings or strings with NUL in them
   void append(char const *tail, int length);
@@ -297,8 +297,8 @@ public:
   stringBuilder& indent(int amt);
 
   // sort of a mixture of Java compositing and C++ i/o strstream
-  stringBuilder& operator << (rostring text) { return operator&=(text.c_str()); }
-  stringBuilder& operator << (char const *text) { return operator&=(text); }
+  stringBuilder& operator << (rostring text) { return operator+=(text.c_str()); }
+  stringBuilder& operator << (char const *text) { return operator+=(text); }
   stringBuilder& operator << (char c);
   stringBuilder& operator << (unsigned char c) { return operator<<((char)c); }
   stringBuilder& operator << (long long i);
