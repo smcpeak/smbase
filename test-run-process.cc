@@ -140,6 +140,15 @@ static void testRun()
     // unspecified.
     RUN_ONE("Signal 15", "sh", "-c", "echo hi; kill $$");
   }
+
+  RunProcess::check_run(std::vector<string>{"true"});
+  try {
+    RunProcess::check_run(std::vector<string>{"false"});
+    xfailure("should have failed");
+  }
+  catch (XFatal &x) {
+    cout << "as expected: " << x.why() << endl;
+  }
 }
 
 

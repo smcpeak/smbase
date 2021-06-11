@@ -7,6 +7,7 @@
 #include "sm-posix.h"                  // fork, exec, etc.
 #include "sm-windows.h"                // Windows API
 #include "syserr.h"                    // xsyserror
+#include "vector-utils.h"              // accumulateWith
 #include "xassert.h"                   // xassert
 
 #include <errno.h>                     // errno
@@ -261,6 +262,19 @@ string RunProcess::exitDescription() const
     }
   }
 }
+
+
+/*static*/ void RunProcess::check_run(std::vector<string> const &command)
+{
+  RunProcess rproc;
+  rproc.setCommand(command);
+  rproc.runAndWait();
+  if (!rproc.exitedWith0()) {
+    xfatal("Command \"" << accumulateWith(command, string(" ")) <<
+           "\" failed: " << rproc.exitDescription());
+  }
+}
+
 
 // The quoting rules are explained here:
 //

@@ -45,6 +45,10 @@ public:      // methods
   // If 'exitedNormally()', the value passed to exit().
   unsigned getExitCode() const;
 
+  // True if the program exited normally with code 0.
+  bool exitedWith0() const
+    { return exitedNormally() && getExitCode()==0; }
+
   // If '!exitedNormally()', the signal number.
   unsigned getSignal() const;
 
@@ -58,6 +62,9 @@ public:      // methods
   //   - "Interrupted"
   //   - "Signal N"
   string exitDescription() const;
+
+  // Run 'command'.  Throw if not 'exitedWith0()'.
+  static void check_run(std::vector<string> const &command);
 
   // Apply the bizarre Windows API quoting rules to 'command' in order
   // to form 'commandLine' that can be passed to CreateProcess.  The
