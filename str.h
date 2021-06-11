@@ -140,8 +140,16 @@ public:	       // funcs
 
   // concatenation (properly handles string growth)
   // uses '&' instead of '+' to avoid char* coercion problems
+  //
+  // TODO: Remove this in favor of '+' exclusively.
   string operator& (string const &tail) const;
   string& operator&= (string const &tail);
+
+  // Allow concatenation with '+' since std::string does.
+  string operator+ (string const &tail) const
+    { return operator& (tail); }
+  string& operator+= (string const &tail)
+    { return operator&= (tail); }
 
   // input/output
   friend istream& operator>> (istream &is, string &obj)
