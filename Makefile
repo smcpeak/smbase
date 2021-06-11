@@ -353,8 +353,8 @@ strdict.exe: strdict.cc strdict.h $(THIS)
 svdict.exe: svdict.cc svdict.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_SVDICT $(LDFLAGS) svdict.cc $(LIBS)
 
-str.exe: str.cpp str.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_STR $(LDFLAGS) str.cpp $(LIBS)
+str.exe: str.cc str.h $(THIS)
+	$(CXX) -o $@ $(CXXFLAGS) -DTEST_STR $(LDFLAGS) str.cc $(LIBS)
 
 strutil.exe: strutil.cc strutil.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_STRUTIL $(LDFLAGS) strutil.cc $(LIBS)

@@ -1,4 +1,4 @@
-// str.cpp            see license.txt for copyright and terms of use
+// str.cc            see license.txt for copyright and terms of use
 // code for str.h
 // Scott McPeak, 1995-2000  This file is public domain.
 
