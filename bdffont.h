@@ -40,9 +40,9 @@
 #define BDFFONT_H
 
 #include "array.h"           // ArrayStack
-#include "macros.h"          // NO_OBJECT_COPIES
 #include "objlist.h"         // ObjList
 #include "point.h"           // point
+#include "sm-macros.h"       // NO_OBJECT_COPIES
 #include "str.h"             // string
 
 class Bit2d;                 // bit2d.h

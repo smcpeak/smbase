@@ -9,11 +9,11 @@
 #define __SVDICT_H
 
 #include "sm-iostream.h"// ostream
+#include "sm-macros.h"  // DMEMB
 #include "str.h"        // string
-#include "macros.h"     // DMEMB
-#include "xassert.h"    // xassert
-#include "typ.h"        // MUTABLE
 #include "strhash.h"    // StringHash
+#include "typ.h"        // MUTABLE
+#include "xassert.h"    // xassert
 
 
 // constness: for this class, 'const' means the *mapping* from string

@@ -12,7 +12,7 @@
 #ifndef OBJCOUNT_H
 #define OBJCOUNT_H
 
-#include "macros.h"                    // NO_OBJECT_COPIES
+#include "sm-macros.h"                 // NO_OBJECT_COPIES
 
 
 // This class is meant to be created as a global variable to check the

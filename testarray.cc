@@ -4,8 +4,8 @@
 
 #include "array.h"                     // module to test
 #include "ckheap.h"                    // malloc_stats
-#include "macros.h"                    // TABLESIZE
 #include "objlist.h"                   // ObjList
+#include "sm-macros.h"                 // TABLESIZE
 #include "test.h"                      // PVAL, USUAL_MAIN
 
 #include <assert.h>                    // assert

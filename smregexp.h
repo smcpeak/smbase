@@ -15,7 +15,7 @@
 #ifndef REGEXP_H
 #define REGEXP_H
 
-#include "macros.h"      // ENUM_BITWISE_OR, NORETURN
+#include "sm-macros.h"   // ENUM_BITWISE_OR, NORETURN
 #include "str.h"         // string
 
 

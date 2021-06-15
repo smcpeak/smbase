@@ -4,7 +4,7 @@
 #ifndef SMBASE_RUN_PROCESS_H
 #define SMBASE_RUN_PROCESS_H
 
-#include "macros.h"                    // NO_OBJECT_COPIES
+#include "sm-macros.h"                 // NO_OBJECT_COPIES
 #include "str.h"                       // string
 
 #include <vector>                      // std::vector

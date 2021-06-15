@@ -4,7 +4,7 @@
 #ifndef ARRAY_H
 #define ARRAY_H
 
-#include "macros.h"                    // NO_OBJECT_COPIES
+#include "sm-macros.h"                 // NO_OBJECT_COPIES
 #include "sm-swap.h"                   // swap
 #include "str.h"                       // string
 #include "xassert.h"                   // xassert

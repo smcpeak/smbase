@@ -5,7 +5,7 @@
 #ifndef ARRAY2D_H
 #define ARRAY2D_H
 
-#include "macros.h"          // DMEMB
+#include "sm-macros.h"       // DMEMB
 #include "xassert.h"         // xassert
 
 

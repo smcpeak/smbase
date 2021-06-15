@@ -1,11 +1,11 @@
-// macros.h            see license.txt for copyright and terms of use
+// sm-macros.h            see license.txt for copyright and terms of use
 // grab-bag of useful macros, stashed here to avoid mucking up
 //   other modules with more focus; there's no clear rhyme or
 //   reason for why some stuff is here and some in typ.h
 // (no configuration stuff here!)
 
-#ifndef __MACROS_H
-#define __MACROS_H
+#ifndef SMBASE_SM_MACROS_H
+#define SMBASE_SM_MACROS_H
 
 #include "typ.h"        // bool
 
@@ -333,4 +333,4 @@ public:
   }
 
 
-#endif // __MACROS_H
+#endif // SMBASE_SM_MACROS_H

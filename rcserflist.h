@@ -5,8 +5,8 @@
 #define RCSERFLIST_H
 
 #include "array.h"                     // ArrayStack
-#include "macros.h"                    // NO_OBJECT_COPIES
 #include "refct-serf.h"                // RCSerf
+#include "sm-macros.h"                 // NO_OBJECT_COPIES
 
 
 // Forward in this file.

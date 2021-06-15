@@ -6,7 +6,7 @@
 #ifndef XASSERT_H
 #define XASSERT_H
 
-#include "macros.h"     // NORETURN
+#include "sm-macros.h"  // NORETURN
 
 // linkdepend: exc.cpp
 

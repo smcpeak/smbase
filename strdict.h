@@ -8,10 +8,10 @@
 #define __STRDICT_H
 
 #include "sm-iostream.h"// ostream
+#include "sm-macros.h"  // DMEMB
 #include "str.h"        // string
-#include "macros.h"     // DMEMB
-#include "xassert.h"    // xassert
 #include "typ.h"        // MUTABLE
+#include "xassert.h"    // xassert
 
 class StringDict {
 private:    // types

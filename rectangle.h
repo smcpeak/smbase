@@ -4,8 +4,8 @@
 #ifndef RECTANGLE_H
 #define RECTANGLE_H
 
-#include "macros.h"                    // DMEMB
 #include "point.h"                     // TPoint
+#include "sm-macros.h"                 // DMEMB
 
 // Pair of points defining the opposite corners of a rectangle.
 //

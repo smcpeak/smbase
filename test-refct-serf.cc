@@ -5,7 +5,7 @@
 #include "refct-serf.h"                // module to test
 
 #include "array.h"                     // ArrayStack
-#include "macros.h"                    // Restorer
+#include "sm-macros.h"                 // Restorer
 #include "objlist.h"                   // ObjList
 #include "owner.h"                     // Owner
 #include "sm-iostream.h"               // cout, etc.

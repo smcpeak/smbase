@@ -3,8 +3,8 @@
 
 #include "datablok.h"                  // module under test
 
-#include "macros.h"                    // Restorer
 #include "nonport.h"                   // removeFile
+#include "sm-macros.h"                 // Restorer
 #include "xassert.h"                   // xfailure
 
 #include <stdio.h>                     // printf

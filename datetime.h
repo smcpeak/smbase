@@ -4,7 +4,7 @@
 #ifndef DATETIME_H
 #define DATETIME_H
 
-#include "macros.h"                    // NOTEQUAL_OPERATOR
+#include "sm-macros.h"                 // NOTEQUAL_OPERATOR
 #include "sm-override.h"               // OVERRIDE
 #include "str.h"                       // string
 

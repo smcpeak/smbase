@@ -9,8 +9,8 @@
 #define SM_FILE_UTIL_H
 
 #include "array.h"                     // ArrayStack
-#include "macros.h"                    // NO_OBJECT_COPIES
 #include "sm-iostream.h"               // ostream
+#include "sm-macros.h"                 // NO_OBJECT_COPIES
 #include "sm-noexcept.h"               // NOEXCEPT
 #include "sm-override.h"               // OVERRIDE
 #include "str.h"                       // string
