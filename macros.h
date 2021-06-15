@@ -134,20 +134,6 @@ inline void pretendUsedFn(T const &) {}
 
 // these two are a common idiom in my code for typesafe casts;
 // they are essentially a roll-your-own RTTI
-#define CAST_MEMBER_FN(destType)                                                \
-  destType const &as##destType##C() const;                                      \
-  destType &as##destType() { return const_cast<destType&>(as##destType##C()); }
-
-#define CAST_MEMBER_IMPL(inClass, destType)         \
-  destType const &inClass::as##destType##C() const  \
-  {                                                 \
-    xassert(is##destType());                        \
-    return (destType const&)(*this);                \
-  }
-
-
-// same as the above, but returning pointers; I think returning
-// references was a mistake
 #define DOWNCAST_FN(destType)                                                   \
   destType const *as##destType##C() const;                                      \
   destType *as##destType() { return const_cast<destType*>(as##destType##C()); }
