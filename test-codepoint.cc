@@ -3,7 +3,7 @@
 
 #include "codepoint.h"                 // module to test
 
-#include "test.h"                      // USUAL_TEST_MAIN, EXPECT_EQ
+#include "sm-test.h"                   // USUAL_TEST_MAIN, EXPECT_EQ
 
 
 static void entry()

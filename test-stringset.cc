@@ -4,7 +4,7 @@
 #include "stringset.h"                 // module to test
 
 #include "sm-iostream.h"               // cout
-#include "test.h"                      // USUAL_MAIN
+#include "sm-test.h"                   // USUAL_MAIN
 
 
 static void testAddUnique()

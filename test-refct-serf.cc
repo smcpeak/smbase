@@ -9,7 +9,7 @@
 #include "objlist.h"                   // ObjList
 #include "owner.h"                     // Owner
 #include "sm-iostream.h"               // cout, etc.
-#include "test.h"                      // USUAL_TEST_MAIN
+#include "sm-test.h"                   // USUAL_TEST_MAIN
 
 
 // Placeholder data class.  This one does not explicitly call any of

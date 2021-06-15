@@ -4,7 +4,7 @@
 #include "datetime.h"                  // module to test
 
 #include "sm-iostream.h"               // cout, endl
-#include "test.h"                      // PVAL
+#include "sm-test.h"                   // PVAL
 #include "xassert.h"                   // xassert
 
 

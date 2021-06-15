@@ -341,7 +341,7 @@ STATICDEF xSysError::Reason xSysError::portablize(int sysErrorCode, string &sysM
 
 // ------------------ test code ------------------------
 #ifdef TEST_SYSERR
-#include "test.h"       // various
+#include "sm-test.h"    // various
 #include "nonport.h"    // changeDirectory
 
 // this is a macro because failingCall needs to be

@@ -405,7 +405,7 @@ string StringVoidDict::toString() const
 #ifdef TEST_SVDICT
 
 #include "sm-stdint.h" // intptr_t
-#include "test.h"      // USUAL_MAIN
+#include "sm-test.h"   // USUAL_MAIN
 #include <stdlib.h>    // rand
 
 #define myrandom(n) (rand()%(n))

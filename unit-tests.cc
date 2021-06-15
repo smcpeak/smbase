@@ -10,7 +10,7 @@
 #include "datablok.h"                  // test_datablok
 #include "overflow.h"                  // test_overflow
 #include "parsestring.h"               // test_parsestring
-#include "test.h"                      // USUAL_TEST_MAIN
+#include "sm-test.h"                   // USUAL_TEST_MAIN
 
 void test_dict();                      // test-dict.cc
 void test_vector_utils();              // test-vector-utils.cc

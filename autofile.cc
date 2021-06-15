@@ -33,7 +33,7 @@ AutoFILE::~AutoFILE()
 // really this code is to test XOpenEx and strerror
 #ifdef TEST_AUTOFILE
 
-#include "test.h"         // ARGS_MAIN
+#include "sm-test.h"      // ARGS_MAIN
 #include "sm-iostream.h"  // cout
 
 void entry(int argc, char *argv[])

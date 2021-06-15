@@ -751,7 +751,7 @@ VoidListIter::VoidListIter(VoidList const &list, int pos)
 #ifdef TEST_VOIDLIST
 
 #include "sm-stdint.h"       // intptr_t
-#include "test.h"            // USUAL_MAIN
+#include "sm-test.h"         // USUAL_MAIN
 
 // assumes we're using pointerAddressDiff as the comparison fn
 // (I don't use isSorted because this fn will throw at the disequality,

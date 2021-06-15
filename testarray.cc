@@ -6,7 +6,7 @@
 #include "ckheap.h"                    // malloc_stats
 #include "objlist.h"                   // ObjList
 #include "sm-macros.h"                 // TABLESIZE
-#include "test.h"                      // PVAL, USUAL_MAIN
+#include "sm-test.h"                   // PVAL, USUAL_MAIN
 
 #include <assert.h>                    // assert
 #include <stdio.h>                     // printf

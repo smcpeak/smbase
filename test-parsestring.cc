@@ -3,7 +3,7 @@
 
 #include "parsestring.h"               // module to test
 
-#include "test.h"                      // EXPECT_EQ
+#include "sm-test.h"                   // EXPECT_EQ
 
 
 // Test basic iteration capabilities.

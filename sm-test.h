@@ -1,9 +1,9 @@
-// test.h            see license.txt for copyright and terms of use
+// sm-test.h            see license.txt for copyright and terms of use
 // utilities for test code
 // Scott McPeak, 1999  This file is public domain.
 
-#ifndef __TEST_H
-#define __TEST_H
+#ifndef SMBASE_SM_TEST_H
+#define SMBASE_SM_TEST_H
 
 #include "dev-warning.h"   // g_abortUponDevWarning
 #include "exc.h"           // xBase
@@ -131,4 +131,4 @@ inline void expectEq(char const *label, string const &actual, char const *expect
 }
 
 
-#endif // __TEST_H
+#endif // SMBASE_SM_TEST_H

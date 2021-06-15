@@ -197,7 +197,7 @@ void BitArray::Iter::adv()
 // -------------------- test code -------------------
 #ifdef TEST_BITARRAY
 
-#include "test.h"     // USUAL_MAIN
+#include "sm-test.h"  // USUAL_MAIN
 
 string toStringViaIter(BitArray const &b)
 {

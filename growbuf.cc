@@ -29,7 +29,7 @@ void GrowBuffer::append(unsigned char const *str, size_t len)
 
 // ----------------- test code ----------------
 #ifdef TEST_GROWBUF
-#include "test.h"
+#include "sm-test.h"
 
 void entry()
 {

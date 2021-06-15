@@ -200,7 +200,7 @@ void VoidPtrMap::Iter::adv()
 // ------------------- test code ---------------------
 #ifdef TEST_VPTRMAP
 
-#include "test.h"      // USUAL_MAIN
+#include "sm-test.h"   // USUAL_MAIN
 #include "array.h"     // ObjArrayStack
 #include "ckheap.h"    // malloc_stats
 #include "ptrmap.h"    // PtrMap

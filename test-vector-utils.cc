@@ -3,8 +3,8 @@
 
 #include "vector-utils.h"              // module under test
 
+#include "sm-test.h"                   // EXPECT_EQ
 #include "str.h"                       // string
-#include "test.h"                      // EXPECT_EQ
 
 
 void test_vector_utils()

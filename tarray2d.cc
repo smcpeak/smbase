@@ -2,7 +2,7 @@
 // test array2d.h
 
 #include "array2d.h"         // module to test
-#include "test.h"            // USUAL_MAIN
+#include "sm-test.h"         // USUAL_MAIN
 
 #include "sm-iostream.h"     // cout
 

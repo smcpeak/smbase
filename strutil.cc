@@ -686,7 +686,7 @@ int compareStringPtrs(string const *a, string const *b)
 // ----------------------- test code -----------------------------
 #ifdef TEST_STRUTIL
 
-#include "test.h"      // USUAL_MAIN
+#include "sm-test.h"   // USUAL_MAIN
 
 #include <assert.h>    // assert
 #include "sm-fstream.h"// ofstream

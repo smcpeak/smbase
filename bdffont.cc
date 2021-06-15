@@ -958,7 +958,7 @@ void writeBDFFile(char const *fname, BDFFont const &font)
 // -------------------------- test code ---------------------------
 #ifdef TEST_BDFFONT
 
-#include "test.h"            // USUAL_TEST_MAIN
+#include "sm-test.h"         // USUAL_TEST_MAIN
 
 
 static void entry()

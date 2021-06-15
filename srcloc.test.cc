@@ -700,7 +700,7 @@ string locToStr(SourceLoc sl)
 // -------------------------- test code ----------------------
 #ifdef TEST_SRCLOC
 
-//#include "test.h"        // USUAL_MAIN
+//#include "sm-test.h"     // USUAL_MAIN
 //#include "strtokp.h"     // StrtokParse
 
 #include <stdlib.h>      // rand, exit, system

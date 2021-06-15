@@ -3,7 +3,7 @@
 
 #include "objlist.h"    // this module
 #include "breaker.h"    // breaker
-#include "test.h"       // USUAL_MAIN
+#include "sm-test.h"    // USUAL_MAIN
 
 #include <stdlib.h>     // rand()
 #include <stdio.h>      // printf()

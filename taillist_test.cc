@@ -2,7 +2,7 @@
 
 // test code for taillist
 #include "taillist.h"
-#include "test.h" // USUAL_MAIN
+#include "sm-test.h" // USUAL_MAIN
 
 void entry()
 {

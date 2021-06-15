@@ -345,7 +345,7 @@ string StringDict::toString() const
 // -------------------- test code ------------------------
 #ifdef TEST_STRDICT
 
-#include "test.h"      // USUAL_MAIN
+#include "sm-test.h"   // USUAL_MAIN
 #include <stdlib.h>    // rand
 
 #define myrandom(n) (rand()%(n))

@@ -114,7 +114,7 @@ void BFlatten::xferSerf(void *&serfPtr, bool isNullable)
 // ------------------------ test code ---------------------
 #ifdef TEST_BFLATTEN
 
-#include "test.h"      // USUAL_MAIN
+#include "sm-test.h"   // USUAL_MAIN
 
 void entry()
 {

@@ -10,8 +10,8 @@
 
 // smbase
 #include "nonport.h"                   // GetMillisecondsAccumulator
+#include "sm-test.h"                   // ARGS_TEST_MAIN, PVAL
 #include "strutil.h"                   // compareStringPtrs
-#include "test.h"                      // ARGS_TEST_MAIN, PVAL
 
 
 // Run some checks on the 'fn' object directly.
