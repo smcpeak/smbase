@@ -132,16 +132,32 @@ inline void pretendUsedFn(T const &) {}
 #endif
 
 
-// these two are a common idiom in my code for typesafe casts;
-// they are essentially a roll-your-own RTTI
+// This macro is meant to be used within a class definition.
+//
+// Given a subtype 'destType', declare four functions that perform
+// checked downcasts to that type, checked with an 'isXXX' method.
+// The methods that end in 'C' are the const versions.  The methods
+// that begin with 'as' assert that the cast is accurate, while the
+// methods that begin with 'if' return NULL if it is not.
 #define DOWNCAST_FN(destType)                                                   \
   destType const *as##destType##C() const;                                      \
-  destType *as##destType() { return const_cast<destType*>(as##destType##C()); }
+  destType *as##destType() { return const_cast<destType*>(as##destType##C()); } \
+  destType const *if##destType##C() const;                                      \
+  destType *if##destType() { return const_cast<destType*>(if##destType##C()); }
 
+// This macro is used in the implementation file of a class that uses
+// DOWNCAST_FN in its definition.
 #define DOWNCAST_IMPL(inClass, destType)            \
   destType const *inClass::as##destType##C() const  \
   {                                                 \
     xassert(is##destType());                        \
+    return static_cast<destType const*>(this);      \
+  }                                                 \
+  destType const *inClass::if##destType##C() const  \
+  {                                                 \
+    if (!is##destType()) {                          \
+      return NULL;                                  \
+    }                                               \
     return static_cast<destType const*>(this);      \
   }
 
