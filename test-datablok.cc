@@ -52,6 +52,7 @@ void test_datablok()
 
     DataBlock block("yadda smacker");
     xassert(block.getDataLen() == 14);
+    xassert(block.toString() == string("yadda smacker"));
 
     DataBlock block2((unsigned char*)"yadda smacker", 13, 14);
     block2.addNull();

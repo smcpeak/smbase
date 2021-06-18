@@ -7,6 +7,8 @@
 
 #include <stddef.h>                    // NULL, size_t, ptrdiff_t
 
+#include "str.h"                       // string
+
 class DataBlock {
 private:      // data
   unsigned char *data;         // data itself (may be NULL)
@@ -99,6 +101,10 @@ public:       // funcs
     { return dataEqual(obj); }
   bool operator!= (DataBlock const &obj) const
     { return !operator==(obj); }
+
+  // Return a string containing 'dataLen' characters, some of which
+  // might be NUL.
+  string toString() const;
 
   // ---- mutators ----
   unsigned char *getData() { return data; }

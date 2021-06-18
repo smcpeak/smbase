@@ -7,6 +7,7 @@
 #include "crc.h"          // crc32
 #include "syserr.h"       // xsyserror
 
+#include <limits.h>       // INT_MAX
 #include <stdio.h>        // printf
 #include <stdlib.h>       // abort
 #include <string.h>       // memcpy
@@ -171,6 +172,15 @@ bool DataBlock::dataEqual(DataBlock const &obj) const
   }
 }
 
+
+string DataBlock::toString() const
+{
+  // My 'string' class uses 'int' for its length.  That should be fixed,
+  // but until then, I'll verify the conversion is safe.
+  xassert(getDataLen() <= INT_MAX);
+
+  return string((char*)getDataC(), getDataLen());
+}
 
 
 void DataBlock::setDataLen(size_t newLen)
