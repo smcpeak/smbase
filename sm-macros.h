@@ -139,11 +139,20 @@ inline void pretendUsedFn(T const &) {}
 // The methods that end in 'C' are the const versions.  The methods
 // that begin with 'as' assert that the cast is accurate, while the
 // methods that begin with 'if' return NULL if it is not.
+//
+// The 'as/isXXXC' methods are 'virtual' in order to allow a subclass to
+// pretend to be a different subclass.  I do this in Elsa's TypedefType.
 #define DOWNCAST_FN(destType)                                                   \
-  destType const *as##destType##C() const;                                      \
+  virtual destType const *as##destType##C() const;                              \
   destType *as##destType() { return const_cast<destType*>(as##destType##C()); } \
-  destType const *if##destType##C() const;                                      \
+  virtual destType const *if##destType##C() const;                              \
   destType *if##destType() { return const_cast<destType*>(if##destType##C()); }
+
+// These declarations can be used in a subclass that is pretending to
+// be another one by only overriding 'as/isXXXC'.
+#define OVERRIDE_DOWNCAST_FN(destType)              \
+  destType const *as##destType##C() const override; \
+  destType const *if##destType##C() const override;
 
 // This macro is used in the implementation file of a class that uses
 // DOWNCAST_FN in its definition.
