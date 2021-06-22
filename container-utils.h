@@ -13,4 +13,12 @@ bool contains(CONTAINER const &container, VALUE const &value)
 }
 
 
+// Expands to the head of a 'for' loop that iterates over all of the
+// elements in 'container', with 'iterator' as the iterator variable.
+#define CONTAINER_FOREACH(container, iterator) \
+  for (auto iterator = (container).begin();    \
+       iterator != (container).end();          \
+       ++iterator)
+
+
 #endif // SMBASE_CONTAINER_UTILS_H
