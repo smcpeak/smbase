@@ -29,7 +29,7 @@ private:    // funcs
   Owner(Owner&);         // not allowed
 
 public:     // funcs
-  Owner(T *p = NULL) : ptr(p) { DBG("ctor"); }
+  explicit Owner(T *p = NULL) : ptr(p) { DBG("ctor"); }
   ~Owner() { DBG("dtor"); del(); }
 
   // take ownership (no transitive = here)
@@ -61,13 +61,16 @@ public:     // funcs
   T* operator-> () { DBG("op->"); return ptr; }
   #endif
 
+  bool operator== (T const *p) const { return ptr == p; }
+  bool operator!= (T const *p) const { return ptr != p; }
+
   // escape hatch for when operators flake out on us
   T *get() { DBG("get"); return ptr; }
   T const *getC() const { DBG("getC"); return ptr; }
 
   // even more dangerous escape; only use where the caller
   // agrees to restore the owner invariant!
-  T *&getRef() { DBG("getRed"); return ptr; }
+  T *&getRef() { DBG("getRef"); return ptr; }
 
   // swaps are interesting because they don't require checking
   void swapWith(Owner<T> &obj) {
