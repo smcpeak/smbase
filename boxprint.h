@@ -250,6 +250,7 @@ public:      // funcs
   BoxPrint& operator<< (rostring s);
   BoxPrint& operator<< (char const *s);
   BoxPrint& operator<< (int i);
+  BoxPrint& operator<< (char c);
 
   // open/close boxes
   BoxPrint& operator<< (BPKind k);

@@ -355,6 +355,11 @@ BoxPrint& BoxPrint::operator<< (int i)
   return operator<< (stringc << i);
 }
 
+BoxPrint& BoxPrint::operator<< (char c)
+{
+  return operator<< (stringc << c);
+}
+
 
 BoxPrint& BoxPrint::operator<< (BPKind k)
 {
@@ -514,6 +519,7 @@ void doit(int argc, char *argv[])
         << bp.lineStart
         << "// forced break comment"
         << bp.fbr
+        << "// character: " << 'c' << bp.fbr
         << "forall(" << bp.seq
            << "x," << bp.br << "y," << bp.br << "z"
         << bp.end << "). if {" << bp.ind
