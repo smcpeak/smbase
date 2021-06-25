@@ -204,7 +204,7 @@ public:      // types
     fbr,         // insert forced break
     lineStart,   // insert lineStart break
     ind,         // ibr(levelIndent)
-    und,         // ibr(-levelIndent) ("unindent")
+    und,         // adjustIndent(-1); no break
   };
 
   // insert enabled break with indentation
@@ -265,6 +265,11 @@ public:      // funcs
   // op(text) is equivalent to sp << text << br
   static Op op(char const *text) { return Op(text); }
   BoxPrint &operator << (Op o);
+
+  // Adjust indentation for remainder of this box.  'steps' is
+  // multiplied by 'levelIndent' to get the number of spaces.  This
+  // can only be right after a break.
+  void adjustIndent(int steps);
 
   // take the accumulated box tree out; all opened boxes must have
   // been closed; the builder is left in a state where it can be used

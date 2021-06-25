@@ -384,7 +384,7 @@ BoxPrint& BoxPrint::operator<< (Cmd c)
     case fbr:       append(new BPBreak(BT_FORCED, 0 /*indent*/)); break;
     case lineStart: append(new BPBreak(BT_LINE_START, 0 /*indent*/)); break;
     case ind:       append(new BPBreak(BT_ENABLED, levelIndent)); break;
-    case und:       append(new BPBreak(BT_ENABLED, -levelIndent)); break;
+    case und:       adjustIndent(-1); break;
   }
   return *this;
 }
@@ -400,6 +400,16 @@ BoxPrint& BoxPrint::operator<< (IBreak b)
 BoxPrint& BoxPrint::operator<< (Op o)
 {
   return *this << sp << o.text << br;
+}
+
+
+void BoxPrint::adjustIndent(int steps)
+{
+  xassert(box()->elts.isNotEmpty());
+  BPElement *last = box()->elts.last();
+  BPBreak *lastBreak = dynamic_cast<BPBreak*>(last);
+  xassert(lastBreak);
+  lastBreak->m_indent += steps * levelIndent;
 }
 
 
@@ -436,10 +446,12 @@ void BoxPrint::debugPrintCout() const
 // ------------------------ test code ----------------------
 #ifdef TEST_BOXPRINT
 
-#include <stdlib.h>       // atoi
 #include "ckheap.h"       // malloc_stats
+#include "sm-test.h"      // ARGS_TEST_MAIN
 
-void doit(int argc, char *argv[])
+#include <stdlib.h>       // atoi
+
+void entry(int argc, char *argv[])
 {
   BoxPrint bp;
 
@@ -491,10 +503,10 @@ void doit(int argc, char *argv[])
            << "x," << bp.br << "y," << bp.br << "z"
         << bp.end << "). if {" << bp.ind
         << bp.seq << "x" << bp.op("==") << "yooey_more" << bp.end << ";" << bp.br
-        << bp.seq << "yowza" << bp.op("!=") << "fooey" << bp.end << ";"
+        << bp.seq << "yowza" << bp.op("!=") << "fooey" << bp.end << ";" << bp.br
         << bp.und << "} /*==>*/ {" << bp.ind
         << bp.seq << "z(x,y,z)" << bp.op("==") << "3" << bp.end << ";" << bp.br
-        << "ay_caramba" << ";"
+        << "ay_caramba" << ";" << bp.br
         << bp.und << "};"
      << bp.end << bp.br;
 
@@ -507,10 +519,10 @@ void doit(int argc, char *argv[])
            << "x," << bp.br << "y," << bp.br << "z"
         << bp.end << "). if {" << bp.ind
         << bp.seq << "x" << bp.op("==") << "yooey_more" << bp.end << ";" << bp.br
-        << bp.seq << "yowza" << bp.op("!=") << "fooey" << bp.end << ";"
+        << bp.seq << "yowza" << bp.op("!=") << "fooey" << bp.end << ";" << bp.br
         << bp.und << "} /*==>*/ {" << bp.ind
         << bp.seq << "z(x,y,z)" << bp.op("==") << "3" << bp.end << ";" << bp.br
-        << "ay_caramba" << ";"
+        << "ay_caramba" << ";" << bp.br
         << bp.und << "};"
      << bp.end << bp.br;
 
@@ -524,14 +536,22 @@ void doit(int argc, char *argv[])
            << "x," << bp.br << "y," << bp.br << "z"
         << bp.end << "). if {" << bp.ind
         << bp.seq << "x" << bp.op("==") << "yooey_more" << bp.end << ";" << bp.br
-        << bp.seq << "yowza" << bp.op("!=") << "fooey" << bp.end << ";"
+        << bp.seq << "yowza" << bp.op("!=") << "fooey" << bp.end << ";" << bp.br
         << bp.und << "} /*==>*/ {" << bp.ind
         << bp.seq << "z(x,y,z)" << bp.op("==") << "3" << bp.end << ";" << bp.br
-        << "ay_caramba" << ";"
+        << "ay_caramba" << ";" << bp.br
         << bp.und << "};"
-     << bp.end;
+     << bp.end << bp.br;
 
   bp << bp.und << "}" << bp.br;
+
+  bp << bp.fbr;
+  bp << bp.vert
+        << "int main()" << bp.br
+        << "{" << bp.ind
+        <<   "return 0;" << bp.br
+        << bp.und << "}" << bp.br
+     << bp.end;
 
   BPBox *tree = bp.takeTree();
 
@@ -550,11 +570,7 @@ void doit(int argc, char *argv[])
   cout << ren.takeString();
 }
 
-int main(int argc, char *argv[])
-{
-  doit(argc, argv);
-  //malloc_stats();
-  return 0;
-}
+ARGS_TEST_MAIN
+
 
 #endif // TEST_BOXPRINT

@@ -40,6 +40,11 @@ int foo()
     ay_caramba;
   };
 }
+
+int main()
+{
+  return 0;
+}
 ---- stderr ----
 ---- exit status ----
 Exit 0
