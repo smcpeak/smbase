@@ -56,8 +56,12 @@ LIBS = $(THIS)
 LDFLAGS =
 
 # Some other tools.
-AR     = ar
-RANLIB = ranlib
+AR      = ar
+RANLIB  = ranlib
+PYTHON3 = python3
+
+# How to invoke run-compare-expect.py.
+RUN_COMPARE_EXPECT = $(PYTHON3) ./run-compare-expect.py
 
 
 # ---- Options within this Makefile ----
@@ -471,6 +475,22 @@ test.dir/read-only.txt:
 	chmod a-w $@
 
 
+# If we are missing an expect file, just make an empty one.
+test/%.expect:
+	touch $@
+
+# Run a single test executable and compare to expected output.
+out/%.ok: test/%.expect %.exe
+	@mkdir -p $(dir $@)
+	$(RUN_COMPARE_EXPECT) \
+	  --actual out/$*.actual \
+	  --expect test/$*.expect \
+	  ./$*.exe
+	touch $@
+
+check: out/boxprint.ok
+
+
 ifneq ($(CROSS_COMPILE),1)
   RUN :=
 else
@@ -504,7 +524,6 @@ check: $(TESTS)
 	$(RUN)./gprintf.exe
 	$(RUN)./vptrmap.exe
 	$(RUN)./pprint.exe
-	$(RUN)./boxprint.exe
 	$(RUN)./tarrayqueue.exe
 	$(RUN)./testarray.exe
 	$(RUN)./taillist_test.exe
@@ -588,7 +607,7 @@ doc: gendoc gendoc/dependencies.png
 # delete compiling/editing byproducts
 clean:
 	rm -f *.o *~ *.a *.d *.exe gmon.out srcloc.tmp testcout flattest.tmp
-	rm -rf test.dir
+	rm -rf test.dir out
 
 distclean: clean
 	rm -f config.mk
