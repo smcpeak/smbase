@@ -405,11 +405,19 @@ BoxPrint& BoxPrint::operator<< (Op o)
 
 void BoxPrint::adjustIndent(int steps)
 {
-  xassert(box()->elts.isNotEmpty());
-  BPElement *last = box()->elts.last();
-  BPBreak *lastBreak = dynamic_cast<BPBreak*>(last);
-  xassert(lastBreak);
-  lastBreak->m_indent += steps * levelIndent;
+  if (box()->elts.isEmpty()) {
+    *this << "[ERROR:adjustIndent called on empty box]";
+  }
+  else {
+    BPElement *last = box()->elts.last();
+    BPBreak *lastBreak = dynamic_cast<BPBreak*>(last);
+    if (!lastBreak) {
+      *this << "[ERROR:adjustIndent called when prev element not a break]";
+    }
+    else {
+      lastBreak->m_indent += steps * levelIndent;
+    }
+  }
 }
 
 
