@@ -113,31 +113,38 @@ public:
 
 
 enum BreakType {
-  BT_DISABLED = 0,       // never taken
-  BT_ENABLED = 1,        // might be taken
-  BT_FORCED = 2,         // always taken
-  BT_LINE_START = 3,     // taken if the cursor is not at line start
+  // Equivalent to a space.
+  BT_DISABLED = 0,
+
+  // Either a space or a newline depending on the context.
+  BT_ENABLED = 1,
+
+  // Always a newline.
+  BT_FORCED = 2,
+
+  // Newline if the cursor is not at the start of the line.
+  BT_LINE_START = 3,
 };
 
 // leaf in the tree: a "break", which might end up being a
 // space or a newline+indentation
 class BPBreak : public BPElement {
 public:
-  // When true, this is a conditional break, and whether it is taken
-  // or not depends on the prevailing break strategy of the box in
-  // which it is located.  When false, the break is never taken, so
-  // this is effectively just a space.
-  BreakType enabled;
+  // Type of break.
+  BreakType m_breakType;
 
   // Nominally, when a break is taken, the indentation used is such
   // that the next char in the box is directly below the first char
   // in the box.  When this break is passed, however, it can add to
   // that nominal indent of 0; these adjustments accumulate as the
   // box is rendered.
-  int indent;
+  //
+  // This value is the number of spaces to indent.  Usually, it is a
+  // multiple of BoxPrint::levelIndent.
+  int m_indent;
 
 public:
-  BPBreak(BreakType e, int i);
+  BPBreak(BreakType breakType, int indent);
   ~BPBreak();
 
   // BPElement funcs

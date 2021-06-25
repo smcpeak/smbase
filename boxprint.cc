@@ -105,9 +105,9 @@ void BPText::debugPrint(ostream &os, int /*ind*/) const
 
 
 // ------------------------ BPBreak ---------------------
-BPBreak::BPBreak(BreakType e, int i)
-  : enabled(e),
-    indent(i)
+BPBreak::BPBreak(BreakType breakType, int indent)
+  : m_breakType(breakType),
+    m_indent(indent)
 {}
 
 BPBreak::~BPBreak()
@@ -115,7 +115,7 @@ BPBreak::~BPBreak()
 
 int BPBreak::oneLineWidthEx(bool &forced)
 {
-  if (enabled >= BT_FORCED) {
+  if (m_breakType >= BT_FORCED) {
     forced = true;
     return 0;
   }
@@ -128,24 +128,24 @@ int BPBreak::oneLineWidthEx(bool &forced)
 void BPBreak::render(BPRender &mgr)
 {
   // if we're being asked to render, then this break must not be taken
-  if (enabled != BT_LINE_START) {
+  if (m_breakType != BT_LINE_START) {
     mgr.add(" ");
   }
 }
 
 bool BPBreak::isBreak() const
 {
-  return enabled;
+  return m_breakType != BT_DISABLED;
 }
 
 bool BPBreak::isForcedBreak() const
 {
-  return enabled == BT_FORCED;
+  return m_breakType == BT_FORCED;
 }
 
 void BPBreak::debugPrint(ostream &os, int /*ind*/) const
 {
-  os << "break(en=" << (int)enabled << ", ind=" << indent << ")";
+  os << "break(en=" << (int)m_breakType << ", ind=" << m_indent << ")";
 }
 
 
@@ -177,9 +177,9 @@ int BPBox::oneLineWidthEx(bool &forced)
 
 void takeBreak(BPRender &mgr, int &startCol, BPBreak *brk)
 {
-  startCol += brk->indent;
+  startCol += brk->m_indent;
 
-  if (brk->enabled == BT_LINE_START &&
+  if (brk->m_breakType == BT_LINE_START &&
       mgr.curCol == startCol) {
     // do not add a line
   }
@@ -247,7 +247,7 @@ void BPBox::render(BPRender &mgr)
 
     // the segment will be put here without a preceding break
     else if (pendingBreak) {
-      startCol += pendingBreak->indent;
+      startCol += pendingBreak->m_indent;
       pendingBreak->render(mgr);
       pendingBreak = NULL;
     }
