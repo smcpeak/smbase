@@ -25,8 +25,7 @@ static std::ostream &printIndent(std::ostream &os, int ind)
 TreePrint::PrintState::PrintState(std::ostream &output, int margin)
   : m_output(output),
     m_margin(margin),
-    m_availableSpace(margin),
-    m_availableSpaceStack()
+    m_availableSpace(margin)
 {}
 
 
@@ -113,7 +112,8 @@ void TreePrint::TPSequence::scan()
 
 
 void TreePrint::TPSequence::print(PrintState &printState,
-                                  bool /*forceBreaks*/) const
+                                  bool /*forceBreaks*/,
+                                  int /*subsequentLineAvailableSpace*/) const
 {
   bool forceBreaks = false;
   if (m_consistentBreaks &&
@@ -125,14 +125,13 @@ void TreePrint::TPSequence::print(PrintState &printState,
 
   // Establish the indentation level for subsequent lines broken
   // within this sequence.
-  printState.m_availableSpaceStack.push(
-    printState.m_availableSpace - m_indent);
+  int subsequentLineAvailableSpace =
+    printState.m_availableSpace - m_indent;
 
   FOREACH_ASTLIST(TPNode, m_elements, iter) {
-    iter.data()->print(printState, forceBreaks);
+    iter.data()->print(printState, forceBreaks,
+                       subsequentLineAvailableSpace);
   }
-
-  printState.m_availableSpaceStack.pop();
 }
 
 
@@ -172,7 +171,8 @@ void TreePrint::TPString::scan()
 
 
 void TreePrint::TPString::print(PrintState &printState,
-                                bool /*forceBreaks*/) const
+                                bool /*forceBreaks*/,
+                                int /*subsequentLineAvailableSpace*/) const
 {
   printState.m_output << m_string;
   printState.m_availableSpace -= m_length;
@@ -198,7 +198,8 @@ void TreePrint::TPBreak::scan()
 
 
 void TreePrint::TPBreak::print(PrintState &printState,
-                               bool forceBreaks) const
+                               bool forceBreaks,
+                               int subsequentLineAvailableSpace) const
 {
   // If there is not enough space for this break to be a space followed
   // by what comes after, break the line.
@@ -209,7 +210,7 @@ void TreePrint::TPBreak::print(PrintState &printState,
       forceBreaks) {                             // Extrinsically forced.
     // The next line will have available space equal to what was
     // established when the innermost block opened.
-    printState.m_availableSpace = printState.m_availableSpaceStack.top();
+    printState.m_availableSpace = subsequentLineAvailableSpace;
 
     // Add a newline and indent such that the desired available space is
     // in fact what is available.
@@ -342,7 +343,7 @@ void TreePrint::print(std::ostream &os, int margin)
 
   // Print.
   PrintState printState(os, margin);
-  m_root.print(printState, false /*forceBreaks*/);
+  m_root.print(printState, false /*forceBreaks*/, margin /*avail*/);
 }
 
 

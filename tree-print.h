@@ -45,10 +45,6 @@ private:     // types
     // overrun the margin.
     int m_availableSpace;
 
-    // Stack of previous available space counts.  An element is pushed
-    // when we go into a sequence and popped when we return.
-    std::stack<int> m_availableSpaceStack;
-
   public:      // methods
     PrintState(std::ostream &output, int margin);
     ~PrintState();
@@ -74,7 +70,9 @@ private:     // types
     virtual void scan() = 0;
 
     // Print this node.
-    virtual void print(PrintState &printState, bool forceBreaks) const = 0;
+    virtual void print(PrintState &printState,
+                       bool forceBreaks,
+                       int subsequentLineAvailableSpace) const = 0;
 
     // Print the tree structure itself.
     virtual void debugPrint(std::ostream &os, int ind) const = 0;
@@ -100,7 +98,9 @@ private:     // types
     ~TPSequence();
 
     virtual void scan() override;
-    virtual void print(PrintState &printState, bool forceBreaks) const override;
+    virtual void print(PrintState &printState,
+                       bool forceBreaks,
+                       int subsequentLineAvailableSpace) const override;
     virtual void debugPrint(std::ostream &os, int ind) const override;
   };
 
@@ -115,7 +115,9 @@ private:     // types
     ~TPString();
 
     virtual void scan() override;
-    virtual void print(PrintState &printState, bool forceBreaks) const override;
+    virtual void print(PrintState &printState,
+                       bool forceBreaks,
+                       int subsequentLineAvailableSpace) const override;
     virtual void debugPrint(std::ostream &os, int ind) const override;
   };
 
@@ -148,7 +150,9 @@ private:     // types
     {}
 
     virtual void scan() override;
-    virtual void print(PrintState &printState, bool forceBreaks) const override;
+    virtual void print(PrintState &printState,
+                       bool forceBreaks,
+                       int subsequentLineAvailableSpace) const override;
     virtual void debugPrint(std::ostream &os, int ind) const override;
   };
 
