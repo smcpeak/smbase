@@ -259,6 +259,7 @@ OBJS += svdict.o
 OBJS += syserr.o
 OBJS += trace.o
 OBJS += trdelete.o
+OBJS += tree-print.o
 OBJS += unixutil.o
 OBJS += vdtllist.o
 OBJS += vptrmap.o
@@ -315,6 +316,7 @@ TESTS += test-refct-serf.exe
 TESTS += test-run-process.exe
 TESTS += test-sm-file-util.exe
 TESTS += test-stringset.exe
+TESTS += test-tree-print.exe
 TESTS += testarray.exe
 TESTS += testmalloc.exe
 TESTS += tobjlist.exe
@@ -493,6 +495,7 @@ out/%.ok: test/%.expect %.exe
 	touch $@
 
 check: out/boxprint.ok
+check: out/test-tree-print.ok
 
 
 ifneq ($(CROSS_COMPILE),1)

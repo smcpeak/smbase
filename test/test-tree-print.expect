@@ -1,0 +1,59 @@
+---- stdout ----
+TPSequence of 2 elements, length=13 ind=0:
+  TPSequence of 3 elements, length=13 ind=2:
+    TPString: "hello," len=6
+    TPBreak: BK_NEWLINE_OR_SPACE len=7
+    TPString: "world!" len=6
+  TPBreak: BK_NEWLINE_ALWAYS len=0
+|------------------| margin=20
+hello, world!
+|--------| margin=10
+hello,
+  world!
+|----------------------------| margin=30
+var x: integer, y: char;
+begin x := 1; y := 'a'; end
+|------------------| margin=20
+var x: integer,
+  y: char;
+begin x := 1;
+  y := 'a'; end
+|--------| margin=10
+var
+  x: integer,
+  y: char;
+begin
+  x := 1;
+  y := 'a';
+end
+|----------------------------| margin=30
+f(a, b, c, d) + g(a, b, c, d)
+|-----------------------| margin=25
+f(a, b, c, d) +
+  g(a, b, c, d)
+|------------------| margin=20
+f(a, b, c, d) +
+  g(a, b, c, d)
+|--------| margin=10
+f(a, b, c,
+  d) +
+  g(a, b,
+    c, d)
+|------| margin=8
+f(a, b,
+  c, d)
+  +
+  g(a,
+    b,
+    c,
+    d)
+|--------| margin=10
+x=3, c='x'
+|---| margin=5
+x=3,
+c='x'
+hi
+hi
+---- stderr ----
+---- exit status ----
+Exit 0
