@@ -111,30 +111,6 @@ void TreePrint::TPSequence::scan()
 }
 
 
-void TreePrint::TPSequence::print(PrintState &printState,
-                                  bool /*forceBreaks*/,
-                                  int /*subsequentLineAvailableSpace*/) const
-{
-  bool forceBreaks = false;
-  if (m_consistentBreaks &&
-      m_length > printState.m_availableSpace) {
-    // We have to break somewhere.  Force all breaks in this list to be
-    // taken.
-    forceBreaks = true;
-  }
-
-  // Establish the indentation level for subsequent lines broken
-  // within this sequence.
-  int subsequentLineAvailableSpace =
-    printState.m_availableSpace - m_indent;
-
-  FOREACH_ASTLIST(TPNode, m_elements, iter) {
-    iter.data()->print(printState, forceBreaks,
-                       subsequentLineAvailableSpace);
-  }
-}
-
-
 void TreePrint::TPSequence::debugPrint(std::ostream &os, int ind) const
 {
   printIndent(os, ind);
@@ -170,15 +146,6 @@ void TreePrint::TPString::scan()
 }
 
 
-void TreePrint::TPString::print(PrintState &printState,
-                                bool /*forceBreaks*/,
-                                int /*subsequentLineAvailableSpace*/) const
-{
-  printState.m_output << m_string;
-  printState.m_availableSpace -= m_length;
-}
-
-
 void TreePrint::TPString::debugPrint(std::ostream &os, int ind) const
 {
   printIndent(os, ind);
@@ -194,39 +161,6 @@ void TreePrint::TPBreak::scan()
   // reset the length if the tree is scanned more than once.
   m_length =
     m_breakKind == BK_NEWLINE_OR_SPACE? 1 : 0;
-}
-
-
-void TreePrint::TPBreak::print(PrintState &printState,
-                               bool forceBreaks,
-                               int subsequentLineAvailableSpace) const
-{
-  // If there is not enough space for this break to be a space followed
-  // by what comes after, break the line.
-  //
-  // Or, break the line if the break itself or its parent says to.
-  if (m_length > printState.m_availableSpace ||  // Insufficient space.
-      m_breakKind == BK_NEWLINE_ALWAYS ||        // Intrinsically forced.
-      forceBreaks) {                             // Extrinsically forced.
-    // The next line will have available space equal to what was
-    // established when the innermost block opened.
-    printState.m_availableSpace = subsequentLineAvailableSpace;
-
-    // Add a newline and indent such that the desired available space is
-    // in fact what is available.
-    printState.m_output << '\n';
-    printIndent(printState.m_output,
-      printState.m_margin - printState.m_availableSpace);
-  }
-
-  else {
-    // There is enough room for the break character and what follows, so
-    // just print the break character.
-    if (m_breakKind == BK_NEWLINE_OR_SPACE) {
-      printState.m_output << ' ';
-      printState.m_availableSpace--;
-    }
-  }
 }
 
 
@@ -336,6 +270,80 @@ bool TreePrint::allSequencesClosed() const
 }
 
 
+// This method uses 'dynamic_cast' to directly inspect the type of the
+// children rather than a virtual function because the tight
+// communication between the loop and the break nodes, combined with the
+// lack thereof for other kinds of nodes, makes the virtual method
+// approach a poor fit that tends to obscure the essential logic.
+void TreePrint::printSequence(PrintState &printState,
+                              TPSequence const *seqNode) const
+{
+  // Will we force all breaks in this list to be newlines?
+  bool forceAllBreaks = false;
+  if (seqNode->m_consistentBreaks &&
+      seqNode->m_length > printState.m_availableSpace) {
+    // We have to break somewhere, so break everywhere.
+    forceAllBreaks = true;
+  }
+
+  // Establish the indentation level for subsequent lines broken
+  // within this sequence.
+  int subsequentLineAvailableSpace =
+    printState.m_availableSpace - seqNode->m_indent;
+
+  // Print all the elements.
+  FOREACH_ASTLIST(TPNode, seqNode->m_elements, iter) {
+    TPNode const *node = iter.data();
+
+    // The break nodes are where all the action takes place.
+    if (TPBreak const *breakNode =
+          dynamic_cast<TPBreak const *>(node)) {
+      // If there is not enough space for this break to be a space followed
+      // by what comes after, break the line.
+      //
+      // Or, break the line if the break itself or its parent says to.
+      if (breakNode->m_length > printState.m_availableSpace ||
+          breakNode->m_breakKind == BK_NEWLINE_ALWAYS ||
+          forceAllBreaks) {
+        // The next line will have available space equal to what was
+        // established when this sequence opened.
+        printState.m_availableSpace = subsequentLineAvailableSpace;
+
+        // Add a newline and indent such that the desired available
+        // space is in fact what is available.
+        printState.m_output << '\n';
+        printIndent(printState.m_output,
+          printState.m_margin - printState.m_availableSpace);
+      }
+
+      else {
+        // There is enough room for the break character and what follows, so
+        // just print the break character.
+        if (breakNode->m_breakKind == BK_NEWLINE_OR_SPACE) {
+          printState.m_output << ' ';
+          printState.m_availableSpace--;
+        }
+      }
+    }
+
+    else if (TPString const *stringNode =
+               dynamic_cast<TPString const *>(node)) {
+      printState.m_output << stringNode->m_string;
+      printState.m_availableSpace -= stringNode->m_length;
+    }
+
+    else if (TPSequence const *innerSeqNode =
+               dynamic_cast<TPSequence const *>(node)) {
+      printSequence(printState, innerSeqNode);
+    }
+
+    else {
+      xfailure("unknown TPNode type");
+    }
+  }
+}
+
+
 void TreePrint::print(std::ostream &os, int margin)
 {
   // Compute lengths.
@@ -343,7 +351,7 @@ void TreePrint::print(std::ostream &os, int margin)
 
   // Print.
   PrintState printState(os, margin);
-  m_root.print(printState, false /*forceBreaks*/, margin /*avail*/);
+  printSequence(printState, &m_root);
 }
 
 

@@ -69,11 +69,6 @@ private:     // types
     // Calculate 'm_length'.
     virtual void scan() = 0;
 
-    // Print this node.
-    virtual void print(PrintState &printState,
-                       bool forceBreaks,
-                       int subsequentLineAvailableSpace) const = 0;
-
     // Print the tree structure itself.
     virtual void debugPrint(std::ostream &os, int ind) const = 0;
   };
@@ -98,9 +93,6 @@ private:     // types
     ~TPSequence();
 
     virtual void scan() override;
-    virtual void print(PrintState &printState,
-                       bool forceBreaks,
-                       int subsequentLineAvailableSpace) const override;
     virtual void debugPrint(std::ostream &os, int ind) const override;
   };
 
@@ -115,9 +107,6 @@ private:     // types
     ~TPString();
 
     virtual void scan() override;
-    virtual void print(PrintState &printState,
-                       bool forceBreaks,
-                       int subsequentLineAvailableSpace) const override;
     virtual void debugPrint(std::ostream &os, int ind) const override;
   };
 
@@ -150,9 +139,6 @@ private:     // types
     {}
 
     virtual void scan() override;
-    virtual void print(PrintState &printState,
-                       bool forceBreaks,
-                       int subsequentLineAvailableSpace) const override;
     virtual void debugPrint(std::ostream &os, int ind) const override;
   };
 
@@ -178,6 +164,10 @@ public:      // class methods
 private:     // methods
   // Append a node to the top-most open sequence.
   void append(TPNode *node);
+
+  // Print the subtree rooted at 'seqNode'.
+  void printSequence(PrintState &printState,
+                     TPSequence const *seqNode) const;
 
 public:      // methods
   TreePrint();
@@ -208,7 +198,9 @@ public:      // methods
   // 'end'.  The client may want to assert this before printing.
   bool allSequencesClosed() const;
 
-  // Print the current tree to 'os'.
+  // Print the current tree to 'os'.  The tree structure is not
+  // modified, but this method is not marked 'const' because the
+  // 'm_length' fields are computed.
   void print(std::ostream &os, int targetWidth = 72);
 
   // Clear the tree.
