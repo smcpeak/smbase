@@ -45,8 +45,9 @@ TreePrint::TPNode::~TPNode()
 
 
 // --------------------------- TPSequence ------------------------------
-TreePrint::TPSequence::TPSequence(int indent)
+TreePrint::TPSequence::TPSequence(int indent, bool consistentBreaks)
   : m_indent(indent),
+    m_consistentBreaks(consistentBreaks),
     m_elements()
 {}
 
@@ -111,15 +112,24 @@ void TreePrint::TPSequence::scan()
 }
 
 
-void TreePrint::TPSequence::print(PrintState &printState) const
+void TreePrint::TPSequence::print(PrintState &printState,
+                                  bool /*forceBreaks*/) const
 {
+  bool forceBreaks = false;
+  if (m_consistentBreaks &&
+      m_length > printState.m_availableSpace) {
+    // We have to break somewhere.  Force all breaks in this list to be
+    // taken.
+    forceBreaks = true;
+  }
+
   // Establish the indentation level for subsequent lines broken
   // within this sequence.
   printState.m_availableSpaceStack.push(
     printState.m_availableSpace - m_indent);
 
   FOREACH_ASTLIST(TPNode, m_elements, iter) {
-    iter.data()->print(printState);
+    iter.data()->print(printState, forceBreaks);
   }
 
   printState.m_availableSpaceStack.pop();
@@ -132,9 +142,10 @@ void TreePrint::TPSequence::debugPrint(std::ostream &os, int ind) const
   os << "TPSequence of " << m_elements.count()
      << " elements, length=" << m_length
      << " ind=" << m_indent
+     << " consistent=" << (m_consistentBreaks? "true" : "false")
      << ":\n";
 
-  ind += 2;
+  ind += INDENT_SPACES;
   FOREACH_ASTLIST(TPNode, m_elements, iter) {
     iter.data()->debugPrint(os, ind);
   }
@@ -160,7 +171,8 @@ void TreePrint::TPString::scan()
 }
 
 
-void TreePrint::TPString::print(PrintState &printState) const
+void TreePrint::TPString::print(PrintState &printState,
+                                bool /*forceBreaks*/) const
 {
   printState.m_output << m_string;
   printState.m_availableSpace -= m_length;
@@ -185,13 +197,16 @@ void TreePrint::TPBreak::scan()
 }
 
 
-void TreePrint::TPBreak::print(PrintState &printState) const
+void TreePrint::TPBreak::print(PrintState &printState,
+                               bool forceBreaks) const
 {
   // If there is not enough space for this break to be a space followed
-  // by what comes after, break the line.  (Or break it if the break is
-  // unconditional.)
-  if (m_length > printState.m_availableSpace ||
-      m_breakKind == BK_NEWLINE_ALWAYS) {
+  // by what comes after, break the line.
+  //
+  // Or, break the line if the break itself or its parent says to.
+  if (m_length > printState.m_availableSpace ||  // Insufficient space.
+      m_breakKind == BK_NEWLINE_ALWAYS ||        // Intrinsically forced.
+      forceBreaks) {                             // Extrinsically forced.
     // The next line will have available space equal to what was
     // established when the innermost block opened.
     printState.m_availableSpace = printState.m_availableSpaceStack.top();
@@ -243,7 +258,7 @@ void TreePrint::TPBreak::debugPrint(std::ostream &os, int ind) const
 
 
 TreePrint::TreePrint()
-  : m_root(0 /*indent*/),
+  : m_root(0 /*indent*/, false /*consistent*/),
     m_sequenceStack()
 {
   m_sequenceStack.push(&m_root);
@@ -294,13 +309,13 @@ TreePrint& TreePrint::operator<< (BreakKind breakKind)
 
 void TreePrint::begin()
 {
-  begin(INDENT_SPACES);
+  begin(INDENT_SPACES, false /*consistentBreaks*/);
 }
 
 
-void TreePrint::begin(int indent)
+void TreePrint::begin(int indent, bool consistentBreaks)
 {
-  TPSequence *seq = new TPSequence(indent);
+  TPSequence *seq = new TPSequence(indent, consistentBreaks);
   append(seq);
   m_sequenceStack.push(seq);
 }
@@ -327,7 +342,7 @@ void TreePrint::print(std::ostream &os, int margin)
 
   // Print.
   PrintState printState(os, margin);
-  m_root.print(printState);
+  m_root.print(printState, false /*forceBreaks*/);
 }
 
 

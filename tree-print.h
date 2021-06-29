@@ -74,7 +74,7 @@ private:     // types
     virtual void scan() = 0;
 
     // Print this node.
-    virtual void print(PrintState &printState) const = 0;
+    virtual void print(PrintState &printState, bool forceBreaks) const = 0;
 
     // Print the tree structure itself.
     virtual void debugPrint(std::ostream &os, int ind) const = 0;
@@ -87,15 +87,20 @@ private:     // types
     // sequence.
     int m_indent;
 
+    // If true, then if we find that the entire sequence cannot fit
+    // onto one line, we force all breaks within it (direct children)
+    // to be newlines.
+    bool m_consistentBreaks;
+
     // Subtrees.
     ASTList<TPNode> m_elements;
 
   public:
-    TPSequence(int indent);
+    TPSequence(int indent, bool consistentBreaks);
     ~TPSequence();
 
     virtual void scan() override;
-    virtual void print(PrintState &printState) const override;
+    virtual void print(PrintState &printState, bool forceBreaks) const override;
     virtual void debugPrint(std::ostream &os, int ind) const override;
   };
 
@@ -110,7 +115,7 @@ private:     // types
     ~TPString();
 
     virtual void scan() override;
-    virtual void print(PrintState &printState) const override;
+    virtual void print(PrintState &printState, bool forceBreaks) const override;
     virtual void debugPrint(std::ostream &os, int ind) const override;
   };
 
@@ -143,7 +148,7 @@ private:     // types
     {}
 
     virtual void scan() override;
-    virtual void print(PrintState &printState) const override;
+    virtual void print(PrintState &printState, bool forceBreaks) const override;
     virtual void debugPrint(std::ostream &os, int ind) const override;
   };
 
@@ -184,11 +189,13 @@ public:      // methods
   TreePrint& operator<< (BreakKind breakKind);
 
   // Begin a sequence with the default amount of indentation used for
-  // lines broken with it.
+  // lines broken with it, and breaks *not* required to be consistent.
   void begin();
 
-  // Begin a sequence with the specified indentation.
-  void begin(int indent);
+  // Begin a sequence with the specified indentation.  If
+  // 'consistentBreaks', then if any break is taken within this
+  // sequence, all are.
+  void begin(int indent, bool consistentBreaks = false);
 
   // End a sequence.
   void end();

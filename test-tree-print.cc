@@ -141,6 +141,43 @@ static void testVariableIndent()
 }
 
 
+static void consistentBreaks1(bool consistentBreaks)
+{
+  TreePrint tp;
+
+  tp.begin(2 /*ind*/, consistentBreaks);
+  tp << "begin" << tp.sp
+     << "x := f(x);" << tp.sp
+     << "y := f(y);" << tp.sp
+     << "z := f(z);" << tp.sp
+     << "w := f(w);" << tp.sp
+     << "end;";
+  tp.end();
+  tp << tp.br;
+
+  printWithRuler(tp, 30);
+}
+
+static void consistentBreaks2(bool consistentBreaks)
+{
+  TreePrint tp;
+
+  tp.begin(7 /*ind*/, consistentBreaks);
+  tp << "locals x," << tp.sp
+     << "y," << tp.sp
+     << "z," << tp.sp
+     << "w," << tp.sp
+     << "a," << tp.sp
+     << "b," << tp.sp
+     << "c," << tp.sp
+     << "d;";
+  tp.end();
+  tp << tp.br;
+
+  printWithRuler(tp, 20);
+}
+
+
 int main()
 {
   test1();
@@ -149,6 +186,10 @@ int main()
   test4();
   testUnclosedSeq();
   testVariableIndent();
+  consistentBreaks1(true);
+  consistentBreaks1(false);
+  consistentBreaks2(true);
+  consistentBreaks2(false);
   return 0;
 }
 

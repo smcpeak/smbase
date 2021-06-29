@@ -1,6 +1,6 @@
 ---- stdout ----
-TPSequence of 2 elements, length=13 ind=0:
-  TPSequence of 3 elements, length=13 ind=2:
+TPSequence of 2 elements, length=13 ind=0 consistent=false:
+  TPSequence of 3 elements, length=13 ind=2 consistent=false:
     TPString: "hello," len=6
     TPBreak: BK_NEWLINE_OR_SPACE len=7
     TPString: "world!" len=6
@@ -58,6 +58,28 @@ hi
 cases 1:...
       2:...
       3:...
+|----------------------------| margin=30
+begin
+  x := f(x);
+  y := f(y);
+  z := f(z);
+  w := f(w);
+  end;
+|----------------------------| margin=30
+begin x := f(x); y := f(y);
+  z := f(z); w := f(w); end;
+|------------------| margin=20
+locals x,
+       y,
+       z,
+       w,
+       a,
+       b,
+       c,
+       d;
+|------------------| margin=20
+locals x, y, z, w,
+       a, b, c, d;
 ---- stderr ----
 ---- exit status ----
 Exit 0
