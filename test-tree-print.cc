@@ -215,6 +215,64 @@ static void simpleCFunction()
 }
 
 
+// Based on elsa/test/pprint/longlines2.c.
+static void complexPrintfCall()
+{
+  TreePrint tp;
+
+  tp << "void f()" << tp.br;
+  tp.begin(2);
+    tp << "{" << tp.br;
+    tp <<   "av_oo_pointer_t __ptr_to_p;" << tp.br;
+
+    tp.begin();
+      tp << "printf(" << tp.optbr
+         <<   "\"**pp=%d pp=%s\\n\"," << tp.sp
+         <<   "*((int *)";
+      tp.begin();
+        tp <<          "av_oo_ptr_check(" << tp.optbr
+           <<            "*((av_oo_pointer_t *)";
+        tp.begin();
+          tp <<                               "av_oo_ptr_check("
+             <<                                 "pp," << tp.sp
+             <<                                 "16)";
+        tp.end();
+        tp <<             ")," << tp.sp
+           <<            "4)";
+      tp.end();
+      tp <<    ")," << tp.sp;
+      tp.beginConsistent();    // for the ?:
+        tp.begin();
+          tp << "av_oo_ptr_cmp_eq(" << tp.optbr
+             <<   "pp," << tp.sp
+             <<   "__ptr_to_p)";
+        tp.end();
+        tp << "?" << tp.sp
+           << "\"&p\" :" << tp.sp
+           << "(";
+        tp.beginConsistent();    // for the ?:
+          tp.begin();
+            tp << "av_oo_ptr_cmp_eq(" << tp.optbr
+               <<   "pp," << tp.sp
+               <<   "__ptr_to_q)";
+          tp.end();
+          tp << "?" << tp.sp
+             << "\"&q\" :" << tp.sp
+             << "\"?\"";
+        tp.end();
+        tp << "))";
+      tp.end();
+    tp.end();
+    tp << ";" << tp.br;
+
+  tp.end();
+  tp << "}" << tp.br;
+
+  printWithRuler(tp, 72);
+  printWithRuler(tp, 40);
+}
+
+
 int main()
 {
   test1();
@@ -229,6 +287,7 @@ int main()
   consistentBreaks2(false);
   unindentLabel();
   simpleCFunction();
+  complexPrintfCall();
   return 0;
 }
 
