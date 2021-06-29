@@ -219,6 +219,9 @@ public:      // methods
   // lines broken with it, and breaks *not* required to be consistent.
   void begin();
 
+  // Begin a sequence with default indentation and consistent breaks.
+  void beginConsistent();
+
   // Begin a sequence with the specified indentation.  If
   // 'consistentBreaks', then if any break is taken within this
   // sequence, all are.

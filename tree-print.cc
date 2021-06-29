@@ -276,6 +276,12 @@ void TreePrint::begin()
 }
 
 
+void TreePrint::beginConsistent()
+{
+  begin(INDENT_SPACES, true /*consistentBreaks*/);
+}
+
+
 void TreePrint::begin(int indent, bool consistentBreaks)
 {
   TPSequence *seq = new TPSequence(indent, consistentBreaks);
