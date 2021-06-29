@@ -121,7 +121,8 @@ private:     // types
     // Newline or nothing depending on available space.
     BK_NEWLINE_OR_NOTHING,
 
-    // Remove one level of indentation from the current line.
+    // Always a newline, followed by one less level of indentation than
+    // usual.
     BK_UNINDENT,
 
     NUM_BREAK_KINDS
@@ -138,11 +139,23 @@ private:     // types
       : m_breakKind(breakKind)
     {}
 
+    bool alwaysTaken() const {
+      return m_breakKind == BK_NEWLINE_ALWAYS ||
+             m_breakKind == BK_UNINDENT;
+    }
+
+    int indentAdjust() const {
+      return m_breakKind == BK_UNINDENT? -INDENT_SPACES : 0;
+    }
+
     virtual void scan() override;
     virtual void debugPrint(std::ostream &os, int ind) const override;
   };
 
 public:      // class data
+  // Default number of spaces per indent level.
+  static int const INDENT_SPACES = 2;
+
   // Short names for the breaks.
   static BreakKind const br    = BK_NEWLINE_ALWAYS;
   static BreakKind const sp    = BK_NEWLINE_OR_SPACE;

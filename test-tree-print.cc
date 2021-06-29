@@ -178,6 +178,29 @@ static void consistentBreaks2(bool consistentBreaks)
 }
 
 
+static void unindentLabel()
+{
+  TreePrint tp;
+
+  tp.begin(0);
+  tp << "int f()" << tp.br;
+  tp.begin(2);
+  tp << "{" << tp.br
+     <<   "int x;" << tp.br
+     <<   "x = 8;" << tp.und
+     << "label:" << tp.br
+     <<   "x++;" << tp.br
+     <<   "goto label;";
+  tp.end();
+
+  tp << tp.br << "}";
+  tp.end();
+  tp << tp.br;
+
+  printWithRuler(tp, 20);
+}
+
+
 int main()
 {
   test1();
@@ -190,6 +213,7 @@ int main()
   consistentBreaks1(false);
   consistentBreaks2(true);
   consistentBreaks2(false);
+  unindentLabel();
   return 0;
 }
 

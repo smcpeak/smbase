@@ -6,12 +6,6 @@
 #include "sm-macros.h"                 // RESTORER
 
 
-enum {
-  // Number of spaces per indent level.
-  INDENT_SPACES = 2,
-};
-
-
 static std::ostream &printIndent(std::ostream &os, int ind)
 {
   while (ind-- > 0) {
@@ -303,11 +297,12 @@ void TreePrint::printSequence(PrintState &printState,
       //
       // Or, break the line if the break itself or its parent says to.
       if (breakNode->m_length > printState.m_availableSpace ||
-          breakNode->m_breakKind == BK_NEWLINE_ALWAYS ||
+          breakNode->alwaysTaken() ||
           forceAllBreaks) {
         // The next line will have available space equal to what was
         // established when this sequence opened.
-        printState.m_availableSpace = subsequentLineAvailableSpace;
+        printState.m_availableSpace =
+          subsequentLineAvailableSpace - breakNode->indentAdjust();
 
         // Add a newline and indent such that the desired available
         // space is in fact what is available.
