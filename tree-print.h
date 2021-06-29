@@ -43,11 +43,37 @@ private:     // types
 
     // Number of characters remaining in the current line before we
     // overrun the margin.
+    //
+    // This *includes* the space that would be used by 'm_pendingIndent'
+    // if 'm_pendingNewline' is true.
     int m_availableSpace;
+
+    // True if we have a newline that we want to print but have not done
+    // so because we want to potentially allow 'm_availableSpace' to be
+    // further adjusted first.
+    bool m_pendingNewline;
+
+    // Number of spaces of indentation for the pending newline.
+    int m_pendingIndent;
 
   public:      // methods
     PrintState(std::ostream &output, int margin);
     ~PrintState();
+
+    // Print a pending newline if there is any.
+    void flushPendingNewline();
+
+    // Emit a newline, making it pending.  When printed, it will be
+    // followed by 'indent' spaces of indentation.
+    void emitNewline(int indent);
+
+    // If there is a pending newline, change the indentation associated
+    // with it by 'adj'.  Otherwise, ignore.
+    void adjustPendingIndentation(int adj);
+
+    // Flush any pending newlines, and if there are any, follow that
+    // with indentation according to 'm_availableSpace'.
+    void prepareToEmitCharacter();
   };
 
   // Abstract base class for nodes in the tree.
@@ -121,8 +147,7 @@ private:     // types
     // Newline or nothing depending on available space.
     BK_NEWLINE_OR_NOTHING,
 
-    // Always a newline, followed by one less level of indentation than
-    // usual.
+    // Remove one level of pending indentation.
     BK_UNINDENT,
 
     NUM_BREAK_KINDS
@@ -140,12 +165,7 @@ private:     // types
     {}
 
     bool alwaysTaken() const {
-      return m_breakKind == BK_NEWLINE_ALWAYS ||
-             m_breakKind == BK_UNINDENT;
-    }
-
-    int indentAdjust() const {
-      return m_breakKind == BK_UNINDENT? -INDENT_SPACES : 0;
+      return m_breakKind == BK_NEWLINE_ALWAYS;
     }
 
     virtual void scan() override;

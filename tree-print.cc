@@ -19,12 +19,46 @@ static std::ostream &printIndent(std::ostream &os, int ind)
 TreePrint::PrintState::PrintState(std::ostream &output, int margin)
   : m_output(output),
     m_margin(margin),
-    m_availableSpace(margin)
+    m_availableSpace(margin),
+    m_pendingNewline(false),
+    m_pendingIndent(0)
 {}
 
 
 TreePrint::PrintState::~PrintState()
 {}
+
+
+void TreePrint::PrintState::flushPendingNewline()
+{
+  if (m_pendingNewline) {
+    m_output << '\n';
+  }
+  m_pendingNewline = false;
+}
+
+void TreePrint::PrintState::emitNewline(int indent)
+{
+  flushPendingNewline();
+  m_pendingNewline = true;
+  m_pendingIndent = indent;
+}
+
+void TreePrint::PrintState::adjustPendingIndentation(int adj)
+{
+  if (m_pendingNewline) {
+    m_pendingIndent += adj;
+    m_availableSpace -= adj;
+  }
+}
+
+void TreePrint::PrintState::prepareToEmitCharacter()
+{
+  if (m_pendingNewline) {
+    flushPendingNewline();
+    printIndent(m_output, m_pendingIndent);
+  }
+}
 
 
 // ----------------------------- TPNode --------------------------------
@@ -298,16 +332,15 @@ void TreePrint::printSequence(PrintState &printState,
       // Or, break the line if the break itself or its parent says to.
       if (breakNode->m_length > printState.m_availableSpace ||
           breakNode->alwaysTaken() ||
-          forceAllBreaks) {
+          forceAllBreaks)
+      {
         // The next line will have available space equal to what was
         // established when this sequence opened.
-        printState.m_availableSpace =
-          subsequentLineAvailableSpace - breakNode->indentAdjust();
+        printState.m_availableSpace = subsequentLineAvailableSpace ;
 
-        // Add a newline and indent such that the desired available
-        // space is in fact what is available.
-        printState.m_output << '\n';
-        printIndent(printState.m_output,
+        // Emit a newline and indentation to achieve the desired amount
+        // of available space.
+        printState.emitNewline(
           printState.m_margin - printState.m_availableSpace);
       }
 
@@ -315,14 +348,21 @@ void TreePrint::printSequence(PrintState &printState,
         // There is enough room for the break character and what follows, so
         // just print the break character.
         if (breakNode->m_breakKind == BK_NEWLINE_OR_SPACE) {
+          printState.prepareToEmitCharacter();
           printState.m_output << ' ';
           printState.m_availableSpace--;
+        }
+
+        else if (breakNode->m_breakKind == BK_UNINDENT) {
+          // Remove some pending indentation.
+          printState.adjustPendingIndentation(-INDENT_SPACES);
         }
       }
     }
 
     else if (TPString const *stringNode =
                dynamic_cast<TPString const *>(node)) {
+      printState.prepareToEmitCharacter();
       printState.m_output << stringNode->m_string;
       printState.m_availableSpace -= stringNode->m_length;
     }
@@ -336,6 +376,13 @@ void TreePrint::printSequence(PrintState &printState,
       xfailure("unknown TPNode type");
     }
   }
+
+  // If the last element was a break, and this sequence added
+  // indentation, remove it from the pending indent before proceeding.
+  //
+  // This allows sequences to end with breaks without forcing lines that
+  // come after to be affected by the indentation within the sequence.
+  printState.adjustPendingIndentation(-seqNode->m_indent);
 }
 
 
@@ -347,6 +394,10 @@ void TreePrint::print(std::ostream &os, int margin)
   // Print.
   PrintState printState(os, margin);
   printSequence(printState, &m_root);
+
+  // If there is a pending newline, emit it, but do not print any
+  // additional indentation.
+  printState.flushPendingNewline();
 }
 
 

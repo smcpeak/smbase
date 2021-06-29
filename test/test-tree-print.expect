@@ -89,6 +89,11 @@ label:
   x++;
   goto label;
 }
+|------------------| margin=20
+int f()
+{
+  return 0;
+}
 ---- stderr ----
 ---- exit status ----
 Exit 0

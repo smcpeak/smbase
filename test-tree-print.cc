@@ -49,7 +49,7 @@ static void test2()
   tp << "var" << tp.sp << "x: integer," << tp.sp << "y: char;";
   tp.end();
 
-  tp << tp.sp;
+  tp << tp.br;
 
   tp.begin();
   tp << "begin" << tp.sp
@@ -151,9 +151,8 @@ static void consistentBreaks1(bool consistentBreaks)
      << "y := f(y);" << tp.sp
      << "z := f(z);" << tp.sp
      << "w := f(w);" << tp.sp
-     << "end;";
+     << "end;" << tp.br;
   tp.end();
-  tp << tp.br;
 
   printWithRuler(tp, 30);
 }
@@ -170,9 +169,8 @@ static void consistentBreaks2(bool consistentBreaks)
      << "a," << tp.sp
      << "b," << tp.sp
      << "c," << tp.sp
-     << "d;";
+     << "d;" << tp.br;
   tp.end();
-  tp << tp.br;
 
   printWithRuler(tp, 20);
 }
@@ -185,18 +183,34 @@ static void unindentLabel()
   tp.begin(0);
   tp << "int f()" << tp.br;
   tp.begin(2);
-  tp << "{" << tp.br
-     <<   "int x;" << tp.br
-     <<   "x = 8;" << tp.und
-     << "label:" << tp.br
-     <<   "x++;" << tp.br
-     <<   "goto label;";
+  tp << "{" << tp.br;
+  tp <<   "int x;" << tp.br
+     <<   "x = 8;" << tp.br;
+  tp << tp.und << "label:" << tp.br;
+  tp <<   "x++;" << tp.br
+     <<   "goto label;" << tp.br;
+  tp.end();
+  tp << "}" << tp.br;
   tp.end();
 
-  tp << tp.br << "}";
-  tp.end();
-  tp << tp.br;
+  printWithRuler(tp, 20);
+}
 
+
+static void simpleCFunction()
+{
+  TreePrint tp;
+
+  tp.begin(0);
+  tp << "int f()" << tp.br;
+  tp.begin(2);
+  tp << "{" << tp.br;
+  tp <<   "return 0;" << tp.br;
+  tp.end();
+  tp << "}" << tp.br;
+  tp.end();
+
+  //debugPrint(tp);
   printWithRuler(tp, 20);
 }
 
@@ -214,6 +228,7 @@ int main()
   consistentBreaks2(true);
   consistentBreaks2(false);
   unindentLabel();
+  simpleCFunction();
   return 0;
 }
 
