@@ -125,6 +125,22 @@ static void testUnclosedSeq()
 }
 
 
+// Sequence with indentation other than 2.
+static void testVariableIndent()
+{
+  TreePrint tp;
+
+  tp.begin(6);
+  tp << "cases 1:..." << tp.br
+     << "2:..." << tp.br
+     << "3:...";
+  tp.end();
+  tp << tp.br;
+
+  printWithRuler(tp, 12);
+}
+
+
 int main()
 {
   test1();
@@ -132,6 +148,7 @@ int main()
   test3();
   test4();
   testUnclosedSeq();
+  testVariableIndent();
   return 0;
 }
 

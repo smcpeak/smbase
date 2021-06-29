@@ -54,6 +54,10 @@ x=3,
 c='x'
 hi
 hi
+|----------| margin=12
+cases 1:...
+      2:...
+      3:...
 ---- stderr ----
 ---- exit status ----
 Exit 0
