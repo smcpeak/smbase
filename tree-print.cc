@@ -292,34 +292,25 @@ TreePrint& TreePrint::operator<< (BreakKind breakKind)
 }
 
 
-TreePrint& TreePrint::operator<< (SequenceCommand sequenceCommand)
+void TreePrint::begin()
 {
-  int indent = 0;
+  begin(INDENT_SPACES);
+}
 
-  switch (sequenceCommand) {
-    default:
-      xfailure("bad sequence command");
 
-    case SC_BEGIN_INDENT:
-      indent = INDENT_SPACES;
-      // fallthrough
+void TreePrint::begin(int indent)
+{
+  TPSequence *seq = new TPSequence(indent);
+  append(seq);
+  m_sequenceStack.push(seq);
+}
 
-    case SC_BEGIN_NO_INDENT: {
-      TPSequence *seq = new TPSequence(indent);
-      append(seq);
-      m_sequenceStack.push(seq);
-      break;
-    }
 
-    case SC_END: {
-      // We cannot close 'm_root'.
-      xassert(m_sequenceStack.size() > 1);
-      m_sequenceStack.pop();
-      break;
-    }
-  }
-
-  return *this;
+void TreePrint::end()
+{
+  // We cannot close 'm_root'.
+  xassert(m_sequenceStack.size() > 1);
+  m_sequenceStack.pop();
 }
 
 

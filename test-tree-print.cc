@@ -30,7 +30,10 @@ static void printWithRuler(TreePrint &tp, int margin)
 static void test1()
 {
   TreePrint tp;
-  tp << tp.seq << "hello," << tp.sp << "world!" << tp.end << tp.br;
+  tp.begin();
+  tp << "hello," << tp.sp << "world!";
+  tp.end();
+  tp << tp.br;
   debugPrint(tp);
   printWithRuler(tp, 20);
   printWithRuler(tp, 10);
@@ -42,18 +45,18 @@ static void test2()
 {
   TreePrint tp;
 
-  tp << tp.seq
-     << "var" << tp.sp << "x: integer," << tp.sp
-                       << "y: char;"
-     << tp.end
-     << tp.sp;
+  tp.begin();
+  tp << "var" << tp.sp << "x: integer," << tp.sp << "y: char;";
+  tp.end();
 
-  tp << tp.seq
-     << "begin" << tp.sp
+  tp << tp.sp;
+
+  tp.begin();
+  tp << "begin" << tp.sp
      << "x := 1;" << tp.sp
-     << "y := 'a';"
-     << tp.end
-     << tp.sp << "end"
+     << "y := 'a';";
+  tp.end();
+  tp << tp.sp << "end"
      << tp.br;
 
   //debugPrint(tp);
@@ -68,19 +71,20 @@ static void test3()
 {
   TreePrint tp;
 
-  tp << tp.seq;
+  tp.begin();
 
-  tp << tp.seq
-     << "f(a," << tp.sp << "b," << tp.sp << "c," << tp.sp << "d)"
-     << tp.end;
+  tp.begin();
+  tp << "f(a," << tp.sp << "b," << tp.sp << "c," << tp.sp << "d)";
+  tp.end();
 
   tp << tp.sp << "+" << tp.sp;
 
-  tp << tp.seq
-     << "g(a," << tp.sp << "b," << tp.sp << "c," << tp.sp << "d)"
-     << tp.end;
+  tp.begin();
+  tp << "g(a," << tp.sp << "b," << tp.sp << "c," << tp.sp << "d)";
+  tp.end();
 
-  tp << tp.end << tp.br;
+  tp.end();
+  tp << tp.br;
 
   //debugPrint(tp);
   printWithRuler(tp, 30);
@@ -108,12 +112,14 @@ static void testUnclosedSeq()
 {
   TreePrint tp;
 
-  tp << tp.seq_noind << "hi" << tp.br;
+  tp.begin(0);
+  tp << "hi" << tp.br;
   xassert(!tp.allSequencesClosed());
   tp.print(cout);
 
   tp.clear();
-  tp << tp.seq_noind << "hi" << tp.br;
+  tp.begin(0);
+  tp << "hi" << tp.br;
   xassert(!tp.allSequencesClosed());
   tp.print(cout);
 }

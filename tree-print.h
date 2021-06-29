@@ -147,32 +147,12 @@ private:     // types
     virtual void debugPrint(std::ostream &os, int ind) const override;
   };
 
-  // Manipulation of the sequence stack.
-  enum SequenceCommand {
-    // Open a new sequence with indentation for subsequent lines.
-    SC_BEGIN_INDENT,
-
-    // Open a new sequence without indentation.
-    SC_BEGIN_NO_INDENT,
-
-    // Close the innermost sequence.  There must be one (other than the
-    // root sequence).
-    SC_END,
-
-    NUM_SEQUENCE_COMMANDS
-  };
-
 public:      // class data
   // Short names for the breaks.
   static BreakKind const br    = BK_NEWLINE_ALWAYS;
   static BreakKind const sp    = BK_NEWLINE_OR_SPACE;
   static BreakKind const optbr = BK_NEWLINE_OR_NOTHING;
   static BreakKind const und   = BK_UNINDENT;
-
-  // Short names for the commands.
-  static SequenceCommand const seq       = SC_BEGIN_INDENT;
-  static SequenceCommand const seq_noind = SC_BEGIN_NO_INDENT;
-  static SequenceCommand const end       = SC_END;
 
 public:      // data
   // Root of tree to print.
@@ -203,11 +183,18 @@ public:      // methods
   // Add a break.
   TreePrint& operator<< (BreakKind breakKind);
 
-  // Begin or end a sequence.
-  TreePrint& operator<< (SequenceCommand sequenceCommand);
+  // Begin a sequence with the default amount of indentation used for
+  // lines broken with it.
+  void begin();
 
-  // True if every sequence opened with SC_BEGIN_XXX has been closed
-  // with SC_END.  The client may want to assert this before printing.
+  // Begin a sequence with the specified indentation.
+  void begin(int indent);
+
+  // End a sequence.
+  void end();
+
+  // True if every sequence opened with 'begin' has been closed with
+  // 'end'.  The client may want to assert this before printing.
   bool allSequencesClosed() const;
 
   // Print the current tree to 'os'.
