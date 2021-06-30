@@ -99,6 +99,20 @@ private:     // types
     virtual void debugPrint(std::ostream &os, int ind) const = 0;
   };
 
+  // A string to print verbatim.
+  class TPString : public TPNode {
+  public:
+    // The string.
+    string m_string;
+
+  public:
+    TPString(string const &s);
+    ~TPString();
+
+    virtual void scan() override;
+    virtual void debugPrint(std::ostream &os, int ind) const override;
+  };
+
   // Interior node containing a sequence of nodes.
   class TPSequence : public TPNode {
   public:      // data
@@ -114,23 +128,21 @@ private:     // types
     // Subtrees.
     ASTList<TPNode> m_elements;
 
+    // The last string node in 'm_elements', or NULL if there is none.
+    // Non-owner.
+    TPString *m_lastString;
+
   public:
     TPSequence(int indent, bool consistentBreaks);
     ~TPSequence();
 
-    virtual void scan() override;
-    virtual void debugPrint(std::ostream &os, int ind) const override;
-  };
+    // Use this to add elements rather than accessing 'm_elements'
+    // directly.
+    void addElement(TPNode *element);
 
-  // A string to print verbatim.
-  class TPString : public TPNode {
-  public:
-    // The string.
-    string m_string;
-
-  public:
-    TPString(string const &s);
-    ~TPString();
+    // True if the last element in 'm_elements' is a TPBreak with
+    // kind BK_NEWLINE_ALWAYS.
+    bool lastElementIsBreak() const;
 
     virtual void scan() override;
     virtual void debugPrint(std::ostream &os, int ind) const override;
@@ -236,6 +248,10 @@ public:      // methods
 
   // True if the last thing inserted was BK_NEWLINE_ALWAYS.
   bool lastElementIsBreak() const;
+
+  // True if the most recently inserted string element in the current
+  // sequence is 'str'.
+  bool lastStringIs(char const *str) const;
 
   // Pretty-print the current tree to 'os'.  The tree structure is not
   // modified, but this method is not marked 'const' because the

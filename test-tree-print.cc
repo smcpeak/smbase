@@ -361,18 +361,31 @@ static void testLastIsBreak()
 {
   TreePrint tp;
   xassert(!tp.lastElementIsBreak());
+  xassert(!tp.lastStringIs("x"));
 
   tp << "a";
   xassert(!tp.lastElementIsBreak());
+  xassert(!tp.lastStringIs("x"));
+  xassert(tp.lastStringIs("a"));
+
+  tp << "b";
+  xassert(!tp.lastStringIs("a"));
+  xassert(tp.lastStringIs("b"));
 
   tp << tp.sp;
   xassert(!tp.lastElementIsBreak());
+  xassert(tp.lastStringIs("b"));
 
   tp << tp.br;
   xassert(tp.lastElementIsBreak());
+  xassert(tp.lastStringIs("b"));
 
   tp.begin();
   xassert(!tp.lastElementIsBreak());
+  xassert(!tp.lastStringIs("b"));
+
+  tp << "b";
+  xassert(tp.lastStringIs("b"));
 }
 
 

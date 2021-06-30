@@ -75,12 +75,39 @@ TreePrint::TPNode::~TPNode()
 TreePrint::TPSequence::TPSequence(int indent, bool consistentBreaks)
   : m_indent(indent),
     m_consistentBreaks(consistentBreaks),
-    m_elements()
+    m_elements(),
+    m_lastString(NULL)
 {}
 
 
 TreePrint::TPSequence::~TPSequence()
 {}
+
+
+void TreePrint::TPSequence::addElement(TPNode *element)
+{
+  m_elements.append(element);
+  if (TPString *stringNode = dynamic_cast<TPString*>(element)) {
+    m_lastString = stringNode;
+  }
+}
+
+
+bool TreePrint::TPSequence::lastElementIsBreak() const
+{
+  if (m_elements.isNotEmpty()) {
+    TPNode const *lastNode = m_elements.lastC();
+    if (TPBreak const *breakNode =
+          dynamic_cast<TPBreak const *>(lastNode)) {
+      if (breakNode->m_breakKind == BK_NEWLINE_ALWAYS) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 
 
 // The 'scan' algorithm described in section 3 of the Oppen paper is
@@ -234,7 +261,7 @@ TreePrint::~TreePrint()
 
 void TreePrint::append(TPNode *node)
 {
-  m_sequenceStack.top()->m_elements.append(node);
+  m_sequenceStack.top()->addElement(node);
 }
 
 
@@ -306,14 +333,15 @@ bool TreePrint::allSequencesClosed() const
 
 bool TreePrint::lastElementIsBreak() const
 {
-  if (m_sequenceStack.top()->m_elements.isNotEmpty()) {
-    TPNode const *lastNode = m_sequenceStack.top()->m_elements.last();
-    if (TPBreak const *breakNode =
-          dynamic_cast<TPBreak const *>(lastNode)) {
-      if (breakNode->m_breakKind == BK_NEWLINE_ALWAYS) {
-        return true;
-      }
-    }
+  return m_sequenceStack.top()->lastElementIsBreak();
+}
+
+
+bool TreePrint::lastStringIs(char const *str) const
+{
+  TPString const *stringNode = m_sequenceStack.top()->m_lastString;
+  if (stringNode && stringNode->m_string == str) {
+    return true;
   }
 
   return false;
