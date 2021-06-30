@@ -332,6 +332,12 @@ void TreePrint::printSequence(PrintState &printState,
     // The break nodes are where all the action takes place.
     if (TPBreak const *breakNode =
           dynamic_cast<TPBreak const *>(node)) {
+      if (breakNode->m_breakKind == BK_UNINDENT) {
+        // Remove some pending indentation.
+        printState.adjustPendingIndentation(-INDENT_SPACES);
+        continue;
+      }
+
       // If there is not enough space for this break to be a space followed
       // by what comes after, break the line.
       //
@@ -357,11 +363,6 @@ void TreePrint::printSequence(PrintState &printState,
           printState.prepareToEmitCharacter();
           printState.m_output << ' ';
           printState.m_availableSpace--;
-        }
-
-        else if (breakNode->m_breakKind == BK_UNINDENT) {
-          // Remove some pending indentation.
-          printState.adjustPendingIndentation(-INDENT_SPACES);
         }
       }
     }

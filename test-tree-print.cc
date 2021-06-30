@@ -3,6 +3,8 @@
 
 #include "tree-print.h"                // module under test
 
+#include "sm-test.h"                   // USUAL_MAIN
+
 
 static void debugPrint(TreePrint &tp)
 {
@@ -273,7 +275,51 @@ static void complexPrintfCall()
 }
 
 
-int main()
+static void arrayInit1(bool consistent)
+{
+  TreePrint tp;
+
+  if (consistent) {
+    tp.beginConsistent();
+  }
+  else {
+    tp.begin();
+  }
+  tp << "int arr[] = {" << tp.br
+     <<   "1," << tp.br
+     <<   "2," << tp.br
+     <<   "3," << tp.br
+     <<   "4"
+     << tp.br << tp.und << "};" << tp.br;
+  tp.end();
+
+  printWithRuler(tp, 20);
+}
+
+
+static void arrayInit2(bool consistent)
+{
+  TreePrint tp;
+
+  if (consistent) {
+    tp.beginConsistent();
+  }
+  else {
+    tp.begin();
+  }
+  tp << "int arr[] = {" << tp.sp
+     <<   "1," << tp.sp
+     <<   "2," << tp.sp
+     <<   "3," << tp.sp
+     <<   "4"
+     << tp.sp << tp.und << "};" << tp.br;
+  tp.end();
+
+  printWithRuler(tp, 20);
+}
+
+
+void entry()
 {
   test1();
   test2();
@@ -288,8 +334,14 @@ int main()
   unindentLabel();
   simpleCFunction();
   complexPrintfCall();
-  return 0;
+  arrayInit1(false);
+  arrayInit1(true);
+  arrayInit2(false);
+  arrayInit2(true);
 }
+
+
+USUAL_MAIN
 
 
 // EOF
