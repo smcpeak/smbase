@@ -304,6 +304,22 @@ bool TreePrint::allSequencesClosed() const
 }
 
 
+bool TreePrint::lastElementIsBreak() const
+{
+  if (m_sequenceStack.top()->m_elements.isNotEmpty()) {
+    TPNode const *lastNode = m_sequenceStack.top()->m_elements.last();
+    if (TPBreak const *breakNode =
+          dynamic_cast<TPBreak const *>(lastNode)) {
+      if (breakNode->m_breakKind == BK_NEWLINE_ALWAYS) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+
 // This method uses 'dynamic_cast' to directly inspect the type of the
 // children rather than a virtual function because the tight
 // communication between the loop and the break nodes, combined with the

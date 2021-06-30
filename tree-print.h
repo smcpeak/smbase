@@ -234,6 +234,9 @@ public:      // methods
   // 'end'.  The client may want to assert this before printing.
   bool allSequencesClosed() const;
 
+  // True if the last thing inserted was BK_NEWLINE_ALWAYS.
+  bool lastElementIsBreak() const;
+
   // Pretty-print the current tree to 'os'.  The tree structure is not
   // modified, but this method is not marked 'const' because the
   // 'm_length' fields in the tree get modified.

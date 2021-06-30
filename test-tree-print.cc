@@ -357,6 +357,25 @@ static void arrayInit3()
 }
 
 
+static void testLastIsBreak()
+{
+  TreePrint tp;
+  xassert(!tp.lastElementIsBreak());
+
+  tp << "a";
+  xassert(!tp.lastElementIsBreak());
+
+  tp << tp.sp;
+  xassert(!tp.lastElementIsBreak());
+
+  tp << tp.br;
+  xassert(tp.lastElementIsBreak());
+
+  tp.begin();
+  xassert(!tp.lastElementIsBreak());
+}
+
+
 void entry()
 {
   test1();
@@ -377,6 +396,7 @@ void entry()
   arrayInit2(false);
   arrayInit2(true);
   arrayInit3();
+  testLastIsBreak();
 }
 
 
