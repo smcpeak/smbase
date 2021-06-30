@@ -71,6 +71,33 @@ TreePrint::TPNode::~TPNode()
 {}
 
 
+// ---------------------------- TPString -------------------------------
+TreePrint::TPString::TPString(string const &s)
+  : m_string(s)
+{
+  m_length = m_string.length();
+}
+
+
+TreePrint::TPString::~TPString()
+{}
+
+
+void TreePrint::TPString::scan()
+{
+  // 'm_length' is set upon construction, and the string cannot be
+  // changed afterward, so we don't need to do anything here.
+}
+
+
+void TreePrint::TPString::debugPrint(std::ostream &os, int ind) const
+{
+  printIndent(os, ind);
+  os << "TPString: \"" << m_string
+     << "\" len=" << m_length << '\n';
+}
+
+
 // --------------------------- TPSequence ------------------------------
 TreePrint::TPSequence::TPSequence(int indent, bool consistentBreaks)
   : m_indent(indent),
@@ -179,33 +206,6 @@ void TreePrint::TPSequence::debugPrint(std::ostream &os, int ind) const
   FOREACH_ASTLIST(TPNode, m_elements, iter) {
     iter.data()->debugPrint(os, ind);
   }
-}
-
-
-// ---------------------------- TPString -------------------------------
-TreePrint::TPString::TPString(string const &s)
-  : m_string(s)
-{
-  m_length = m_string.length();
-}
-
-
-TreePrint::TPString::~TPString()
-{}
-
-
-void TreePrint::TPString::scan()
-{
-  // 'm_length' is set upon construction, and the string cannot be
-  // changed afterward, so we don't need to do anything here.
-}
-
-
-void TreePrint::TPString::debugPrint(std::ostream &os, int ind) const
-{
-  printIndent(os, ind);
-  os << "TPString: \"" << m_string
-     << "\" len=" << m_length << '\n';
 }
 
 
