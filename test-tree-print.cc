@@ -319,6 +319,44 @@ static void arrayInit2(bool consistent)
 }
 
 
+static void arrayInit3()
+{
+  TreePrint tp;
+
+  tp.beginConsistent();
+  tp << "int arr[] = {" << tp.sp;
+
+  tp.begin(0);
+  tp << "1," << tp.sp;
+  tp << "1," << tp.sp;
+  tp << "1," << tp.sp;
+
+  tp.begin();
+  tp << '{' << tp.sp;
+  tp << "1," << tp.sp;
+  tp << "1," << tp.sp;
+  tp << "1" << tp.sp;
+  tp << "},";
+  tp.end();
+  tp << tp.sp;
+
+  tp << "1," << tp.sp;
+  tp << "1," << tp.sp;
+  tp << "1," << tp.sp;
+  tp << "1";
+  tp.end();
+
+  tp << tp.sp << tp.und << "};" << tp.br;
+  tp.end();
+
+  printWithRuler(tp, 50);
+  printWithRuler(tp, 40);
+  printWithRuler(tp, 30);
+  printWithRuler(tp, 20);
+  printWithRuler(tp, 10);
+}
+
+
 void entry()
 {
   test1();
@@ -338,6 +376,7 @@ void entry()
   arrayInit1(true);
   arrayInit2(false);
   arrayInit2(true);
+  arrayInit3();
 }
 
 
