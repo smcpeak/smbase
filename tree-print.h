@@ -204,7 +204,7 @@ private:     // methods
 
 public:      // methods
   TreePrint();
-  ~TreePrint();
+  virtual ~TreePrint();
 
   // Add a string.
   TreePrint& operator<< (char const *str);
@@ -234,10 +234,12 @@ public:      // methods
   // 'end'.  The client may want to assert this before printing.
   bool allSequencesClosed() const;
 
-  // Print the current tree to 'os'.  The tree structure is not
+  // Pretty-print the current tree to 'os'.  The tree structure is not
   // modified, but this method is not marked 'const' because the
-  // 'm_length' fields are computed.
-  void print(std::ostream &os, int targetWidth = 72);
+  // 'm_length' fields in the tree get modified.
+  //
+  // This is virtual in order to allow clients to intercept it.
+  virtual void prettyPrint(std::ostream &os, int targetWidth = 72);
 
   // Clear the tree.
   void clear();

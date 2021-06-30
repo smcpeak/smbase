@@ -393,7 +393,7 @@ void TreePrint::printSequence(PrintState &printState,
 }
 
 
-void TreePrint::print(std::ostream &os, int margin)
+void TreePrint::prettyPrint(std::ostream &os, int margin)
 {
   // Compute lengths.
   m_root.scan();

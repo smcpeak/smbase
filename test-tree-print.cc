@@ -24,7 +24,7 @@ static void printWithRuler(TreePrint &tp, int margin)
   }
   cout << "| margin=" << margin << '\n';
 
-  tp.print(cout, margin);
+  tp.prettyPrint(cout, margin);
 }
 
 
@@ -117,13 +117,13 @@ static void testUnclosedSeq()
   tp.begin(0);
   tp << "hi" << tp.br;
   xassert(!tp.allSequencesClosed());
-  tp.print(cout);
+  tp.prettyPrint(cout);
 
   tp.clear();
   tp.begin(0);
   tp << "hi" << tp.br;
   xassert(!tp.allSequencesClosed());
-  tp.print(cout);
+  tp.prettyPrint(cout);
 }
 
 
