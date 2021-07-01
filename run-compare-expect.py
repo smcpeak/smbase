@@ -149,12 +149,24 @@ def main():
     for diffLine in diff:
       print(diffLine)
 
-    if os.getenv("UPDATE_EXPECT"):
-      print(f"UPDATE_EXPECT is set.  Updating {opts.expect} with the new output.")
+    update = os.getenv("UPDATE_EXPECT")
+    if update == "1":
+      print(f"UPDATE_EXPECT is 1.  Updating {opts.expect} with the new output.")
       writeLinesToFile(actualLines, opts.expect)
 
+    elif update == "prompt":
+      answer = ""
+      while answer != "y" and answer != "n":
+        answer = input("Update expected output (y/n)? ")
+      if answer == "y":
+        print(f"Answer was 'y'.  Updating {opts.expect} with the new output.")
+        writeLinesToFile(actualLines, opts.expect)
+      else:
+        print(f"Answer was 'n'.  Exiting with error.");
+        sys.exit(2)
+
     else:
-      print("Re-run with UPDATE_EXPECT=1 to update.")
+      print("Re-run with UPDATE_EXPECT=1 or UPDATE_EXPECT=prompt to update.")
       sys.exit(2)
 
 
