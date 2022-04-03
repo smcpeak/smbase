@@ -129,6 +129,7 @@ private:     // types
     ASTList<TPNode> m_elements;
 
     // The last string node in 'm_elements', or NULL if there is none.
+    // Also NULL if a TPSequence comes after the last string.
     // Non-owner.
     TPString *m_lastString;
 
@@ -250,7 +251,13 @@ public:      // methods
   bool lastElementIsBreak() const;
 
   // True if the most recently inserted string element in the current
-  // sequence is 'str'.
+  // sequence is 'str', and there has not been a sequence added after
+  // that string.
+  //
+  // TODO: The semantics of this method are ugly.  It's part of a hack
+  // to get newlines in most cases but suppress them after opening
+  // braces.  I need to come up with a more robust, regular way to do
+  // that.
   bool lastStringIs(char const *str) const;
 
   // Pretty-print the current tree to 'os'.  The tree structure is not

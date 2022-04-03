@@ -386,6 +386,11 @@ static void testLastIsBreak()
 
   tp << "b";
   xassert(tp.lastStringIs("b"));
+
+  // Test the provision that the "last string" no longer sees the outer
+  // "b" since a sequence came after it.
+  tp.end();
+  xassert(!tp.lastStringIs("b"));
 }
 
 

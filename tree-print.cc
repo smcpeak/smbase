@@ -117,6 +117,10 @@ void TreePrint::TPSequence::addElement(TPNode *element)
   if (TPString *stringNode = dynamic_cast<TPString*>(element)) {
     m_lastString = stringNode;
   }
+  else if (dynamic_cast<TPSequence*>(element)) {
+    // Appending a sequence discards the "last string".
+    m_lastString = NULL;
+  }
 }
 
 
