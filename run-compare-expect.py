@@ -1,6 +1,17 @@
 #!/usr/bin/env python3
 """
 Run a program and compare its output to what is expected.
+
+Before comparison, the output will first be normalized according to two
+rules:
+
+1. If the string "VOLATILE" appears anywhere, the entire line is
+replaced with "VOLATILE".
+
+2. Within a line, if "0x" is followed by two or more hexadecimal digits,
+then the entire sequence will be replaced by "0xHEXDIGITS" unless the
+digits match "7F+", meaning they denote -1 as a signed twos-complement
+integer (in which case they are not replaced).
 """
 
 import argparse              # argparse
@@ -98,11 +109,20 @@ def hexReplacer(m):
   else:
     return "0xHEXDIGITS"
 
+
+# If "VOLATILE" appears on a line, treat the entire line as volatile
+# in the sense of changing from run to run, and hence should not be
+# included in the normalized output.
+volatileRE = re.compile(r"VOLATILE")
+
 def normalizeOutput(line):
   """Remove strings that vary from run to run so the result is suitable
   as expected test output."""
 
-  line = hexDigitsRE.sub(hexReplacer, line)
+  if volatileRE.search(line):
+    return "VOLATILE"
+  else:
+    line = hexDigitsRE.sub(hexReplacer, line)
   return line
 
 
