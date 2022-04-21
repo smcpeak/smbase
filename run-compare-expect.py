@@ -126,6 +126,11 @@ def normalizeOutput(line):
   return line
 
 
+def readLinesNoNL(file):
+  """Like file.readlines(), but strip newlines."""
+  return [line.rstrip("\n") for line in file.readlines()]
+
+
 def main():
   # Parse command line.
   parser = argparse.ArgumentParser()
@@ -133,6 +138,8 @@ def main():
     help="If provided, write the actual output to this file.")
   parser.add_argument("--expect", required=True,
     help="Expected output.")
+  parser.add_argument("--argfile",
+    help="Run the program once per line in ARGFILE.")
   parser.add_argument("program",
     help="Program to run.")
   parser.add_argument("progArgs", nargs=argparse.REMAINDER,
@@ -141,19 +148,37 @@ def main():
 
   # Read the expected output.
   with open(opts.expect) as f:
-    expectLines = [line.rstrip("\n") for line in f.readlines()]
+    expectLines = readLinesNoNL(f)
 
-  # Run the program, capturing output.
-  proc = subprocess.run([opts.program]+opts.progArgs, capture_output=True);
+  # List of extra argument lines.
+  extraArgumentLines = [""]
+  if opts.argfile:
+    with open(opts.argfile) as f:
+      extraArgumentLines = readLinesNoNL(f)
 
-  # Combine the stdout, stderr, and exit code into one list.
+  # List of accumulated output lines.
   actualLines = []
-  actualLines += ["---- stdout ----"]
-  actualLines += splitLines(proc.stdout)
-  actualLines += ["---- stderr ----"]
-  actualLines += splitLines(proc.stderr)
-  actualLines += ["---- exit status ----"]
-  actualLines += [f"Exit {proc.returncode}"]
+
+  # Run the program, possibly more than once.
+  for extraArgumentLine in extraArgumentLines:
+    # Form the command to run, splitting extra arguments at whitespace.
+    command = [opts.program] + opts.progArgs + extraArgumentLine.split()
+
+    # If we are going to run the program multiple times, print a header
+    # saying which one this is.
+    if opts.argfile:
+      actualLines += [f"======== {' '.join(command)} ========"]
+
+    # Run the program, capturing output.
+    proc = subprocess.run(command, capture_output=True);
+
+    # Combine the stdout, stderr, and exit code into one list.
+    actualLines += ["---- stdout ----"]
+    actualLines += splitLines(proc.stdout)
+    actualLines += ["---- stderr ----"]
+    actualLines += splitLines(proc.stderr)
+    actualLines += ["---- exit status ----"]
+    actualLines += [f"Exit {proc.returncode}"]
 
   # Normalize it.
   actualLines = [normalizeOutput(line) for line in actualLines]
