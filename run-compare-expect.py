@@ -199,11 +199,15 @@ def main():
       print(f"UPDATE_EXPECT is 1.  Updating {opts.expect} with the new output.")
       writeLinesToFile(actualLines, opts.expect)
 
-    elif update == "prompt":
-      answer = ""
-      while answer != "y" and answer != "n":
-        answer = input("Update expected output (y/n)? ")
-      if answer == "y":
+    elif update == "prompt" or update == "promptyes":
+      answer = "x"
+      while (answer != "y" and answer != "n" and
+             not (answer == "" and update == "promptyes")):
+        if update == "prompt":
+          answer = input("Update expected output (y/n)? ")
+        else:
+          answer = input("Update expected output (Y/n)? ")
+      if answer != "n":
         print(f"Answer was 'y'.  Updating {opts.expect} with the new output.")
         writeLinesToFile(actualLines, opts.expect)
       else:
@@ -211,7 +215,7 @@ def main():
         sys.exit(2)
 
     else:
-      print("Re-run with UPDATE_EXPECT=1 or UPDATE_EXPECT=prompt to update.")
+      print("Re-run with UPDATE_EXPECT=1 or UPDATE_EXPECT=prompt[yes] to update.")
       sys.exit(2)
 
 
