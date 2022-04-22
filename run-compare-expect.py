@@ -194,10 +194,16 @@ def main():
     for diffLine in diff:
       print(diffLine)
 
+    makeflags = os.getenv("MAKEFLAGS")
+
     update = os.getenv("UPDATE_EXPECT")
     if update == "1":
       print(f"UPDATE_EXPECT is 1.  Updating {opts.expect} with the new output.")
       writeLinesToFile(actualLines, opts.expect)
+
+    elif makeflags != None and "-j" in makeflags:
+      print("Since MAKEFLAGS contains '-j', I will not prompt to update.")
+      sys.exit(2)
 
     elif update == "prompt" or update == "promptyes":
       answer = "x"
