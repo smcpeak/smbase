@@ -98,8 +98,10 @@ def writeLinesToFile(lines, fname):
 # Hexadecimal numbers with at least two digits.
 hexDigitsRE = re.compile(r"0x[0-9a-fA-F][0-9a-fA-F]+")
 
-# Particular hex sequences that should not be replaced.
-nonReplaceHexRE = re.compile(r"0x7F+");
+# Particular hex sequences that should not be replaced.  The ending '$'
+# is important because the *entire* sequence of digits needs to match,
+# not just a prefix.
+nonReplaceHexRE = re.compile(r"0x7F+$");
 
 def hexReplacer(m):
   """What to replace a match of 'hexDigitsRE' with."""
