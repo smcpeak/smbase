@@ -10,9 +10,9 @@
 
 // Return the set of keys in 'm'.
 template <class K, class V>
-std::set<V> keySet(std::map<K,V> const &m)
+std::set<K> keySet(std::map<K,V> const &m)
 {
-  std::set<V> ret;
+  std::set<K> ret;
   for (auto it = m.begin(); it != m.end(); ++it) {
     ret.insert((*it).first);
   }
