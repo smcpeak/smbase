@@ -1,8 +1,11 @@
 // vector-utils.h
 // Utilities for std::vector.
 
-#ifndef INTERP_VECTOR_UTILS_H
-#define INTERP_VECTOR_UTILS_H
+#ifndef SMBASE_VECTOR_UTILS_H
+#define SMBASE_VECTOR_UTILS_H
+
+#include "dev-warning.h"               // DEV_WARNING
+#include "sm-macros.h"                 // NO_OBJECT_COPIES
 
 #include <vector>                      // std::vector
 
@@ -34,4 +37,46 @@ T accumulateWith(std::vector<T> const &vec, T const &separator)
 }
 
 
-#endif // INTERP_VECTOR_UTILS_H
+// Push an element onto a vector in the constructor, then pop an element
+// (prsumably the same one, but that is not checked) in the destructor.
+template <class T>
+class VectorPushPop {
+  NO_OBJECT_COPIES(VectorPushPop);
+
+public:      // data
+  // The vector to push onto and pop off of.
+  std::vector<T> &m_vector;
+
+public:      // methods
+  VectorPushPop(std::vector<T> &vector, T const &element)
+    : m_vector(vector)
+  {
+    m_vector.push_back(element);
+  }
+
+  ~VectorPushPop()
+  {
+    if (m_vector.empty()) {
+      DEV_WARNING("vector to pop is empty");
+    }
+    else {
+      m_vector.pop_back();
+    }
+  }
+};
+
+
+// Return the back element of 'vec', or NULL if it is empty.
+template <class T>
+T *back_or_null(std::vector<T*> const &vec)
+{
+  if (vec.empty()) {
+    return NULL;
+  }
+  else {
+    return vec.back();
+  }
+}
+
+
+#endif // SMBASE_VECTOR_UTILS_H
