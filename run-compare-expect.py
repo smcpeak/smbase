@@ -133,6 +133,19 @@ def readLinesNoNL(file):
   return [line.rstrip("\n") for line in file.readlines()]
 
 
+def normalizeWSLine(line):
+  """Trim whitespace from both ends of 'line', and replace all
+  occurrences of consecutive whitespace elsewhere with a single
+  space."""
+  return re.sub(r'\s+', ' ', line).strip()
+
+
+def normalizeWSLines(lines):
+  """Given a list of lines, return a list where every element has had
+  whitespace trimmed from both ends and normalized elsewhere."""
+  return [normalizeWSLine(line) for line in lines]
+
+
 def main():
   # Parse command line.
   parser = argparse.ArgumentParser()
@@ -209,15 +222,34 @@ def main():
 
     elif update == "prompt" or update == "promptyes":
       answer = "x"
-      while (answer != "y" and answer != "n" and
-             not (answer == "" and update == "promptyes")):
+      while (not (answer == "y" or
+                  answer == "n" or
+                  (answer == "" and update == "promptyes"))):
+        if answer == "b":
+          print("Answer was 'b'.  Repeating diff with whitespace normalized.")
+
+          # Ideally, difflib would have an option to ignore whitespace
+          # differences, but it does not, so we normalize it first.
+          normExpectLines = normalizeWSLines(expectLines)
+          normActualLines = normalizeWSLines(actualLines)
+          diff = list(difflib.unified_diff(normExpectLines, normActualLines,
+            fromfile="expect", tofile="actual", lineterm=""))
+          if len(diff) > 0:
+            print("Differences with normalized whitespace:")
+            for diffLine in diff:
+              print(diffLine)
+          else:
+            print("There are no differences after normalizing whitespace.")
+
         if update == "prompt":
-          answer = input("Update expected output (y/n)? ")
+          answer = input("Update expected output (y/n/b)? ")
         else:
-          answer = input("Update expected output (Y/n)? ")
+          answer = input("Update expected output (Y/n/b)? ")
+
       if answer != "n":
         print(f"Answer was 'y'.  Updating {opts.expect} with the new output.")
         writeLinesToFile(actualLines, opts.expect)
+
       else:
         print(f"Answer was 'n'.  Exiting with error.");
         sys.exit(2)
