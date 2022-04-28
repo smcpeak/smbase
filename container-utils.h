@@ -21,4 +21,11 @@ bool contains(CONTAINER const &container, VALUE const &value)
        ++iterator)
 
 
+// Iterate in reverse order for a container that supports that.
+#define CONTAINER_REVERSE_FOREACH(container, iterator) \
+  for (auto iterator = (container).rbegin();           \
+       iterator != (container).rend();                 \
+       ++iterator)
+
+
 #endif // SMBASE_CONTAINER_UTILS_H
