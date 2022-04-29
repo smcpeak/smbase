@@ -13,6 +13,9 @@ template <class T> class ASTListMutator;
 
 // a list which owns the items in it (will deallocate them), and
 // has constant-time access to the last element
+//
+// List elements are not allowed to be NULL since that would conflict
+// with the intended usage as an owner list of AST nodes.
 template <class T>
 class ASTList {
 private:
@@ -52,10 +55,10 @@ public:
   T const *lastC() const                { return (T const*)list.last(); }
 
   // insertion
-  void prepend(T *newitem)              { list.prepend(newitem); }
-  void append(T *newitem)               { list.append(newitem); }
+  void prepend(T *newitem)              { xassert(newitem); list.prepend(newitem); }
+  void append(T *newitem)               { xassert(newitem); list.append(newitem); }
   void appendAll(ASTList<T> &tail)      { list.appendAll(tail.list); }
-  void insertAt(T *newitem, int index)  { list.insertAt(newitem, index); }
+  void insertAt(T *newitem, int index)  { xassert(newitem); list.insertAt(newitem, index); }
   void concat(ASTList<T> &tail)         { list.concat(tail.list); }
 
   // removal
