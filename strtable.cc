@@ -6,7 +6,7 @@
 #include "xassert.h"     // xassert
 #include "flatten.h"     // Flatten
 
-#include <string.h>      // strlen
+#include <string.h>      // strlen, strcmp
 
 
 StringTable *flattenStrTable = NULL;
@@ -123,3 +123,12 @@ void StringTable::xfer(Flatten &flat, StringRef &ref)
     flat.xferCharString(const_cast<char*&>(ref));
   }
 }
+
+
+bool stringRefLess(StringRef a, StringRef b)
+{
+  return strcmp(a,b) < 0;
+}
+
+
+// EOF

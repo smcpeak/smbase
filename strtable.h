@@ -110,4 +110,10 @@ public:     // funcs
 };
 
 
+// Return true if 'a < b' in string comparison order.  This function is
+// intended to be suitable for use as a comparison function object for
+// things like std::sort.
+bool stringRefLess(StringRef a, StringRef b);
+
+
 #endif // STRTABLE_H
