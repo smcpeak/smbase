@@ -4,12 +4,24 @@
 #ifndef SMBASE_CONTAINER_UTILS_H
 #define SMBASE_CONTAINER_UTILS_H
 
+#include "xassert.h"                   // xassert
+
 
 // Return true if 'container' contains 'value'.
 template <class CONTAINER, class VALUE>
 bool contains(CONTAINER const &container, VALUE const &value)
 {
   return container.find(value) != container.end();
+}
+
+
+// Insert 'value' into 'container', insisting that it not already be
+// there.
+template <class CONTAINER, class VALUE>
+void insertUnique(CONTAINER &container, VALUE const &value)
+{
+  auto it = container.insert(value);
+  xassert(it.second);
 }
 
 
