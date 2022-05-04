@@ -20,7 +20,6 @@ std::set<K> keySet(std::map<K,V> const &m)
 }
 
 
-
 // Return the set of values in 'm'.
 template <class K, class V>
 std::set<V> rangeSet(std::map<K,V> const &m)
@@ -30,6 +29,21 @@ std::set<V> rangeSet(std::map<K,V> const &m)
     ret.insert((*it).second);
   }
   return ret;
+}
+
+
+// Look up 'k' in 'm'.  If found, return its value.  Otherwise return
+// 'V(0)', which for a pointer type is NULL.
+template <class K, class V>
+V atOrNull(std::map<K,V> const &m, K const &k)
+{
+  auto it = m.find(k);
+  if (it != m.end()) {
+    return (*it).second;
+  }
+  else {
+    return V(0);
+  }
 }
 
 
