@@ -4,7 +4,9 @@
 #ifndef SMBASE_VECTOR_UTILS_H
 #define SMBASE_VECTOR_UTILS_H
 
+#include "container-utils.h"           // CONTAINER_FOREACH
 #include "dev-warning.h"               // DEV_WARNING
+#include "xassert.h"                   // xfailure
 #include "sm-macros.h"                 // NO_OBJECT_COPIES
 
 #include <vector>                      // std::vector
@@ -66,16 +68,54 @@ public:      // methods
 };
 
 
-// Return the back element of 'vec', or NULL if it is empty.
+// Return the back element of 'vec', or 'value' if it is empty.
 template <class T>
-T *back_or_null(std::vector<T*> const &vec)
+T back_or_value(std::vector<T> const &vec, T const &value)
 {
   if (vec.empty()) {
-    return NULL;
+    return value;
   }
   else {
     return vec.back();
   }
+}
+
+
+// Return the back element of 'vec', or NULL if it is empty.
+template <class T>
+T *back_or_null(std::vector<T*> const &vec)
+{
+  return back_or_value(vec, (T*)NULL);
+}
+
+
+// Pop the last element of 'vec', requiring it to equal 'value'.
+template <class T>
+void pop_check(std::vector<T> &vec, T const &value)
+{
+  if (vec.empty()) {
+    xfailure("Cannot pop empty vector.");
+  }
+  else if (!( vec.back() == value )) {
+    xfailure("Value does not equal vector back.");
+  }
+  else {
+    vec.pop_back();
+  }
+}
+
+
+// Return true if any element in 'vec' compares equal to 'value' using
+// linear search.
+template <class T>
+bool vec_contains(std::vector<T> const &vec, T const &value)
+{
+  CONTAINER_FOREACH(vec, it) {
+    if (*it == value) {
+      return true;
+    }
+  }
+  return false;
 }
 
 
