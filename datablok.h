@@ -56,7 +56,7 @@ public:       // funcs
   // is initially set to NULL
   explicit DataBlock(size_t allocatedSize = 0);
 
-  // make a copy of 'srcString' data, which is null-terminated
+  // Make a copy of 'srcString' using 'setFromString()'.
   explicit DataBlock(char const *srcString);
 
   // make a copy of 'srcData', which is 'dataLen' bytes long
@@ -128,7 +128,10 @@ public:       // funcs
   // an exception if there isn't already enough allocated space
   void growDataLen(ptrdiff_t changeAmount);
 
+  // Set the data to 'srcString', *including* its NUL terminator.  The
+  // resulting block has length of 'strlen(srcString)+1'.
   void setFromString(char const *srcString);
+
   void setFromBlock(unsigned char const *srcData, size_t dataLen);
   void setFromBlock(char const *srcData, size_t dataLen)
     { setFromBlock((unsigned char const*)srcData, dataLen); }
