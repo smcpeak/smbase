@@ -47,5 +47,11 @@ public:      // funcs
   static CheckObjectCount checkCount_##className(#className,    \
     className::s_objectCount) /* user ; */
 
+// Variant for use when 'className' is a member of another class.
+#define QUALIFIER_CHECK_OBJECT_COUNT(qualifier, className)      \
+  static CheckObjectCount checkCount_##className(               \
+    #qualifier "::" #className,                                 \
+    qualifier::className::s_objectCount) /* user ; */
+
 
 #endif // OBJCOUNT_H
