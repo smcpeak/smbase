@@ -39,6 +39,27 @@ T accumulateWith(std::vector<T> const &vec, T const &separator)
 }
 
 
+// Like above, but apply 'op' to each element first.
+template <class A, class B, class MapOperation>
+B accumulateWithMap(std::vector<A> const &vec, MapOperation op,
+                    B const &separator)
+{
+  if (vec.empty()) {
+    return B();
+  }
+
+  auto it = vec.begin();
+  B ret(op(*it));
+  ++it;
+  for (; it != vec.end(); ++it) {
+    ret += separator;
+    ret += op(*it);
+  }
+
+  return ret;
+}
+
+
 // Push an element onto a vector in the constructor, then pop an element
 // (prsumably the same one, but that is not checked) in the destructor.
 template <class T>

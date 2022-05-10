@@ -10,24 +10,40 @@
 #include "datablok.h"                  // test_datablok
 #include "overflow.h"                  // test_overflow
 #include "parsestring.h"               // test_parsestring
-#include "sm-test.h"                   // USUAL_TEST_MAIN
+#include "sm-test.h"                   // ARGS_TEST_MAIN
+#include "str.h"                       // streq
 
 void test_dict();                      // test-dict.cc
+void test_gcc_options();               // gcc-options-test.cc
 void test_vector_utils();              // test-vector-utils.cc
 
 
-static void entry()
+static void entry(int argc, char **argv)
 {
-  test_datablok();
-  test_dict();
-  test_overflow();
-  test_parsestring();
-  test_vector_utils();
+  char const *testName = NULL;
+  if (argc >= 2) {
+    testName = argv[1];
+  }
+
+  #define RUN_TEST(name)                                \
+    if (testName == NULL || streq(testName, #name)) {   \
+      std::cout << "---- " #name " ----" << std::endl;  \
+      test_##name();                                    \
+    }
+
+  RUN_TEST(datablok);
+  RUN_TEST(dict);
+  RUN_TEST(gcc_options);
+  RUN_TEST(overflow);
+  RUN_TEST(parsestring);
+  RUN_TEST(vector_utils);
+
+  #undef RUN_TEST
 
   cout << "unit tests PASSED" << endl;
 }
 
 
-USUAL_TEST_MAIN
+ARGS_TEST_MAIN
 
 // EOF

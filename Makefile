@@ -229,6 +229,7 @@ OBJS += datetime.o
 OBJS += dev-warning.o
 OBJS += exc.o
 OBJS += flatten.o
+OBJS += gcc-options.o
 OBJS += gprintf.o
 OBJS += growbuf.o
 OBJS += hashline.o
@@ -453,6 +454,7 @@ tarray2d.exe: tarray2d.cc array2d.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_TARRAY2D $(LDFLAGS) tarray2d.cc $(LIBS)
 
 UNIT_TEST_OBJS :=
+UNIT_TEST_OBJS += gcc-options-test.o
 UNIT_TEST_OBJS += test-dict.o
 UNIT_TEST_OBJS += test-datablok.o
 UNIT_TEST_OBJS += test-overflow.o
