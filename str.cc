@@ -103,6 +103,13 @@ string string::substring(int startIndex, int len) const
 }
 
 
+string::string(std::string const &src)
+  : s(emptyString)
+{
+  dup(src.c_str());
+}
+
+
 string &string::setlength(int length)
 {
   kill();

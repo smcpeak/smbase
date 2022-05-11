@@ -18,6 +18,11 @@
 #include <stdarg.h>      // va_list
 #include <string.h>      // strcmp, etc.
 
+// I'm beginning the process of finally transitioning away from my
+// custom 'string' class.  But first I need some adapters, so I need
+// to see std::string here.
+#include <string>        // std::string
+
 class Flatten;           // flatten.h
 
 // certain unfortunate implementation decisions by some compilers
@@ -108,6 +113,12 @@ public:	       // funcs
   #else
     char const *c_str() const { return s; }
   #endif
+
+  // Let's try letting my string implicitly convert to std::string.
+  operator std::string () const { return std::string(c_str()); }
+
+  // And vice-versa.
+  string(std::string const &s);
 
   // assignment
   string& operator=(string const &src)
@@ -314,6 +325,9 @@ public:
   #ifndef LACKS_BOOL
     stringBuilder& operator << (bool b) { return operator<<((long)b); }
   #endif // LACKS_BOOL
+
+  stringBuilder& operator << (std::string const &text)
+    { return operator+=(text.c_str()); }
 
   // useful in places where long << expressions make it hard to
   // know when arguments will be evaluated, but order does matter
