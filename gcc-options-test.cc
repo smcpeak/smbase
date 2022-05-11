@@ -3,6 +3,7 @@
 
 #include "gcc-options.h"               // module under test
 
+#include "sm-test.h"                   // EXPECT_EQ
 #include "vector-utils.h"              // accumulateWith[Map]
 #include "xassert.h"                   // xassert
 
@@ -11,9 +12,8 @@
 
 static void testEmpty()
 {
-  std::vector<std::string> opts;
-  GCCOptions gccOptions(opts);
-  xassert(opts.empty());
+  GCCOptions gccOptions;
+  xassert(gccOptions.empty());
 }
 
 
@@ -22,7 +22,7 @@ static void testOne(
   std::vector<GCCOptions::Option> const &expect)
 {
   GCCOptions gccOptions(args);
-  std::vector<GCCOptions::Option> const &actual = gccOptions.m_options;
+  std::vector<GCCOptions::Option> const &actual = gccOptions.getOptions();
 
   std::string sep(" ");
 
@@ -36,9 +36,7 @@ static void testOne(
 
   // Rebuild the word sequence and check it is the same.
   std::vector<std::string> reconstructed;
-  for (auto opt : gccOptions.m_options) {
-    opt.appendWords(reconstructed);
-  }
+  gccOptions.getCommandWords(reconstructed);
 
   if (reconstructed != args) {
     std::cout << "args         : " << accumulateWith(args, sep) << '\n';
@@ -47,7 +45,8 @@ static void testOne(
   }
 }
 
-static void test1()
+
+static void testParse()
 {
   // Make it a little easier to name the enumerators.
   #define SEP(name) GCCOptions::SEP_##name
@@ -72,7 +71,7 @@ static void test1()
     std::vector<std::string> m_input;
     std::vector<GCCOptions::Option> m_expect;
   };
-  InputAndResult iars[] = {
+  InputAndResult const iars[] = {
     // A few preliminaries.
     {
       { "-c" },
@@ -280,10 +279,149 @@ static void test1()
   }
 }
 
+
+static void testOutputMode()
+{
+  #define OM(name) GCCOptions::OM_##name
+
+  struct OMTest {
+    std::vector<std::string> m_words;
+    GCCOptions::OutputMode m_expect;
+  }
+  const tests[] = {
+    { { },                             OM(EXECUTABLE) },
+    { { "hello.c" },                   OM(EXECUTABLE) },
+    { { "-c" },                        OM(OBJECT_CODE) },
+    { { "-c", "-c" },                  OM(OBJECT_CODE) },
+    { { "-E" },                        OM(PREPROCESSED) },
+    { { "-S" },                        OM(ASSEMBLY) },
+    { { "-c", "-E" },                  OM(PREPROCESSED) },
+    { { "-E", "-c" },                  OM(PREPROCESSED) },
+    { { "-c", "-S" },                  OM(ASSEMBLY) },
+    { { "-S", "-c" },                  OM(ASSEMBLY) },
+    { { "-E", "-S" },                  OM(PREPROCESSED) },
+    { { "-S", "-E" },                  OM(PREPROCESSED) },
+    { { "-E", "-S", "-c" },            OM(PREPROCESSED) },
+    { { "-c", "-S", "-E" },            OM(PREPROCESSED) },
+    { { "-c", "-S", "-E", "-c" },      OM(PREPROCESSED) },
+  };
+
+  for (OMTest const &t : tests) {
+    GCCOptions opts(t.m_words);
+    GCCOptions::OutputMode actual = opts.outputMode();
+    xassert(actual == t.m_expect);
+  }
+
+  #undef OM
+}
+
+
+static void testLanguageForFile()
+{
+  static struct LangTest {
+    char const *m_fname;
+    char const *m_expect;
+  }
+  const tests[] = {
+    { "hello.c",             "c" },
+    { "hello.cc",            "c++" },
+    { "hello.C",             "c++" },
+    { "gorf.f",              "f77" },
+    { "foo.bar.tcc",         "c++-header" },
+    { ".....c++",            "c++" },
+    { "",                    "" },
+    { "hello.c.",            "" },
+    { "hello.o",             "" },
+  };
+
+  for (LangTest const &lt : tests) {
+    std::string actual = gccLanguageForFile(lt.m_fname, "" /*xLang*/);
+    EXPECT_EQ(actual, std::string(lt.m_expect));
+  }
+
+  std::string actual = gccLanguageForFile("f.c", "c++");
+  xassert(actual == "c++");
+}
+
+
+static void testLangInCommand()
+{
+  struct LICTest {
+    // Sequence of GCC command line words.
+    std::vector<std::string> m_words;
+
+    // Sequence of "-x" settings in effect after parsing the
+    // corresponding argument word.
+    std::vector<char const *> m_expect;
+  }
+  const tests[] = {
+    {
+      { "hello.c" },
+      { "" }
+    },
+    {
+      { "hello.c", "foo.o" },
+      { "", "" }
+    },
+    {
+      { "hello.c", "-xc", "hello.o" },
+      { "", "c", "c" }
+    },
+    {
+      { "hello.c", "-xc", "hello.o", "-xc++", "f.c" },
+      { "", "c", "c", "c++", "c++" }
+    },
+    {
+      { "hello.c", "-xc", "hello.o", "-xnone", "hello.o" },
+      { "", "c", "c", "", "" }
+    },
+  };
+
+  for (LICTest const &t : tests) {
+    GCCOptions opts(t.m_words);
+    for (GCCOptions::Iter iter(opts); iter.hasMore(); iter.adv()) {
+      std::string actual = iter.xLang();
+      char const *expect = t.m_expect.at(iter.index());
+      xassert(actual == expect);
+    }
+  }
+}
+
+
+static void testSpecifiesGCCOutputMode()
+{
+  static struct {
+    char const *m_name;
+    bool m_expect;
+  } const tests[] = {
+    { "-c",        true },
+    { "-E",        true },
+    { "-S",        true },
+    { "-f",        false },
+    { "",          false },
+    { "-f-c",      false },
+  };
+
+  for (auto t : tests) {
+    bool actual = specifiesGCCOutputMode(t.m_name);
+    xassert(actual == t.m_expect);
+  }
+}
+
+
+
 void test_gcc_options()
 {
+  // Defined in gcc-options.cc.
+  gcc_options_check_tables();
+
   testEmpty();
-  test1();
+  testParse();
+  testOutputMode();
+  testLanguageForFile();
+  testLangInCommand();
+  testSpecifiesGCCOutputMode();
 }
+
 
 // EOF

@@ -3,8 +3,10 @@
 
 #include "gcc-options.h"               // this module
 
+#include "binary-lookup.h"             // binary_lookup
 #include "container-utils.h"           // insertUnique
-#include "sm-macros.h"                 // EMEMB
+#include "sm-macros.h"                 // EMEMB, DEFINE_ENUMERATION_TO_STRING
+#include "strcmp-compare.h"            // StrcmpCompare, etc.
 #include "strutil.h"                   // prefixEquals
 #include "xassert.h"                   // xassert
 
@@ -12,7 +14,7 @@
 #include <map>                         // std::map
 #include <sstream>                     // std::ostringstream
 
-#include <string.h>                    // strcmp
+#include <string.h>                    // strrchr
 
 
 // ----------------------- Option categories ---------------------------
@@ -194,30 +196,23 @@ std::string GCCOptions::WordIterator::nextAdv()
 
 
 // --------------------------- Separator -------------------------------
-char const *toString(GCCOptions::Separator separator)
-{
-  char const * const names[] = {
+DEFINE_ENUMERATION_TO_STRING(
+  GCCOptions::Separator,
+  GCCOptions::NUM_SEPARATORS,
+  (
     "SEP_NONE",
     "SEP_EMPTY",
     "SEP_SPACE",
     "SEP_EQUALS",
-  };
-
-  STATIC_ASSERT(TABLESIZE(names) == GCCOptions::NUM_SEPARATORS);
-  if ((unsigned)separator < GCCOptions::NUM_SEPARATORS) {
-    return names[separator];
-  }
-  else {
-    return "(invalid separator code)";
-  }
-}
-
+  )
+)
 
 
 // -------------------------- SyntaxError ------------------------------
-char const *toString(GCCOptions::SyntaxError syntaxError)
-{
-  char const * const names[] = {
+DEFINE_ENUMERATION_TO_STRING(
+  GCCOptions::SyntaxError,
+  GCCOptions::NUM_SYNTAX_ERRORS,
+  (
     "SYN_NONE",
     "SYN_ABRUPT_END",
     "SYN_UNRECOGNIZED",
@@ -226,17 +221,21 @@ char const *toString(GCCOptions::SyntaxError syntaxError)
     "SYN_MISSING_EQUALS",
     "SYN_MISSING_ARGUMENT",
     "SYN_INVALID_EQUALS",
-  };
+  )
+)
 
-  STATIC_ASSERT(TABLESIZE(names) == GCCOptions::NUM_SYNTAX_ERRORS);
-  if ((unsigned)syntaxError < GCCOptions::NUM_SYNTAX_ERRORS) {
-    return names[syntaxError];
-  }
-  else {
-    return "(invalid syntax error code)";
-  }
-}
 
+// --------------------------- OutputMode ------------------------------
+DEFINE_ENUMERATION_TO_STRING(
+  GCCOptions::OutputMode,
+  GCCOptions::NUM_OUTPUT_MODES,
+  (
+    "OM_PREPROCESSED",
+    "OM_ASSEMBLY",
+    "OM_OBJECT_CODE",
+    "OM_EXECUTABLE",
+  )
+)
 
 
 // ----------------------------- Option --------------------------------
@@ -262,7 +261,7 @@ bool GCCOptions::Option::operator== (Option const &obj) const
 }
 
 
-void GCCOptions::Option::appendWords(std::vector<std::string> &dest)
+void GCCOptions::Option::appendWords(std::vector<std::string> &dest) const
 {
   switch (m_separator) {
     default:
@@ -314,23 +313,125 @@ std::string GCCOptions::Option::toString() const
 }
 
 
-// --------------------------- GCCOptions ------------------------------
-static bool strcmpRevCompare(char const *a, char const *b)
+// ------------------------------ Iter ---------------------------------
+GCCOptions::Iter::Iter(GCCOptions const &options)
+  : m_options(options),
+    m_index(0),
+    m_xLang()
 {
-  // Reverse of the usual order.
-  return strcmp(a,b) > 0;
+  if (hasMore()) {
+    updateState();
+  }
 }
 
-class StrcmpRevCompare {
-public:
-  bool operator() (char const *a, char const *b) {
-    return strcmpRevCompare(a, b);
+
+GCCOptions::Iter::~Iter()
+{}
+
+
+void GCCOptions::Iter::updateState()
+{
+  Option const &o = opt();
+  if (o.m_name == "-x") {
+    if (o.m_argument == "none") {
+      m_xLang.clear();
+    }
+    else {
+      m_xLang = o.m_argument;
+    }
   }
-};
+}
 
 
-GCCOptions::GCCOptions(std::vector<std::string> const &args)
+GCCOptions::Option const &GCCOptions::Iter::opt() const
+{
+  xassert(hasMore());
+  return m_options.at(m_index);
+}
+
+
+bool GCCOptions::Iter::hasMore() const
+{
+  return index() < m_options.size();
+}
+
+
+void GCCOptions::Iter::adv()
+{
+  xassert(hasMore());
+  m_index++;
+  if (hasMore()) {
+    updateState();
+  }
+}
+
+
+// --------------------------- GCCOptions ------------------------------
+GCCOptions::GCCOptions()
   : m_options()
+{}
+
+
+GCCOptions::~GCCOptions()
+{}
+
+
+GCCOptions::GCCOptions(std::vector<std::string> const &words)
+  : m_options()
+{
+  parse(words);
+}
+
+
+GCCOptions::Option const &GCCOptions::at(size_t index) const
+{
+  return m_options.at(index);
+}
+
+
+GCCOptions::OutputMode GCCOptions::outputMode() const
+{
+  bool hasE=false, hasS=false, hasC=false;
+
+  for (Iter iter(*this); iter.hasMore(); iter.adv()) {
+    Option const &o = iter.opt();
+    if (o.m_name == "-E") {
+      hasE = true;
+    }
+    else if (o.m_name == "-S") {
+      hasS = true;
+    }
+    else if (o.m_name == "-c") {
+      hasC = true;
+    }
+  }
+
+  // Based on experimentation with GCC-9.3.0, -E takes precedence, then
+  // -S, then finally -c, regardless of the order in which they appear.
+  if (hasE) {
+    return OM_PREPROCESSED;
+  }
+  if (hasS) {
+    return OM_ASSEMBLY;
+  }
+  if (hasC) {
+    return OM_OBJECT_CODE;
+  }
+
+  return OM_EXECUTABLE;
+}
+
+
+void GCCOptions::getCommandWords(
+  std::vector<std::string> &commandWords) const
+{
+  for (Iter iter(*this); iter.hasMore(); iter.adv()) {
+    iter.opt().appendWords(commandWords);
+  }
+}
+
+
+void GCCOptions::parse(std::vector<std::string> const &args)
 {
   // Map from option name (pointer) to its syntax style.
   //
@@ -406,16 +507,37 @@ GCCOptions::GCCOptions(std::vector<std::string> const &args)
 }
 
 
-GCCOptions::~GCCOptions()
-{}
-
-
 void GCCOptions::addOption(std::string const &name,
                            Separator separator,
                            std::string const &argument,
                            SyntaxError syntaxError)
 {
-  m_options.push_back(Option(name, separator, argument, syntaxError));
+  addOption(Option(name, separator, argument, syntaxError));
+}
+
+
+void GCCOptions::addOption(Option const &opt)
+{
+  m_options.push_back(opt);
+}
+
+
+void GCCOptions::addInputFile(std::string const &argument)
+{
+  addOption("", SEP_NONE, argument, SYN_NONE);
+}
+
+
+void GCCOptions::addBareOption(std::string const &name)
+{
+  addOption(name, SEP_NONE, "", SYN_NONE);
+}
+
+
+void GCCOptions::addSpaceOption(std::string const &name,
+                                std::string const &argument)
+{
+  addOption(name, SEP_NONE, argument, SYN_NONE);
 }
 
 
@@ -502,6 +624,160 @@ bool GCCOptions::parseOption(
   }
 
   return false;
+}
+
+
+// ------------------------ Global functions ---------------------------
+// Set of legal arguments to the "-x" option, in "LANG=C sort" order.
+static char const * const xLanguageValues[] = {
+  "ada",
+  "assembler",
+  "assembler-with-cpp",
+  "c",
+  "c++",
+  "c++-cpp-output",
+  "c++-header",
+  "c++-system-header",
+  "c++-user-header",
+  "c-header",
+  "cpp-output",
+  "d",
+  "f77",
+  "f77-cpp-input",
+  "f95",
+  "f95-cpp-input",
+  "go",
+  "objective-c",
+  "objective-c++",
+  "objective-c++-cpp-output",
+  "objective-c++-header",
+  "objective-c-cpp-output",
+  "objective-c-header",
+};
+
+
+static bool isValidGCCLanguage(char const *lang)
+{
+  return std::binary_search(xLanguageValues,
+                            ARRAY_ENDPTR(xLanguageValues),
+                            lang,
+                            StrcmpCompare());
+}
+
+
+// Extensions that map to a different language code, in "LANG=C sort"
+// order.
+static struct ExtensionMapEntry {
+  // Extension that a file might have.
+  char const *m_ext;
+
+  // Language code to use for that extension.
+  char const *m_lang;
+}
+const extensionMap[] = {
+  { "C",      "c++" },
+  { "CPP",    "c++" },
+  { "F",      "f77-cpp-input" },
+  { "F03",    "f95-cpp-input" },
+  { "F08",    "f95-cpp-input" },
+  { "F90",    "f95-cpp-input" },
+  { "F95",    "f95-cpp-input" },
+  { "FOR",    "f77-cpp-input" },
+  { "FPP",    "f77-cpp-input" },
+  { "FTN",    "f77-cpp-input" },
+  { "H",      "c++-header" },
+  { "HPP",    "c++-header" },
+  { "M",      "objective-c++" },
+  { "S",      "assembler-with-cpp" },
+  { "adb",    "ada" },
+  { "ads",    "ada" },
+  { "c",      "c" },
+  { "c++",    "c++" },
+  { "cc",     "c++" },
+  { "cp",     "c++" },
+  { "cpp",    "c++" },
+  { "cxx",    "c++" },
+  { "d",      "d" },
+  { "dd",     "d" },
+  { "di",     "d" },
+  { "f",      "f77" },
+  { "f03",    "f95" },
+  { "f08",    "f95" },
+  { "f90",    "f95" },
+  { "f95",    "f95" },
+  { "for",    "f77" },
+  { "fpp",    "f77-cpp-input" },
+  { "ftn",    "f77" },
+  { "go",     "go" },
+  { "h",      "c-header" },
+  { "h++",    "c++-header" },
+  { "hh",     "c++-header" },
+  { "hp",     "c++-header" },
+  { "hpp",    "c++-header" },
+  { "hxx",    "c++-header" },
+  { "i",      "cpp-output" },
+  { "ii",     "c++-cpp-output" },
+  { "m",      "objective-c" },
+  { "mi",     "objective-c-cpp-output" },
+  { "mii",    "objective-c++-cpp-output" },
+  { "mm",     "objective-c++" },
+  { "s",      "assembler" },
+  { "sx",     "assembler-with-cpp" },
+  { "tcc",    "c++-header" },
+};
+
+
+static void validateExtensionLanguages()
+{
+  for (auto entry : extensionMap) {
+    xassert(isValidGCCLanguage(entry.m_lang));
+  }
+}
+
+
+std::string gccLanguageForFile(std::string const &fname,
+                               std::string const &xLang)
+{
+  if (!xLang.empty()) {
+    return xLang;
+  }
+
+  // Get the extension.
+  char const *dot = strrchr(fname.c_str(), '.');
+  if (!dot) {
+    return "";
+  }
+  char const *ext = dot+1;
+
+  // Look up the extension.
+  ExtensionMapEntry key = { ext, "" };
+  auto compare =
+    [](ExtensionMapEntry const &a, ExtensionMapEntry const &b)
+    {
+      return strcmpCompare(a.m_ext, b.m_ext);
+    };
+  ExtensionMapEntry const *end = ARRAY_ENDPTR(extensionMap);
+  ExtensionMapEntry const *entry =
+    binary_lookup(extensionMap, end, key, compare);
+  if (entry != end) {
+    return entry->m_lang;
+  }
+
+  return "";
+}
+
+
+bool specifiesGCCOutputMode(std::string const &name)
+{
+  return name == "-E" ||
+         name == "-S" ||
+         name == "-c";
+}
+
+
+void gcc_options_check_tables()
+{
+  validateExtensionLanguages();
 }
 
 

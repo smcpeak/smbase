@@ -342,4 +342,9 @@ public:
   }
 
 
+// Given an array with known size, return a one-past-the-end pointer
+// that can serve as the 'end' location for STL algorithms.
+#define ARRAY_ENDPTR(array) ((array) + TABLESIZE(array))
+
+
 #endif // SMBASE_SM_MACROS_H

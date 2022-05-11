@@ -136,6 +136,16 @@ public:      // types
     NUM_SYNTAX_ERRORS
   };
 
+  // Possible types of output a GCC command line can specify.
+  enum OutputMode {
+    OM_PREPROCESSED,         // -E
+    OM_ASSEMBLY,             // -S
+    OM_OBJECT_CODE,          // -c
+    OM_EXECUTABLE,           // No switch.
+
+    NUM_OUTPUT_MODES
+  };
+
   // Represent a single parsed conceptual option, which might have been
   // presented as multiple words.
   class Option {
@@ -175,10 +185,60 @@ public:      // types
     // the case that appending all parsed options yields exactly the
     // original sequence of words.  (However, once response files are
     // implemented, that won't be true anymore.)
-    void appendWords(std::vector<std::string> &dest);
+    void appendWords(std::vector<std::string> &dest) const;
+
+    // True if this option represents the name of an input file.
+    bool isInputFile() const
+      { return m_separator==SEP_NONE && !m_argument.empty(); }
   };
 
-public:      // data
+  // Class to iterate over the Options in a GCCOptions object.
+  //
+  // In addition to tracking position within the sequence, it tracks
+  // stateful settings, particularly "-x", which once set affect the
+  // interpretation of later options, and can be specified multiple
+  // times.
+  //
+  class Iter {
+  private:     // data
+    // Option sequence we are iterating over.
+    GCCOptions const &m_options;
+
+    // Current option index.  Equals 'm_options.size()' when
+    // '!hasMore()'.
+    size_t m_index;
+
+    // Current "-x" setting, or the empty string if none is set, which
+    // is the case initially and after "-xnone".
+    std::string m_xLang;
+
+  private:     // methods
+    // Having just advanced, update internal state based on the current
+    // option.
+    void updateState();
+
+  public:      // methods
+    Iter(GCCOptions const &options);
+    ~Iter();
+
+    // Current Option.  Requires 'hasMore()'.
+    Option const &opt() const;
+
+    size_t index() const
+      { return m_index; }
+
+    std::string xLang() const
+      { return m_xLang; }
+
+    // True if there are more options to iterate over, including the
+    // current one.
+    bool hasMore() const;
+
+    // Advance to the next option.  Requires 'hasMore()'.
+    void adv();
+  };
+
+private:     // data
   // Sequence of parsed options, in the order they appeared in the
   // input.  The number of elements here is usually less than the size
   // of 'args' passed to the constructor because multiple words can be
@@ -186,12 +246,6 @@ public:      // data
   std::vector<Option> m_options;
 
 private:     // methods
-  // Add an element to 'm_options'.
-  void addOption(std::string const &name,
-                 Separator separator,
-                 std::string const &argument,
-                 SyntaxError syntaxError = SYN_NONE);
-
   // Try to parse 'optWord' as an instance of option 'name', which uses
   // 'syntax'.  If it needs another word, get it from 'iter'.  Return
   // true if the option is recognized as an instance of 'name' and
@@ -203,17 +257,66 @@ private:     // methods
     WordIterator &iter);
 
 public:      // methods
-  // Parse 'args' as GCC options.  The name of the compiler itself is
-  // *not* among these elements.
+  GCCOptions();
+  ~GCCOptions();
+
+  // Compiler-generated copy constructor and assignment are fine.
+
+  // Parse 'words' using 'parse' method.
+  explicit GCCOptions(std::vector<std::string> const &words);
+
+  bool operator== (GCCOptions const &obj) const
+    { return m_options == obj.m_options; }
+  bool operator!= (GCCOptions const &obj) const
+    { return !operator==(obj); }
+
+  // Number of parsed options.
+  size_t size() const
+    { return m_options.size(); }
+
+  bool empty() const
+    { return m_options.empty(); }
+
+  // Get one option.
+  Option const &at(size_t index) const;
+  Option const &operator[](size_t index) const
+    { return at(index); }
+
+  // Get entire vector.
+  std::vector<Option> const &getOptions() const
+    { return m_options; }
+
+  // Get the output mode specified on this command line.
+  OutputMode outputMode() const;
+
+  // Get the sequence of command words.
+  void getCommandWords(std::vector<std::string> &commandWords) const;
+
+  // Parse 'args' as GCC options and append them to the options
+  // sequence.  The name of the compiler itself is *not* among these
+  // elements.
   //
   // This does not throw any exceptions.  Instead, issues with
   // apparently malformed input are conveyed using the SyntaxError
   // codes in the returned Option objects.
-  GCCOptions(std::vector<std::string> const &args);
+  void parse(std::vector<std::string> const &args);
 
-  ~GCCOptions();
+  // Add an element to 'm_options'.
+  void addOption(std::string const &name,
+                 Separator separator,
+                 std::string const &argument,
+                 SyntaxError syntaxError = SYN_NONE);
+  void addOption(Option const &opt);
 
-  // Compiler-generated copy constructor and assignment are fine.
+  // Add an option that is just 'argument'.
+  void addInputFile(std::string const &argument);
+
+  // Add an option that is just 'name'.
+  void addBareOption(std::string const &name);
+
+  // Add 'name' 'argument' as if they were two consecutive words.
+  void addSpaceOption(std::string const &name,
+                      std::string const &argument);
 };
 
 
@@ -229,6 +332,31 @@ char const *toString(GCCOptions::Separator separator);
 
 // Returns "SYN_NONE", etc.
 char const *toString(GCCOptions::SyntaxError syntaxError);
+
+
+// Returns "OM_PREPROCESSED", etc.
+char const *toString(GCCOptions::OutputMode outputMode);
+
+
+// If 'xLang' is the empty string, apply GCC's file name heuristics to
+// 'fname' to deduce its language, yielding a string that could be the
+// argument to the "-x" switch.  Otherwise, return 'xLang'.  If the
+// return value is empty, it means that 'xLang' was empty and the
+// extension (if any) of 'fname' was not recognized, which GCC
+// interprets as being something for the linker (an object file or
+// library archive).
+std::string gccLanguageForFile(std::string const &fname,
+                               std::string const &xLang);
+
+
+
+// True if 'name' is among those that specify the gcc output mode,
+// namely, "-c", "-E", or "-S".
+bool specifiesGCCOutputMode(std::string const &name);
+
+
+// For use in the unit tests, check consistency of the internal tables.
+void gcc_options_check_tables();
 
 
 #endif // GCC_OPTIONS_H
