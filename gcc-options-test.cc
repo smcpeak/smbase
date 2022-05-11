@@ -32,6 +32,20 @@ static void checkEqual(
 }
 
 
+static void checkEqual(
+  std::vector<std::string> const &actual,
+  std::vector<std::string> const &expect)
+{
+  std::string sep(" ");
+
+  if (actual != expect) {
+    std::cout << "expect: " << accumulateWith(expect, sep) << '\n';
+    std::cout << "actual: " << accumulateWith(actual, sep) << '\n';
+    xfailure("actual is different from expect");
+  }
+}
+
+
 static void testOne(
   std::vector<std::string> const &args,
   std::vector<GCCOptions::Option> const &expect)
@@ -45,12 +59,7 @@ static void testOne(
   std::vector<std::string> reconstructed;
   gccOptions.getCommandWords(reconstructed);
 
-  if (reconstructed != args) {
-    std::string sep(" ");
-    std::cout << "args         : " << accumulateWith(args, sep) << '\n';
-    std::cout << "reconstructed: " << accumulateWith(reconstructed, sep) << '\n';
-    xfailure("reconstructed is different from args");
-  }
+  checkEqual(reconstructed, args);
 }
 
 
@@ -460,6 +469,67 @@ static void testAddOption()
 }
 
 
+static void testEnsureExplicitOutputFile()
+{
+  struct Test {
+    std::vector<std::string> m_input;
+    std::vector<std::string> m_expect;
+  }
+  const tests[] = {
+    {
+      { "" },
+      { "" },
+    },
+    {
+      { "-c" },
+      { "-c" },
+    },
+    {
+      { "-c", "foo.c" },
+      { "-c", "foo.c", "-o", "foo.o" },
+    },
+    {
+      { "-S", "foo.c" },
+      { "-S", "foo.c", "-o", "foo.s" },
+    },
+    {
+      { "-E", "-c", "foo.c" },
+      { "-E", "-c", "foo.c" },
+    },
+    {
+      { "-c", "fooc" },    // not seen as a source file
+      { "-c", "fooc" },
+    },
+    {
+      { "-c", "-xc", "fooc" },
+      { "-c", "-xc", "fooc", "-o", "fooc.o" },
+    },
+    {
+      { "-c", "foo.c", "obj.o" },
+      { "-c", "foo.c", "obj.o", "-o", "foo.o" },
+    },
+    {
+      { "-c", "foo.c", "bar.c" },
+      { "-c", "foo.c", "bar.c", "-o", "bar.o" },  // pick second
+    },
+    {
+      { "-c", "foo.c", "-o", "bar.o" },
+      { "-c", "foo.c", "-o", "bar.o" },
+    },
+  };
+
+  for (auto t : tests) {
+    GCCOptions opts(t.m_input);
+    opts.ensureExplicitOutputFile();
+
+    std::vector<std::string> actual;
+    opts.getCommandWords(actual);
+
+    checkEqual(actual, t.m_expect);
+  }
+}
+
+
 void test_gcc_options()
 {
   // Defined in gcc-options.cc.
@@ -473,6 +543,7 @@ void test_gcc_options()
   testSpecifiesGCCOutputMode();
   testToString();
   testAddOption();
+  testEnsureExplicitOutputFile();
 }
 
 

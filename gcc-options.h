@@ -317,6 +317,11 @@ public:      // methods
   // Add 'name' 'argument' as if they were two consecutive words.
   void addSpaceOption(std::string const &name,
                       std::string const &argument);
+
+  // If there is not already a "-o" option, add one using the GCC rules
+  // for default output file names.  This does nothing in preprocessing
+  // and link modes.
+  void ensureExplicitOutputFile();
 };
 
 

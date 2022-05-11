@@ -627,6 +627,79 @@ bool GCCOptions::parseOption(
 }
 
 
+// Remove any extension from 'fname'.
+//
+// TODO: Find a home for this in smbase.
+static std::string stripExtension(std::string const &fname)
+{
+  char const *start = fname.c_str();
+  char const *dot = strrchr(start, '.');
+  if (dot) {
+    return std::string(start, dot-start);
+  }
+  else {
+    return fname;
+  }
+}
+
+
+void GCCOptions::ensureExplicitOutputFile()
+{
+  OutputMode mode = outputMode();
+
+  if (mode == OM_PREPROCESSED) {
+    // Nothing to do.  If "-o" is omitted, the output will go to stdout,
+    // regardless of any changes to the names of input files.
+    return;
+  }
+
+  if (mode == OM_EXECUTABLE) {
+    // For my purpose, there's no need to specify an output file because
+    // its name does not depend on the names of input files.
+    return;
+  }
+
+  // Scan for a "-o" option and for a source file name.
+  std::string srcFileName;
+  for (Iter iter(*this); iter.hasMore(); iter.adv()) {
+    Option const &opt = iter.opt();
+    if (opt.m_name == "-o") {
+      // Output is already explicit.
+      return;
+    }
+
+    if (opt.isInputFile()) {
+      std::string lang =
+        gccLanguageForFile(opt.m_argument, iter.xLang());
+      if (!lang.empty()) {
+        // This is a source (not object) file.
+        //
+        // There might be more than one.  That would make the command
+        // line invalid, but it's not my job to diagnose that.  Here, I
+        // will just let the last one win.
+        srcFileName = opt.m_argument;
+      }
+    }
+  }
+
+  if (srcFileName.empty()) {
+    // We didn't see a source file name, so can't compute the output
+    // file name.  I suppose I'll just leave the command as-is.
+    return;
+  }
+
+  // Remove any extension from the file name.
+  std::string srcNoExt = stripExtension(srcFileName);
+
+  // Default output name.
+  std::string outputFileName = srcNoExt +
+    (mode == OM_OBJECT_CODE? ".o" : ".s");
+
+  // Specify it as an option.
+  addSpaceOption("-o", outputFileName);
+}
+
+
 // ------------------------ Global functions ---------------------------
 // Set of legal arguments to the "-x" option, in "LANG=C sort" order.
 static char const * const xLanguageValues[] = {
