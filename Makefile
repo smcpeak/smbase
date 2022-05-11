@@ -121,7 +121,7 @@ ifeq ($(COVERAGE),1)
   CXXFLAGS += --coverage
 
   # gcov gets false positives if optimization is enabled.
-  OPTIMIZATION_FLAGS = -O0
+  OPTIMIZATION_FLAGS =
 endif
 
 
