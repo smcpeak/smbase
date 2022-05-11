@@ -17,6 +17,21 @@ static void testEmpty()
 }
 
 
+static void checkEqual(
+  std::vector<GCCOptions::Option> const &actual,
+  std::vector<GCCOptions::Option> const &expect)
+{
+  std::string sep(" ");
+
+  if (actual != expect) {
+    auto ts = [](GCCOptions::Option const &opt) { return opt.toString(); };
+    std::cout << "expect: " << accumulateWithMap(expect, ts, sep) << '\n';
+    std::cout << "actual: " << accumulateWithMap(actual, ts, sep) << '\n';
+    xfailure("actual is different from expect");
+  }
+}
+
+
 static void testOne(
   std::vector<std::string> const &args,
   std::vector<GCCOptions::Option> const &expect)
@@ -24,21 +39,14 @@ static void testOne(
   GCCOptions gccOptions(args);
   std::vector<GCCOptions::Option> const &actual = gccOptions.getOptions();
 
-  std::string sep(" ");
-
-  if (actual != expect) {
-    auto ts = [](GCCOptions::Option const &opt) { return opt.toString(); };
-    std::cout << "args: " << accumulateWith(args, sep) << '\n';
-    std::cout << "expect: " << accumulateWithMap(expect, ts, sep) << '\n';
-    std::cout << "actual: " << accumulateWithMap(actual, ts, sep) << '\n';
-    xfailure("actual is different from expect");
-  }
+  checkEqual(actual, expect);
 
   // Rebuild the word sequence and check it is the same.
   std::vector<std::string> reconstructed;
   gccOptions.getCommandWords(reconstructed);
 
   if (reconstructed != args) {
+    std::string sep(" ");
     std::cout << "args         : " << accumulateWith(args, sep) << '\n';
     std::cout << "reconstructed: " << accumulateWith(reconstructed, sep) << '\n';
     xfailure("reconstructed is different from args");
@@ -46,12 +54,13 @@ static void testOne(
 }
 
 
+// Make it a little easier to name the enumerators.
+#define SEP(name) GCCOptions::SEP_##name
+#define SYN(name) GCCOptions::SYN_##name
+
+
 static void testParse()
 {
-  // Make it a little easier to name the enumerators.
-  #define SEP(name) GCCOptions::SEP_##name
-  #define SYN(name) GCCOptions::SYN_##name
-
   // Bare option name.
   #define BARE(name) { name, SEP(NONE), "", SYN(NONE) }
 
@@ -263,6 +272,13 @@ static void testParse()
       { "--help=foo" },
       { EQUALS("--help", "foo") },
     },
+
+    // Unrecognized.  It's actually a bit tricky to get into this case
+    // because you have to avoid using a prefix that *is* recognized.
+    {
+      { "-an-unrecognized-sw" },
+      { { "-an-unrecognized-sw", SEP(NONE), "", SYN(UNRECOGNIZED) } },
+    },
   };
 
   #undef BARE
@@ -270,9 +286,6 @@ static void testParse()
   #undef EQUALS
   #undef EMPTY
   #undef ARG
-
-  #undef SEP
-  #undef SYN
 
   for (InputAndResult const &iar : iars) {
     testOne(iar.m_input, iar.m_expect);
@@ -409,6 +422,39 @@ static void testSpecifiesGCCOutputMode()
 }
 
 
+static void testToString()
+{
+  xassert(streq(toString(SEP(SPACE)), "SEP_SPACE"));
+  xassert(streq(toString(SYN(UNRECOGNIZED)), "SYN_UNRECOGNIZED"));
+  xassert(streq(toString(GCCOptions::OM_ASSEMBLY), "OM_ASSEMBLY"));
+
+  GCCOptions::Option opt("n", SEP(EQUALS),
+                         "a", SYN(NONE));
+  xassert(opt.toString() ==
+    "{ name=\"n\", sep=SEP_EQUALS, arg=\"a\", syn=SYN_NONE }");
+}
+
+
+static void testAddOption()
+{
+  GCCOptions opts;
+
+  opts.addOption("n1", SEP(EQUALS), "a1", SYN(INVALID_EQUALS));
+  opts.addOption(GCCOptions::Option("n2", SEP(NONE), "a2", SYN(NONE)));
+  opts.addInputFile("file1");
+  opts.addBareOption("-c");
+  opts.addSpaceOption("-o", "file2");
+
+  std::vector<GCCOptions::Option> expect = {
+    { "n1", SEP(EQUALS), "a1",    SYN(INVALID_EQUALS) },
+    { "n2", SEP(NONE),   "a2",    SYN(NONE)           },
+    { "",   SEP(NONE),   "file1", SYN(NONE)           },
+    { "-c", SEP(NONE),   "",      SYN(NONE)           },
+    { "-o", SEP(NONE),   "file2", SYN(NONE)           },
+  };
+  checkEqual(opts.getOptions(), expect);
+}
+
 
 void test_gcc_options()
 {
@@ -421,6 +467,8 @@ void test_gcc_options()
   testLanguageForFile();
   testLangInCommand();
   testSpecifiesGCCOutputMode();
+  testToString();
+  testAddOption();
 }
 
 

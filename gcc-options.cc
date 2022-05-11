@@ -264,7 +264,7 @@ bool GCCOptions::Option::operator== (Option const &obj) const
 void GCCOptions::Option::appendWords(std::vector<std::string> &dest) const
 {
   switch (m_separator) {
-    default:
+    default:                 // gcov-ignore
       xfailure("unrecognized separator");
       break;
 
