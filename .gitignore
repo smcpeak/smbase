@@ -5,6 +5,9 @@
 *.csm
 *.d
 *.exe
+*.gcda
+*.gcno
+*.gcov
 *.i
 *.lib
 *.o

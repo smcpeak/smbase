@@ -66,6 +66,11 @@ PYTHON3 = python3
 # How to invoke run-compare-expect.py.
 RUN_COMPARE_EXPECT = $(PYTHON3) ./run-compare-expect.py
 
+# This invokes a script called 'mygcov', which is a personal wrapper
+# around 'gcov' that filters out some common false positives.  This
+# could just replace this with 'gcov' if you don't have that script.
+GCOV = mygcov
+
 
 # ---- Options within this Makefile ----
 # Set to 1 if we are building for MinGW.
@@ -83,6 +88,9 @@ DEBUG_HEAP = 0
 
 # Set to 1 to activate tracing of heap allocation activity.
 TRACE_HEAP = 0
+
+# Set to 1 to compute code coverage.
+COVERAGE = 0
 
 
 # ---- Automatic Configuration ----
@@ -106,6 +114,15 @@ include config.mk
 #   CXX_WARNING_FLAGS = -Wsuggest-override
 #
 -include personal.mk
+
+
+ifeq ($(COVERAGE),1)
+  CFLAGS += --coverage
+  CXXFLAGS += --coverage
+
+  # gcov gets false positives if optimization is enabled.
+  OPTIMIZATION_FLAGS = -O0
+endif
 
 
 # ----------------------------- Rules ------------------------------
@@ -612,9 +629,31 @@ doc: gendoc gendoc/dependencies.png
 	@echo "built documentation"
 
 
+# ----------------------------- coverage -------------------------------
+# Run gcov to produce .gcov files.  This requires having compiled with
+# COVERAGE=1.
+
+# List of source files to analyze with coverage.
+#
+# TODO: Change this Makefile so the sources are what are listed, and
+# $(OBJS) is computed from that.
+SRCS :=
+SRCS += gcc-options.cc
+SRCS += gcc-options-test.cc
+
+.PHONY: run-gcov
+run-gcov:
+	$(GCOV) $(SRCS)
+
+# Clean up previous gcov output.
+.PHONY: gcov-clean
+gcov-clean:
+	$(RM) *.gcov *.gcda *.gcno
+
+
 # --------------------- clean --------------------
 # delete compiling/editing byproducts
-clean:
+clean: gcov-clean
 	rm -f *.o *~ *.a *.d *.exe gmon.out srcloc.tmp testcout flattest.tmp
 	rm -rf test.dir out
 
