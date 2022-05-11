@@ -537,7 +537,7 @@ void GCCOptions::addBareOption(std::string const &name)
 void GCCOptions::addSpaceOption(std::string const &name,
                                 std::string const &argument)
 {
-  addOption(name, SEP_NONE, argument, SYN_NONE);
+  addOption(name, SEP_SPACE, argument, SYN_NONE);
 }
 
 

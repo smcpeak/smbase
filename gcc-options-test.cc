@@ -450,7 +450,7 @@ static void testAddOption()
     { "n2", SEP(NONE),   "a2",    SYN(NONE)           },
     { "",   SEP(NONE),   "file1", SYN(NONE)           },
     { "-c", SEP(NONE),   "",      SYN(NONE)           },
-    { "-o", SEP(NONE),   "file2", SYN(NONE)           },
+    { "-o", SEP(SPACE),  "file2", SYN(NONE)           },
   };
   checkEqual(opts.getOptions(), expect);
 }
