@@ -247,6 +247,10 @@ static void testParse()
       { BARE("-E") },
     },
     {
+      { "-Enonsense" },
+      { { "-E", SEP(EMPTY), "nonsense", SYN(TRAILING_JUNK) } },
+    },
+    {
       { "-gen-decls" },
       { BARE("-gen-decls") },
     },
