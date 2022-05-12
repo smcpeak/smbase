@@ -190,66 +190,72 @@ endif # GENSRC==1
 mysig.o: mysig.cc mysig.h
 	$(CXX) -c -g mysig.cc
 
-# library itself
-OBJS :=
-OBJS += autofile.o
-OBJS += bdffont.o
-OBJS += bflatten.o
-OBJS += bit2d.o
-OBJS += bitarray.o
-OBJS += boxprint.o
-OBJS += breaker.o
-OBJS += codepoint.o
-OBJS += crc.o
-OBJS += cycles.o
-OBJS += d2vector.o
-OBJS += datablok.o
-OBJS += datetime.o
-OBJS += dev-warning.o
-OBJS += exc.o
-OBJS += flatten.o
-OBJS += gcc-options.o
-OBJS += gprintf.o
-OBJS += growbuf.o
-OBJS += hashline.o
-OBJS += hashtbl.o
-OBJS += missing.o
-OBJS += mypopen.o
-OBJS += mysig.o
-OBJS += nonport.o
-OBJS += objcount.o
-OBJS += ofstreamts.o
-OBJS += parsestring.o
-OBJS += point.o
-OBJS += pprint.o
-OBJS += refct-serf.o
-OBJS += run-process.o
-OBJS += sm-file-util.o
-OBJS += smregexp.o
-OBJS += srcloc.o
-OBJS += str.o
-OBJS += strdict.o
-OBJS += strhash.o
-OBJS += string-utils.o
-OBJS += stringset.o
-OBJS += strtable.o
-OBJS += strtokp.o
-OBJS += strutil.o
-OBJS += svdict.o
-OBJS += syserr.o
-OBJS += trace.o
-OBJS += trdelete.o
-OBJS += tree-print.o
-OBJS += unixutil.o
-OBJS += vdtllist.o
-OBJS += vptrmap.o
-OBJS += voidlist.o
-OBJS += warn.o
+# Library source files in "LANG=C sort" order
+SRCS :=
+SRCS += autofile.cc
+SRCS += bdffont.cc
+SRCS += bflatten.cc
+SRCS += bit2d.cc
+SRCS += bitarray.cc
+SRCS += boxprint.cc
+SRCS += breaker.cpp
+SRCS += codepoint.cc
+SRCS += crc.cpp
+SRCS += cycles.c
+SRCS += d2vector.c
+SRCS += datablok.cc
+SRCS += datetime.cc
+SRCS += dev-warning.cc
+SRCS += exc.cpp
+SRCS += flatten.cc
+SRCS += gcc-options.cc
+SRCS += gprintf.c
+SRCS += growbuf.cc
+SRCS += hashline.cc
+SRCS += hashtbl.cc
+SRCS += missing.cpp
+SRCS += mypopen.c
+SRCS += mysig.cc
+SRCS += nonport.cpp
+SRCS += objcount.cc
+SRCS += ofstreamts.cc
+SRCS += parsestring.cc
+SRCS += point.cc
+SRCS += pprint.cc
+SRCS += refct-serf.cc
+SRCS += run-process.cc
+SRCS += sm-file-util.cc
+SRCS += smregexp.cc
+SRCS += srcloc.cc
+SRCS += str.cc
+SRCS += strdict.cc
+SRCS += strhash.cc
+SRCS += string-utils.cc
+SRCS += stringset.cc
+SRCS += strtable.cc
+SRCS += strtokp.cpp
+SRCS += strutil.cc
+SRCS += svdict.cc
+SRCS += syserr.cpp
+SRCS += trace.cc
+SRCS += trdelete.cc
+SRCS += tree-print.cc
+SRCS += unixutil.c
+SRCS += vdtllist.cc
+SRCS += voidlist.cc
+SRCS += vptrmap.cc
+SRCS += warn.cpp
 
 # Some modules do not build on Mingw; for the moment I do not need them.
 ifeq ($(TARGET_PLATFORM_IS_MINGW),1)
-  OBJS := $(filter-out mypopen.o mysig.o smregexp.o,$(OBJS))
+  SRCS := $(filter-out mypopen.c mysig.cc smregexp.cc,$(SRCS))
 endif
+
+# Library object files.
+OBJS := $(SRCS)
+OBJS := $(patsubst %.c,%.o,$(OBJS))
+OBJS := $(patsubst %.cc,%.o,$(OBJS))
+OBJS := $(patsubst %.cpp,%.o,$(OBJS))
 
 # Pull in automatic dependencies created by $(GENDEPS_FLAGS).
 -include $(OBJS:.o=.d)
@@ -585,15 +591,6 @@ doc: gendoc gendoc/dependencies.png
 # ----------------------------- coverage -------------------------------
 # Run gcov to produce .gcov files.  This requires having compiled with
 # COVERAGE=1.
-
-# List of source files to analyze with coverage.
-#
-# TODO: Change this Makefile so the sources are what are listed, and
-# $(OBJS) is computed from that.
-SRCS :=
-SRCS += gcc-options.cc
-SRCS += gcc-options-test.cc
-
 .PHONY: run-gcov
 run-gcov:
 	$(GCOV) $(SRCS)
