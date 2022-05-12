@@ -435,6 +435,55 @@ std::string GCCOptions::getExplicitOutputFile() const
 }
 
 
+std::string GCCOptions::getOutputFile() const
+{
+  std::string expl = getExplicitOutputFile();
+  if (!expl.empty()) {
+    return expl;
+  }
+
+  OutputMode mode = outputMode();
+
+  if (mode == OM_PREPROCESSED) {
+    return "";               // Means standard output.
+  }
+
+  if (mode == OM_EXECUTABLE) {
+    return "a.out";
+  }
+
+  // Scan for a source file name.
+  std::string srcFileName;
+  for (Iter iter(*this); iter.hasMore(); iter.adv()) {
+    Option const &opt = iter.opt();
+    if (opt.isInputFile()) {
+      std::string lang =
+        gccLanguageForFile(opt.m_argument, iter.xLang());
+      if (!lang.empty()) {
+        // This is a source (not object) file.
+        //
+        // There might be more than one.  That would make the command
+        // line invalid, but it's not my job to diagnose that.  Here, I
+        // will just let the last one win.
+        srcFileName = opt.m_argument;
+      }
+    }
+  }
+
+  if (srcFileName.empty()) {
+    // We didn't see a source file name, so can't compute the output
+    // file name.
+    return "";
+  }
+
+  // Remove any extension from the file name.
+  std::string srcNoExt = stripExtension(srcFileName);
+
+  // Default output name.
+  return srcNoExt + (mode == OM_OBJECT_CODE? ".o" : ".s");
+}
+
+
 void GCCOptions::getCommandWords(
   std::vector<std::string> &commandWords) const
 {
@@ -642,58 +691,20 @@ bool GCCOptions::parseOption(
 
 void GCCOptions::ensureExplicitOutputFile()
 {
-  OutputMode mode = outputMode();
-
-  if (mode == OM_PREPROCESSED) {
-    // Nothing to do.  If "-o" is omitted, the output will go to stdout,
-    // regardless of any changes to the names of input files.
+  std::string fn = getExplicitOutputFile();
+  if (!fn.empty()) {
     return;
   }
 
-  if (mode == OM_EXECUTABLE) {
-    // For my purpose, there's no need to specify an output file because
-    // its name does not depend on the names of input files.
-    return;
+  // Compute the default.
+  fn = getOutputFile();
+  if (!fn.empty()) {
+    // Specify it as an option.
+    addSpaceOption("-o", fn);
   }
-
-  // Scan for a "-o" option and for a source file name.
-  std::string srcFileName;
-  for (Iter iter(*this); iter.hasMore(); iter.adv()) {
-    Option const &opt = iter.opt();
-    if (opt.m_name == "-o") {
-      // Output is already explicit.
-      return;
-    }
-
-    if (opt.isInputFile()) {
-      std::string lang =
-        gccLanguageForFile(opt.m_argument, iter.xLang());
-      if (!lang.empty()) {
-        // This is a source (not object) file.
-        //
-        // There might be more than one.  That would make the command
-        // line invalid, but it's not my job to diagnose that.  Here, I
-        // will just let the last one win.
-        srcFileName = opt.m_argument;
-      }
-    }
+  else {
+    // Didn't come up with a name.  Oh well.
   }
-
-  if (srcFileName.empty()) {
-    // We didn't see a source file name, so can't compute the output
-    // file name.  I suppose I'll just leave the command as-is.
-    return;
-  }
-
-  // Remove any extension from the file name.
-  std::string srcNoExt = stripExtension(srcFileName);
-
-  // Default output name.
-  std::string outputFileName = srcNoExt +
-    (mode == OM_OBJECT_CODE? ".o" : ".s");
-
-  // Specify it as an option.
-  addSpaceOption("-o", outputFileName);
 }
 
 

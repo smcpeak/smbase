@@ -293,6 +293,15 @@ public:      // methods
   // argument.  Otherwise return the empty string.
   std::string getExplicitOutputFile() const;
 
+  // If an output file is explicitly specified, return that.  Otherwise,
+  // compute the default output file, taking into account the current
+  // output mode.  If no output file is specified and the mode is
+  // OM_PREPROCESSED, return the empty string, signifying standard
+  // output.  In assembly or object code mode, if the command line does
+  // not have any source file name, then it is invalid, in which case
+  // we also return the empty string.
+  std::string getOutputFile() const;
+
   // Get the sequence of command words.
   void getCommandWords(std::vector<std::string> &commandWords) const;
 
@@ -324,7 +333,7 @@ public:      // methods
 
   // If there is not already a "-o" option, add one using the GCC rules
   // for default output file names.  This does nothing in preprocessing
-  // and link modes.
+  // mode.
   void ensureExplicitOutputFile();
 };
 
