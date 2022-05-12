@@ -31,4 +31,8 @@ std::ostream& operator<< (std::ostream &os,
 // Convert 'vec' to a string using 'operator<<'.
 std::string toString(std::vector<std::string> const &vec);
 
+// If 'fname' contains any '.' characters, remove the last one and all
+// following characters, and return that.  Otherwise return 'fname'.
+std::string stripExtension(std::string const &fname);
+
 #endif // STRING_UTILS_H

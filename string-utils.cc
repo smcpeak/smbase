@@ -3,6 +3,7 @@
 
 #include "string-utils.h"              // this module
 
+#include <cstring>                     // std::strrchr
 #include <sstream>                     // std::ostringstream
 
 
@@ -151,6 +152,19 @@ std::string toString(std::vector<std::string> const &vec)
   std::ostringstream oss;
   oss << vec;
   return oss.str();
+}
+
+
+std::string stripExtension(std::string const &fname)
+{
+  char const *start = fname.c_str();
+  char const *dot = std::strrchr(start, '.');
+  if (dot) {
+    return std::string(start, dot-start);
+  }
+  else {
+    return fname;
+  }
 }
 
 

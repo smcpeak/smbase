@@ -117,21 +117,31 @@ static void testVectorToString()
 }
 
 
+static void testStripExtension()
+{
+  static struct Test {
+    char const *m_input;
+    char const *m_expect;
+  } const tests[] = {
+    { "", "" },
+    { "foo.txt", "foo" },
+    { "foo.bar.txt", "foo.bar" },
+    { "foobar", "foobar" }
+  };
+
+  for (auto t : tests) {
+    std::string actual = stripExtension(t.m_input);
+    EXPECT_EQ(actual, std::string(t.m_expect));
+  }
+}
+
+
 void test_string_utils()
 {
-#if 0
-  // Scratchpad for feeding strings into 'doubleQuote'.
-
-  std::string s("\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f");
-  //std::string s("\038");
-  s = doubleQuote(s);
-  s = doubleQuote(s);
-  cout << s << endl;
-#endif // 0
-
   testSplitNonEmpty();
   testDoubleQuote();
   testVectorToString();
+  testStripExtension();
 }
 
 

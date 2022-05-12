@@ -7,6 +7,7 @@
 #include "container-utils.h"           // insertUnique
 #include "sm-macros.h"                 // EMEMB, DEFINE_ENUMERATION_TO_STRING
 #include "strcmp-compare.h"            // StrcmpCompare, etc.
+#include "string-utils.h"              // stripExtension
 #include "strutil.h"                   // prefixEquals
 #include "xassert.h"                   // xassert
 
@@ -636,22 +637,6 @@ bool GCCOptions::parseOption(
   }
 
   return false;
-}
-
-
-// Remove any extension from 'fname'.
-//
-// TODO: Find a home for this in smbase.
-static std::string stripExtension(std::string const &fname)
-{
-  char const *start = fname.c_str();
-  char const *dot = strrchr(start, '.');
-  if (dot) {
-    return std::string(start, dot-start);
-  }
-  else {
-    return fname;
-  }
 }
 
 
