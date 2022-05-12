@@ -422,6 +422,18 @@ GCCOptions::OutputMode GCCOptions::outputMode() const
 }
 
 
+std::string GCCOptions::getExplicitOutputFile() const
+{
+  for (Iter iter(*this); iter.hasMore(); iter.adv()) {
+    Option const &o = iter.opt();
+    if (o.m_name == "-o") {
+      return o.m_argument;
+    }
+  }
+  return std::string();
+}
+
+
 void GCCOptions::getCommandWords(
   std::vector<std::string> &commandWords) const
 {

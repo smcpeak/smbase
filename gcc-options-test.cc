@@ -530,6 +530,39 @@ static void testEnsureExplicitOutputFile()
 }
 
 
+static void testGetExplicitOutputFile()
+{
+  struct Test {
+    std::vector<std::string> m_input;
+    char const *m_expect;
+  }
+  const tests[] = {
+    {
+      {},
+      "",
+    },
+    {
+      {"-c"},
+      "",
+    },
+    {
+      { "-o", "foo" },
+      "foo",
+    },
+    {
+      { "-obar", "foo" },
+      "bar",
+    },
+  };
+
+  for (auto t : tests) {
+    GCCOptions opts(t.m_input);
+    std::string actual = opts.getExplicitOutputFile();
+    EXPECT_EQ(actual, std::string(t.m_expect));
+  }
+}
+
+
 void test_gcc_options()
 {
   // Defined in gcc-options.cc.
@@ -544,6 +577,7 @@ void test_gcc_options()
   testToString();
   testAddOption();
   testEnsureExplicitOutputFile();
+  testGetExplicitOutputFile();
 }
 
 

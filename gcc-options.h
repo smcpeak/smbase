@@ -289,6 +289,10 @@ public:      // methods
   // Get the output mode specified on this command line.
   OutputMode outputMode() const;
 
+  // If there is an output file explicitly specified with "-o", get its
+  // argument.  Otherwise return the empty string.
+  std::string getExplicitOutputFile() const;
+
   // Get the sequence of command words.
   void getCommandWords(std::vector<std::string> &commandWords) const;
 
