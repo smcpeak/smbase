@@ -15,6 +15,7 @@
 
 void test_dict();                      // test-dict.cc
 void test_gcc_options();               // gcc-options-test.cc
+void test_string_utils();              // string-utils-test.cc
 void test_vector_utils();              // test-vector-utils.cc
 
 
@@ -36,6 +37,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(gcc_options);
   RUN_TEST(overflow);
   RUN_TEST(parsestring);
+  RUN_TEST(string_utils);
   RUN_TEST(vector_utils);
 
   #undef RUN_TEST
