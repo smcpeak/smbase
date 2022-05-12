@@ -83,12 +83,6 @@ CROSS_COMPILE = 0
 # Set to 1 to activate the rules that generate source code.
 GENSRC = 0
 
-# Set to 1 to activate debug heap mechanism.
-DEBUG_HEAP = 0
-
-# Set to 1 to activate tracing of heap allocation activity.
-TRACE_HEAP = 0
-
 # Set to 1 to compute code coverage.
 COVERAGE = 0
 
@@ -190,38 +184,6 @@ $(eval $(call RUN_M4,strintdict.h,xstrobjdict.h))
 endif # GENSRC==1
 
 
-# ----------------------- malloc ------------------------
-# Doug Lea's malloc:
-#   add the -DDEBUG flag to turn on doug lea's additional checks
-#   add the -DDEBUG_HEAP flag to turn on my zone-based protection
-#   add the -DTRACE_MALLOC_CALLS flag to print on every alloc/dealloc
-#   normally -O3 is specified
-MALLOC_CFLAGS := -O3
-
-# By default, compile+link a stub module that does nothing, so that
-# we will just use the normal system malloc.  Only if the user wants
-# special malloc features will we switch to Doug Lea's.  The reason
-# is I've only tested my extra features on Linux, and on some other
-# systems (cygwin, OSX) they don't work and I don't have the inclination
-# to fix all my hacks.
-MALLOC_MODULE := malloc_stub
-
-# debug version (much slower, but *great* for finding memory errors)
-ifeq ($(DEBUG_HEAP),1)
-  MALLOC_CFLAGS := -DDEBUG -DDEBUG_HEAP
-  MALLOC_MODULE := malloc
-endif
-
-# tracing messages
-ifeq ($(TRACE_HEAP),1)
-  MALLOC_CFLAGS += -DTRACE_MALLOC_CALLS
-  MALLOC_MODULE := malloc
-endif
-
-$(MALLOC_MODULE).o: $(MALLOC_MODULE).c
-	$(CC) -c -g $(MALLOC_CFLAGS) $(MALLOC_MODULE).c
-
-
 # --------------------- main target ---------------------
 
 # mysig needs some flags to *not* be set ....
@@ -251,7 +213,6 @@ OBJS += gprintf.o
 OBJS += growbuf.o
 OBJS += hashline.o
 OBJS += hashtbl.o
-OBJS += $(MALLOC_MODULE).o
 OBJS += missing.o
 OBJS += mypopen.o
 OBJS += mysig.o
@@ -337,7 +298,6 @@ TESTS += test-sm-file-util.exe
 TESTS += test-stringset.exe
 TESTS += test-tree-print.exe
 TESTS += testarray.exe
-TESTS += testmalloc.exe
 TESTS += tobjlist.exe
 TESTS += tobjpool.exe
 TESTS += trdelete.exe
@@ -352,7 +312,6 @@ NON_MINGW_TESTS :=
 NON_MINGW_TESTS += mypopen.exe
 NON_MINGW_TESTS += mysig.exe
 NON_MINGW_TESTS += smregexp.exe
-NON_MINGW_TESTS += testmalloc.exe
 
 ifeq ($(TARGET_PLATFORM_IS_MINGW),1)
   TESTS := $(filter-out $(NON_MINGW_TESTS),$(TESTS))
@@ -410,15 +369,8 @@ bflatten.exe: bflatten.cc bflatten.h $(THIS)
 mysig.exe: mysig.cc mysig.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_MYSIG $(LDFLAGS) mysig.cc $(LIBS)
 
-testmalloc.exe: testmalloc.cc $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) testmalloc.cc $(LIBS)
-
 mypopen.exe: mypopen.c mypopen.h
 	$(CC) -o $@ $(CFLAGS) -DTEST_MYPOPEN $(LDFLAGS) mypopen.c
-
-# this test is only useful when malloc is compiled with DEBUG_HEAP
-tmalloc.exe: tmalloc.c $(THIS)
-	$(CC) -o $@ $(CFLAGS) $(LDFLAGS) tmalloc.c $(LIBS)
 
 tobjpool.exe: tobjpool.cc objpool.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) tobjpool.cc $(LIBS)
@@ -570,7 +522,6 @@ check: $(TESTS)
 	$(RUN)./unit-tests.exe
 ifneq ($(TARGET_PLATFORM_IS_MINGW),1)
 	$(RUN)./mysig.exe
-	$(RUN)./testmalloc.exe >/dev/null 2>&1
 	$(RUN)./mypopen.exe
 	$(RUN)./smregexp.exe
 endif

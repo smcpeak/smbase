@@ -3,7 +3,6 @@
 // based on tarrayqueue.cc
 
 #include "array.h"                     // module to test
-#include "ckheap.h"                    // malloc_stats
 #include "objlist.h"                   // ObjList
 #include "sm-macros.h"                 // TABLESIZE
 #include "sm-test.h"                   // PVAL, USUAL_MAIN
@@ -289,7 +288,6 @@ void entry()
   testArrayNegativeLength();
   testApplyFilter();
 
-  malloc_stats();
   printf("arrayStack appears to work; maxLength=%d\n", maxLength);
 }
 

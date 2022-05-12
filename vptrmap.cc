@@ -202,7 +202,6 @@ void VoidPtrMap::Iter::adv()
 
 #include "sm-test.h"   // USUAL_MAIN
 #include "array.h"     // ObjArrayStack
-#include "ckheap.h"    // malloc_stats
 #include "ptrmap.h"    // PtrMap
 
 #include <stdlib.h>    // rand, qsort
@@ -336,8 +335,6 @@ void test1()
   // compute median of avgprobes
   qsort(avgprobes, ITERS1, sizeof(avgprobes[0]), doubleCompar);
   printf("median avgprobe: %g\n", avgprobes[ITERS1/2]);
-
-  //malloc_stats();
 }
 
 

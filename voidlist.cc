@@ -4,7 +4,6 @@
 #include "voidlist.h"   // this module
 #include "breaker.h"    // breaker
 #include "str.h"        // stringc
-#include "ckheap.h"     // checkHeap
 
 #include <stdlib.h>     // rand()
 #include <stdio.h>      // printf()
@@ -68,13 +67,9 @@ void VoidList::selfCheck() const
 
   VoidNode *slow=top, *fast=top->next;
   while (fast && fast != slow) {
-    // check heap properties
-    checkHeapNode(fast);
-
     slow = slow->next;
     fast = fast->next;
     if (fast) {
-      checkHeapNode(fast);
       fast = fast->next;      // usually, fast jumps 2 spots per slow's 1
     }
   }
@@ -90,9 +85,8 @@ void VoidList::selfCheck() const
 
 void VoidList::checkHeapDataPtrs() const
 {
-  for (VoidNode *p=top; p!=NULL; p=p->next) {
-    checkHeapNode(p->data);
-  }
+  // 2022-05-11: This does nothing now that I have ripped out the old
+  // debug heap stuff.
 }
 
 

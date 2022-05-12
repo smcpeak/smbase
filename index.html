@@ -444,17 +444,6 @@ These modules provide additional control over the allocator.
 
 <ul>
 
-<li><a href="ckheap.h">ckheap.h</a>:
-Interface to check heap integrity.  The underlying malloc implementation
-must support these entry points for it to work.  I've extended Doug
-Lea's malloc (<a href="malloc.c">malloc.c</a>) to do so.
-
-<li><a href="malloc.c">malloc.c</a>:
-Version 2.7.0 of
-<a href="http://gee.cs.oswego.edu/dl/html/malloc.html">Doug Lea's malloc</a>.
-I've made some modifications to help with debugging of memory errors
-in client code.
-
 <li><a href="objpool.h">objpool.h</a>:
 ObjPool, a custom allocator for fixed-size objects with embedded
 'next' links.

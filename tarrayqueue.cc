@@ -3,7 +3,6 @@
 
 #include "arrayqueue.h"      // module to test
 #include "objlist.h"         // ObjList
-#include "ckheap.h"          // malloc_stats
 
 #include <stdio.h>           // printf
 #include <stdlib.h>          // exit
@@ -72,7 +71,6 @@ int main()
     round(1000);
   }
 
-  malloc_stats();
   printf("arrayqueue appears to work; maxLength=%d\n", maxLength);
   return 0;
 }

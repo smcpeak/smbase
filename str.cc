@@ -13,7 +13,6 @@
 #include <unistd.h>         // write
 
 #include "xassert.h"        // xassert
-#include "ckheap.h"         // checkHeapNode
 #include "flatten.h"        // Flatten
 #include "nonport.h"        // vnprintf
 #include "array.h"          // Array
@@ -170,11 +169,7 @@ void string::write(ostream &os) const
 
 
 void string::selfCheck() const
-{
-  if (s != emptyString) {
-    checkHeapNode(s);
-  }
-}
+{}
 
 
 // ----------------------- rostring ---------------------

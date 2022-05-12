@@ -454,7 +454,6 @@ void BoxPrint::debugPrintCout() const
 // ------------------------ test code ----------------------
 #ifdef TEST_BOXPRINT
 
-#include "ckheap.h"       // malloc_stats
 #include "sm-test.h"      // ARGS_TEST_MAIN
 
 #include <stdlib.h>       // atoi
