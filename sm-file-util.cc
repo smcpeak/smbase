@@ -22,7 +22,7 @@
 // POSIX fragment evidently portable enough to unconditionally include,
 // at least for Windows (mingw, cygwin) and Linux.
 #include <dirent.h>                    // opendir, readdir, etc.
-#include <sys/stat.h>                  // stat
+#include <sys/stat.h>                  // stat, mkdir
 
 // Use the Windows API?  I want an easy way to switch it so I can test
 // both ways under cygwin, although my intent *is* to use it normally
@@ -619,6 +619,28 @@ SMFileUtil::FileKind SMFileUtil::getFileKind(string const &path)
   }
   else {
     return FK_OTHER;
+  }
+}
+
+
+void SMFileUtil::createDirectoryAndParents(string const &path_)
+{
+  string path = stripTrailingDirectorySeparator(path_);
+  if (directoryExists(path)) {
+    return;
+  }
+
+  string dir;
+  string base;
+  splitPath(dir, base, path);
+
+  if (!dir.empty()) {
+    createDirectoryAndParents(dir);
+  }
+
+  int res = mkdir(path.c_str(), 0755);
+  if (res != 0) {
+    xsyserror("mkdir", path);
   }
 }
 

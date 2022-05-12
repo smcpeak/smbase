@@ -240,6 +240,14 @@ public:      // funcs
   bool pathExists(string const &path)
     { return getFileKind(path) != FK_NONE; }
 
+  // Create 'path' and any needed parents if it does not already exist.
+  // If it, or any parent, already exists but is not a directory, throw
+  // 'xSysError' with reason R_ALREADY_EXISTS.  Any other problem also
+  // causes 'xSysError' to be thrown.  If no exception is thrown, then
+  // after this call, the directory exists.  A trailing directory
+  // separator on 'path' is ignored.
+  virtual void createDirectoryAndParents(string const &path);
+
   // True if 'path' exists, but the current user does not have write
   // permission for it.  This does not throw; it returns false if the
   // file does not exist or we cannot determine whether it is read-only.

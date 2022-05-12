@@ -10,8 +10,10 @@
 
 // smbase
 #include "nonport.h"                   // GetMillisecondsAccumulator
+#include "run-process.h"               // RunProcess
 #include "sm-test.h"                   // ARGS_TEST_MAIN, PVAL
 #include "strutil.h"                   // compareStringPtrs
+#include "syserr.h"                    // xSysError
 
 
 // Run some checks on the 'fn' object directly.
@@ -597,6 +599,53 @@ static void testAtomicallyRenameFile()
 }
 
 
+// Run 'rm -rf path'.
+static void rm_rf(char const *path)
+{
+  RunProcess::check_run(std::vector<string>{"rm", "-rf", path});
+}
+
+
+static void testCreateDirectoryAndParents()
+{
+  SMFileUtil sfu;
+
+  // Start by clearing the test directory.
+  rm_rf("tmpdir");
+
+  // Make directories.
+  sfu.createDirectoryAndParents("tmpdir/a/b/c/");
+  xassert(sfu.directoryExists("tmpdir/a/b/c"));
+
+  // Remove some of them.
+  rm_rf("tmpdir/a/b");
+  xassert(sfu.directoryExists("tmpdir/a"));
+  xassert(!sfu.directoryExists("tmpdir/a/b"));
+
+  // Re-make some.
+  sfu.createDirectoryAndParents("tmpdir/a/b/c");
+  xassert(sfu.directoryExists("tmpdir/a/b/c"));
+
+  // Remove some again.
+  rm_rf("tmpdir/a/b");
+
+  // Make 'b' as a regular file.
+  RunProcess::check_run(std::vector<string>{"touch", "tmpdir/a/b"});
+
+  // Now try to create.
+  try {
+    sfu.createDirectoryAndParents("tmpdir/a/b/c");
+    xfailure("that should have failed");
+  }
+  catch (xSysError &x) {
+    xassert(x.reason == xSysError::R_ALREADY_EXISTS);
+  }
+
+  // Clean up.
+  rm_rf("tmpdir");
+}
+
+
 // Defined in sm-file-util.cc.
 void getDirectoryEntries_scanThenStat(SMFileUtil &sfu,
   ArrayStack<SMFileUtil::DirEntryInfo> /*OUT*/ &entries, string const &directory);
@@ -650,6 +699,7 @@ static void entry(int argc, char **argv)
   testCollapseDots();
   testGetFileKind();
   testAtomicallyRenameFile();
+  testCreateDirectoryAndParents();
 
   cout << "test-sm-file-util ok" << endl;
 }
