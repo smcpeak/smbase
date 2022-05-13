@@ -15,6 +15,10 @@
 // appears in any of the result words.
 std::vector<std::string> splitNonEmpty(std::string const &text, char sep);
 
+// Return elements of 'vec' separated by 'sep'.
+std::string join(std::vector<std::string> const &vec,
+                 std::string const &sep);
+
 // Insert 'str' into 'os', surrounded by double quotes, and using C-like
 // escape sequences for double-quotes, backslashes, and all
 // non-printable characters.
@@ -34,5 +38,19 @@ std::string toString(std::vector<std::string> const &vec);
 // If 'fname' contains any '.' characters, remove the last one and all
 // following characters, and return that.  Otherwise return 'fname'.
 std::string stripExtension(std::string const &fname);
+
+// True if 'arr' is strictly sorted in ascending order per 'strcmp',
+// which is equivalent to "LANG=C sort" order.
+bool isStrictlySortedStringArray(char const * const *arr,
+                                 size_t arrLength);
+
+// Return true if 'str' compares equal to any of the strings in 'arr',
+// whose length is 'arrLength'.  The array must satisfy
+// 'isStrictlySortedStringArray'.
+bool stringInSortedArray(char const *str, char const * const *arr,
+                         size_t arrLength);
+
+// True if 'str' begins with 'prefix'.
+bool beginsWith(std::string const &str, std::string const &prefix);
 
 #endif // STRING_UTILS_H

@@ -3,6 +3,11 @@
 
 #include "string-utils.h"              // this module
 
+#include "strcmp-compare.h"            // StrcmpCompare
+#include "vector-utils.h"              // accumulateWith
+#include "xassert.h"                   // xassertdb
+
+#include <algorithm>                   // std::binary_search
 #include <cstring>                     // std::strrchr
 #include <sstream>                     // std::ostringstream
 
@@ -43,6 +48,18 @@ std::vector<std::string> splitNonEmpty(std::string const &text, char sep)
   }
 
   return tokens;
+}
+
+
+// Given that this is a one-liner, one might ask: why have it at all,
+// rather than letting callers use 'accumulateWith'?  The problem with
+// the latter is that I can't just pass a quoted string literal because
+// template argument deduction is unhappy if I do that.  By defining
+// this non-template, that problem goes away.
+std::string join(std::vector<std::string> const &vec,
+                 std::string const &sep)
+{
+  return accumulateWith(vec, sep);
 }
 
 
@@ -165,6 +182,40 @@ std::string stripExtension(std::string const &fname)
   else {
     return fname;
   }
+}
+
+
+bool isStrictlySortedStringArray(char const * const *arr, size_t arrLength)
+{
+  for (size_t i = 1; i < arrLength; i++) {
+    if (strcmpCompare(arr[i-1], arr[i])) {
+      // These two are in the right order.
+    }
+    else {
+      // Not in right order.
+      return false;
+    }
+  }
+  return true;
+}
+
+
+bool stringInSortedArray(char const *str, char const * const *arr,
+                         size_t arrLength)
+{
+  xassertdb(isStrictlySortedStringArray(arr, arrLength));
+  return std::binary_search(arr, arr+arrLength, str, StrcmpCompare());
+}
+
+
+bool beginsWith(std::string const &str, std::string const &prefix)
+{
+  // This does a backward search from the *beginning*, meaning the
+  // prefix must occur right at the start to get a zero return.
+  //
+  // This bit of cleverness is taken from:
+  // https://stackoverflow.com/questions/1878001/how-do-i-check-if-a-c-stdstring-starts-with-a-certain-string-and-convert-a
+  return str.rfind(prefix, 0) == 0;
 }
 
 

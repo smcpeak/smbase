@@ -48,6 +48,48 @@ static void testSplitNonEmpty()
 }
 
 
+static void testJoin()
+{
+  struct Test {
+    std::vector<std::string> m_vec;
+    char const *m_sep;
+    char const *m_expect;
+  }
+  const tests[] = {
+    {
+      { "" },
+      "",
+      ""
+    },
+    {
+      { "" },
+      "x",
+      ""
+    },
+    {
+      { "a" },
+      " ",
+      "a"
+    },
+    {
+      { "a", "b" },
+      " ",
+      "a b"
+    },
+    {
+      { "a", "b" },
+      "",
+      "ab"
+    },
+  };
+
+  for (auto t : tests) {
+    std::string actual = join(t.m_vec, t.m_sep);
+    EXPECT_EQ(actual, t.m_expect);
+  }
+}
+
+
 static void testDoubleQuote()
 {
   static struct Test {
@@ -136,12 +178,79 @@ static void testStripExtension()
 }
 
 
+static void testIsStrictlySortedArray()
+{
+  // Basic ordering and rejection of repetition.
+  static char const * const arr1[] = {
+    "a", "b", "b", "a"
+  };
+  xassert(isStrictlySortedStringArray(arr1, 0));
+  xassert(isStrictlySortedStringArray(arr1, 1));
+  xassert(isStrictlySortedStringArray(arr1, 2));
+  xassert(!isStrictlySortedStringArray(arr1, 3));
+  xassert(!isStrictlySortedStringArray(arr1, 4));
+  xassert(!isStrictlySortedStringArray(arr1+2, 2));
+  xassert(isStrictlySortedStringArray(arr1+2, 1));
+
+  // ASCII order versus traditional collation order.
+  static char const * const arr2[] = {
+    "A", "B", "a", "b", "C"
+  };
+  xassert(isStrictlySortedStringArray(arr2, 4));
+  xassert(!isStrictlySortedStringArray(arr2, 5));
+}
+
+
+static void testStringInSortedArray()
+{
+  static char const * const arr1[] = {
+    "baz",
+    "foo",
+    "foobar",
+  };
+  xassert(stringInSortedArray("foo", arr1, TABLESIZE(arr1)));
+  xassert(stringInSortedArray("foobar", arr1, TABLESIZE(arr1)));
+  xassert(!stringInSortedArray("foobaz", arr1, TABLESIZE(arr1)));
+  xassert(!stringInSortedArray("goo", arr1, TABLESIZE(arr1)));
+  xassert(!stringInSortedArray("fo", arr1, TABLESIZE(arr1)));
+}
+
+
+static void testBeginsWith()
+{
+  static struct Test {
+    char const *m_str;
+    char const *m_prefix;
+    bool m_expect;
+  }
+  const tests[] = {
+    { "", "", true },
+    { "", "x", false },
+    { "x", "", true },
+    { "x", "x", true },
+    { "x", "y", false },
+    { "xy", "y", false },
+    { "abcdef", "abc", true },
+    { "defabc", "abc", false },
+  };
+
+  for (auto t : tests) {
+    bool actual = beginsWith(t.m_str, t.m_prefix);
+    EXPECT_EQ(actual, t.m_expect);
+  }
+}
+
+
 void test_string_utils()
 {
   testSplitNonEmpty();
+  testJoin();
   testDoubleQuote();
   testVectorToString();
   testStripExtension();
+  testIsStrictlySortedArray();
+  testStringInSortedArray();
+  testBeginsWith();
 }
 
 
