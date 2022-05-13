@@ -225,6 +225,7 @@ SRCS += pprint.cc
 SRCS += refct-serf.cc
 SRCS += run-process.cc
 SRCS += sm-file-util.cc
+SRCS += sm-to-std-string.cc
 SRCS += smregexp.cc
 SRCS += srcloc.cc
 SRCS += str.cc
