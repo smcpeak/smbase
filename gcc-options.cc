@@ -5,9 +5,10 @@
 
 #include "binary-lookup.h"             // binary_lookup
 #include "container-utils.h"           // insertUnique
+#include "sm-file-util.h"              // SMFileUtil
 #include "sm-macros.h"                 // EMEMB, DEFINE_ENUMERATION_TO_STRING
 #include "strcmp-compare.h"            // StrcmpCompare, etc.
-#include "string-utils.h"              // stripExtension
+#include "string-utils.h"              // stripExtension, stringInSortedArray, join
 #include "strutil.h"                   // prefixEquals
 #include "xassert.h"                   // xassert
 
@@ -29,6 +30,9 @@
 // NOTE: The first four groups' syntax means they apply to any option
 // that begins with that name, whereas the rest require some sort of
 // separator if they accept an argument.
+
+// TODO: I should make these into one table, but I need to write a
+// script first to help with the formatting.
 
 
 // OS_EMPTY
@@ -146,13 +150,13 @@ static char const * const noArgSwitches[] = {
   "-MM",
   "-MMD",
   "-MP",
-  "-Mno-modules",
+  "-Mno-modules",  // My GCC-9.3.0 says this is unrecognized...
   "-P",
   "-Q",
   "-S",
   "-ansi",
   "-c",
-  "-gen-decls",  // Note: "-g" is a prefix, creating an ambiguity.
+  "-gen-decls",    // Note: "-g" is a prefix, creating an ambiguity.
   "-p",
   "-pass-exit-codes",
   "-pedantic",
@@ -231,12 +235,28 @@ DEFINE_ENUMERATION_TO_STRING(
   GCCOptions::OutputMode,
   GCCOptions::NUM_OUTPUT_MODES,
   (
+    "OM_MAKE_RULE",
     "OM_PREPROCESSED",
     "OM_ASSEMBLY",
     "OM_OBJECT_CODE",
     "OM_EXECUTABLE",
   )
 )
+
+
+char const *extensionForGCCOutputMode(GCCOptions::OutputMode outputMode)
+{
+  static char const * const exts[] = {
+    ".d",
+    ".i",
+    ".s",
+    ".o",
+    ".out",
+  };
+  ASSERT_TABLESIZE(exts, GCCOptions::NUM_OUTPUT_MODES);
+  xassert((unsigned)outputMode < GCCOptions::NUM_OUTPUT_MODES);
+  return exts[outputMode];
+}
 
 
 // ----------------------------- Option --------------------------------
@@ -392,11 +412,14 @@ GCCOptions::Option const &GCCOptions::at(size_t index) const
 
 GCCOptions::OutputMode GCCOptions::outputMode() const
 {
-  bool hasE=false, hasS=false, hasC=false;
+  bool hasM=false, hasE=false, hasS=false, hasC=false;
 
   for (Iter iter(*this); iter.hasMore(); iter.adv()) {
     Option const &o = iter.opt();
-    if (o.m_name == "-E") {
+    if (o.m_name == "-M" || o.m_name == "-MM") {
+      hasM = true;
+    }
+    else if (o.m_name == "-E") {
       hasE = true;
     }
     else if (o.m_name == "-S") {
@@ -407,8 +430,12 @@ GCCOptions::OutputMode GCCOptions::outputMode() const
     }
   }
 
-  // Based on experimentation with GCC-9.3.0, -E takes precedence, then
-  // -S, then finally -c, regardless of the order in which they appear.
+  // Based on experimentation with GCC-9.3.0, -M has highest precedence,
+  // then -E, then -S, then finally -c, regardless of the order in which
+  // they appear.
+  if (hasM) {
+    return OM_MAKE_RULE;
+  }
   if (hasE) {
     return OM_PREPROCESSED;
   }
@@ -423,37 +450,43 @@ GCCOptions::OutputMode GCCOptions::outputMode() const
 }
 
 
-std::string GCCOptions::getExplicitOutputFile() const
+bool GCCOptions::hasOption(std::string const &name) const
 {
-  for (Iter iter(*this); iter.hasMore(); iter.adv()) {
-    Option const &o = iter.opt();
-    if (o.m_name == "-o") {
-      return o.m_argument;
-    }
-  }
-  return std::string();
+  std::string dummy;
+  return getArgumentForOption(name, dummy);
 }
 
 
-std::string GCCOptions::getOutputFile() const
+bool GCCOptions::getArgumentForOption(std::string const &name,
+                                      std::string &argument) const
 {
-  std::string expl = getExplicitOutputFile();
-  if (!expl.empty()) {
-    return expl;
+  for (Iter iter(*this); iter.hasMore(); iter.adv()) {
+    Option const &o = iter.opt();
+    if (o.m_name == name) {
+      argument = o.m_argument;
+      return true;
+    }
+  }
+  return false;
+}
+
+
+bool GCCOptions::getExplicitOutputFile(std::string &fname) const
+{
+  if (outputMode() == OM_MAKE_RULE) {
+    // With -M or -MM, the -MF option takes precedence.  (If -o is also
+    // used, the named file gets created but is left empty.)
+    if (getArgumentForOption("-MF", fname)) {
+      return true;
+    }
   }
 
-  OutputMode mode = outputMode();
+  return getArgumentForOption("-o", fname);
+}
 
-  if (mode == OM_PREPROCESSED) {
-    return "";               // Means standard output.
-  }
 
-  if (mode == OM_EXECUTABLE) {
-    return "a.out";
-  }
-
-  // Scan for a source file name.
-  std::string srcFileName;
+bool GCCOptions::getFirstSourceFileName(std::string &fname) const
+{
   for (Iter iter(*this); iter.hasMore(); iter.adv()) {
     Option const &opt = iter.opt();
     if (opt.isInputFile()) {
@@ -461,26 +494,85 @@ std::string GCCOptions::getOutputFile() const
         gccLanguageForFile(opt.m_argument, iter.xLang());
       if (!lang.empty()) {
         // This is a source (not object) file.
-        //
-        // There might be more than one.  That would make the command
-        // line invalid, but it's not my job to diagnose that.  Here, I
-        // will just let the last one win.
-        srcFileName = opt.m_argument;
+        fname = opt.m_argument;
+        return true;
       }
     }
   }
 
-  if (srcFileName.empty()) {
-    // We didn't see a source file name, so can't compute the output
-    // file name.
-    return "";
+  return false;
+}
+
+
+bool GCCOptions::getOutputFile(std::string &fname) const
+{
+  if (getExplicitOutputFile(fname)) {
+    return true;
   }
 
-  // Remove any extension from the file name.
-  std::string srcNoExt = stripExtension(srcFileName);
+  OutputMode mode = outputMode();
 
-  // Default output name.
-  return srcNoExt + (mode == OM_OBJECT_CODE? ".o" : ".s");
+  if (mode == OM_PREPROCESSED || mode == OM_MAKE_RULE) {
+    return false;
+  }
+
+  if (mode == OM_EXECUTABLE) {
+    fname = "a.out";
+    return true;
+  }
+
+  // Scan for a source file name.
+  std::string srcFileName;
+  if (getFirstSourceFileName(srcFileName)) {
+    // Remove any extension from the file name.
+    std::string srcNoExt = stripExtension(srcFileName);
+
+    // Default output name.
+    fname = srcNoExt + extensionForGCCOutputMode(mode);
+    return true;
+  }
+  else {
+    // We didn't see a source file name, so can't compute the output
+    // file name.
+    return false;
+  }
+}
+
+
+bool GCCOptions::createsDependencyFile(std::string &fname) const
+{
+  if (hasOption("-MD") || hasOption("-MMD")) {
+    // The output file is the first of:
+    //   * name given to -MF, or
+    //   * name given to -o with suffix replaced with ".d", or
+    //   * name of source file, without directory, and suffix replaced
+    //     with ".d".
+
+    if (getArgumentForOption("-MF", fname)) {
+      return true;
+    }
+
+    std::string oname;
+    if (getArgumentForOption("-o", oname)) {
+      fname = stripExtension(oname) + ".d";
+      return true;
+    }
+
+    std::string srcname;
+    if (getFirstSourceFileName(srcname)) {
+      SMFileUtil sfu;
+      fname = stripExtension(sfu.splitPathBase(srcname)) + ".d";
+      return true;
+    }
+
+    // We can't figure out what the name is supposed to be, so pretend
+    // no dependency file will be generated.  In a case like this, GCC
+    // should give an error.
+    return false;
+  }
+  else {
+    return false;
+  }
 }
 
 
@@ -490,6 +582,14 @@ void GCCOptions::getCommandWords(
   for (Iter iter(*this); iter.hasMore(); iter.adv()) {
     iter.opt().appendWords(commandWords);
   }
+}
+
+
+std::string GCCOptions::toCommandLineString() const
+{
+  std::vector<std::string> commandWords;
+  getCommandWords(commandWords);
+  return join(commandWords, " ");
 }
 
 
@@ -689,16 +789,16 @@ bool GCCOptions::parseOption(
 }
 
 
+// TODO: I don't think I need this function.  Remove it.
 void GCCOptions::ensureExplicitOutputFile()
 {
-  std::string fn = getExplicitOutputFile();
-  if (!fn.empty()) {
+  std::string fn;
+  if (getExplicitOutputFile(fn)) {
     return;
   }
 
   // Compute the default.
-  fn = getOutputFile();
-  if (!fn.empty()) {
+  if (getOutputFile(fn)) {
     // Specify it as an option.
     addSpaceOption("-o", fn);
   }
@@ -709,8 +809,9 @@ void GCCOptions::ensureExplicitOutputFile()
 
 
 // ------------------------ Global functions ---------------------------
-// Set of legal arguments to the "-x" option, in "LANG=C sort" order.
+// Set of legal arguments to the "-x" option.
 static char const * const xLanguageValues[] = {
+  // sorted: LANG=C sort
   "ada",
   "assembler",
   "assembler-with-cpp",
@@ -739,15 +840,12 @@ static char const * const xLanguageValues[] = {
 
 static bool isValidGCCLanguage(char const *lang)
 {
-  return std::binary_search(xLanguageValues,
-                            ARRAY_ENDPTR(xLanguageValues),
-                            lang,
-                            StrcmpCompare());
+  return stringInSortedArray(lang, xLanguageValues,
+                             TABLESIZE(xLanguageValues));
 }
 
 
-// Extensions that map to a different language code, in "LANG=C sort"
-// order.
+// Extensions that map to a different language code.
 static struct ExtensionMapEntry {
   // Extension that a file might have.
   char const *m_ext;
@@ -756,6 +854,7 @@ static struct ExtensionMapEntry {
   char const *m_lang;
 }
 const extensionMap[] = {
+  // sorted: LANG=C sort
   { "C",      "c++" },
   { "CPP",    "c++" },
   { "F",      "f77-cpp-input" },
@@ -850,9 +949,16 @@ std::string gccLanguageForFile(std::string const &fname,
 
 bool specifiesGCCOutputMode(std::string const &name)
 {
-  return name == "-E" ||
-         name == "-S" ||
-         name == "-c";
+  static char const * const names[] = {
+    // sorted: LANG=C sort
+    "-E",
+    "-M",
+    "-MM",
+    "-S",
+    "-c",
+  };
+
+  return stringInSortedArray(name.c_str(), names, TABLESIZE(names));
 }
 
 

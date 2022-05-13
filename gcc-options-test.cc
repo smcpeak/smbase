@@ -315,6 +315,7 @@ static void testOutputMode()
     GCCOptions::OutputMode m_expect;
   }
   const tests[] = {
+    // columns: \{ OM \}
     { { },                             OM(EXECUTABLE) },
     { { "hello.c" },                   OM(EXECUTABLE) },
     { { "-c" },                        OM(OBJECT_CODE) },
@@ -330,6 +331,14 @@ static void testOutputMode()
     { { "-E", "-S", "-c" },            OM(PREPROCESSED) },
     { { "-c", "-S", "-E" },            OM(PREPROCESSED) },
     { { "-c", "-S", "-E", "-c" },      OM(PREPROCESSED) },
+    { { "-M" },                        OM(MAKE_RULE) },
+    { { "-M", "-E" },                  OM(MAKE_RULE) },
+    { { "-c", "-M" },                  OM(MAKE_RULE) },
+    { { "-M", "-S" },                  OM(MAKE_RULE) },
+    { { "-M", "-E", "-S", "-c" },      OM(MAKE_RULE) },
+    { { "-MM" },                       OM(MAKE_RULE) },
+    { { "-MM", "-E" },                 OM(MAKE_RULE) },
+    { { "-c", "-MM" },                 OM(MAKE_RULE) },
   };
 
   for (OMTest const &t : tests) {
@@ -420,12 +429,21 @@ static void testSpecifiesGCCOutputMode()
     char const *m_name;
     bool m_expect;
   } const tests[] = {
+    // columns: \{ \S+ @20:\S+ \}
     { "-c",        true },
     { "-E",        true },
     { "-S",        true },
     { "-f",        false },
     { "",          false },
     { "-f-c",      false },
+    { "-M",        true },
+    { "-MM",       true },
+
+    // These two specify to generate dependency rules as a side effect,
+    // but do not change what the primary output (which goes into the
+    // file named by -o) is.
+    { "-MD",       false },
+    { "-MMD",      false },
   };
 
   for (auto t : tests) {
@@ -510,7 +528,7 @@ static void testEnsureExplicitOutputFile()
     },
     {
       { "-c", "foo.c", "bar.c" },
-      { "-c", "foo.c", "bar.c", "-o", "bar.o" },  // pick second
+      { "-c", "foo.c", "bar.c", "-o", "foo.o" },  // pick first
     },
     {
       { "-c", "foo.c", "-o", "bar.o" },
@@ -534,20 +552,20 @@ static void testGetExplicitOutputFile()
 {
   struct Test {
     std::vector<std::string> m_input;
-    char const *m_expect;
+    char const *m_expect;    // NULL if we expect false return.
   }
   const tests[] = {
     {
       {},
-      "",
+      NULL,
     },
     {
       { "-c" },
-      "",
+      NULL,
     },
     {
       { "-c", "foo.c" },
-      "",
+      NULL,
     },
     {
       { "-o", "foo" },
@@ -557,12 +575,93 @@ static void testGetExplicitOutputFile()
       { "-obar", "foo" },
       "bar",
     },
+    {
+      { "-M", "-obar", "foo" },
+      "bar",
+    },
+    {
+      { "-M", "-obar", "-MFbaz", "foo" },
+      "baz",
+    },
+    {
+      { "-MD", "-obar", "-MFbaz", "foo" },
+      "bar",
+    },
+    {
+      { "-MM", "-obar", "-MF", "baz", "foo" },
+      "baz",
+    },
+    {
+      { "-M", "-MFbaz" },
+      "baz",
+    },
+    {
+      { "-M" "foo" },
+      NULL,
+    },
   };
 
   for (auto t : tests) {
     GCCOptions opts(t.m_input);
-    std::string actual = opts.getExplicitOutputFile();
-    EXPECT_EQ(actual, std::string(t.m_expect));
+    std::string actual;
+    bool found = opts.getExplicitOutputFile(actual);
+    EXPECT_EQ(found, t.m_expect!=NULL);
+    if (found) {
+      EXPECT_EQ(actual, std::string(t.m_expect));
+    }
+  }
+}
+
+
+static void testGetFirstSourceFileName()
+{
+  struct Test {
+    std::vector<std::string> m_input;
+    char const *m_expect;
+  }
+  const tests[] = {
+    {
+      {},
+      NULL
+    },
+    {
+      { "foo.c" },
+      "foo.c"
+    },
+    {
+      { "foo.c", "bar.c" },
+      "foo.c"
+    },
+    {
+      { "foo.o", "bar.c" },
+      "bar.c"
+    },
+    {
+      { "-xc", "foo.o", "bar.c" },
+      "foo.o"
+    },
+    {
+      { "-xnone", "foo.o", "bar.c" },
+      "bar.c"
+    },
+    {
+      { "-xc", "-xnone", "foo.o", "bar.c" },
+      "bar.c"
+    },
+    {
+      { "-xc", "-xnone", "foo.o" },
+      NULL
+    },
+  };
+
+  for (auto t : tests) {
+    GCCOptions opts(t.m_input);
+    std::string actual;
+    bool found = opts.getFirstSourceFileName(actual);
+    EXPECT_EQ(found, t.m_expect!=NULL);
+    if (found) {
+      EXPECT_EQ(actual, std::string(t.m_expect));
+    }
   }
 }
 
@@ -596,14 +695,101 @@ static void testGetOutputFile()
     },
     {
       { "-c" },
-      ""
+      NULL
+    },
+
+    // See doc/index.html#gcc-dependency-rules .
+    {
+      { "-M", "bar.c" },
+      NULL
+    },
+    {
+      { "-M", "-MFbar.d", "foo.c" },
+      "bar.d"
+    },
+    {
+      { "-M", "-obar.d", "foo.c" },
+      "bar.d"
+    },
+    {
+      { "-M", "-MFbaz.d", "-obar.d", "foo.c" },
+      "baz.d"
     },
   };
 
   for (auto t : tests) {
     GCCOptions opts(t.m_input);
-    std::string actual = opts.getOutputFile();
-    EXPECT_EQ(actual, std::string(t.m_expect));
+    std::string actual;
+    bool found = opts.getOutputFile(actual);
+    EXPECT_EQ(found, t.m_expect!=NULL);
+    if (found) {
+      EXPECT_EQ(actual, std::string(t.m_expect));
+    }
+  }
+}
+
+
+static void testCreatesDependencyFile()
+{
+  struct Test {
+    std::vector<std::string> m_input;
+    char const *m_expect;    // NULL for false return
+  }
+  const tests[] = {
+    {
+      { "-c", "foo.c" },
+      NULL
+    },
+    {
+      { "-c", "foo.c", "-MF", "something" },  // GCC would complain
+      NULL
+    },
+    {
+      { "-c", "foo.c", "-MD" },
+      "foo.d"
+    },
+    {
+      { "-c", "src/foo.c", "-MD" },
+      "foo.d"
+    },
+    {
+      { "-c", "-xc", "foo", "-MD" },
+      "foo.d"
+    },
+    {
+      { "-c", "foo.c", "-MMD", "-MF", "bar.d" },
+      "bar.d"
+    },
+    {
+      { "-c", "foo.c", "-MMD", "-MF", "obj/bar.d" },
+      "obj/bar.d"
+    },
+    {
+      { "-c", "foo.c", "-MMD", "-o", "bar.o" },
+      "bar.d"
+    },
+    {
+      { "-c", "foo.c", "-MMD", "-o", "bar" },
+      "bar.d"
+    },
+    {
+      { "-c", "foo.c", "-MMD", "-o", "bar.bar.o" },
+      "bar.bar.d"
+    },
+    {
+      { "-c", "foo.c", "-MMD", "-MF", "bar.d", "-o", "baz.d" },
+      "bar.d"                  // -MF takes precedence
+    },
+  };
+
+  for (auto t : tests) {
+    GCCOptions opts(t.m_input);
+    std::string actual;
+    bool found = opts.createsDependencyFile(actual);
+    EXPECT_EQ(found, t.m_expect!=NULL);
+    if (found) {
+      EXPECT_EQ(actual, std::string(t.m_expect));
+    }
   }
 }
 
@@ -623,7 +809,9 @@ void test_gcc_options()
   testAddOption();
   testEnsureExplicitOutputFile();
   testGetExplicitOutputFile();
+  testGetFirstSourceFileName();
   testGetOutputFile();
+  testCreatesDependencyFile();
 }
 
 

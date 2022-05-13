@@ -138,6 +138,7 @@ public:      // types
 
   // Possible types of output a GCC command line can specify.
   enum OutputMode {
+    OM_MAKE_RULE,            // -M and -MM
     OM_PREPROCESSED,         // -E
     OM_ASSEMBLY,             // -S
     OM_OBJECT_CODE,          // -c
@@ -289,21 +290,49 @@ public:      // methods
   // Get the output mode specified on this command line.
   OutputMode outputMode() const;
 
-  // If there is an output file explicitly specified with "-o", get its
-  // argument.  Otherwise return the empty string.
-  std::string getExplicitOutputFile() const;
+  // Return true if an option with 'name' is present.
+  bool hasOption(std::string const &name) const;
 
-  // If an output file is explicitly specified, return that.  Otherwise,
-  // compute the default output file, taking into account the current
-  // output mode.  If no output file is specified and the mode is
-  // OM_PREPROCESSED, return the empty string, signifying standard
+  // If there is an option with 'name', yield its argument in 'argument'
+  // and return true.  Otherwise return false.
+  bool getArgumentForOption(std::string const &name,
+                            std::string &argument) const;
+
+  // If there is an output file explicitly specified with "-o", or with
+  // "-MF" in OM_MAKE_RULE, put its argument into 'fname'.  Otherwise
+  // return false.
+  bool getExplicitOutputFile(std::string &fname) const;
+
+  // If there is at least one source file listed on the command line,
+  // return true and set 'fname' to the first such.
+  bool getFirstSourceFileName(std::string &fname) const;
+
+  // If an output file is explicitly specified, put that into 'fname'
+  // and return true.  Otherwise, compute the default output file,
+  // taking into account the current output mode, store it in 'fname'
+  // and return true.  If no output file is specified and the mode is
+  // OM_PREPROCESSED or OM_MAKE_RULE, return false, signifying standard
   // output.  In assembly or object code mode, if the command line does
-  // not have any source file name, then it is invalid, in which case
-  // we also return the empty string.
-  std::string getOutputFile() const;
+  // not have any source file name, then it is invalid, in which case we
+  // return false.
+  bool getOutputFile(std::string &fname) const;
+
+  // If the command contains -MD or -MMD, return true, and set 'fname'
+  // to the name of the dependency file it creates (which could be
+  // specified explicitly or -MF or implicitly in a couple ways).
+  //
+  // If we can't figure out what the file would be named (because the
+  // command line seems invalid), return false even if -MD/-MMD are
+  // present.
+  bool createsDependencyFile(std::string &fname) const;
 
   // Get the sequence of command words.
   void getCommandWords(std::vector<std::string> &commandWords) const;
+
+  // Return a space-separated string with all the command words.  This
+  // is meant for error messages or the like, as the words are not
+  // quoted, so there can be ambiguity.
+  std::string toCommandLineString() const;
 
   // Parse 'args' as GCC options and append them to the options
   // sequence.  The name of the compiler itself is *not* among these
@@ -331,9 +360,16 @@ public:      // methods
   void addSpaceOption(std::string const &name,
                       std::string const &argument);
 
-  // If there is not already a "-o" option, add one using the GCC rules
-  // for default output file names.  This does nothing in preprocessing
-  // mode.
+  // If there is not already a "-o" option, and this command would
+  // create an output file for which "-o" would control its name,
+  // compute the name that would be created and add "-o" specifying it.
+  //
+  // If the command only writes its primary output to stdout (i.e., with
+  // -E or -M[M] when -o is missing), then this does not add any "-o".
+  //
+  // This function does not do anything regarding the output file
+  // created by the -MD and -MMD options.
+  //
   void ensureExplicitOutputFile();
 };
 
@@ -356,6 +392,10 @@ char const *toString(GCCOptions::SyntaxError syntaxError);
 char const *toString(GCCOptions::OutputMode outputMode);
 
 
+// Returns ".o" for OM_OBJECT_CODE, etc.
+char const *extensionForGCCOutputMode(GCCOptions::OutputMode outputMode);
+
+
 // If 'xLang' is the empty string, apply GCC's file name heuristics to
 // 'fname' to deduce its language, yielding a string that could be the
 // argument to the "-x" switch.  Otherwise, return 'xLang'.  If the
@@ -369,7 +409,7 @@ std::string gccLanguageForFile(std::string const &fname,
 
 
 // True if 'name' is among those that specify the gcc output mode,
-// namely, "-c", "-E", or "-S".
+// namely, "-c", "-E", "-S", "-M", or "-MM".
 bool specifiesGCCOutputMode(std::string const &name);
 
 
