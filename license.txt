@@ -1,2 +1,10 @@
 All of the modules in the smbase directory are
 hereby placed in the public domain.
+
+Except:
+  - on-leaving-scope.h has its own copyright and Apache license.
+  - crc.cpp was not written by me.  I lost track of where I originally
+    got it, although the same code can readily be found in various
+    places, with various open source licenses prepended, by searching
+    for phrases in its comments, so at least I'm not the only one being
+    sloppy about attribution for this file.
