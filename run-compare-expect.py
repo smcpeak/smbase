@@ -95,6 +95,20 @@ def writeLinesToFile(lines, fname):
       print(line, file=f)
 
 
+
+# List of compiled regexes.  If a line matches a regex, we discard it.
+compiledDropREs = []
+
+def lineIsDropped(line):
+  """True if 'line' matches any drop regex."""
+
+  for re in compiledDropREs:
+    if re.search(line):
+      return True
+
+  return False
+
+
 # Hexadecimal numbers with at least two digits.
 hexDigitsRE = re.compile(r"0x[0-9a-fA-F][0-9a-fA-F]+")
 
@@ -155,6 +169,8 @@ def main():
     help="Expected output.")
   parser.add_argument("--argfile",
     help="Run the program once per line in ARGFILE.")
+  parser.add_argument("--drop-lines", action="append", metavar="REGEX",
+    help="Discard lines matching REGEX before comparison.  Can specify multiple.")
   parser.add_argument("program",
     help="Program to run.")
   parser.add_argument("progArgs", nargs=argparse.REMAINDER,
@@ -170,6 +186,11 @@ def main():
   if opts.argfile:
     with open(opts.argfile) as f:
       extraArgumentLines = readLinesNoNL(f)
+
+  # Compile the drop-line regexes.
+  if opts.drop_lines:
+    for s in opts.drop_lines:
+      compiledDropREs.append(re.compile(s))
 
   # List of accumulated output lines.
   actualLines = []
@@ -196,6 +217,7 @@ def main():
     actualLines += [f"Exit {proc.returncode}"]
 
   # Normalize it.
+  actualLines = filter(lambda line: not lineIsDropped(line), actualLines)
   actualLines = [normalizeOutput(line) for line in actualLines]
 
   # Optionally save it.

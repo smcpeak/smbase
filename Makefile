@@ -63,6 +63,9 @@ AR      = ar
 RANLIB  = ranlib
 PYTHON3 = python3
 
+# Ensure the directory meant to hold the output file of a recipe exists.
+CREATE_OUTPUT_DIRECTORY = @mkdir -p $(dir $@)
+
 # How to invoke run-compare-expect.py.
 RUN_COMPARE_EXPECT = $(PYTHON3) ./run-compare-expect.py
 
@@ -542,6 +545,36 @@ else
 	@echo "may want to try running the above commands yourself on the target"
 	@echo "(remove the 'true' prefixes)"
 endif
+
+
+# ------------------- test run-compare-expect.py -----------------------
+test/rce_expect_%:
+	touch $@
+
+# Run a command through run-compare-expect.py.
+out/rce_%.ok: test/rce_expect_% run-compare-expect.py
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(RUN_COMPARE_EXPECT) \
+	  --actual out/rce_actual_$* \
+	  --expect test/rce_expect_$* \
+	  $(RCE_CMD_$*)
+	touch $@
+
+
+# Test RCE itself, specifically the --drop-lines option.
+RCE_CMD_droplines := \
+  $(RUN_COMPARE_EXPECT) \
+    --expect /dev/null \
+    --drop-lines 'extern' \
+    --drop-lines '^x//' \
+    --drop-lines '^\s*$$' \
+    cat test/cycles.head.h
+
+rce-tests: out/rce_droplines.ok
+
+
+.PHONY: rce-tests
+check: rce-tests
 
 
 # ------------------- documentation -------------------------

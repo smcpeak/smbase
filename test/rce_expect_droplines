@@ -1,0 +1,19 @@
+---- stdout ----
+Results are different:
+--- expect
++++ actual
+@@ -0,0 +1,10 @@
++---- stdout ----
++// cycles.h            see license.txt for copyright and terms of use
++// read processor cycle count
++// interface is portable, implementation is not
++#ifdef __cplusplus
++#endif
++// read the processor's cycle-count register, and store the count
++---- stderr ----
++---- exit status ----
++Exit 0
+Re-run with UPDATE_EXPECT=1 or UPDATE_EXPECT=prompt[yes] to update.
+---- stderr ----
+---- exit status ----
+Exit 2
