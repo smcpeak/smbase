@@ -367,18 +367,6 @@ public:      // methods
   // Add 'name' 'argument' as if they were two consecutive words.
   void addSpaceOption(std::string const &name,
                       std::string const &argument);
-
-  // If there is not already a "-o" option, and this command would
-  // create an output file for which "-o" would control its name,
-  // compute the name that would be created and add "-o" specifying it.
-  //
-  // If the command only writes its primary output to stdout (i.e., with
-  // -E or -M[M] when -o is missing), then this does not add any "-o".
-  //
-  // This function does not do anything regarding the output file
-  // created by the -MD and -MMD options.
-  //
-  void ensureExplicitOutputFile();
 };
 
 

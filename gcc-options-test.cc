@@ -521,67 +521,6 @@ static void testAddOption()
 }
 
 
-static void testEnsureExplicitOutputFile()
-{
-  struct Test {
-    std::vector<std::string> m_input;
-    std::vector<std::string> m_expect;
-  }
-  const tests[] = {
-    {
-      { },
-      { "-o", "a.out" },
-    },
-    {
-      { "-c" },
-      { "-c" },
-    },
-    {
-      { "-c", "foo.c" },
-      { "-c", "foo.c", "-o", "foo.o" },
-    },
-    {
-      { "-S", "foo.c" },
-      { "-S", "foo.c", "-o", "foo.s" },
-    },
-    {
-      { "-E", "-c", "foo.c" },
-      { "-E", "-c", "foo.c" },
-    },
-    {
-      { "-c", "fooc" },    // not seen as a source file
-      { "-c", "fooc" },
-    },
-    {
-      { "-c", "-xc", "fooc" },
-      { "-c", "-xc", "fooc", "-o", "fooc.o" },
-    },
-    {
-      { "-c", "foo.c", "obj.o" },
-      { "-c", "foo.c", "obj.o", "-o", "foo.o" },
-    },
-    {
-      { "-c", "foo.c", "bar.c" },
-      { "-c", "foo.c", "bar.c", "-o", "foo.o" },  // pick first
-    },
-    {
-      { "-c", "foo.c", "-o", "bar.o" },
-      { "-c", "foo.c", "-o", "bar.o" },
-    },
-  };
-
-  for (auto t : tests) {
-    GCCOptions opts(t.m_input);
-    opts.ensureExplicitOutputFile();
-
-    std::vector<std::string> actual;
-    opts.getCommandWords(actual);
-
-    checkEqual(actual, t.m_expect);
-  }
-}
-
-
 static void testGetExplicitOutputFile()
 {
   struct Test {
@@ -841,7 +780,6 @@ void test_gcc_options()
   testSpecifiesGCCOutputMode();
   testToString();
   testAddOption();
-  testEnsureExplicitOutputFile();
   testGetExplicitOutputFile();
   testGetFirstSourceFileName();
   testGetOutputFile();

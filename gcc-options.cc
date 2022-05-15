@@ -800,25 +800,6 @@ bool GCCOptions::parseOption(
 }
 
 
-// TODO: I don't think I need this function.  Remove it.
-void GCCOptions::ensureExplicitOutputFile()
-{
-  std::string fn;
-  if (getExplicitOutputFile(fn)) {
-    return;
-  }
-
-  // Compute the default.
-  if (getOutputFile(fn)) {
-    // Specify it as an option.
-    addSpaceOption("-o", fn);
-  }
-  else {
-    // Didn't come up with a name.  Oh well.
-  }
-}
-
-
 // ------------------------ Global functions ---------------------------
 // Set of legal arguments to the "-x" option.
 static char const * const xLanguageValues[] = {
