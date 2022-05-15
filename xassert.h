@@ -39,6 +39,22 @@ void x_assert_fail(char const *cond, char const *file, int line) NORETURN;
 #define xfailure(why) x_assert_fail(why, __FILE__, __LINE__)
 
 
+// 'xassert_once' is an assertion that is only checked the first time it
+// is executed.
+#if defined(NDEBUG_NO_ASSERTIONS)
+  #define xassert_once(cond) ((void)0)
+#else
+  #define xassert_once(cond)       \
+    do {                           \
+      static bool checked = false; \
+      if (!checked) {              \
+        checked = true;            \
+        xassert(cond);             \
+      }                            \
+    } while (0)
+#endif
+
+
 // Quick note: one prominent book on writing code recommends that
 // assertions *not* include the failure condition, since the file
 // and line number are sufficient, and the condition string uses
