@@ -251,7 +251,7 @@ DEFINE_ENUMERATION_TO_STRING(
   GCCOptions::NUM_OUTPUT_MODES,
   (
     "OM_GCC_INFO",
-    "OM_MAKE_RULE",
+    "OM_DEPENDENCIES",
     "OM_PREPROCESSED",
     "OM_ASSEMBLY",
     "OM_OBJECT_CODE",
@@ -475,7 +475,7 @@ bool GCCOptions::getArgumentForOption(std::string const &name,
 
 bool GCCOptions::getExplicitOutputFile(std::string &fname) const
 {
-  if (outputMode() == OM_MAKE_RULE) {
+  if (outputMode() == OM_DEPENDENCIES) {
     // With -M or -MM, the -MF option takes precedence.  (If -o is also
     // used, the named file gets created but is left empty.)
     if (getArgumentForOption("-MF", fname)) {
@@ -514,7 +514,7 @@ bool GCCOptions::getOutputFile(std::string &fname) const
 
   OutputMode mode = outputMode();
 
-  if (mode == OM_PREPROCESSED || mode == OM_MAKE_RULE) {
+  if (mode == OM_PREPROCESSED || mode == OM_DEPENDENCIES) {
     return false;
   }
 
@@ -973,8 +973,8 @@ bool specifiesGCCOutputMode(std::string const &name,
   static Entry const table[] = {
     // Sorted columns: \{ \S+ @30:\S+ \}
     { "-E",                  OM(PREPROCESSED) },
-    { "-M",                  OM(MAKE_RULE) },
-    { "-MM",                 OM(MAKE_RULE) },
+    { "-M",                  OM(DEPENDENCIES) },
+    { "-MM",                 OM(DEPENDENCIES) },
     { "-S",                  OM(ASSEMBLY) },
     { "-c",                  OM(OBJECT_CODE) },
     { "-dumpfullversion",    OM(GCC_INFO) },

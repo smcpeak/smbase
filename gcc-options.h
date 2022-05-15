@@ -146,9 +146,7 @@ public:      // types
   // are in order of decreasing precedence.
   enum OutputMode {
     OM_GCC_INFO,             // -dumpversion, etc.  GCC stops after printing.
-
-    // TODO: Rename this to OM_DEPENDENCIES.
-    OM_MAKE_RULE,            // -M and -MM
+    OM_DEPENDENCIES,         // -M and -MM
     OM_PREPROCESSED,         // -E
     OM_ASSEMBLY,             // -S
     OM_OBJECT_CODE,          // -c
@@ -309,7 +307,7 @@ public:      // methods
                             std::string &argument) const;
 
   // If there is an output file explicitly specified with "-o", or with
-  // "-MF" in OM_MAKE_RULE, put its argument into 'fname'.  Otherwise
+  // "-MF" in OM_DEPENDENCIES, put its argument into 'fname'.  Otherwise
   // return false.
   bool getExplicitOutputFile(std::string &fname) const;
 
@@ -321,10 +319,10 @@ public:      // methods
   // and return true.  Otherwise, compute the default output file,
   // taking into account the current output mode, store it in 'fname'
   // and return true.  If no output file is specified and the mode is
-  // OM_PREPROCESSED or OM_MAKE_RULE, return false, signifying standard
-  // output.  In assembly or object code mode, if the command line does
-  // not have any source file name, then it is invalid, in which case we
-  // return false.
+  // OM_PREPROCESSED or OM_DEPENDENCIES, return false, signifying
+  // standard output.  In assembly or object code mode, if the command
+  // line does not have any source file name, then it is invalid, in
+  // which case we return false.
   bool getOutputFile(std::string &fname) const;
 
   // If the command contains -MD or -MMD, return true, and set 'fname'
