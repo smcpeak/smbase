@@ -641,8 +641,10 @@ void GCCOptions::parse(std::vector<std::string> const &args)
     // True if 'parseOption' says it found a match.
     bool recognized = false;
 
-    // TODO: I could use 'lower_bound' to find the relevant entries
-    // faster than iterating through all of them.
+    // This is not very efficient, but because I'm looking for any
+    // prefix of 'optWord', std::map is not the right data structure to
+    // use to improve it.  And for my purpose, the efficiency of this
+    // lookup is unimportant.
     for (auto pr : optionToSyntax) {
       char const *name = pr.first;
       OptionSyntax syntax = pr.second;
