@@ -4,6 +4,7 @@
 #include "gcc-options.h"               // module under test
 
 #include "sm-test.h"                   // EXPECT_EQ
+#include "string-utils.h"              // toString(std::vector)
 #include "vector-utils.h"              // accumulateWith[Map]
 #include "xassert.h"                   // xassert
 
@@ -771,6 +772,69 @@ static void testCreatesDependencyFile()
 }
 
 
+static void testGetDefaultDependencyTarget()
+{
+  struct Test {
+    std::vector<std::string> m_input;
+    char const *m_expect;    // NULL for false return
+  }
+  const tests[] = {
+    {
+      {},
+      NULL,
+    },
+    {
+      { "-c", "foo.c" },
+      "foo.o"
+    },
+    {
+      { "-c", "src/foo.c" },
+      "foo.o"
+    },
+    {
+      { "-c", "foo.c", "-MD" },
+      "foo.o"
+    },
+    {
+      { "-c", "src/foo.c", "-MD" },
+      "foo.o"
+    },
+    {
+      { "-c", "-xc", "foo", "-MD" },
+      "foo.o"
+    },
+    {
+      { "-c", "foo.c", "-MMD", "-o", "bar.o" },
+      "bar.o"
+    },
+    {
+      { "-c", "foo.c", "-MMD", "-o", "bar" },
+      "bar"
+    },
+    {
+      { "-c", "foo.c", "-MMD", "-MF", "bar.d", "-o", "obj/baz.o" },
+      "obj/baz.o"
+    },
+  };
+
+  for (auto t : tests) {
+    try {
+      GCCOptions opts(t.m_input);
+      std::string actual;
+      bool found = opts.getDefaultDependencyTarget(actual);
+      EXPECT_EQ(found, t.m_expect!=NULL);
+      if (found) {
+        EXPECT_EQ(actual, std::string(t.m_expect));
+      }
+    }
+    catch (xBase &x) {
+      x.prependContext(stringb(__func__ << ": " << toString(t.m_input)));
+      throw x;
+    }
+  }
+}
+
+
 void test_gcc_options()
 {
   // Defined in gcc-options.cc.
@@ -788,6 +852,7 @@ void test_gcc_options()
   testGetFirstSourceFileName();
   testGetOutputFile();
   testCreatesDependencyFile();
+  testGetDefaultDependencyTarget();
 }
 
 

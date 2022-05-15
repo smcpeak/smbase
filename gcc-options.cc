@@ -405,8 +405,12 @@ void GCCOptions::Iter::adv()
 
 
 // --------------------------- GCCOptions ------------------------------
+char const * const GCCOptions::s_defaultPlatformObjectFileSuffix = ".o";
+
+
 GCCOptions::GCCOptions()
-  : m_options()
+  : m_options(),
+    m_platformObjectFileSuffix(s_defaultPlatformObjectFileSuffix)
 {}
 
 
@@ -415,7 +419,8 @@ GCCOptions::~GCCOptions()
 
 
 GCCOptions::GCCOptions(std::vector<std::string> const &words)
-  : m_options()
+  : m_options(),
+    m_platformObjectFileSuffix(s_defaultPlatformObjectFileSuffix)
 {
   parse(words);
 }
@@ -456,6 +461,17 @@ bool GCCOptions::hasOption(std::string const &name) const
 {
   std::string dummy;
   return getArgumentForOption(name, dummy);
+}
+
+
+// This function exists because it is fairly common to want to check
+// for the presence of either of two options, and it would be possible
+// to optimize this by making just one pass over the options, although
+// for now I have not done so.
+bool GCCOptions::hasEitherOption(std::string const &n1,
+                                 std::string const &n2) const
+{
+  return hasOption(n1) || hasOption(n2);
 }
 
 
@@ -546,7 +562,7 @@ bool GCCOptions::getOutputFile(std::string &fname) const
 
 bool GCCOptions::createsDependencyFile(std::string &fname) const
 {
-  if (hasOption("-MD") || hasOption("-MMD")) {
+  if (hasEitherOption("-MD", "-MMD")) {
     // The output file is the first of:
     //   * name given to -MF, or
     //   * name given to -o with suffix replaced with ".d", or
@@ -578,6 +594,39 @@ bool GCCOptions::createsDependencyFile(std::string &fname) const
   else {
     return false;
   }
+}
+
+
+bool GCCOptions::getDefaultDependencyTarget(std::string &target) const
+{
+  // We assume there is no -MT or -MQ.
+
+  if (hasEitherOption("-MD", "-MMD")) {
+    std::string ofile;
+    if (getArgumentForOption("-o", ofile)) {
+      // If explicitly specified, the output file is the target.
+      target = ofile;
+      return true;
+    }
+  }
+
+  std::string fname;
+  if (getFirstSourceFileName(fname)) {
+    // TODO: This should be a class data member so clients can
+    // influence the choice of directory separator.  There are a couple
+    // other instances in this file that need the same treatment.
+    SMFileUtil sfu;
+
+    // From my spec in inst/doc/index.html: "for each source file, its
+    // name, without any directory, suffix removed (if it had one), and
+    // the platform object file suffix added."
+    target = stripExtension(sfu.splitPathBase(fname)) +
+               m_platformObjectFileSuffix;
+    return true;
+  }
+
+  // No source files.
+  return false;
 }
 
 

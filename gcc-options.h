@@ -247,12 +247,25 @@ public:      // types
     void adv();
   };
 
-private:     // data
+public:      // class data
+  // Always ".o".
+  static char const * const s_defaultPlatformObjectFileSuffix;
+
+private:     // instance data
   // Sequence of parsed options, in the order they appeared in the
   // input.  The number of elements here is usually less than the size
   // of 'args' passed to the constructor because multiple words can be
   // represented with one Option.
   std::vector<Option> m_options;
+
+public:      // data
+  // Certain operations, such as computing the default dependency rule
+  // target name, are specified by the GCC manual to use the "platform
+  // object file suffix".  In those situations, this field is used as
+  // that value.  It is initially 's_defaultPlatformObjectFileSuffix',
+  // and this class does not change its value.  The client can change it
+  // at will.
+  std::string m_platformObjectFileSuffix;
 
 private:     // methods
   // Try to parse 'optWord' as an instance of option 'name', which uses
@@ -301,6 +314,10 @@ public:      // methods
   // Return true if an option with 'name' is present.
   bool hasOption(std::string const &name) const;
 
+  // True if 'hasOption(n1) || hasOption(n2)'.
+  bool hasEitherOption(std::string const &n1,
+                       std::string const &n2) const;
+
   // If there is an option with 'name', yield its argument in 'argument'
   // and return true.  Otherwise return false.
   bool getArgumentForOption(std::string const &name,
@@ -337,6 +354,14 @@ public:      // methods
   // command line seems invalid), return false even if -MD/-MMD are
   // present.
   bool createsDependencyFile(std::string &fname) const;
+
+  // Compute the default name for a dependency rule target.  This
+  // assumes there is no -MT or -MQ option.  Return false if we cannot
+  // compute it; one reason for that would be because there are no
+  // source files on the command line.
+  //
+  // TODO: This interface assumes there are not multiple source files.
+  bool getDefaultDependencyTarget(std::string &target) const;
 
   // Get the sequence of command words.
   void getCommandWords(std::vector<std::string> &commandWords) const;
