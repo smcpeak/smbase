@@ -659,6 +659,10 @@ static void testGetOutputFile()
       "foo.o"
     },
     {
+      { "-c", "src/foo.c" },
+      "foo.o"      // Does *not* include 'src'.
+    },
+    {
       { "-c", "foo.c", "-o", "bar.o" },
       "bar.o"
     },

@@ -321,8 +321,12 @@ public:      // methods
   // and return true.  If no output file is specified and the mode is
   // OM_PREPROCESSED or OM_DEPENDENCIES, return false, signifying
   // standard output.  In assembly or object code mode, if the command
-  // line does not have any source file name, then it is invalid, in
-  // which case we return false.
+  // line does not have any source file name, then the compiler will not
+  // do anything (aside from print a warning), and we return false.
+  //
+  // TODO: This interface is flawed, since there can be multiple source
+  // files on the command line even with -c or -S, and consequently
+  // multiple primary output files.
   bool getOutputFile(std::string &fname) const;
 
   // If the command contains -MD or -MMD, return true, and set 'fname'

@@ -526,8 +526,11 @@ bool GCCOptions::getOutputFile(std::string &fname) const
   // Scan for a source file name.
   std::string srcFileName;
   if (getFirstSourceFileName(srcFileName)) {
-    // Remove any extension from the file name.
-    std::string srcNoExt = stripExtension(srcFileName);
+    // Remove any directory and extension from the file name.  The GCC
+    // manual does not clearly say to remove the directory, but GCC in
+    // fact does that.
+    SMFileUtil sfu;
+    std::string srcNoExt = stripExtension(sfu.splitPathBase(srcFileName));
 
     // Default output name.
     fname = srcNoExt + extensionForGCCOutputMode(mode);
