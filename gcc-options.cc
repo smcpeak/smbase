@@ -8,6 +8,7 @@
 #include "sm-file-util.h"              // SMFileUtil
 #include "sm-macros.h"                 // EMEMB, DEFINE_ENUMERATION_TO_STRING
 #include "strcmp-compare.h"            // StrcmpCompare, etc.
+#include "strictly-sorted.h"           // is_strictly_sorted
 #include "string-utils.h"              // stripExtension, stringInSortedArray, join
 #include "strutil.h"                   // prefixEquals
 #include "xassert.h"                   // xassert
@@ -38,7 +39,7 @@
 // OS_EMPTY
 static char const * const emptyArgOptions[] = {
   "-W",
-  "-d",            // Several "-dumpXXX" options are lumped in here.
+  "-d",
   "-f",
   "-m",
   "-no",
@@ -102,13 +103,18 @@ static char const * const equalsOrSpaceArgOptions[] = {
   // For this group, the manual only says ' ', but gcc accepts '='.
   "--param",
   "-aux-info",
-  "-dumpbase",     // Note ambiguity with "-d".
-  "-dumpbase-ext",
-  "-dumpdir",
 
   // For these, the manual only says '=', but gcc accepts ' '.
   "--entry",
   "-specs",
+};
+
+
+// OS_SPACE | OS_EXACT
+static char const * const exactSpaceArgOptions[] = {
+  "-dumpbase",     // Note ambiguity with "-d".
+  "-dumpbase-ext",
+  "-dumpdir",
 };
 
 
@@ -180,6 +186,15 @@ static char const * const noArgSwitches[] = {
 };
 
 
+// OS_BARE | OS_EXACT
+static char const * const exactNoArgOptions[] = {
+  "-dumpfullversion",
+  "-dumpmachine",
+  "-dumpspecs",
+  "-dumpversion",
+};
+
+
 // OS_BARE | OS_EQUALS
 static char const * const optionalEqualsArgSwitches[] = {
   "--help",
@@ -235,6 +250,7 @@ DEFINE_ENUMERATION_TO_STRING(
   GCCOptions::OutputMode,
   GCCOptions::NUM_OUTPUT_MODES,
   (
+    "OM_GCC_INFO",
     "OM_MAKE_RULE",
     "OM_PREPROCESSED",
     "OM_ASSEMBLY",
@@ -247,6 +263,7 @@ DEFINE_ENUMERATION_TO_STRING(
 char const *extensionForGCCOutputMode(GCCOptions::OutputMode outputMode)
 {
   static char const * const exts[] = {
+    "",            // Output goes to stdout.
     ".d",
     ".i",
     ".s",
@@ -410,43 +427,28 @@ GCCOptions::Option const &GCCOptions::at(size_t index) const
 }
 
 
+// Based on experimentation with GCC-9.3.0, -M has highest precedence,
+// then -E, then -S, then finally -c, regardless of the order in which
+// they appear.  This is reflected in the order of the OutputMode
+// enumerators.
 GCCOptions::OutputMode GCCOptions::outputMode() const
 {
-  bool hasM=false, hasE=false, hasS=false, hasC=false;
+  // Mode we think this is, based on what has been seen so far.
+  OutputMode curMode = OM_EXECUTABLE;
 
   for (Iter iter(*this); iter.hasMore(); iter.adv()) {
     Option const &o = iter.opt();
-    if (o.m_name == "-M" || o.m_name == "-MM") {
-      hasM = true;
-    }
-    else if (o.m_name == "-E") {
-      hasE = true;
-    }
-    else if (o.m_name == "-S") {
-      hasS = true;
-    }
-    else if (o.m_name == "-c") {
-      hasC = true;
+
+    OutputMode m = curMode;  // Initialized defensively; value not used.
+    if (specifiesGCCOutputMode(o.m_name, m /*OUT*/)) {
+      if (m < curMode) {
+        // 'm' takes precedence.
+        curMode = m;
+      }
     }
   }
 
-  // Based on experimentation with GCC-9.3.0, -M has highest precedence,
-  // then -E, then -S, then finally -c, regardless of the order in which
-  // they appear.
-  if (hasM) {
-    return OM_MAKE_RULE;
-  }
-  if (hasE) {
-    return OM_PREPROCESSED;
-  }
-  if (hasS) {
-    return OM_ASSEMBLY;
-  }
-  if (hasC) {
-    return OM_OBJECT_CODE;
-  }
-
-  return OM_EXECUTABLE;
+  return curMode;
 }
 
 
@@ -621,9 +623,11 @@ void GCCOptions::parse(std::vector<std::string> const &args)
   PROCESS_OPTION_GROUP(emptyOrSpaceOrEqualsArgOptions, OS_EMPTY | OS_SPACE | OS_EQUALS);
 
   PROCESS_OPTION_GROUP(equalsOrSpaceArgOptions,        OS_EQUALS | OS_SPACE);
+  PROCESS_OPTION_GROUP(exactSpaceArgOptions,           OS_SPACE | OS_EXACT);
   PROCESS_OPTION_GROUP(spaceArgOptions,                OS_SPACE);
   PROCESS_OPTION_GROUP(equalsArgOptions,               OS_EQUALS);
   PROCESS_OPTION_GROUP(noArgSwitches,                  OS_BARE);
+  PROCESS_OPTION_GROUP(exactNoArgOptions,              OS_BARE | OS_EXACT);
   PROCESS_OPTION_GROUP(optionalEqualsArgSwitches,      OS_BARE | OS_EQUALS);
 
   #undef PROCESS_OPTION_GROUP
@@ -719,6 +723,13 @@ bool GCCOptions::parseOption(
   if (prefixEquals(optWord, name)) {
     char const *after = optWord + strlen(name);
 
+    if ((syntax & OS_EXACT) && *after != 0) {
+      // OS_EXACT means we reject if 'name' is a proper prefix of
+      // 'optWordString'.  Instead, we'll look for another switch that
+      // does allow prefix matching.
+      return false;
+    }
+
     if (*after == '=') {
       // Should we treat the '=' as a separator?
       if (syntax & OS_EQUALS) {
@@ -811,7 +822,7 @@ void GCCOptions::ensureExplicitOutputFile()
 // ------------------------ Global functions ---------------------------
 // Set of legal arguments to the "-x" option.
 static char const * const xLanguageValues[] = {
-  // sorted: LANG=C sort
+  // Sorted: LANG=C sort
   "ada",
   "assembler",
   "assembler-with-cpp",
@@ -854,7 +865,7 @@ static struct ExtensionMapEntry {
   char const *m_lang;
 }
 const extensionMap[] = {
-  // sorted: LANG=C sort
+  // Sorted: LANG=C sort
   { "C",      "c++" },
   { "CPP",    "c++" },
   { "F",      "f77-cpp-input" },
@@ -937,6 +948,9 @@ std::string gccLanguageForFile(std::string const &fname,
       return strcmpCompare(a.m_ext, b.m_ext);
     };
   ExtensionMapEntry const *end = ARRAY_ENDPTR(extensionMap);
+
+  xassert_once(is_strictly_sorted(extensionMap, end, compare));
+
   ExtensionMapEntry const *entry =
     binary_lookup(extensionMap, end, key, compare);
   if (entry != end) {
@@ -947,24 +961,55 @@ std::string gccLanguageForFile(std::string const &fname,
 }
 
 
-bool specifiesGCCOutputMode(std::string const &name)
+#define OM(name) GCCOptions::OM_##name
+
+bool specifiesGCCOutputMode(std::string const &name,
+                            GCCOptions::OutputMode &mode)
 {
-  static char const * const names[] = {
-    // sorted: LANG=C sort
-    "-E",
-    "-M",
-    "-MM",
-    "-S",
-    "-c",
+  struct Entry {
+    char const *m_name;
+    GCCOptions::OutputMode m_mode;
+  };
+  static Entry const table[] = {
+    // Sorted columns: \{ \S+ @30:\S+ \}
+    { "-E",                  OM(PREPROCESSED) },
+    { "-M",                  OM(MAKE_RULE) },
+    { "-MM",                 OM(MAKE_RULE) },
+    { "-S",                  OM(ASSEMBLY) },
+    { "-c",                  OM(OBJECT_CODE) },
+    { "-dumpfullversion",    OM(GCC_INFO) },
+    { "-dumpmachine",        OM(GCC_INFO) },
+    { "-dumpspecs",          OM(GCC_INFO) },
+    { "-dumpversion",        OM(GCC_INFO) },
   };
 
-  return stringInSortedArray(name.c_str(), names, TABLESIZE(names));
+  Entry key = { name.c_str(), OM(GCC_INFO)/*irrelevant*/ };
+  auto compare =
+    [](Entry const &a, Entry const &b)
+    {
+      return strcmpCompare(a.m_name, b.m_name);
+    };
+  Entry const *end = ARRAY_ENDPTR(table);
+
+  xassert_once(is_strictly_sorted(table, end, compare));
+
+  Entry const *found =
+    binary_lookup(table, end, key, compare);
+  if (found != end) {
+    mode = found->m_mode;
+    return true;
+  }
+  else {
+    return false;
+  }
 }
 
 
 void gcc_options_check_tables()
 {
   validateExtensionLanguages();
+  xassert(isStrictlySortedStringArray(xLanguageValues,
+                                      TABLESIZE(xLanguageValues)));
 }
 
 

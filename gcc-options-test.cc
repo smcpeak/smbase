@@ -10,6 +10,9 @@
 #include <iostream>                    // std::cout
 
 
+#define OM(name) GCCOptions::OM_##name
+
+
 static void testEmpty()
 {
   GCCOptions gccOptions;
@@ -197,25 +200,39 @@ static void testParse()
       { "--param" },
       { { "--param", SEP(NONE), "", SYN(ABRUPT_END) } },
     },
+
+    // OS_SPACE | OS_EXACT
     {
       { "-dumpbase", "fname" },
       { SPACE("-dumpbase", "fname") },
     },
     {
+      { "-dumpbase-ext", "fname" },
+      { SPACE("-dumpbase-ext", "fname") },
+    },
+    {
+      { "-dumpdir", "fname" },
+      { SPACE("-dumpdir", "fname") },
+    },
+    {     // An '=' *cannot* follow -dumpbase and be recognized as such.
       { "-dumpbase=fname" },
-      { EQUALS("-dumpbase", "fname") },
+      { EMPTY("-d", "umpbase=fname") },
     },
     {
       { "-dumpbasefname" },
-      { { "-dumpbase", SEP(EMPTY), "fname", SYN(MISSING_EQUALS) } },
+      { EMPTY("-d", "umpbasefname") },
     },
     {
-      { "-dumpbsefname" },         // "-d" takes over
+      { "-dumpbsefname" },
       { EMPTY("-d", "umpbsefname") },
     },
     {
       { "-dumpbse", "fname" },     // also "-d", so fname not consumed
       { EMPTY("-d", "umpbse"), ARG("fname") },
+    },
+    {
+      { "-dumpbase-extx", "fname" },
+      { EMPTY("-d", "umpbase-extx"), ARG("fname") },
     },
 
     // OS_SPACE
@@ -308,14 +325,12 @@ static void testParse()
 
 static void testOutputMode()
 {
-  #define OM(name) GCCOptions::OM_##name
-
   struct OMTest {
     std::vector<std::string> m_words;
     GCCOptions::OutputMode m_expect;
   }
   const tests[] = {
-    // columns: \{ OM \}
+    // Columns: \{ @40:OM \}
     { { },                             OM(EXECUTABLE) },
     { { "hello.c" },                   OM(EXECUTABLE) },
     { { "-c" },                        OM(OBJECT_CODE) },
@@ -339,6 +354,9 @@ static void testOutputMode()
     { { "-MM" },                       OM(MAKE_RULE) },
     { { "-MM", "-E" },                 OM(MAKE_RULE) },
     { { "-c", "-MM" },                 OM(MAKE_RULE) },
+    { { "-dumpversion", "-MM" },       OM(GCC_INFO) },
+    { { "-E", "-dumpmachine" },        OM(GCC_INFO) },
+    { { "-c", "-dumpmachin" },         OM(OBJECT_CODE) },
   };
 
   for (OMTest const &t : tests) {
@@ -346,8 +364,6 @@ static void testOutputMode()
     GCCOptions::OutputMode actual = opts.outputMode();
     xassert(actual == t.m_expect);
   }
-
-  #undef OM
 }
 
 
@@ -425,31 +441,49 @@ static void testLangInCommand()
 
 static void testSpecifiesGCCOutputMode()
 {
+  #define om_none GCCOptions::NUM_OUTPUT_MODES
+
   static struct {
     char const *m_name;
-    bool m_expect;
-  } const tests[] = {
-    // columns: \{ \S+ @20:\S+ \}
-    { "-c",        true },
-    { "-E",        true },
-    { "-S",        true },
-    { "-f",        false },
-    { "",          false },
-    { "-f-c",      false },
-    { "-M",        true },
-    { "-MM",       true },
+
+    // Expected mode, or NUM_OUTPUT_MODES to mean none.
+    GCCOptions::OutputMode m_expect;
+  }
+  const tests[] = {
+    // Columns: \{ \S+ @30:\S+ \}
+    { "-c",                  OM(OBJECT_CODE) },
+    { "-E",                  OM(PREPROCESSED) },
+    { "-S",                  OM(ASSEMBLY) },
+    { "-f",                  om_none },
+    { "",                    om_none },
+    { "-f-c",                om_none },
+    { "-M",                  OM(MAKE_RULE) },
+    { "-MM",                 OM(MAKE_RULE) },
 
     // These two specify to generate dependency rules as a side effect,
     // but do not change what the primary output (which goes into the
     // file named by -o) is.
-    { "-MD",       false },
-    { "-MMD",      false },
+    { "-MD",                 om_none },
+    { "-MMD",                om_none },
+
+    { "-dumpversio",         om_none },
+    { "-dumpversion",        OM(GCC_INFO) },
+    { "-dumpversionx",       om_none },
+    { "-dumpmachine",        OM(GCC_INFO) },
+    { "-dumpfullversion",    OM(GCC_INFO) },
+    { "-dumpspecs",          OM(GCC_INFO) },
   };
 
   for (auto t : tests) {
-    bool actual = specifiesGCCOutputMode(t.m_name);
-    xassert(actual == t.m_expect);
+    GCCOptions::OutputMode actualMode = om_none;
+    bool actual = specifiesGCCOutputMode(t.m_name, /*OUT*/ actualMode);
+    EXPECT_EQ(actual, t.m_expect!=om_none);
+    if (actual) {
+      EXPECT_EQ(actualMode, t.m_expect);
+    }
   }
+
+  #undef om_none
 }
 
 

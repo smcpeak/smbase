@@ -74,6 +74,12 @@ private:     // types
     // all as one word.  Example: "-std=c99".  When this happens, the
     // '=' is include in the option name nor the argument.
     OS_EQUALS                = 0x0008,
+
+    // The option is only recognized when the name is an exact match,
+    // not merely a prefix of what appeared on the command line.  This
+    // a syntactic restriction rather than a possibility, so must be
+    // combined with at least one other bit.
+    OS_EXACT                 = 0x0010,
   };
 
 public:      // types
@@ -136,8 +142,12 @@ public:      // types
     NUM_SYNTAX_ERRORS
   };
 
-  // Possible types of output a GCC command line can specify.
+  // Possible types of output a GCC command line can specify.  These
+  // are in order of decreasing precedence.
   enum OutputMode {
+    OM_GCC_INFO,             // -dumpversion, etc.  GCC stops after printing.
+
+    // TODO: Rename this to OM_DEPENDENCIES.
     OM_MAKE_RULE,            // -M and -MM
     OM_PREPROCESSED,         // -E
     OM_ASSEMBLY,             // -S
@@ -409,8 +419,10 @@ std::string gccLanguageForFile(std::string const &fname,
 
 
 // True if 'name' is among those that specify the gcc output mode,
-// namely, "-c", "-E", "-S", "-M", or "-MM".
-bool specifiesGCCOutputMode(std::string const &name);
+// namely, "-c", "-E", "-S", "-M", "-MM", or a flag like "-dumpversion".
+// If so, set 'mode' to the mode it specifies.
+bool specifiesGCCOutputMode(std::string const &name,
+                            GCCOptions::OutputMode /*OUT*/ &mode);
 
 
 // For use in the unit tests, check consistency of the internal tables.
