@@ -13,192 +13,149 @@
 #include "strutil.h"                   // prefixEquals
 #include "xassert.h"                   // xassert
 
-#include <algorithm>                   // std::sort
-#include <map>                         // std::map
 #include <sstream>                     // std::ostringstream
 
 #include <string.h>                    // strrchr
 
 
 // ----------------------- Option categories ---------------------------
-// These categories are determined in part from the GCC manual, but also
-// from experimentation with GCC-9.3.0.  In theory, based on my reading
-// of the manual, this is exhaustive(!).
-//
-// The names are meant to be kept in "LANG=C sort" order within their
-// group.
-//
-// NOTE: The first four groups' syntax means they apply to any option
-// that begins with that name, whereas the rest require some sort of
-// separator if they accept an argument.
+// Description of an option or set of options.
+struct OptionsTableEntry {
+  // Name of the option as it will be seen by clients of GCCOptions.
+  // This could be the option as documented in the GCC manual, or it
+  // could be a common prefix of a set of options that all have the same
+  // syntactic characteristics.
+  char const *m_name;
 
-// TODO: I should make these into one table, but I need to write a
-// script first to help with the formatting.
-
-
-// OS_EMPTY
-static char const * const emptyArgOptions[] = {
-  "-W",
-  "-d",
-  "-f",
-  "-m",
-  "-no",
-  "-print-",
+  // The syntactic characteristics of the option(s).  They are
+  // determined in part from the GCC manual, but also from
+  // experimentation with GCC-9.3.0.
+  //
+  // I declare this as 'int' to avoid complicating the table below.
+  int m_syntax;
 };
 
+// Shorter names to make the table more compact.
+#define BARE   GCCOptions::OS_BARE
+#define SPACE  GCCOptions::OS_SPACE
+#define EMPTY  GCCOptions::OS_EMPTY
+#define EQUALS GCCOptions::OS_EQUALS
+#define EXACT  GCCOptions::OS_EXACT
 
-// OS_EMPTY | OS_SPACE
-static char const * const emptyOrSpaceArgOptions[] = {
-  "-A",
-  "-B",            // '='?
-  "-I",            // GCC does *not* accept '=' for this one (it is treated as part of the directory name).
-  "-L",            // Not sure about '=' here.
-  "-MF",
-  "-MQ",
-  "-MT",
-  "-T",
-  "-U",            // GCC rejects '=' on this one (treats it as part of the symbol, then chokes).
-  "-e",
-  "-idirafter",
-  "-imacros",
-  "-imulitilib",
-  "-include",      // Yes, "-includesome_file" works.
-  "-iprefix",
-  "-iquote",
-  "-isysroot",
-  "-isystem",
-  "-iwithprefix",
-  "-iwithprefixbefore",
-  "-o",
-  "-u",            // I'm not sure how GCC interprets '=', but my guess is it's treated as part of the symbol.
-  "-x",
-  "-z",
+// Main options table.  The entries are intended to be sorted in
+// "LANG=C sort" order, although the only thing that really matters is
+// that a prefix comes before the string it is a prefix of.
+static OptionsTableEntry const optionsTable[] = {
+  // Columns: \{ \S+ \S+ \}
+  { "-###",                     BARE                   },
+  { "--coverage",               BARE                   },
+  { "--entry",                  SPACE | EQUALS         }, // Docs say '=', gcc accepts ' ' too.
+  { "--help",                   BARE | EQUALS          },
+  { "--param",                  SPACE | EQUALS         }, // Docs say ' ', gcc accepts '=' too.
+  { "--sysroot",                EQUALS                 }, // Docs say '=', ' ' is untested by me.
+  { "--target-help",            BARE                   },
+  { "--version",                BARE                   },
+  { "-A",                       SPACE | EMPTY          },
+  { "-B",                       SPACE | EMPTY          }, // '='?
+  { "-C",                       BARE                   },
+  { "-CC",                      BARE                   },
+  { "-D",                       SPACE | EMPTY | EQUALS }, // See note ESO.
+  { "-E",                       BARE                   },
+  { "-H",                       BARE                   },
+  { "-I",                       SPACE | EMPTY          }, // GCC does *not* accept '=' for this one (it is treated as part of the directory name).
+  { "-L",                       SPACE | EMPTY          }, // Not sure about '=' here.
+  { "-M",                       BARE                   },
+  { "-MD",                      BARE                   },
+  { "-MF",                      SPACE | EMPTY          },
+  { "-MG",                      BARE                   },
+  { "-MM",                      BARE                   },
+  { "-MMD",                     BARE                   },
+  { "-MP",                      BARE                   },
+  { "-MQ",                      SPACE | EMPTY          },
+  { "-MT",                      SPACE | EMPTY          },
+  { "-Mno-modules",             BARE                   }, // My GCC-9.3.0 says this is unrecognized...
+  { "-O",                       BARE | EMPTY           },
+  { "-P",                       BARE                   },
+  { "-Q",                       BARE                   },
+  { "-S",                       BARE                   },
+  { "-T",                       SPACE | EMPTY          },
+  { "-U",                       SPACE | EMPTY          }, // GCC rejects '=' on this one (treats it as part of the symbol, then chokes).
+  { "-W",                       EMPTY                  },
+  { "-Xassembler",              SPACE                  },
+  { "-Xlinker",                 SPACE                  },
+  { "-Xpreprocessor",           SPACE                  },
+  { "-ansi",                    BARE                   },
+  { "-aux-info",                SPACE | EQUALS         }, // Docs say ' ', gcc accepts '=' too.
+  { "-c",                       BARE                   },
+  { "-d",                       EMPTY                  },
+  { "-dumpbase",                SPACE | EXACT          }, // Note ambiguity with "-d".
+  { "-dumpbase-ext",            SPACE | EXACT          },
+  { "-dumpdir",                 SPACE | EXACT          },
+  { "-dumpfullversion",         BARE | EXACT           },
+  { "-dumpmachine",             BARE | EXACT           },
+  { "-dumpspecs",               BARE | EXACT           },
+  { "-dumpversion",             BARE | EXACT           },
+  { "-e",                       SPACE | EMPTY          },
+  { "-f",                       EMPTY                  }, // Covers hundreds of individual options.
+  { "-g",                       BARE | EMPTY           },
+  { "-gen-decls",               BARE                   }, // Note ambiguity with "-g".
+  { "-idirafter",               SPACE | EMPTY          },
+  { "-imacros",                 SPACE | EMPTY          },
+  { "-imulitilib",              SPACE | EMPTY          },
+  { "-include",                 SPACE | EMPTY          }, // Yes, "-includesome_file" works.
+  { "-iplugindir",              EQUALS                 }, // '=' required, ' ' rejected.
+  { "-iprefix",                 SPACE | EMPTY          },
+  { "-iquote",                  SPACE | EMPTY          },
+  { "-isysroot",                SPACE | EMPTY          },
+  { "-isystem",                 SPACE | EMPTY          },
+  { "-iwithprefix",             SPACE | EMPTY          },
+  { "-iwithprefixbefore",       SPACE | EMPTY          },
+  { "-l",                       SPACE | EMPTY | EQUALS }, // See note ESO.
+  { "-m",                       EMPTY                  },
+  { "-no",                      EMPTY                  },
+  { "-o",                       SPACE | EMPTY          },
+  { "-p",                       BARE                   },
+  { "-pass-exit-codes",         BARE                   },
+  { "-pedantic",                BARE                   },
+  { "-pedantic-errors",         BARE                   },
+  { "-pg",                      BARE                   },
+  { "-pie",                     BARE                   },
+  { "-pipe",                    BARE                   },
+  { "-print-",                  EMPTY                  },
+  { "-print-objc-runtime-info", BARE                   },
+  { "-pthread",                 BARE                   },
+  { "-r",                       BARE                   },
+  { "-rdynamic",                BARE                   },
+  { "-remap",                   BARE                   },
+  { "-s",                       BARE                   },
+  { "-shared",                  BARE | EMPTY           },
+  { "-specs",                   SPACE | EQUALS         }, // Docs say ' ', gcc accepts '=' too.
+  { "-static",                  BARE | EMPTY           },
+  { "-std",                     EQUALS                 }, // '=' required, ' ' rejected.
+  { "-stdlib",                  EQUALS                 }, // Docs say '=', ' ' is untested by me.
+  { "-symbolic",                BARE                   },
+  { "-traditional",             BARE                   },
+  { "-traditional-cpp",         BARE                   },
+  { "-trigraphs",               BARE                   },
+  { "-u",                       SPACE | EMPTY          }, // I'm not sure how GCC interprets '=', but my guess is it's treated as part of the symbol.
+  { "-undef",                   BARE                   }, // Note ambiguity with "-u".
+  { "-v",                       BARE                   },
+  { "-w",                       BARE                   },
+  { "-wrapper",                 SPACE                  },
+  { "-x",                       SPACE | EMPTY          },
+  { "-z",                       SPACE | EMPTY          },
 };
 
+// Note ESO: Nothing is documented as accepting all three of OS_EMPTY,
+// OS_SPACE, and OS_EQUALS, but I determined through experimentation
+// that some options do, and do *not* fold the '=' into the argument
+// (meaning OS_EQUALS takes precedence over OS_EMPTY).
 
-// OS_EMPTY | OS_BARE
-static char const * const optionalEmptyArgSwitches[] = {
-  "-O",
-  "-g",
-  "-shared",
-  "-static",
-};
-
-
-// OS_EMPTY | OS_SPACE | OS_EQUALS
-//
-// Nothing is documented as accepting all three of these, but I
-// determined through experimentation that some options do, and do *not*
-// fold the '=' into the argument (meaning OS_EQUALS takes precedence
-// over OS_EMPTY).
-//
-static char const * const emptyOrSpaceOrEqualsArgOptions[] = {
-  "-D",
-  "-l",
-};
-
-
-// OS_EQUALS | OR_SPACE
-static char const * const equalsOrSpaceArgOptions[] = {
-  // For this group, the manual only says ' ', but gcc accepts '='.
-  "--param",
-  "-aux-info",
-
-  // For these, the manual only says '=', but gcc accepts ' '.
-  "--entry",
-  "-specs",
-};
-
-
-// OS_SPACE | OS_EXACT
-static char const * const exactSpaceArgOptions[] = {
-  "-dumpbase",     // Note ambiguity with "-d".
-  "-dumpbase-ext",
-  "-dumpdir",
-};
-
-
-// OS_SPACE
-static char const * const spaceArgOptions[] = {
-  "-Xassembler",
-  "-Xlinker",
-  "-Xpreprocessor",
-  "-wrapper",
-};
-
-
-// OS_EQUALS
-static char const * const equalsArgOptions[] = {
-  // For these, I confirmed that '=' is required and ' ' is rejected.
-  "-iplugindir",
-  "-std",
-
-  // These are documented as accepting '=' and I have not tested if they
-  // also accept ' '.
-  "--sysroot",
-  "-stdlib",
-};
-
-
-// OS_BARE
-static char const * const noArgSwitches[] = {
-  "-###",
-  "--coverage",
-  "--target-help",
-  "--version",
-  "-C",
-  "-CC",
-  "-E",
-  "-H",
-  "-M",
-  "-MD",
-  "-MG",
-  "-MM",
-  "-MMD",
-  "-MP",
-  "-Mno-modules",  // My GCC-9.3.0 says this is unrecognized...
-  "-P",
-  "-Q",
-  "-S",
-  "-ansi",
-  "-c",
-  "-gen-decls",    // Note: "-g" is a prefix, creating an ambiguity.
-  "-p",
-  "-pass-exit-codes",
-  "-pedantic",
-  "-pedantic-errors",
-  "-pg",
-  "-pie",
-  "-pipe",
-  "-print-objc-runtime-info",
-  "-pthread",
-  "-r",
-  "-rdynamic",
-  "-remap",
-  "-s",
-  "-symbolic",
-  "-traditional",
-  "-traditional-cpp",
-  "-trigraphs",
-  "-undef",        // Note ambiguity with "-u".
-  "-v",
-  "-w",
-};
-
-
-// OS_BARE | OS_EXACT
-static char const * const exactNoArgOptions[] = {
-  "-dumpfullversion",
-  "-dumpmachine",
-  "-dumpspecs",
-  "-dumpversion",
-};
-
-
-// OS_BARE | OS_EQUALS
-static char const * const optionalEqualsArgSwitches[] = {
-  "--help",
-};
+#undef BARE
+#undef SPACE
+#undef EMPTY
+#undef EQUALS
+#undef EXACT
 
 
 // -------------------------- WordIterator -----------------------------
@@ -649,42 +606,6 @@ std::string GCCOptions::toCommandLineString() const
 
 void GCCOptions::parse(std::vector<std::string> const &args)
 {
-  // Map from option name (pointer) to its syntax style.
-  //
-  // This gets built every time we parse an argument list.  I could
-  // save the map, but in most cases we only parse one list per
-  // process anyway.
-  //
-  // The entries are sorted in reverse option order name so that when
-  // one option name is a prefix of another, we try the prefix second.
-  std::map<char const *, OptionSyntax, StrcmpRevCompare> optionToSyntax;
-
-
-  // Build the map.
-  #define PROCESS_OPTION_GROUP(array, syntax)          \
-    for (char const *name : array) {                   \
-      insertUnique(optionToSyntax,                     \
-        std::make_pair(name, (OptionSyntax)(syntax))); \
-    }
-
-  // The first four have OS_EMPTY, which is the possibility that gives
-  // rise to ambiguities, so must be treated with care.
-  PROCESS_OPTION_GROUP(emptyArgOptions,                OS_EMPTY);
-  PROCESS_OPTION_GROUP(emptyOrSpaceArgOptions,         OS_EMPTY | OS_SPACE);
-  PROCESS_OPTION_GROUP(optionalEmptyArgSwitches,       OS_EMPTY | OS_BARE);
-  PROCESS_OPTION_GROUP(emptyOrSpaceOrEqualsArgOptions, OS_EMPTY | OS_SPACE | OS_EQUALS);
-
-  PROCESS_OPTION_GROUP(equalsOrSpaceArgOptions,        OS_EQUALS | OS_SPACE);
-  PROCESS_OPTION_GROUP(exactSpaceArgOptions,           OS_SPACE | OS_EXACT);
-  PROCESS_OPTION_GROUP(spaceArgOptions,                OS_SPACE);
-  PROCESS_OPTION_GROUP(equalsArgOptions,               OS_EQUALS);
-  PROCESS_OPTION_GROUP(noArgSwitches,                  OS_BARE);
-  PROCESS_OPTION_GROUP(exactNoArgOptions,              OS_BARE | OS_EXACT);
-  PROCESS_OPTION_GROUP(optionalEqualsArgSwitches,      OS_BARE | OS_EQUALS);
-
-  #undef PROCESS_OPTION_GROUP
-
-
   WordIterator iter(args);
 
   while (iter.hasMore()) {
@@ -693,13 +614,16 @@ void GCCOptions::parse(std::vector<std::string> const &args)
     // True if 'parseOption' says it found a match.
     bool recognized = false;
 
-    // This is not very efficient, but because I'm looking for any
-    // prefix of 'optWord', std::map is not the right data structure to
-    // use to improve it.  And for my purpose, the efficiency of this
-    // lookup is unimportant.
-    for (auto pr : optionToSyntax) {
-      char const *name = pr.first;
-      OptionSyntax syntax = pr.second;
+    // We work through the entries in reverse order to ensure that we
+    // process a longer string before its prefix.
+    //
+    // This is not very efficient, but my purpose, the speed of this
+    // lookup is unimportant.  (And doing better is nontrivial since it
+    // would need a prefix tree or similar.)
+    for (int i = TABLESIZE(optionsTable) - 1; i >= 0; i--) {
+      char const *name = optionsTable[i].m_name;
+      GCCOptions::OptionSyntax syntax =
+        (GCCOptions::OptionSyntax)(optionsTable[i].m_syntax);
 
       recognized = parseOption(optWord, name, syntax, iter);
       if (recognized) {

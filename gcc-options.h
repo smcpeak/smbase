@@ -52,6 +52,7 @@ private:     // types
     std::string nextAdv();
   };
 
+public:      // types
   // Various kinds of option syntax that a given option can accept.
   // Every option has some subset of these as possibilities.
   enum OptionSyntax {
@@ -82,7 +83,6 @@ private:     // types
     OS_EXACT                 = 0x0010,
   };
 
-public:      // types
   // Syntax of the separator between the option name and its argument.
   enum Separator {
     // No separator because only one word was present.
