@@ -345,6 +345,19 @@ GCCOptions::Option const &GCCOptions::Iter::opt() const
 }
 
 
+bool GCCOptions::Iter::optIsSourceFile() const
+{
+  if (opt().isInputFile()) {
+    // If we deduce (or there was specified) a non-empty language
+    // string, then this is regarded as source code.
+    return !gccLanguageForFile(opt().m_argument, xLang()).empty();
+  }
+  else {
+    return false;
+  }
+}
+
+
 bool GCCOptions::Iter::hasMore() const
 {
   return index() < m_options.size();
@@ -584,6 +597,18 @@ bool GCCOptions::getDefaultDependencyTarget(std::string &target) const
 
   // No source files.
   return false;
+}
+
+
+int GCCOptions::numSourceFiles() const
+{
+  int ret = 0;
+  for (Iter iter(*this); iter.hasMore(); iter.adv()) {
+    if (iter.optIsSourceFile()) {
+      ret++;
+    }
+  }
+  return ret;
 }
 
 

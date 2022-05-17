@@ -835,6 +835,61 @@ static void testGetDefaultDependencyTarget()
 }
 
 
+static void testNumSourceFiles()
+{
+  struct Test {
+    std::vector<std::string> m_input;
+    int m_expect;
+  }
+  const tests[] = {
+    {
+      {},
+      0,
+    },
+    {
+      { "-c", "foo.c" },
+      1,
+    },
+    {
+      { "-c", "foo.c", "bar.c" },
+      2,
+    },
+    {
+      { "-c", "src/foo.c" },
+      1,
+    },
+    {
+      { "-c", "foo.c", "-MD" },
+      1,
+    },
+    {
+      { "foo.c", "bar.c", "other.o" },
+      2,
+    },
+    {
+      { "foo.c", "bar.c", "-xc", "other.o" },
+      3,
+    },
+    {
+      { "foo.c", "bar.c", "-xc", "-xnone", "other.o" },
+      2,
+    },
+  };
+
+  for (auto t : tests) {
+    try {
+      GCCOptions opts(t.m_input);
+      int actual = opts.numSourceFiles();
+      EXPECT_EQ(actual, t.m_expect);
+    }
+    catch (xBase &x) {
+      x.prependContext(stringb(__func__ << ": " << toString(t.m_input)));
+      throw x;
+    }
+  }
+}
+
+
 void test_gcc_options()
 {
   // Defined in gcc-options.cc.
@@ -853,6 +908,7 @@ void test_gcc_options()
   testGetOutputFile();
   testCreatesDependencyFile();
   testGetDefaultDependencyTarget();
+  testNumSourceFiles();
 }
 
 

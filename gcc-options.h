@@ -239,6 +239,11 @@ public:      // types
     std::string xLang() const
       { return m_xLang; }
 
+    // True if 'opt()' names a source file.  That is, it is an input
+    // file, and either xLang()=="" and the file name extension is
+    // recognized, or xLang()!="".
+    bool optIsSourceFile() const;
+
     // True if there are more options to iterate over, including the
     // current one.
     bool hasMore() const;
@@ -362,6 +367,9 @@ public:      // methods
   //
   // TODO: This interface assumes there are not multiple source files.
   bool getDefaultDependencyTarget(std::string &target) const;
+
+  // Number of source files present on the command line.
+  int numSourceFiles() const;
 
   // Get the sequence of command words.
   void getCommandWords(std::vector<std::string> &commandWords) const;
