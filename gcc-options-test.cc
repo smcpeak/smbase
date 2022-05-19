@@ -510,13 +510,16 @@ static void testAddOption()
   opts.addInputFile("file1");
   opts.addBareOption("-c");
   opts.addSpaceOption("-o", "file2");
+  opts.addEmptyOption("-D", "foobar");
 
   std::vector<GCCOptions::Option> expect = {
-    { "n1", SEP(EQUALS), "a1",    SYN(INVALID_EQUALS) },
-    { "n2", SEP(NONE),   "a2",    SYN(NONE)           },
-    { "",   SEP(NONE),   "file1", SYN(NONE)           },
-    { "-c", SEP(NONE),   "",      SYN(NONE)           },
-    { "-o", SEP(SPACE),  "file2", SYN(NONE)           },
+    // Columns: \{ \S+ \S+ \S+ \S+ \}
+    { "n1", SEP(EQUALS), "a1",     SYN(INVALID_EQUALS) },
+    { "n2", SEP(NONE),   "a2",     SYN(NONE)           },
+    { "",   SEP(NONE),   "file1",  SYN(NONE)           },
+    { "-c", SEP(NONE),   "",       SYN(NONE)           },
+    { "-o", SEP(SPACE),  "file2",  SYN(NONE)           },
+    { "-D", SEP(EMPTY),  "foobar", SYN(NONE)           },
   };
   checkEqual(opts.getOptions(), expect);
 }

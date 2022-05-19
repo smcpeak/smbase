@@ -710,6 +710,13 @@ void GCCOptions::addSpaceOption(std::string const &name,
 }
 
 
+void GCCOptions::addEmptyOption(std::string const &name,
+                                std::string const &argument)
+{
+  addOption(name, SEP_EMPTY, argument, SYN_NONE);
+}
+
+
 bool GCCOptions::parseOption(
   std::string const &optWordString,
   char const *name,

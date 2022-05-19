@@ -404,6 +404,11 @@ public:      // methods
   // Add 'name' 'argument' as if they were two consecutive words.
   void addSpaceOption(std::string const &name,
                       std::string const &argument);
+
+  // Add 'name'+'argument' as a single word (that is, with the empty
+  // string as the separator).
+  void addEmptyOption(std::string const &name,
+                      std::string const &argument);
 };
 
 
