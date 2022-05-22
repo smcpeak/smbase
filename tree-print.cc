@@ -373,9 +373,14 @@ void TreePrint::printSequence(PrintState &printState,
   int subsequentLineAvailableSpace =
     printState.m_availableSpace - seqNode->m_indent;
 
+  // True if the most recent element was a TPBreak that emitted a
+  // newline.
+  bool lastWasNewline = false;
+
   // Print all the elements.
   FOREACH_ASTLIST(TPNode, seqNode->m_elements, iter) {
     TPNode const *node = iter.data();
+    lastWasNewline = false;
 
     // The break nodes are where all the action takes place.
     if (TPBreak const *breakNode =
@@ -400,6 +405,7 @@ void TreePrint::printSequence(PrintState &printState,
 
         // Emit a newline and indentation to achieve the desired amount
         // of available space.
+        lastWasNewline = true;
         printState.emitNewline(
           printState.m_margin - printState.m_availableSpace);
       }
@@ -437,7 +443,9 @@ void TreePrint::printSequence(PrintState &printState,
   //
   // This allows sequences to end with breaks without forcing lines that
   // come after to be affected by the indentation within the sequence.
-  printState.adjustPendingIndentation(-seqNode->m_indent);
+  if (lastWasNewline) {
+    printState.adjustPendingIndentation(-seqNode->m_indent);
+  }
 }
 
 

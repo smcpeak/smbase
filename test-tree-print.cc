@@ -394,6 +394,34 @@ static void testLastIsBreak()
 }
 
 
+static void testEmptySequence()
+{
+  TreePrint tp;
+  tp.begin();
+  tp << "class C {" << tp.br;
+
+  tp.begin(0 /*ind*/);
+
+  // This is the empty sequence at issue.  It was causing the next thing
+  // after it to be printed without indentation.
+  tp.begin();
+  tp.end();
+
+  // This should be indented by 2 spaces because it is inside the
+  // sequence created at the start, and is not the first line within it.
+  tp << "C()" << tp.br;
+
+  tp << "{}" << tp.br;
+  tp.end();
+
+  tp << tp.und << "};" << tp.br;
+  tp.end();
+
+  printWithRuler(tp, 40);
+  //tp.debugPrintCout();
+}
+
+
 void entry()
 {
   test1();
@@ -415,6 +443,7 @@ void entry()
   arrayInit2(true);
   arrayInit3();
   testLastIsBreak();
+  testEmptySequence();
 }
 
 
