@@ -12,8 +12,8 @@
 // don't actually include regex.h here since I want to allow a
 // different implementation, if that becomes necessary.
 
-#ifndef REGEXP_H
-#define REGEXP_H
+#ifndef SMBASE_REGEXP_H
+#define SMBASE_REGEXP_H
 
 #include "sm-macros.h"   // ENUM_BITWISE_OR, NORETURN
 #include "str.h"         // string
@@ -55,6 +55,16 @@ public:      // funcs
   Regexp(rostring exp, CFlags flags = C_NONE);
   ~Regexp();
 
+  // *******************************************************************
+  // *******************************************************************
+  //
+  // Don't use this module in new code!
+  //
+  // Instead, use std::regex.
+  //
+  // *******************************************************************
+  // *******************************************************************
+
   bool match(rostring str, EFlags flags = E_NONE);
 };
 
@@ -78,4 +88,4 @@ ENUM_BITWISE_OR(Regexp::EFlags)
 bool regexpMatch(rostring str, rostring exp);
 
 
-#endif // REGEXP_H
+#endif // SMBASE_REGEXP_H
