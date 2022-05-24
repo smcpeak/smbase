@@ -87,12 +87,25 @@ public:      // methods
       inc();
     }
   }
+
+  // Return the current object, releasing control of it and not changing
+  // its reference count.
+  RefCountObject *release()
+  {
+    RefCountObject *ret = m_pointer;
+    m_pointer = NULL;
+    return ret;
+  }
 };
 
 
 // Pointer to T with automatic reference counting.
 //
 // Class T should be derived from 'RefCountObject'.
+//
+// For the most part, this class's methods just delegate to those of
+// RCPtrBase, and I do not repeat the comments that appear there.
+//
 template <class T>
 class RCPtr : public RCPtrBase {
 public:      // methods
@@ -132,6 +145,11 @@ public:      // methods
   void set(T *p)
   {
     RCPtrBase::set(p);
+  }
+
+  T *release()
+  {
+    return static_cast<T*>(RCPtrBase::release());
   }
 
   // Allow RCPtr to be treated like a normal pointer.

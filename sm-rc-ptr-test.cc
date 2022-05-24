@@ -193,6 +193,20 @@ static void testPassingAndReturning()
 }
 
 
+static void testRelease()
+{
+  FUNCTION_HEADER();
+
+  RCPtr<Foo> p(new Foo);
+  Foo *q = p.release();
+
+  xassert(p == NULL);
+  xassert(q->getRefCount() == 1);
+
+  delete q;
+}
+
+
 void test_sm_rc_ptr()
 {
   testAssignNew();
@@ -201,6 +215,7 @@ void test_sm_rc_ptr()
   testPtrCopyCtor();
   testHasRCPtr();
   testPassingAndReturning();
+  testRelease();
 }
 
 
