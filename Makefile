@@ -228,6 +228,7 @@ SRCS += pprint.cc
 SRCS += refct-serf.cc
 SRCS += run-process.cc
 SRCS += sm-file-util.cc
+SRCS += sm-rc-obj.cc
 SRCS += sm-to-std-string.cc
 SRCS += smregexp.cc
 SRCS += srcloc.cc
@@ -435,6 +436,7 @@ tarray2d.exe: tarray2d.cc array2d.h $(THIS)
 
 UNIT_TEST_OBJS :=
 UNIT_TEST_OBJS += gcc-options-test.o
+UNIT_TEST_OBJS += sm-rc-ptr-test.o
 UNIT_TEST_OBJS += string-utils-test.o
 UNIT_TEST_OBJS += test-dict.o
 UNIT_TEST_OBJS += test-datablok.o
