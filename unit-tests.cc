@@ -26,10 +26,13 @@ static void entry(int argc, char **argv)
     testName = argv[1];
   }
 
-  #define RUN_TEST(name)                                \
-    if (testName == NULL || streq(testName, #name)) {   \
-      std::cout << "---- " #name " ----" << std::endl;  \
-      test_##name();                                    \
+  bool ranOne = false;
+
+  #define RUN_TEST(name)                               \
+    if (testName == NULL || streq(testName, #name)) {  \
+      std::cout << "---- " #name " ----" << std::endl; \
+      test_##name();                                   \
+      ranOne = true;                                   \
     }
 
   RUN_TEST(datablok);
@@ -42,7 +45,15 @@ static void entry(int argc, char **argv)
 
   #undef RUN_TEST
 
-  cout << "unit tests PASSED" << endl;
+  if (!ranOne) {
+    xfatal(stringb("unrecogized module name: " << testName));
+  }
+  else if (testName) {
+    cout << "tests for module " << testName << " PASSED\n";
+  }
+  else {
+    cout << "unit tests PASSED" << endl;
+  }
 }
 
 
