@@ -236,6 +236,15 @@ static void testIncDecFunctions()
 }
 
 
+static void testDecOnLeave()
+{
+  FUNCTION_HEADER();
+
+  Foo *p = incRefCount(new Foo(9));
+  DEC_REF_COUNT_ON_LEAVING_SCOPE(p);
+}
+
+
 void test_sm_rc_ptr()
 {
   testAssignNew();
@@ -247,6 +256,7 @@ void test_sm_rc_ptr()
   testRelease();
   testSwap();
   testIncDecFunctions();
+  testDecOnLeave();
 }
 
 
