@@ -10,6 +10,13 @@
 
 
 // Pointer to RefCountObject with automatic reference counting.
+//
+// It is my intention that the semantics broadly aligns with
+// std::unique_ptr and std::shared_ptr, with the difference being
+// shared_ptr stores the reference count in a separately allocated
+// object, whereas this class uses a reference count embedded within the
+// pointed-to object.
+//
 class RCPtrBase {
 private:     // data
   // The underlying pointer.
@@ -63,14 +70,14 @@ public:      // methods
 
   RCPtrBase& operator= (RCPtrBase const &src)
   {
-    // The check inside 'set' takes care of 'this == &src'.
-    set(src.m_pointer);
+    // The check inside 'reset' takes care of 'this == &src'.
+    reset(src.m_pointer);
     return *this;
   }
 
   RCPtrBase& operator= (RefCountObject *p)
   {
-    set(p);
+    reset(p);
     return *this;
   }
 
@@ -79,7 +86,8 @@ public:      // methods
     return m_pointer;
   }
 
-  void set(RefCountObject *p)
+  // Set or reset the pointer.
+  void reset(RefCountObject *p = NULL)
   {
     if (p != m_pointer) {
       dec();
@@ -142,9 +150,9 @@ public:      // methods
     return static_cast<T*>(RCPtrBase::get());
   }
 
-  void set(T *p)
+  void reset(T *p = NULL)
   {
-    RCPtrBase::set(p);
+    RCPtrBase::reset(p);
   }
 
   T *release()
