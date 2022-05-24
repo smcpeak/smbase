@@ -64,4 +64,25 @@ public:      // methods
 };
 
 
+// If the argument is not NULL, increment its reference count and return
+// it.  This is convenient for wrapping object creation expressions.
+template <class T>
+T *incRefCount(T *obj)
+{
+  if (obj) {
+    obj->incRefCount();
+  }
+  return obj;
+}
+
+
+// Decrement the given object's reference count if it is not zero.
+inline void decRefCount(RefCountObject *obj)
+{
+  if (obj) {
+    obj->decRefCount();
+  }
+}
+
+
 #endif // SMBASE_SM_RC_OBJ_H

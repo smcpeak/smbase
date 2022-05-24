@@ -222,6 +222,20 @@ static void testSwap()
 }
 
 
+static void testIncDecFunctions()
+{
+  FUNCTION_HEADER();
+
+  Foo *p = incRefCount(new Foo(9));
+  xassert(p->x == 9);
+  decRefCount(p);
+
+  p = incRefCount((Foo*)NULL);
+  xassert(p == NULL);
+  decRefCount(p);
+}
+
+
 void test_sm_rc_ptr()
 {
   testAssignNew();
@@ -232,6 +246,7 @@ void test_sm_rc_ptr()
   testPassingAndReturning();
   testRelease();
   testSwap();
+  testIncDecFunctions();
 }
 
 
