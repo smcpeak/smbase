@@ -104,6 +104,15 @@ public:      // methods
     m_pointer = NULL;
     return ret;
   }
+
+  // Exchange the pointer with 'other', without changing the reference
+  // count of any involved object.
+  void swap(RCPtrBase &other) noexcept
+  {
+    RefCountObject *tmp = other.m_pointer;
+    other.m_pointer = this->m_pointer;
+    this->m_pointer = tmp;
+  }
 };
 
 
@@ -158,6 +167,11 @@ public:      // methods
   T *release()
   {
     return static_cast<T*>(RCPtrBase::release());
+  }
+
+  void swap(RCPtr &other) noexcept
+  {
+    RCPtrBase::swap(other);
   }
 
   // Allow RCPtr to be treated like a normal pointer.

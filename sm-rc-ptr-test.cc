@@ -207,6 +207,21 @@ static void testRelease()
 }
 
 
+static void testSwap()
+{
+  FUNCTION_HEADER();
+
+  RCPtr<Foo> a(new Foo(1));
+  RCPtr<Foo> b(new Foo(2));
+
+  xassert(a->x == 1 && b->x == 2);
+
+  a.swap(b);
+
+  xassert(a->x == 2 && b->x == 1);
+}
+
+
 void test_sm_rc_ptr()
 {
   testAssignNew();
@@ -216,6 +231,7 @@ void test_sm_rc_ptr()
   testHasRCPtr();
   testPassingAndReturning();
   testRelease();
+  testSwap();
 }
 
 
