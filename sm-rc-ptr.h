@@ -192,4 +192,12 @@ public:      // methods
 };
 
 
+// Make it easy to wrap a native pointer in an RCPtr.
+template <class T>
+RCPtr<T> rcptr(T *p)
+{
+  return RCPtr<T>(p);
+}
+
+
 #endif // SMBASE_SM_RC_PTR

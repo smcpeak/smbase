@@ -170,7 +170,7 @@ static void testHasRCPtr()
 static RCPtr<Foo> getPtr()
 {
   IN_FUNCTION();
-  return RCPtr<Foo>(new Foo(7));
+  return rcptr(new Foo(7));
 }
 
 static RCPtr<Foo> passThrough(RCPtr<Foo> p)
