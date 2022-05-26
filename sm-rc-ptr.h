@@ -6,6 +6,8 @@
 
 #include "sm-rc-obj.h"                 // RefCountObject
 
+#include <type_traits>                 // std::is_convertible
+
 #include <stddef.h>                    // NULL
 
 
@@ -142,8 +144,34 @@ public:      // methods
     : RCPtrBase(src)
   {}
 
+  // Allow implicit upcasts with RCPtr.
+  template <class U>
+  RCPtr(RCPtr<U> const &obj)
+    : RCPtrBase(obj)
+  {
+    // Without this check, we would risk an unsafe conversion, since
+    // RCPtrBase is not templatized and hence regards both pointers as
+    // having the same type.
+    STATIC_ASSERT((std::is_convertible<U*, T*>::value));
+  }
+
+  template <class U>
+  RCPtr(RCPtr<U> &&src) noexcept
+    : RCPtrBase(src)
+  {
+    STATIC_ASSERT((std::is_convertible<U*, T*>::value));
+  }
+
   RCPtr& operator= (RCPtr const &src)
   {
+    RCPtrBase::operator=(src);
+    return *this;
+  }
+
+  template <class U>
+  RCPtr& operator= (RCPtr<U> const &src)
+  {
+    STATIC_ASSERT((std::is_convertible<U*, T*>::value));
     RCPtrBase::operator=(src);
     return *this;
   }

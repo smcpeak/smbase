@@ -245,6 +245,31 @@ static void testDecOnLeave()
 }
 
 
+class Derived : public Foo {};
+
+static void takesFoo(RCPtr<Foo> f)
+{
+  xassert(f->x == 88);
+
+  // Not allowed, and static assertion confirms that.
+  //RCPtr<Derived> no(f);
+}
+
+static void testImplicitUpcast()
+{
+  FUNCTION_HEADER();
+
+  RCPtr<Derived> d(new Derived);
+  d->x = 88;
+  takesFoo(d);      // allowed
+
+  RCPtr<Foo> f;
+  f = d;
+  xassert(f->x == 88);
+}
+
+
+
 void test_sm_rc_ptr()
 {
   testAssignNew();
@@ -257,6 +282,7 @@ void test_sm_rc_ptr()
   testSwap();
   testIncDecFunctions();
   testDecOnLeave();
+  testImplicitUpcast();
 }
 
 

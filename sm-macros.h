@@ -97,11 +97,26 @@ void T::insertOstream(ostream &os) const
 #endif // 0
 
 
-// assert something at compile time (must use this inside a function);
-// works because compilers won't let us declare negative-length arrays
-// (the expression below works with egcs-1.1.2, gcc-2.x, gcc-3.x)
-#define STATIC_ASSERT(cond) \
-  { (void)((int (*)(char failed_static_assertion[(cond)?1:-1]))0); }
+#if __cplusplus >= 201103L
+  // I think the C++11 requirement of a message string is dumb, but I
+  // do not want to require C++17 yet, so I use "".
+  #define STATIC_ASSERT(cond) static_assert((cond), "")
+#else
+  // assert something at compile time (must use this inside a function);
+  // works because compilers won't let us declare negative-length arrays
+  // (the expression below works with egcs-1.1.2, gcc-2.x, gcc-3.x)
+  //
+  // 2022-05-26: I've run into a case where this implementation does not
+  // work.  Specifically, in sm-rc-ptr.h, when trying to check
+  // std::is_convertible, the compiler allows this even when the
+  // condition is false.  I think there's some problem due to the
+  // template context, although this is the first I've seen of such an
+  // issue.   I'm switching to the C++11 standard version, when
+  // available, rather than dive into the guts of GCC to figure out the
+  // problem.
+  #define STATIC_ASSERT(cond) \
+    { (void)((int (*)(char failed_static_assertion[(cond)?1:-1]))0); }
+#endif
 
 // assert that a table is an expected size; the idea is to make sure
 // that static data in some table gets updated when a corresponding
