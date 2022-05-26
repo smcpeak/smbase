@@ -14,6 +14,7 @@
 #include "str.h"                       // streq
 
 void test_dict();                      // test-dict.cc
+void test_functional_set();            // functional-set-test.cc
 void test_gcc_options();               // gcc-options-test.cc
 void test_sm_rc_ptr();                 // sm-rc-ptr-test.cc
 void test_string_utils();              // string-utils-test.cc
@@ -38,6 +39,7 @@ static void entry(int argc, char **argv)
 
   RUN_TEST(datablok);
   RUN_TEST(dict);
+  RUN_TEST(functional_set);
   RUN_TEST(gcc_options);
   RUN_TEST(overflow);
   RUN_TEST(parsestring);

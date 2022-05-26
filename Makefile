@@ -211,6 +211,7 @@ SRCS += datetime.cc
 SRCS += dev-warning.cc
 SRCS += exc.cpp
 SRCS += flatten.cc
+SRCS += functional-set.cc
 SRCS += gcc-options.cc
 SRCS += gprintf.c
 SRCS += growbuf.cc
@@ -227,6 +228,7 @@ SRCS += point.cc
 SRCS += pprint.cc
 SRCS += refct-serf.cc
 SRCS += run-process.cc
+SRCS += sm-compare.cc
 SRCS += sm-file-util.cc
 SRCS += sm-rc-obj.cc
 SRCS += sm-to-std-string.cc
@@ -435,6 +437,7 @@ tarray2d.exe: tarray2d.cc array2d.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_TARRAY2D $(LDFLAGS) tarray2d.cc $(LIBS)
 
 UNIT_TEST_OBJS :=
+UNIT_TEST_OBJS += functional-set-test.o
 UNIT_TEST_OBJS += gcc-options-test.o
 UNIT_TEST_OBJS += sm-rc-ptr-test.o
 UNIT_TEST_OBJS += string-utils-test.o
