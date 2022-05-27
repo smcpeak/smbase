@@ -9,6 +9,10 @@
 #include "str.h"                       // string
 #include "xassert.h"                   // xassert
 
+#include <iterator>                    // std::random_access_iterator_tag
+#include <utility>                     // std::swap
+
+#include <stddef.h>                    // size_t, ptrdiff_t
 #include <stdlib.h>                    // qsort
 
 
@@ -625,6 +629,7 @@ public:      // funcs
 #define FOREACH_OBJARRAYSTACK_NC(T, list, iter) \
   for(ObjArrayStackIterNC< T > iter(list); !iter.isDone(); iter.adv())
 
+
 // ------------------------- ArrayStackEmbed --------------------------
 // This is like ArrayStack, but the first 'n' elements are stored
 // embedded in this object, instead of allocated on the heap; in some
@@ -640,6 +645,145 @@ public:      // funcs
 // the elements.
 template <class T, int n>
 class ArrayStackEmbed {
+public:       // types
+  // STL compatible typedefs.  (The main ArrayStackEmbed class does not
+  // consistently use these yet.  I defined them for use by Iter.)
+  typedef size_t    size_type;
+  typedef ptrdiff_t difference_type;
+  typedef T         value_type;
+  typedef T*        pointer;
+  typedef T&        reference;
+
+  // STL-style iterator for ArrayStackEmbed.  For now, I have only
+  // defined the non-const version.
+  //
+  // The intent is to satisfy LegacyRandomAccessIterator so I can use
+  // this with std::sort.  Summarizing the constituent constraints:
+  //
+  // * MoveConstructible: move ctor (satisfied by copy ctor)
+  // * CopyConstructible: copy ctor
+  // * CopyAssignable: operator =
+  // * Destructible: dtor
+  // * Swappable: swap(it1,it2)
+  // * LegacyIterator: above, plus: typedefs, operator * and ++ (pre)
+  // * EqualityComparable: operator ==
+  // * LegacyInputIterator: above, plus: operator !=, ->, ++ (post)
+  // * DefaultConstructible: default ctor (singular iterator)
+  // * LegacyForwardIterator: above constraints
+  // * LegacyBidirectionalIterator: above, plus: operator -- (pre+post)
+  // * LegacyRandomAccessIterator: above, plus: operator +=, +, -=, -,
+  //   [], <, <=, >, >=
+  //
+  class Iter {
+  public:      // types
+    typedef typename ArrayStackEmbed<T,n>::difference_type difference_type;
+    typedef typename ArrayStackEmbed<T,n>::value_type      value_type;
+    typedef typename ArrayStackEmbed<T,n>::pointer         pointer;
+    typedef typename ArrayStackEmbed<T,n>::reference       reference;
+
+    typedef std::random_access_iterator_tag iterator_category;
+
+  public:      // data
+    // Array over which we're iterating.  Not NULL, except for the
+    // "singular" iterator.
+    ArrayStackEmbed<T,n> *array;
+
+    // Current index; changed as we increment.  'index' is
+    // equal to array.length() for the "end" iterator.
+    difference_type index;
+
+  public:      // funcs
+    Iter(ArrayStackEmbed<T,n> &a, difference_type i)
+      : array(&a),
+        index(i)
+    {
+      selfCheck();
+    }
+
+    ~Iter() noexcept
+    {}
+
+    // Create a "singular" iterator, on which most operations are
+    // undefined (C++14 24.2.1/6).
+    Iter()
+      : array(NULL),
+        index(0)
+    {}
+
+    Iter(Iter const &obj)
+      : DMEMB(array),
+        DMEMB(index)
+    {}
+
+    Iter& operator=(Iter const &obj)
+    {
+      CMEMB(array);
+      CMEMB(index);
+      return *this;
+    }
+
+    // check internal invariants
+    void selfCheck() const
+    {
+      xassert((size_type)index <= array->size());
+    }
+
+    bool operator==(Iter const &obj) const
+    {
+      return EMEMB(array) &&
+             EMEMB(index);
+    }
+
+    bool operator<(Iter const &obj) const
+    {
+      // Only legal to do inequality comparisons among iterators
+      // pointing to the same container.
+      xassert(array == obj.array);
+
+      return index < obj.index;
+    }
+
+    RELATIONAL_OPERATORS(Iter)
+
+    void swapWith(Iter &other) noexcept
+    {
+      std::swap(array, other.array);
+      std::swap(index, other.index);
+    }
+    friend void swap(Iter &a, Iter &b) noexcept
+      { a.swapWith(b); }
+
+    T& operator* () const { return array->at(index); }
+    T* operator-> () const { return array->at(index); }
+
+    Iter& operator++(/*preincrement*/)
+      { index++; selfCheck(); return *this; }
+    Iter operator++(int/*postincrement*/)
+      { Iter ret(*this); operator++(); return ret; }
+    Iter& operator--(/*predecrement*/)
+      { index--; selfCheck(); return *this; }
+    Iter operator--(int/*postdecrement*/)
+      { Iter ret(*this); operator--(); return ret; }
+
+    Iter& operator+= (difference_type d)
+      { index += d; return *this; }
+    Iter operator+ (difference_type d) const
+      { Iter ret(*this); return ret += d; }
+    friend Iter operator+ (difference_type d, Iter const &it)
+      { Iter ret(it); return ret += d; }
+
+    Iter& operator-= (difference_type d)
+      { return *this += -d; }
+    Iter operator- (difference_type d) const
+      { Iter ret(*this); return ret -= d; }
+
+    difference_type operator- (Iter const &other) const
+      { return this->index - other.index; }
+
+    T& operator[] (difference_type d) const
+      { return array->at(index+d); }
+  };
+
 private:      // data
   // embedded storage
   T embed[n];
@@ -674,6 +818,9 @@ public:       // funcs
     }
   }
 
+  // STL compatibility.
+  void push_back(T const &val) { push(val); }
+
   T pop()
   {
     xassert(len > 0);
@@ -692,8 +839,15 @@ public:       // funcs
   bool isNotEmpty() const
     { return !isEmpty(); }
 
+  // STL compatibility.
+  size_type size() const { return len; }
+  bool empty() const { return isEmpty(); }
+
+  // Remove all elements.
+  void clear() { len = 0; }
+
   // direct element access
-  T const &getElt(int i) const
+  T const &getEltC(int i) const
   {
     bc(i);
     if (i < n) {
@@ -704,17 +858,32 @@ public:       // funcs
     }
   }
 
+  T& getElt(int i)
+    { return const_cast<T&>(getEltC(i)); }
+
+  // STL compatibility.
+  T const & at(size_t i) const { return getEltC((int)i); }
+  T       & at(size_t i)       { return getElt ((int)i); }
+
   T const& operator[] (int i) const
-    { return getElt(i); }
+    { return getEltC(i); }
   T & operator[] (int i)
-    { return const_cast<T&>(getElt(i)); }
+    { return getElt(i); }
 
   T const &top() const
-    { return getElt(len-1); }
+    { return getEltC(len-1); }
   T &topNC()
-    { return const_cast<T&>(getElt(len-1)); }
+    { return getElt(len-1); }
 
+  // Move the element at 'oldIndex' to 'newIndex', shifting all elements
+  // in between by one position to make room.
   void moveElement(int oldIndex, int newIndex);
+
+  // STL-style iterators.
+  Iter begin()
+    { return Iter(*this, 0); }
+  Iter end()
+    { return Iter(*this, length()); }
 };
 
 
@@ -735,79 +904,5 @@ void ArrayStackEmbed<T,n>::moveElement(int oldIndex, int newIndex)
   }
 }
 
-
-// this code has not been tested, so it's #if 0'd out for now
-#if 0
-// STL-style iterator for ArrayStackEmbed
-template <class T, int n>
-class ArrayStackEmbedIter {
-public:      // data
-  // Array over which we're iterating.
-  ArrayStackEmbed<T,n> *array;
-
-  // Current index; changed as we increment.  'index' is
-  // equal to array.length() for the "end" iterator.
-  int index;
-
-public:      // funcs
-  ArrayStackEmbedIter(ArrayStackEmbed<T,n> &a, int i)
-    : array(&a),
-      index(i)
-  {
-    selfCheck();
-  }
-
-  ~ArrayStackEmbedIter()
-  {}
-
-  ArrayStackEmbedIter(ArrayStackEmbedIter const &obj)
-    : DMEMB(array),
-      DMEMB(index)
-  {}
-
-  ArrayStackEmbedIter& operator=(ArrayStackEmbedIter const &obj)
-  {
-    CMEMB(array);
-    CMEMB(index);
-    return *this;
-  }
-
-  // check internal invariants
-  void selfCheck() const
-  {
-    xassert((unsigned)index <= array->length());
-  }
-
-  bool operator==(ArrayStackEmbedIter const &obj) const
-  {
-    return EMEMB(array) &&
-           EMEMB(index);
-  }
-
-  bool operator<(ArrayStackEmbedIter const &obj) const
-  {
-    // Only legal to do inequality comparisons among iterators
-    // pointing to the same container.
-    xassert(array == obj.array);
-
-    return index < obj.index;
-  }
-
-  RELATIONAL_OPERATORS(ArrayStackEmbedIter)
-
-  ArrayStackEmbedIter const &operator++(/*preincrement*/)
-  {
-    index++;
-    selfCheck();
-  }
-
-  ArrayStackEmbedIter operator++(int/*postincrement*/)
-  {
-    ArrayStackEmbedIter ret(*this);
-    operator++();
-    return ret;
-  }
-};
-#endif // 0 (code not tested)
 
 #endif // ARRAY_H
