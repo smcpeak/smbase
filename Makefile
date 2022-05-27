@@ -1,9 +1,9 @@
 # smbase/Makefile
 # see license.txt for copyright and terms of use
 
-# main target
+# Main target.
 THIS := libsmbase.a
-all: $(THIS)
+all: pre-target $(THIS)
 .PHONY: all
 
 
@@ -142,6 +142,13 @@ endif
 
 %.o: %.c
 	$(CC) -c -o $@ $(GENDEPS_FLAGS) $(CFLAGS) $<
+
+
+# $(PRE_TARGET) is usually nothing, but can be set in personal.mk to
+# direct 'make' to build something of interest first, in order to speed
+# up reporting errors in a certain module.
+pre-target: $(PRE_TARGET)
+.PHONY: pre-target
 
 
 # -------- experimenting with m4 for related files -------
