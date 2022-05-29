@@ -2,10 +2,13 @@
 // owner list wrapper around VoidTailList
 // name 'AST' is because the first application is in ASTs
 
-#ifndef ASTLIST_H
-#define ASTLIST_H
+#ifndef SMBASE_ASTLIST_H
+#define SMBASE_ASTLIST_H
 
-#include "vdtllist.h"     // VoidTailList
+#include "vdtllist.h"                  // VoidTailList
+
+#include <stddef.h>                    // size_t
+
 
 template <class T> class ASTListIter;
 template <class T> class ASTListIterNC;
@@ -88,6 +91,20 @@ public:
 
   // debugging: two additional invariants
   void selfCheck() const                { list.selfCheck(); }
+
+  // Limited STL compatibility, similar to std::list<T*> and
+  // std::vector<T*>.
+  size_t size() const                   { return count(); }
+  bool empty() const                    { return isEmpty(); }
+  T const *at(size_t i) const           { return nthC((int)i); }
+  T       *at(size_t i)                 { return nth ((int)i); }
+  T const *front() const                { return firstC(); }
+  T       *front()                      { return first(); }
+  T const *back() const                 { return lastC(); }
+  T       *back()                       { return last(); }
+  void push_front(T *newitem)           { prepend(newitem); }
+  void push_back(T *newitem)            { append(newitem); }
+  void clear()                          { deleteAll(); }
 };
 
 
@@ -225,4 +242,4 @@ public:
   void selfCheck() const                { mut.selfCheck(); }
 };
 
-#endif // ASTLIST_H
+#endif // SMBASE_ASTLIST_H

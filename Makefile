@@ -446,6 +446,7 @@ tarray2d.exe: tarray2d.cc array2d.h $(THIS)
 # TODO: Rename the modules that begin with "test" to end with it instead.
 UNIT_TEST_OBJS :=
 UNIT_TEST_OBJS += array-test.o
+UNIT_TEST_OBJS += astlist-test.o
 UNIT_TEST_OBJS += functional-set-test.o
 UNIT_TEST_OBJS += gcc-options-test.o
 UNIT_TEST_OBJS += sm-rc-ptr-test.o
