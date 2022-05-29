@@ -568,8 +568,11 @@ out/rce_%.ok: test/rce_expect_% run-compare-expect.py
 
 
 # Test RCE itself, specifically the --drop-lines option.
+#
+# Explicitly set UPDATE_EXPECT=0 for this test to get consistent
+# behavior even if the user has that variable set.
 RCE_CMD_droplines := \
-  $(RUN_COMPARE_EXPECT) \
+  env UPDATE_EXPECT=0 $(RUN_COMPARE_EXPECT) \
     --expect /dev/null \
     --drop-lines 'extern' \
     --drop-lines '^x//' \

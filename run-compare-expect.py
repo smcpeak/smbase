@@ -238,11 +238,14 @@ def main():
       print(f"UPDATE_EXPECT is 1.  Updating {opts.expect} with the new output.")
       writeLinesToFile(actualLines, opts.expect)
 
-    elif makeflags != None and "-j" in makeflags:
-      print("Since MAKEFLAGS contains '-j', I will not prompt to update.")
-      sys.exit(2)
-
     elif update == "prompt" or update == "promptyes":
+      # Only check MAKEFLAGS if the user asked to prompt, since
+      # otherwise there is a problem creating tests of this script
+      # itself that will work when 'make' is run with '-j'.
+      if makeflags != None and "-j" in makeflags:
+        print("Since MAKEFLAGS contains '-j', I will not prompt to update.")
+        sys.exit(2)
+
       answer = "x"
       while (not (answer == "y" or
                   answer == "n" or
