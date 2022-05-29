@@ -63,9 +63,6 @@ AR      = ar
 RANLIB  = ranlib
 PYTHON3 = python3
 
-# Ensure the directory meant to hold the output file of a recipe exists.
-CREATE_OUTPUT_DIRECTORY = @mkdir -p $(dir $@)
-
 # How to invoke run-compare-expect.py.
 RUN_COMPARE_EXPECT = $(PYTHON3) ./run-compare-expect.py
 
@@ -123,14 +120,8 @@ endif
 
 
 # ----------------------------- Rules ------------------------------
-# Eliminate all implicit rules.
-.SUFFIXES:
-
-# Delete a target when its recipe fails.
-.DELETE_ON_ERROR:
-
-# Do not remove "intermediate" targets.
-.SECONDARY:
+# Standard stuff.
+include sm-lib.mk
 
 
 # Compile .cc to .o, also generating dependency files.
