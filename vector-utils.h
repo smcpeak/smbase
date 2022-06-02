@@ -9,6 +9,8 @@
 #include "xassert.h"                   // xfailure
 #include "sm-macros.h"                 // NO_OBJECT_COPIES
 
+#include <iostream>                    // std::ostream
+#include <sstream>                     // std::ostringstream
 #include <vector>                      // std::vector
 
 
@@ -57,6 +59,38 @@ B accumulateWithMap(std::vector<A> const &vec, MapOperation op,
   }
 
   return ret;
+}
+
+
+// Print 'vec' to 'os' by using 'operator<<' on each element.  Returns
+// 'os'.
+//
+// Note that there is an operator<< in string-utils.h that operates on
+// std::vector<std::string> and behaves differently (it quotes the
+// strings).
+template <class T>
+std::ostream& operator<< (std::ostream &os, std::vector<T> const &vec)
+{
+  os << '[';
+  for (size_t i=0; i < vec.size(); i++) {
+    if (i > 0) {
+      os << ' ';
+    }
+    os << vec[i];
+  }
+  os << ']';
+  return os;
+}
+
+
+// Note there is an overload for std::string in string-utils.h that
+// behaves differently.
+template <class T>
+std::string toString(std::vector<T> const &vec)
+{
+  std::ostringstream oss;
+  oss << vec;
+  return oss.str();
 }
 
 
