@@ -362,4 +362,17 @@ public:
 #define ARRAY_ENDPTR(array) ((array) + TABLESIZE(array))
 
 
+// This is meant to be used like a type qualifier to document that a
+// pointer can be null.  Examples:
+//
+//   int * NULLABLE intptr = ...;
+//   int * NULLABLE func() { ... }
+//   void takesPtr(int * NULLABLE param);
+//
+// Right now it's just documentation, but maybe someday it will be
+// enforced automatically.
+//
+#define NULLABLE /**/
+
+
 #endif // SMBASE_SM_MACROS_H
