@@ -583,9 +583,15 @@ rce-tests: out/rce_droplines.ok
 
 
 # Test hex digit replacement.
-RCE_CMD_hexreplace := cat test/hashex.txt
+RCE_CMD_hexreplace := --hex-replacer cat test/hashex.txt
 
 rce-tests: out/rce_hexreplace.ok
+
+
+# Test no hex digit replacement.
+RCE_CMD_nohexreplace := cat test/hashex.txt
+
+rce-tests: out/rce_nohexreplace.ok
 
 
 .PHONY: rce-tests

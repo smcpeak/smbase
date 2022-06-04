@@ -126,6 +126,9 @@ def hexReplacer(m):
     return "0xHEXDIGITS"
 
 
+# True to use the hexadecimal replacer.
+use_hex_replacer = False
+
 # If "VOLATILE" appears on a line, treat the entire line as volatile
 # in the sense of changing from run to run, and hence should not be
 # included in the normalized output.
@@ -137,7 +140,7 @@ def normalizeOutput(line):
 
   if volatileRE.search(line):
     return "VOLATILE"
-  else:
+  elif use_hex_replacer:
     line = hexDigitsRE.sub(hexReplacer, line)
   return line
 
@@ -171,11 +174,17 @@ def main():
     help="Run the program once per line in ARGFILE.")
   parser.add_argument("--drop-lines", action="append", metavar="REGEX",
     help="Discard lines matching REGEX before comparison.  Can specify multiple.")
+  parser.add_argument("--hex-replacer", action="store_true",
+    help="Use the 0xHEXDIGITS replacer.")
   parser.add_argument("program",
     help="Program to run.")
   parser.add_argument("progArgs", nargs=argparse.REMAINDER,
     help="Arguments to the program.")
   opts = parser.parse_args()
+
+  if opts.hex_replacer:
+    global use_hex_replacer
+    use_hex_replacer = True
 
   # Read the expected output.
   with open(opts.expect) as f:
