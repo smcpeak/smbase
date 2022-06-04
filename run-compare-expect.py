@@ -176,6 +176,8 @@ def main():
     help="Discard lines matching REGEX before comparison.  Can specify multiple.")
   parser.add_argument("--hex-replacer", action="store_true",
     help="Use the 0xHEXDIGITS replacer.")
+  parser.add_argument("--no-separators", action="store_true",
+    help="Do not print the stdout/stderr/exit code separators.")
   parser.add_argument("program",
     help="Program to run.")
   parser.add_argument("progArgs", nargs=argparse.REMAINDER,
@@ -218,12 +220,19 @@ def main():
     proc = subprocess.run(command, capture_output=True);
 
     # Combine the stdout, stderr, and exit code into one list.
-    actualLines += ["---- stdout ----"]
+    sep = not opts.no_separators
+    if sep:
+      actualLines += ["---- stdout ----"]
     actualLines += splitLines(proc.stdout)
-    actualLines += ["---- stderr ----"]
+    if sep:
+      actualLines += ["---- stderr ----"]
     actualLines += splitLines(proc.stderr)
-    actualLines += ["---- exit status ----"]
-    actualLines += [f"Exit {proc.returncode}"]
+    if sep:
+      actualLines += ["---- exit status ----"]
+      actualLines += [f"Exit {proc.returncode}"]
+    elif proc.returncode != 0:
+      # Only print the exit code if non-zero when not using separators.
+      actualLines += [f"Exit {proc.returncode}"]
 
   # Normalize it.
   actualLines = filter(lambda line: not lineIsDropped(line), actualLines)

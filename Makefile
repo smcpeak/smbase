@@ -594,6 +594,18 @@ RCE_CMD_nohexreplace := cat test/hashex.txt
 rce-tests: out/rce_nohexreplace.ok
 
 
+# Test separators (default) versus --no-separators.
+RCE_CMD_separators0 := sh -c 'echo out; echo err >&2; exit 0'
+RCE_CMD_separators3 := sh -c 'echo out; echo err >&2; exit 3'
+RCE_CMD_noseparators0 := --no-separators sh -c 'echo out; echo err >&2; exit 0'
+RCE_CMD_noseparators3 := --no-separators sh -c 'echo out; echo err >&2; exit 3'
+
+rce-tests: out/rce_separators0.ok
+rce-tests: out/rce_separators3.ok
+rce-tests: out/rce_noseparators0.ok
+rce-tests: out/rce_noseparators3.ok
+
+
 .PHONY: rce-tests
 check: rce-tests
 
