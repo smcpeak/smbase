@@ -582,6 +582,12 @@ RCE_CMD_droplines := \
 rce-tests: out/rce_droplines.ok
 
 
+# Test hex digit replacement.
+RCE_CMD_hexreplace := cat test/hashex.txt
+
+rce-tests: out/rce_hexreplace.ok
+
+
 .PHONY: rce-tests
 check: rce-tests
 

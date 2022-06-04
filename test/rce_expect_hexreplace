@@ -1,0 +1,11 @@
+---- stdout ----
+Some text with hexdigits.
+Not replaced: 0123456789ABCDEF.
+Replaced: 0xHEXDIGITS.
+Not replaced because only one digit: 0x3.
+Replaced because two: 0xHEXDIGITS.
+Multiple on same line: 0xHEXDIGITS 0xHEXDIGITS hello 0xHEXDIGITS 0xHEXDIGITS.
+EOF
+---- stderr ----
+---- exit status ----
+Exit 0

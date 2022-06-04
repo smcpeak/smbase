@@ -1,0 +1,7 @@
+Some text with hexdigits.
+Not replaced: 0123456789ABCDEF.
+Replaced: 0x0123456789ABCDEF.
+Not replaced because only one digit: 0x3.
+Replaced because two: 0x34.
+Multiple on same line: 0x123 0x456 hello 0x789 0xABC.
+EOF
