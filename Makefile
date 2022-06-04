@@ -606,6 +606,16 @@ rce-tests: out/rce_noseparators0.ok
 rce-tests: out/rce_noseparators3.ok
 
 
+# Test --no-stderr.
+RCE_CMD_withstderr := sh -c 'echo out; echo err >&2'
+RCE_CMD_nostderr := --no-stderr sh -c 'echo out; echo err >&2'
+RCE_CMD_nostderr_nosep := --no-stderr --no-separators sh -c 'echo out; echo err >&2'
+
+rce-tests: out/rce_withstderr.ok
+rce-tests: out/rce_nostderr.ok
+rce-tests: out/rce_nostderr_nosep.ok
+
+
 .PHONY: rce-tests
 check: rce-tests
 

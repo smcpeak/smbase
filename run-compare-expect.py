@@ -178,6 +178,8 @@ def main():
     help="Use the 0xHEXDIGITS replacer.")
   parser.add_argument("--no-separators", action="store_true",
     help="Do not print the stdout/stderr/exit code separators.")
+  parser.add_argument("--no-stderr", action="store_true",
+    help="Do not capture stderr; instead let it pass through.")
   parser.add_argument("program",
     help="Program to run.")
   parser.add_argument("progArgs", nargs=argparse.REMAINDER,
@@ -217,16 +219,22 @@ def main():
       actualLines += [f"======== {' '.join(command)} ========"]
 
     # Run the program, capturing output.
-    proc = subprocess.run(command, capture_output=True);
+    capture_stderr = not opts.no_stderr
+    if capture_stderr:
+      proc = subprocess.run(command, stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE);
+    else:
+      proc = subprocess.run(command, stdout=subprocess.PIPE);
 
     # Combine the stdout, stderr, and exit code into one list.
     sep = not opts.no_separators
     if sep:
       actualLines += ["---- stdout ----"]
     actualLines += splitLines(proc.stdout)
-    if sep:
-      actualLines += ["---- stderr ----"]
-    actualLines += splitLines(proc.stderr)
+    if capture_stderr:
+      if sep:
+        actualLines += ["---- stderr ----"]
+      actualLines += splitLines(proc.stderr)
     if sep:
       actualLines += ["---- exit status ----"]
       actualLines += [f"Exit {proc.returncode}"]
