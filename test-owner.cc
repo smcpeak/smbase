@@ -1,8 +1,11 @@
 // towner.cc            see license.txt for copyright and terms of use
 // test owner stuff
 
-#include "owner.h"    // module to test
-#include <stdio.h>    // printf
+#include "owner.h"                     // module to test
+
+#include "xassert.h"                   // xassert
+
+#include <stdio.h>                     // printf
 
 class Foo;
 void someCrap(Foo *f)
@@ -62,7 +65,32 @@ void test1()
 {
   printf("----------- test1 -----------\n");
   Owner<Foo> f;
+
+  // Exercise the conversion to bool.
+  xassert(!f);
+  if (f) {
+    xfailure("should be false");
+  }
+  bool b = f;
+  xassert(!b);
+
   f = new Foo(4);
+
+  xassert(f);
+  if (!f) {
+    xfailure("should be true");
+  }
+  b = f;
+  xassert(b);
+
+  // Also make sure it works with a 'const' Owner.
+  Owner<Foo> const &cf = f;
+  xassert(cf);
+  if (!cf) {
+    xfailure("should be true");
+  }
+  b = cf;
+  xassert(b);
 }
 
 // access all of the operators as non-const

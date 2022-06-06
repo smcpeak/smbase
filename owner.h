@@ -64,6 +64,10 @@ public:     // funcs
   bool operator== (T const *p) const { return ptr == p; }
   bool operator!= (T const *p) const { return ptr != p; }
 
+  // Allow saying "if (o)" where 'o' is an Owner pointer.
+  operator bool () const { return ptr != NULL; }
+  operator bool ()       { return ptr != NULL; }
+
   // escape hatch for when operators flake out on us
   T *get() { DBG("get"); return ptr; }
   T const *getC() const { DBG("getC"); return ptr; }
