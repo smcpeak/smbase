@@ -440,6 +440,7 @@ UNIT_TEST_OBJS += array-test.o
 UNIT_TEST_OBJS += astlist-test.o
 UNIT_TEST_OBJS += functional-set-test.o
 UNIT_TEST_OBJS += gcc-options-test.o
+UNIT_TEST_OBJS += map-utils-test.o
 UNIT_TEST_OBJS += sm-rc-ptr-test.o
 UNIT_TEST_OBJS += string-utils-test.o
 UNIT_TEST_OBJS += test-dict.o

@@ -4,8 +4,13 @@
 #ifndef SMBASE_MAP_UTILS_H
 #define SMBASE_MAP_UTILS_H
 
+// smbase
+#include "xassert.h"                   // xassert
+
+// libc++
 #include <map>                         // std::map
 #include <set>                         // set::set
+#include <utility>                     // std::make_pair
 
 
 // Return the set of keys in 'm'.
@@ -44,6 +49,15 @@ V atOrNull(std::map<K,V> const &m, K const &k)
   else {
     return V(0);
   }
+}
+
+
+// Insert '(k,v)' into 'm'.  Throw if 'k' is already mapped.
+template <class K, class V>
+void insertMapUnique(std::map<K,V> &map, K const &k, V const &v)
+{
+  auto it = map.insert(std::make_pair(k, v));
+  xassert(it.second);
 }
 
 
