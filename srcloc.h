@@ -51,6 +51,12 @@ enum SourceLoc {
   // entity is defined within the translator's initialization code
   SL_INIT=-1,
 
+  // This is intended to be used for entities that are synthesized
+  // without any obvious antecedent in "source" code.  For expedience
+  // I'm giving it the same code as SL_INIT for now, just so I can start
+  // using it in call sites.
+  SL_SYNTH=-1,
+
   // location is unknown for some reason
   SL_UNKNOWN=0
 };
