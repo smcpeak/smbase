@@ -57,11 +57,29 @@ static void testFailParse1()
 }
 
 
+static void testParsingCText()
+{
+  ParseString ps("int x 0x123 'a' \"hello\"");
+  EXPECT_EQ(ps.parseCToken(), "int");
+  ps.skipWS();
+  EXPECT_EQ(ps.parseCToken(), "x");
+  ps.skipWS();
+  EXPECT_EQ(ps.parseCToken(), "0x123");
+  ps.skipWS();
+  EXPECT_EQ(ps.parseCToken(), "'a'");
+  ps.skipWS();
+  EXPECT_EQ(ps.parseCToken(), "\"hello\"");
+  ps.skipWS();
+  ps.parseEOS();
+}
+
+
 void test_parsestring()
 {
   testIter();
   testParse1();
   testFailParse1();
+  testParsingCText();
 
   cout << "test_parsestring PASSED" << endl;
 }

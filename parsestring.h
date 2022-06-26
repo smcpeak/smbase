@@ -63,11 +63,18 @@ public:      // funcs
   // Move to the next character.  Requires '!eos()'.
   void adv();
 
+  // Advance past any whitespace characters.
+  void skipWS();
+
   // All of these routines throw XParseString if the input does not
   // conform to expectations.
 
   // Advance past the next character, which should be 'c'.
   void parseChar(int c);
+
+  // Advance past the next sequence of characters, expecting them all to
+  // match those in 's'.
+  void parseString(char const *s);
 
   // Expect to be at the end of the string.
   void parseEOS();
@@ -75,6 +82,21 @@ public:      // funcs
   // Parse a non-empty sequence of decimal digits without sign as an
   // int.  Throws if the value is too large to represent.
   int parseDecimalUInt();
+
+  // Parse the next sequence of characters as a single C token.
+  //
+  // This currently only handles literals and identifiers.
+  string parseCToken();
+
+  // Parse a C delimited literal, i.e., string or character, delimited
+  // by 'c'.
+  string parseCDelimLiteral(int c);
+
+  // Parse a C number literal.  Currently only handles integers.
+  string parseCNumberLiteral();
+
+  // Parse a C identifier.
+  string parseCIdentifier();
 };
 
 

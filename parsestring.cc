@@ -77,6 +77,14 @@ void ParseString::adv()
 }
 
 
+void ParseString::skipWS()
+{
+  while (!eos() && isWhitespace(cur())) {
+    adv();
+  }
+}
+
+
 #define THROWERR(msg) throwErr(stringb(msg))
 
 
@@ -90,6 +98,15 @@ void ParseString::parseChar(int c)
              ", expected " << quoteCharacter(c));
   }
   adv();
+}
+
+
+void ParseString::parseString(char const *s)
+{
+  while (*s) {
+    parseChar(*s);
+    s++;
+  }
 }
 
 
@@ -122,6 +139,110 @@ int ParseString::parseDecimalUInt()
   }
 
   return ret;
+}
+
+
+string ParseString::parseCToken()
+{
+  int c = cur();
+  if (c == '"') {
+    return parseCDelimLiteral(c);
+  }
+  else if (c == '\'') {
+    return parseCDelimLiteral(c);
+  }
+  else if (isASCIIDigit(c)) {
+    return parseCNumberLiteral();
+  }
+  else if (isCIdentifierCharacter(c)) {
+    return parseCIdentifier();
+  }
+  else {
+    THROWERR("found " << quoteCur() << ", expected C token");
+    return ""; // Not reached.
+  }
+}
+
+
+string ParseString::parseCDelimLiteral(int delim)
+{
+  stringBuilder sb;
+
+  parseChar(delim);
+  sb << (char)delim;
+
+  while (cur() != delim) {
+    sb << (char)cur();
+    if (cur() == '\\') {
+      // Treat the next character as not special.
+      adv();
+      sb << (char)cur();
+    }
+    adv();
+  }
+
+  parseChar(delim);
+  sb << (char)delim;
+
+  return sb.str();
+}
+
+
+string ParseString::parseCNumberLiteral()
+{
+  stringBuilder sb;
+
+  if (cur() == '0') {
+    sb << (char)cur();
+    adv();
+
+    if (!eos() && cur() == 'x') {
+      sb << (char)cur();
+      adv();
+
+      while (!eos() && isASCIIHexDigit(cur())) {
+        sb << (char)cur();
+        adv();
+      }
+    }
+    else {
+      while (!eos() && isASCIIOctDigit(cur())) {
+        sb << (char)cur();
+        adv();
+      }
+    }
+  }
+  else if (isASCIIDigit(cur())) {
+    sb << (char)cur();
+    adv();
+
+    while (!eos() && isASCIIDigit(cur())) {
+      sb << (char)cur();
+      adv();
+    }
+  }
+  else {
+    THROWERR("found " << quoteCur() << ", expected digit");
+  }
+
+  return sb.str();
+}
+
+
+string ParseString::parseCIdentifier()
+{
+  stringBuilder sb;
+
+  if (!isCIdentifierCharacter(cur())) {
+    THROWERR("found " << quoteCur() << ", expected C identifier");
+  }
+
+  while (!eos() && isCIdentifierCharacter(cur())) {
+    sb << (char)cur();
+    adv();
+  }
+
+  return sb.str();
 }
 
 
