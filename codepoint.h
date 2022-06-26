@@ -25,6 +25,9 @@ bool isLetter(int c);
 // Unicode general cetegory "Number, decimal digit".
 bool isDecimalDigit(int c);
 
+// Unicode property White_Space=yes.
+bool isWhitespace(int c);
+
 
 // ------------------------ My own categories -----------------------
 // This section has code point categories unrelated to those in
@@ -41,6 +44,12 @@ bool isASCIIPrintable(int c);
 
 // True if 'c' is in ['0','9'].
 bool isASCIIDigit(int c);
+
+// True if 'isASCIIDigit' or 'c' is in ['A','F'] or ['a','f'].
+bool isASCIIHexDigit(int c);
+
+// True if 'c' is in ['0','7'].
+bool isASCIIOctDigit(int c);
 
 // True if 'c' is a POSIX or Bash shell metacharacter, including space,
 // under the assumption that IFS has its usual value.
