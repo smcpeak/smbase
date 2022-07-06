@@ -131,6 +131,13 @@ inline void pretendUsedFn(T const &) {}
 #define PRETEND_USED(arg) pretendUsedFn(arg) /* user ; */
 
 
+// For use with a function call when the return value is ignored, and I
+// do not want a compiler warning about that.  Historically this was
+// done by casting to 'void', but GCC-4.6+ no longer recognizes that
+// idiom.
+#define IGNORE_RESULT(expr) ((void)!(expr))
+
+
 // appended to function declarations to indicate they do not
 // return control to their caller; e.g.:
 //   void exit(int code) NORETURN;
