@@ -256,8 +256,11 @@ bool RunProcess::aborted() const
     return getSignal() == SIGABRT;
   }
   else {
-    // TODO: Windows support.
-    xfailure("run-process.cc: unknown platform");
+    // At least when using Cygwin, 'abort()' looks the same to the
+    // caller as 'exit(3)', so if the child called 'abort' then we
+    // already called it a "normal" exit.  If we get here, the child
+    // died in an unusual way, but it was not due to 'abort'.
+    return false;
   }
 }
 

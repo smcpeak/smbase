@@ -59,6 +59,8 @@ public:      // methods
 
   // True if program aborted using 'abort()'.  Implies
   // '!exitedNormally()'.
+  //
+  // This does not work on Windows (it always returns false).
   bool aborted() const;
 
   // One of:

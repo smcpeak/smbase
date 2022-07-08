@@ -638,7 +638,11 @@ void SMFileUtil::createDirectoryAndParents(string const &path_)
     createDirectoryAndParents(dir);
   }
 
-  int res = mkdir(path.c_str(), 0755);
+  int res = mkdir(path.c_str()
+    #ifndef __WIN32__
+      , 0755
+    #endif
+  );
   if (res != 0) {
     xsyserror("mkdir", path);
   }
