@@ -100,13 +100,24 @@ void trstr(char const *sysName, char const *traceString)
 }
 
 
+static long elapsed_ms()
+{
+  static long progStart = getMilliseconds();
+  return getMilliseconds() - progStart;
+}
+
+
+ostream &trace_ms(char const *sysName)
+{
+  return trace(sysName) << elapsed_ms() << "ms: ";
+}
+
+
 ostream &traceProgress(int level)
 {
   if ( (level == 1) ||
        (level == 2 && tracingSys("progress2")) ) {
-    static long progStart = getMilliseconds();
-
-    return trace("progress") << (getMilliseconds() - progStart) << "ms: ";
+    return trace("progress") << elapsed_ms() << "ms: ";
   }
   else {
     return *devNull;
