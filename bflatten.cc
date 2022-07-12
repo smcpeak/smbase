@@ -7,52 +7,31 @@
 #include "syserr.h"       // xsyserror
 
 
-BFlatten::BFlatten(char const *fname, bool r)
-  : readMode(r),
-    ownerTable(!r? &BFlatten::getOwnerPtrKeyFn : &BFlatten::getIntNameKeyFn,
+// ----------------------- OwnerTableFlatten ---------------------------
+OwnerTableFlatten::OwnerTableFlatten(bool reading)
+  : ownerTable(!reading? &BFlatten::getOwnerPtrKeyFn : &BFlatten::getIntNameKeyFn,
                HashTable::lcprngHashFn,
                HashTable::pointerEqualKeyFn),
     nextUniqueName(1)
-{
-  fp = fopen(fname, readMode? "rb" : "wb");
-  if (!fp) {
-    throw_XOpen(fname);
-  }
-}
-
-BFlatten::~BFlatten()
-{
-  fclose(fp);
-}
+{}
 
 
-STATICDEF void const* BFlatten::getOwnerPtrKeyFn(OwnerMapping *data)
+OwnerTableFlatten::~OwnerTableFlatten()
+{}
+
+
+/*static*/ void const* OwnerTableFlatten::getOwnerPtrKeyFn(OwnerMapping *data)
 {
   return data->ownerPtr;
 }
 
-STATICDEF void const* BFlatten::getIntNameKeyFn(OwnerMapping *data)
+/*static*/ void const* OwnerTableFlatten::getIntNameKeyFn(OwnerMapping *data)
 {
   return (void const*)(intptr_t)(data->intName);
 }
 
 
-void BFlatten::xferSimple(void *var, unsigned len)
-{
-  if (writing()) {
-    if (fwrite(var, 1, len, fp) < len) {
-      xsyserror("fwrite");
-    }
-  }
-  else {
-    if (fread(var, 1, len, fp) < len) {
-      xsyserror("fread");
-    }
-  }
-}
-
-
-void BFlatten::noteOwner(void *ownerPtr)
+void OwnerTableFlatten::noteOwner(void *ownerPtr)
 {
   // make a new mapping
   OwnerMapping *map = new OwnerMapping;
@@ -71,7 +50,7 @@ void BFlatten::noteOwner(void *ownerPtr)
 }
 
 
-void BFlatten::xferSerf(void *&serfPtr, bool isNullable)
+void OwnerTableFlatten::xferSerf(void *&serfPtr, bool isNullable)
 {
   if (writing()) {
     xassert(isNullable || serfPtr!=NULL);
@@ -106,6 +85,38 @@ void BFlatten::xferSerf(void *&serfPtr, bool isNullable)
 
       // return the pointer
       serfPtr = map->ownerPtr;
+    }
+  }
+}
+
+
+// ---------------------------- BFlatten -------------------------------
+BFlatten::BFlatten(char const *fname, bool r)
+  : OwnerTableFlatten(r),
+    readMode(r)
+{
+  fp = fopen(fname, readMode? "rb" : "wb");
+  if (!fp) {
+    throw_XOpen(fname);
+  }
+}
+
+BFlatten::~BFlatten()
+{
+  fclose(fp);
+}
+
+
+void BFlatten::xferSimple(void *var, unsigned len)
+{
+  if (writing()) {
+    if (fwrite(var, 1, len, fp) < len) {
+      xsyserror("fwrite");
+    }
+  }
+  else {
+    if (fread(var, 1, len, fp) < len) {
+      xsyserror("fread");
     }
   }
 }

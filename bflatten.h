@@ -8,11 +8,11 @@
 #include "ohashtbl.h"     // OwnerHashTable
 #include <stdio.h>        // FILE
 
-class BFlatten : public Flatten {
-private:     // data
-  FILE *fp;               // file being read/written
-  bool readMode;          // true=read, false=write
 
+// Partial Flatten implementation that handles serialization of owner
+// and serf pointers.
+class OwnerTableFlatten : public Flatten {
+private:     // data
   struct OwnerMapping {
     void *ownerPtr;       // a pointer
     int intName;          // a unique integer name
@@ -20,9 +20,24 @@ private:     // data
   OwnerHashTable<OwnerMapping> ownerTable;      // owner <-> int mapping
   int nextUniqueName;     // counter for making int names
 
-private:     // funcs
+private:     // methods
   static void const* getOwnerPtrKeyFn(OwnerMapping *data);
   static void const* getIntNameKeyFn(OwnerMapping *data);
+
+public:      // methods
+  OwnerTableFlatten(bool reading);
+  virtual ~OwnerTableFlatten() override;
+
+  // Flatten funcs
+  virtual void noteOwner(void *ownerPtr) override;
+  virtual void xferSerf(void *&serfPtr, bool nullable=false) override;
+};
+
+
+class BFlatten : public OwnerTableFlatten {
+private:     // data
+  FILE *fp;               // file being read/written
+  bool readMode;          // true=read, false=write
 
 public:      // funcs
   // throws XOpen if cannot open 'fname'
@@ -32,8 +47,6 @@ public:      // funcs
   // Flatten funcs
   virtual bool reading() const override { return readMode; }
   virtual void xferSimple(void *var, unsigned len) override;
-  virtual void noteOwner(void *ownerPtr) override;
-  virtual void xferSerf(void *&serfPtr, bool nullable=false) override;
 };
 
 
