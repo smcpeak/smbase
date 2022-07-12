@@ -1,4 +1,4 @@
-// test-dict.cc
+// dict-test.cc
 // Tests for some of the "dictionary" classes.
 
 // At the moment these tests are not very exhaustive.  My immediate goal
