@@ -59,7 +59,7 @@ void OwnerTableFlatten::xferSerf(void *&serfPtr, bool isNullable)
 
     if (serfPtr == NULL) {
       // encode as 0; the names start with 1
-      writeInt(0);
+      writeInt32(0);
     }
     else {
       // lookup the mapping
@@ -69,12 +69,12 @@ void OwnerTableFlatten::xferSerf(void *&serfPtr, bool isNullable)
       xassert(map != NULL);
 
       // write the int name
-      writeInt(map->intName);
+      writeInt32(map->intName);
     }
   }
   else /*reading*/ {
     // read the int name
-    int name = readInt();
+    int name = readInt32();
 
     if (name == 0) {      // null
       xassert(isNullable);
@@ -152,9 +152,13 @@ StreamFlatten::~StreamFlatten()
 {}
 
 
-void StreamFlatten::xferSimple(void *var, unsigned len)
+void StreamFlatten::xferSimple(void *var, size_t len)
 {
   if (writing()) {
+    // Ensure there cannot be an overflow when passing 'len' as the
+    // 'count' argument to 'write'.
+    static_assert(sizeof(size_t) <= sizeof(std::streamsize), "");
+
     m_stream.os()->write((char const*)var, len);
     if (!m_stream.os()->good()) {
       xsyserror("write");
@@ -210,10 +214,19 @@ BFlatten::~BFlatten()
 // ------------------------ test code ---------------------
 #ifdef TEST_BFLATTEN
 
+#include "flatutil.h"                  // xferEnum
+#include "sm-macros.h"                 // EMEMB
 #include "sm-test.h"                   // USUAL_MAIN
 
 #include <sstream>                     // std::i/ostringstream
 #include <string>                      // std::string
+
+
+enum SomeEnum {
+  SE0,
+  SE1,
+  SE2
+};
 
 
 // Some data members to de/serialize.
@@ -229,6 +242,7 @@ public:      // data
   int64_t i64;
   uint32_t u32;
   int32_t i32;
+  SomeEnum e;
 
 public:      // methods
   void init();
@@ -253,23 +267,25 @@ void SomeData::init()
   i64 = -((int64_t)u64);
   u32 = 0x21436587;
   i32 = -((int32_t)u32);
+  e = SE2;
 }
 
 
 void SomeData::xfer(Flatten &flat)
 {
-  flat.xferInt(x);
+  flat.xferInt32(x);
   flat.noteOwner(&x);
   s.xfer(flat);
   s2.xfer(flat);
   flat.xferSerf((void*&)px);
-  flat.xferInt(y);
+  flat.xferInt32(y);
   flat.noteOwner(&y);
   flat.xferSerf((void*&)py);
   flat.xfer_uint64_t(u64);
   flat.xfer_int64_t(i64);
   flat.xfer_uint32_t(u32);
   flat.xfer_int32_t(i32);
+  xferEnum(flat, e);
 }
 
 
@@ -283,6 +299,7 @@ void SomeData::checkEqual(SomeData const &obj) const
   xassert(EMEMB(i64));
   xassert(EMEMB(u32));
   xassert(EMEMB(i32));
+  xassert(EMEMB(e));
 
   // This does not compare to 'obj', rather it checks a condition that I
   // know 'init' created in 'obj', and should be re-created by

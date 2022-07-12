@@ -33,7 +33,7 @@ template <class T>
 void xferObjList(Flatten &flat, ObjList<T> &list, bool noteOwner = false)
 {
   if (flat.writing()) {
-    flat.writeInt(list.count());
+    flat.writeInt32(list.count());
     FOREACH_OBJLIST_NC(T, list, iter) {
       T *t = iter.data();
       xfer(flat, *t);
@@ -44,7 +44,7 @@ void xferObjList(Flatten &flat, ObjList<T> &list, bool noteOwner = false)
   }
   else {
     list.deleteAll();
-    int ct = flat.readInt();
+    int ct = flat.readInt32();
     while (ct--) {
       T *t = createForUnflat<T>(flat);
       xfer(flat, *t);
@@ -60,6 +60,9 @@ void xferObjList(Flatten &flat, ObjList<T> &list, bool noteOwner = false)
 
 // Cast from one scalar to another, asserting representability of
 // the value in the target type.
+//
+// TODO: Combine this with 'convertOrXFormat', and move that someplace
+// more general.
 template <class DEST, class SRC>
 inline DEST value_cast(SRC s)
 {
@@ -76,10 +79,10 @@ template <class E>
 void xferEnum(Flatten &flat, E &e)
 {
   if (flat.writing()) {
-    flat.writeInt(value_cast<int>(e));
+    flat.writeInt32(value_cast<int>(e));
   }
   else {
-    e = value_cast<E>(flat.readInt());
+    e = value_cast<E>(flat.readInt32());
   }
 }
 

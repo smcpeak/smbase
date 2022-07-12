@@ -63,9 +63,9 @@ Bit2d::Bit2d(Flatten &)
 
 void Bit2d::xfer(Flatten &flat)
 {
-  flat.xferInt(size.x);
-  flat.xferInt(size.y);
-  flat.xferInt(stride);
+  flat.xferInt32(size.x);
+  flat.xferInt32(size.y);
+  flat.xferInt32(stride);
 
   flat.xferHeapBuffer((void*&)data, datasize());
 }

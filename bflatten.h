@@ -79,7 +79,7 @@ public:
 
   // Flatten funcs
   virtual bool reading() const override { return m_stream.readMode(); }
-  virtual void xferSimple(void *var, unsigned len) override;
+  virtual void xferSimple(void *var, size_t len) override;
 };
 
 
