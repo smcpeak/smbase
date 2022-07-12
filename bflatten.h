@@ -50,8 +50,11 @@ private:     // data
   bool m_readMode;
 
 public:
-  explicit I_or_OStream(std::istream *is);
-  explicit I_or_OStream(std::ostream *os);
+  // These constructors are *not* explicit, because I want to be able to
+  // construct StreamFlatten just by passing an istream or ostream
+  // pointer, without explicitly mentioning I_or_OStream.
+  I_or_OStream(std::istream *is);
+  I_or_OStream(std::ostream *os);
 
   I_or_OStream(I_or_OStream const &obj);
   I_or_OStream& operator=(I_or_OStream const &obj);
