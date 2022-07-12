@@ -15,6 +15,7 @@
 
 void test_array();                     // array-test.cc
 void test_astlist();                   // astlist-test.cc
+void test_bflatten();                  // bflatten-test.cc
 void test_dict();                      // test-dict.cc
 void test_functional_set();            // functional-set-test.cc
 void test_gcc_options();               // gcc-options-test.cc
@@ -42,6 +43,7 @@ static void entry(int argc, char **argv)
 
   RUN_TEST(array);
   RUN_TEST(astlist);
+  RUN_TEST(bflatten);
   RUN_TEST(datablok);
   RUN_TEST(dict);
   RUN_TEST(functional_set);

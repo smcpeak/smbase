@@ -276,7 +276,6 @@ $(THIS): $(OBJS)
 TESTS :=
 TESTS += autofile.exe
 TESTS += bdffont.exe
-TESTS += bflatten.exe
 TESTS += bit2d.exe
 TESTS += bitarray.exe
 TESTS += boxprint.exe
@@ -374,9 +373,6 @@ strhash.exe: strhash.cc strhash.h $(THIS)
 trdelete.exe: trdelete.cc trdelete.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_TRDELETE $(LDFLAGS) trdelete.cc $(LIBS)
 
-bflatten.exe: bflatten.cc bflatten.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_BFLATTEN $(LDFLAGS) bflatten.cc $(LIBS)
-
 mysig.exe: mysig.cc mysig.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_MYSIG $(LDFLAGS) mysig.cc $(LIBS)
 
@@ -438,6 +434,7 @@ tarray2d.exe: tarray2d.cc array2d.h $(THIS)
 UNIT_TEST_OBJS :=
 UNIT_TEST_OBJS += array-test.o
 UNIT_TEST_OBJS += astlist-test.o
+UNIT_TEST_OBJS += bflatten-test.o
 UNIT_TEST_OBJS += functional-set-test.o
 UNIT_TEST_OBJS += gcc-options-test.o
 UNIT_TEST_OBJS += map-utils-test.o
@@ -512,7 +509,6 @@ check: $(TESTS)
 	$(RUN)./strutil.exe
 	$(RUN)./strhash.exe
 	$(RUN)./trdelete.exe
-	$(RUN)./bflatten.exe
 	$(RUN)./tobjpool.exe
 	$(RUN)./cycles.exe
 	$(RUN)./tsobjlist.exe
