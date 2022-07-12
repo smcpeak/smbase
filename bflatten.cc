@@ -210,7 +210,10 @@ BFlatten::~BFlatten()
 // ------------------------ test code ---------------------
 #ifdef TEST_BFLATTEN
 
-#include "sm-test.h"   // USUAL_MAIN
+#include "sm-test.h"                   // USUAL_MAIN
+
+#include <sstream>                     // std::i/ostringstream
+#include <string>                      // std::string
 
 
 // Some data members to de/serialize.
@@ -219,6 +222,7 @@ public:      // data
   int x;
   int y;
   string s;
+  string s2;
   int *px;
   int *py;
   uint64_t u64;
@@ -238,6 +242,11 @@ void SomeData::init()
   x = 9;
   y = 22;
   s = "foo bar";
+
+  // Test with a string containing both kinds of line endings, in order
+  // to verify that no line ending translation is happening.
+  s2 = "one\ntwo\r\n";
+
   px = &x;
   py = &y;
   u64 = (((uint64_t)0x12345678) << 32) | 0x90ABCDEF;
@@ -252,6 +261,7 @@ void SomeData::xfer(Flatten &flat)
   flat.xferInt(x);
   flat.noteOwner(&x);
   s.xfer(flat);
+  s2.xfer(flat);
   flat.xferSerf((void*&)px);
   flat.xferInt(y);
   flat.noteOwner(&y);
@@ -268,6 +278,7 @@ void SomeData::checkEqual(SomeData const &obj) const
   xassert(EMEMB(x));
   xassert(EMEMB(y));
   xassert(EMEMB(s));
+  xassert(EMEMB(s2));
   xassert(EMEMB(u64));
   xassert(EMEMB(i64));
   xassert(EMEMB(u32));
@@ -293,6 +304,15 @@ void entry()
     d1.xfer(flat);
   }
 
+  // Also save to an in-memory string.
+  std::string serializedString;
+  {
+    std::ostringstream oss;
+    StreamFlatten flat(&oss);
+    d1.xfer(flat);
+    serializedString = oss.str();
+  }
+
   // place to put the data we read
   SomeData d2;
 
@@ -307,6 +327,15 @@ void entry()
 
   // delete the temp file
   remove("bflat.tmp");
+
+  // Deserialize the string.
+  SomeData d3;
+  {
+    std::istringstream iss(serializedString);
+    StreamFlatten flat(&iss);
+    d3.xfer(flat);
+  }
+  d3.checkEqual(d1);
 
   printf("bflatten works\n");
 }
