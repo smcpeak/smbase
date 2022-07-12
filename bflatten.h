@@ -4,9 +4,12 @@
 #ifndef BFLATTEN_H
 #define BFLATTEN_H
 
-#include "flatten.h"      // Flatten
-#include "ohashtbl.h"     // OwnerHashTable
-#include <stdio.h>        // FILE
+#include "flatten.h"                   // Flatten
+#include "ohashtbl.h"                  // OwnerHashTable
+
+#include <iosfwd>                      // std::istream, std::ostream
+
+#include <stdio.h>                     // remove
 
 
 // Partial Flatten implementation that handles serialization of owner
@@ -25,7 +28,7 @@ private:     // methods
   static void const* getIntNameKeyFn(OwnerMapping *data);
 
 public:      // methods
-  OwnerTableFlatten(bool reading);
+  explicit OwnerTableFlatten(bool reading);
   virtual ~OwnerTableFlatten() override;
 
   // Flatten funcs
@@ -34,23 +37,67 @@ public:      // methods
 };
 
 
-class BFlatten : public OwnerTableFlatten {
+// Tagged union of an istream and ostream.
+class I_or_OStream {
 private:     // data
-  FILE *fp;               // file being read/written
-  bool readMode;          // true=read, false=write
+  // The associated stream.
+  union {
+    std::istream *m_is;   // active if 'm_readMode'
+    std::ostream *m_os;   // active if '!m_readMode'
+  } m_stream;
 
-public:      // funcs
-  // throws XOpen if cannot open 'fname'
-  BFlatten(char const *fname, bool reading);
-  virtual ~BFlatten();
+  // True for read mode, false for write mode.
+  bool m_readMode;
+
+public:
+  explicit I_or_OStream(std::istream *is);
+  explicit I_or_OStream(std::ostream *os);
+
+  I_or_OStream(I_or_OStream const &obj);
+  I_or_OStream& operator=(I_or_OStream const &obj);
+
+  bool readMode() const { return m_readMode; }
+
+  // These assert that the mode is correct.
+  std::istream *is() const;
+  std::ostream *os() const;
+};
+
+
+// Serialize to/from a C++ iostream.
+class StreamFlatten : public OwnerTableFlatten {
+protected:   // data
+  // The stream to read or write, and the bool specifying which to do.
+  I_or_OStream m_stream;
+
+public:
+  explicit StreamFlatten(I_or_OStream stream);
+  virtual ~StreamFlatten() override;
 
   // Flatten funcs
-  virtual bool reading() const override { return readMode; }
+  virtual bool reading() const override { return m_stream.readMode(); }
   virtual void xferSimple(void *var, unsigned len) override;
 };
 
 
-// for debugging, write and then read something
+// Serialize to/from a named file.
+//
+// This class is somewhat poorly named.  The 'B' means "binary", but
+// really the entire Flatten API is unsuitable for anything other than
+// binary serialization since there are no attribute names.  Clients of
+// this class are expecting to read and write a named file, so something
+// like NamedFileFlatten would be better, but that means changing a
+// handful of clients, which I don't want to do at this moment.
+class BFlatten : public StreamFlatten {
+public:      // funcs
+  // Throws XOpen if cannot open 'fname'.
+  BFlatten(char const *fname, bool reading);
+
+  virtual ~BFlatten();
+};
+
+
+// For testing, write and then read something.
 template <class T>
 T *writeThenRead(T &obj)
 {
@@ -71,5 +118,6 @@ T *writeThenRead(T &obj)
 
   return ret;
 }
+
 
 #endif // BFLATTEN_H

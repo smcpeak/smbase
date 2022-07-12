@@ -2,9 +2,11 @@
 // code for bflatten.h
 
 #include "bflatten.h"     // this module
-#include "exc.h"          // throw_XOpen
+#include "exc.h"          // throw_XOpen, xformat
 #include "sm-stdint.h"    // intptr_t
 #include "syserr.h"       // xsyserror
+
+#include <fstream>        // std::fstream, etc.
 
 
 // ----------------------- OwnerTableFlatten ---------------------------
@@ -90,34 +92,117 @@ void OwnerTableFlatten::xferSerf(void *&serfPtr, bool isNullable)
 }
 
 
-// ---------------------------- BFlatten -------------------------------
-BFlatten::BFlatten(char const *fname, bool r)
-  : OwnerTableFlatten(r),
-    readMode(r)
+// --------------------------- I_or_OStream ----------------------------
+I_or_OStream::I_or_OStream(std::istream *is)
+  : m_readMode(true)
 {
-  fp = fopen(fname, readMode? "rb" : "wb");
-  if (!fp) {
-    throw_XOpen(fname);
+  m_stream.m_is = is;
+}
+
+
+I_or_OStream::I_or_OStream(std::ostream *os)
+  : m_readMode(false)
+{
+  m_stream.m_os = os;
+}
+
+
+I_or_OStream::I_or_OStream(I_or_OStream const &obj)
+{
+  *this = obj;
+}
+
+
+I_or_OStream& I_or_OStream::operator=(I_or_OStream const &obj)
+{
+  m_readMode = obj.m_readMode;
+  if (m_readMode) {
+    m_stream.m_is = obj.m_stream.m_is;
   }
+  else {
+    m_stream.m_os = obj.m_stream.m_os;
+  }
+
+  return *this;
 }
 
-BFlatten::~BFlatten()
+
+std::istream *I_or_OStream::is() const
 {
-  fclose(fp);
+  xassert(m_readMode);
+  return m_stream.m_is;
 }
 
 
-void BFlatten::xferSimple(void *var, unsigned len)
+std::ostream *I_or_OStream::os() const
+{
+  xassert(!m_readMode);
+  return m_stream.m_os;
+}
+
+
+// -------------------------- StreamFlatten ----------------------------
+StreamFlatten::StreamFlatten(I_or_OStream stream)
+  : OwnerTableFlatten(stream.readMode()),
+    m_stream(stream)
+{}
+
+
+StreamFlatten::~StreamFlatten()
+{}
+
+
+void StreamFlatten::xferSimple(void *var, unsigned len)
 {
   if (writing()) {
-    if (fwrite(var, 1, len, fp) < len) {
-      xsyserror("fwrite");
+    m_stream.os()->write((char const*)var, len);
+    if (!m_stream.os()->good()) {
+      xsyserror("write");
     }
   }
   else {
-    if (fread(var, 1, len, fp) < len) {
-      xsyserror("fread");
+    m_stream.is()->read((char*)var, len);
+    if (!m_stream.is()->good()) {
+      xsyserror("read");
     }
+    std::streamsize ct = m_stream.is()->gcount();
+    if (ct < len) {
+      xformat(stringb("unexpected end of input (ct=" << ct <<
+                      ", len=" << len << ")"));
+    }
+  }
+}
+
+
+// ---------------------------- BFlatten -------------------------------
+// Attempt to open an ifstream or ofstream for 'fname', throwing XOpen
+// if the attempt fails.
+template <class T>
+T *tryOpen(char const *fname)
+{
+  T *stream = new T(fname, std::ios::binary);
+  if (stream->fail()) {
+    delete stream;
+    throw_XOpen(fname);
+  }
+  return stream;
+}
+
+
+BFlatten::BFlatten(char const *fname, bool r)
+  : StreamFlatten(r?
+      I_or_OStream(tryOpen<std::ifstream>(fname)) :
+      I_or_OStream(tryOpen<std::ofstream>(fname)))
+{}
+
+
+BFlatten::~BFlatten()
+{
+  if (reading()) {
+    delete m_stream.is();
+  }
+  else {
+    delete m_stream.os();
   }
 }
 
