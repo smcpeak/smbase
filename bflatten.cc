@@ -212,68 +212,98 @@ BFlatten::~BFlatten()
 
 #include "sm-test.h"   // USUAL_MAIN
 
+
+// Some data members to de/serialize.
+class SomeData {
+public:      // data
+  int x;
+  int y;
+  string s;
+  int *px;
+  int *py;
+  uint64_t u64;
+  int64_t i64;
+  uint32_t u32;
+  int32_t i32;
+
+public:      // methods
+  void init();
+  void xfer(Flatten &flat);
+  void checkEqual(SomeData const &obj) const;
+};
+
+
+void SomeData::init()
+{
+  x = 9;
+  y = 22;
+  s = "foo bar";
+  px = &x;
+  py = &y;
+  u64 = (((uint64_t)0x12345678) << 32) | 0x90ABCDEF;
+  i64 = -((int64_t)u64);
+  u32 = 0x21436587;
+  i32 = -((int32_t)u32);
+}
+
+
+void SomeData::xfer(Flatten &flat)
+{
+  flat.xferInt(x);
+  flat.noteOwner(&x);
+  s.xfer(flat);
+  flat.xferSerf((void*&)px);
+  flat.xferInt(y);
+  flat.noteOwner(&y);
+  flat.xferSerf((void*&)py);
+  flat.xfer_uint64_t(u64);
+  flat.xfer_int64_t(i64);
+  flat.xfer_uint32_t(u32);
+  flat.xfer_int32_t(i32);
+}
+
+
+void SomeData::checkEqual(SomeData const &obj) const
+{
+  xassert(EMEMB(x));
+  xassert(EMEMB(y));
+  xassert(EMEMB(s));
+  xassert(EMEMB(u64));
+  xassert(EMEMB(i64));
+  xassert(EMEMB(u32));
+  xassert(EMEMB(i32));
+
+  // This does not compare to 'obj', rather it checks a condition that I
+  // know 'init' created in 'obj', and should be re-created by
+  // deserialization.
+  xassert(px == &x);
+  xassert(py == &y);
+}
+
+
 void entry()
 {
   // make up some data
-  int x = 9, y = 22;
-  string s("foo bar");
-  int *px = &x, *py = &y;
-  uint64_t u64 = (((uint64_t)0x12345678) << 32) | 0x90ABCDEF;
-  int64_t i64 = -((int64_t)u64);
-  uint32_t u32 = 0x21436587;
-  int32_t i32 = -((int32_t)u32);
+  SomeData d1;
+  d1.init();
 
   // open a file for writing them
   {
     BFlatten flat("bflat.tmp", false /*reading*/);
-    flat.xferInt(x);
-    flat.noteOwner(&x);
-    s.xfer(flat);
-    flat.xferSerf((void*&)px);
-    flat.xferInt(y);
-    flat.noteOwner(&y);
-    flat.xferSerf((void*&)py);
-    flat.xfer_uint64_t(u64);
-    flat.xfer_int64_t(i64);
-    flat.xfer_uint32_t(u32);
-    flat.xfer_int32_t(i32);
+    d1.xfer(flat);
   }
 
   // place to put the data we read
-  int x2, y2;
-  string s2;
-  int *px2, *py2;
-  uint64_t u64b;
-  int64_t i64b;
-  uint32_t u32b;
-  int32_t i32b;
+  SomeData d2;
 
   // read them back
   {
     BFlatten flat("bflat.tmp", true /*reading*/);
-    flat.xferInt(x2);
-    flat.noteOwner(&x2);
-    s2.xfer(flat);
-    flat.xferSerf((void*&)px2);
-    flat.xferInt(y2);
-    flat.noteOwner(&y2);
-    flat.xferSerf((void*&)py2);
-    flat.xfer_uint64_t(u64b);
-    flat.xfer_int64_t(i64b);
-    flat.xfer_uint32_t(u32b);
-    flat.xfer_int32_t(i32b);
+    d2.xfer(flat);
   }
 
   // compare
-  xassert(x == x2);
-  xassert(y == y2);
-  xassert(s.equals(s2));
-  xassert(px2 == &x2);
-  xassert(py2 == &y2);
-  xassert(u64 == u64b);
-  xassert(i64 == i64b);
-  xassert(u32 == u32b);
-  xassert(i32 == i32b);
+  d2.checkEqual(d1);
 
   // delete the temp file
   remove("bflat.tmp");
