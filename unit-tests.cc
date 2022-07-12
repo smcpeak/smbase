@@ -22,7 +22,7 @@ void test_gcc_options();               // gcc-options-test.cc
 void test_map_utils();                 // map-utils-test.cc
 void test_sm_rc_ptr();                 // sm-rc-ptr-test.cc
 void test_string_utils();              // string-utils-test.cc
-void test_vector_utils();              // test-vector-utils.cc
+void test_vector_utils();              // vector-utils-test.cc
 
 
 static void entry(int argc, char **argv)

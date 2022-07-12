@@ -1,4 +1,4 @@
-// test-vector-utils.cc
+// vector-utils-test.cc
 // Test code for vector-utils.h.
 
 #include "vector-utils.h"              // module under test

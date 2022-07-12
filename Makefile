@@ -272,7 +272,10 @@ $(THIS): $(OBJS)
 
 
 # ---------- module tests ----------------
-# test program targets
+# Test program targets.
+#
+# TODO: I would like to eliminate these stand-alone test programs in
+# favor of testing as much as possible from unit-tests.exe.
 TESTS :=
 TESTS += autofile.exe
 TESTS += bdffont.exe
@@ -430,7 +433,10 @@ bdffont.exe: bdffont.cc $(THIS)
 tarray2d.exe: tarray2d.cc array2d.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_TARRAY2D $(LDFLAGS) tarray2d.cc $(LIBS)
 
-# TODO: Rename the modules that begin with "test" to end with it instead.
+# Component test modules.
+#
+# The naming convention is "<module>-test" so that, in an alphabetic
+# file name listing, the test is next to the module it tests.
 UNIT_TEST_OBJS :=
 UNIT_TEST_OBJS += array-test.o
 UNIT_TEST_OBJS += astlist-test.o
@@ -444,7 +450,9 @@ UNIT_TEST_OBJS += overflow-test.o
 UNIT_TEST_OBJS += parsestring-test.o
 UNIT_TEST_OBJS += sm-rc-ptr-test.o
 UNIT_TEST_OBJS += string-utils-test.o
-UNIT_TEST_OBJS += test-vector-utils.o
+UNIT_TEST_OBJS += vector-utils-test.o
+
+# Master unit test module.
 UNIT_TEST_OBJS += unit-tests.o
 
 -include $(UNIT_TEST_OBJS:.o=.d)
@@ -456,6 +464,11 @@ all: unit-tests.exe
 
 # Rule for tests that have dedicated .cc files, which is what I
 # would like to transition toward.
+#
+# Well, I would like to transition *away* from having tests inside the
+# main .cc file.  But, preferably, tests are run from the main unit test
+# program rather than as stand-alone programs.
+#
 test-%.exe: test-%.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) test-$*.cc $(LIBS)
 
