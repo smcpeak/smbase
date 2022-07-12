@@ -159,7 +159,7 @@ void convertWithoutLoss(DEST &dest, SRC const &src)
 }
 
 
-// Unit tests, in test-overflow.cc.
+// Unit tests, in overflow-test.cc.
 int test_overflow();
 
 

@@ -1,4 +1,4 @@
-// test-overflow.cc
+// overflow-test.cc
 // Unit tests for 'overflow' module.
 
 #include "overflow.h"                  // this module
@@ -280,7 +280,7 @@ int test_overflow()
 
   #undef RUNTEST
 
-  cout << "test-overflow: PASSED" << endl;
+  cout << "overflow-test: PASSED" << endl;
   return 0;
 }
 
