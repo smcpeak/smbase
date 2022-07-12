@@ -6,8 +6,11 @@
 
 #include "flatten.h"                   // this module
 
+// smbase
 #include "exc.h"                       // formatAssert
+#include "overflow.h"                  // convertWithoutLoss
 
+// libc
 #include <limits.h>                    // INT_MAX
 #include <string.h>                    // strlen
 
@@ -34,26 +37,15 @@ void Flatten::xferBool(bool &b)
 }
 
 
-template <class DEST, class SRC>
-void convertOrXFormat(DEST &dest, SRC const &src)
-{
-  dest = static_cast<DEST>(src);
-  if (static_cast<SRC>(dest) != src) {
-    xformat(stringb("convertOrXFormat: value " << src <<
-                    " is outside representable range"));
-  }
-}
-
-
 void Flatten::xferInt32(int &intValue)
 {
   int32_t i32;
   if (reading()) {
     xfer_int32_t(i32);
-    convertOrXFormat(intValue, i32);
+    convertWithoutLoss(intValue, i32);
   }
   else {
-    convertOrXFormat(i32, intValue);
+    convertWithoutLoss(i32, intValue);
     xfer_int32_t(i32);
   }
 }
@@ -64,10 +56,10 @@ void Flatten::xferLong64(long &intValue)
   int64_t i64;
   if (reading()) {
     xfer_int64_t(i64);
-    convertOrXFormat(intValue, i64);
+    convertWithoutLoss(intValue, i64);
   }
   else {
-    convertOrXFormat(i64, intValue);
+    convertWithoutLoss(i64, intValue);
     xfer_int64_t(i64);
   }
 }

@@ -4,9 +4,10 @@
 #ifndef FLATUTIL_H
 #define FLATUTIL_H
 
-#include "flatten.h"         // underlying module
-#include "objlist.h"         // ObjList
-#include "xassert.h"         // xassert
+#include "flatten.h"                   // underlying module
+#include "objlist.h"                   // ObjList
+#include "overflow.h"                  // convertWithoutLoss
+#include "xassert.h"                   // xassert
 
 
 // Nominal way to create a 'T' object for unflattening; but you
@@ -58,18 +59,8 @@ void xferObjList(Flatten &flat, ObjList<T> &list, bool noteOwner = false)
 }
 
 
-// Cast from one scalar to another, asserting representability of
-// the value in the target type.
-//
-// TODO: Combine this with 'convertOrXFormat', and move that someplace
-// more general.
-template <class DEST, class SRC>
-inline DEST value_cast(SRC s)
-{
-  DEST d = (DEST)s;      // convert to DEST
-  xassert((SRC)d == s);  // convert back, assert equal
-  return d;
-}
+// 2022-07-12: I removed 'value_cast'.  Its replacement is
+// 'convertWithoutLoss', defined in overflow.h.
 
 
 // Transfer an enum value.  This is safer than just casting to int
@@ -78,11 +69,14 @@ inline DEST value_cast(SRC s)
 template <class E>
 void xferEnum(Flatten &flat, E &e)
 {
+  int32_t i = 0;
   if (flat.writing()) {
-    flat.writeInt32(value_cast<int>(e));
+    convertWithoutLoss(i, e);
+    flat.xfer_int32_t(i);
   }
   else {
-    e = value_cast<E>(flat.readInt32());
+    flat.xfer_int32_t(i);
+    convertWithoutLoss(e, i);
   }
 }
 

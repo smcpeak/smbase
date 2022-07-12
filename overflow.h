@@ -15,7 +15,7 @@
 #define OVERFLOW_H
 
 #include "exc.h"                       // DEFINE_XBASE_SUBCLASS
-#include "str.h"                       // stringBuilder
+#include "str.h"                       // stringBuilder, stringb
 
 #include <limits>                      // std::numeric_limits
 #include <typeinfo>                    // typeid
@@ -137,6 +137,25 @@ NUM multiplyWithOverflowCheck(NUM a, NUM b)
   }
 
   return a * b;
+}
+
+
+// Convert 'src' to type 'DEST', throwing XOverflow if it cannot be
+// converted back without loss of information.
+//
+// This is not the same as being convertible without overflow, since
+// converting -1 to unsigned is a form of overflow, but does not lose
+// information.
+template <class DEST, class SRC>
+void convertWithoutLoss(DEST &dest, SRC const &src)
+{
+  dest = static_cast<DEST>(src);
+  if (static_cast<SRC>(dest) != src) {
+    throw XOverflow(stringb(
+      "convertWithoutLoss: value " << src <<
+      " cannot be converted without loss "
+      "(ss=" << sizeof(SRC) << " ds=" << sizeof(DEST) << ")"));
+  }
 }
 
 
