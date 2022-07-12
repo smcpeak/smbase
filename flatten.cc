@@ -37,6 +37,53 @@ void Flatten::xferBool(bool &b)
 }
 
 
+// Transfer 'intValue' in big-endian byte order.
+template <class T>
+void xferIntBigEndian(Flatten &flat, T &intValue)
+{
+  unsigned char bytes[sizeof(T)];
+  if (flat.reading()) {
+    flat.xferSimple(bytes, sizeof(T));
+
+    intValue = 0;
+    for (unsigned index=0; index < sizeof(T); index++) {
+      intValue |= (T)(bytes[index]) << ((sizeof(T) - 1 - index) * 8);
+    }
+  }
+  else {
+    for (unsigned index=0; index < sizeof(T); index++) {
+      bytes[index] = (unsigned char)(intValue >> ((sizeof(T) - 1 - index) * 8));
+    }
+
+    flat.xferSimple(bytes, sizeof(T));
+  }
+}
+
+
+void Flatten::xfer_int64_t(int64_t &intValue)
+{
+  xfer_uint64_t((uint64_t&)intValue);
+}
+
+
+void Flatten::xfer_uint64_t(uint64_t &intValue)
+{
+  xferIntBigEndian(*this, intValue);
+}
+
+
+void Flatten::xfer_int32_t(int32_t &intValue)
+{
+  xfer_uint32_t((uint32_t&)intValue);
+}
+
+
+void Flatten::xfer_uint32_t(uint32_t &intValue)
+{
+  xferIntBigEndian(*this, intValue);
+}
+
+
 void Flatten::xferHeapBuffer(void *&buf, int len)
 {
   if (reading()) {

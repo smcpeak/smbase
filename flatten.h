@@ -8,10 +8,15 @@
 // The main difference is I don't want to use templates.  Also,
 // I don't care about STL.
 
-#ifndef FLATTEN_H
-#define FLATTEN_H
+#ifndef SMBASE_FLATTEN_H
+#define SMBASE_FLATTEN_H
 
-#include "trdelete.h"   // TRASHINGDELETE
+#include "flatten-fwd.h"               // fwds for this module
+
+#include "trdelete.h"                  // TRASHINGDELETE
+
+#include <stdint.h>                    // int64_t, int32_t
+
 
 class Flatten {
 public:      // data
@@ -43,6 +48,16 @@ public:      // funcs
   virtual void xferLong(long &l);
   virtual void xferBool(bool &b);
 
+  // The default implementation of these serializes as 8 octets in big
+  // endian order (most significant octet first).
+  virtual void xfer_int64_t(int64_t &i);
+  virtual void xfer_uint64_t(uint64_t &i);
+
+  // For these, the default implementation serializes as 4 octets, again
+  // in big endian order.
+  virtual void xfer_int32_t(int32_t &i);
+  virtual void xfer_uint32_t(uint32_t &i);
+
   // read or write a null-terminated character buffer, allocated with
   // new; this works if 'str' is NULL (in other words, a NULL string
   // is distinguished from an empty string, and both are legal)
@@ -73,4 +88,4 @@ public:      // funcs
   void *readSerf();
 };
 
-#endif // FLATTEN_H
+#endif // SMBASE_FLATTEN_H

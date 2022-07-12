@@ -122,6 +122,10 @@ void entry()
   int x = 9, y = 22;
   string s("foo bar");
   int *px = &x, *py = &y;
+  uint64_t u64 = (((uint64_t)0x12345678) << 32) | 0x90ABCDEF;
+  int64_t i64 = -((int64_t)u64);
+  uint32_t u32 = 0x21436587;
+  int32_t i32 = -((int32_t)u32);
 
   // open a file for writing them
   {
@@ -133,12 +137,20 @@ void entry()
     flat.xferInt(y);
     flat.noteOwner(&y);
     flat.xferSerf((void*&)py);
+    flat.xfer_uint64_t(u64);
+    flat.xfer_int64_t(i64);
+    flat.xfer_uint32_t(u32);
+    flat.xfer_int32_t(i32);
   }
 
   // place to put the data we read
   int x2, y2;
   string s2;
   int *px2, *py2;
+  uint64_t u64b;
+  int64_t i64b;
+  uint32_t u32b;
+  int32_t i32b;
 
   // read them back
   {
@@ -150,6 +162,10 @@ void entry()
     flat.xferInt(y2);
     flat.noteOwner(&y2);
     flat.xferSerf((void*&)py2);
+    flat.xfer_uint64_t(u64b);
+    flat.xfer_int64_t(i64b);
+    flat.xfer_uint32_t(u32b);
+    flat.xfer_int32_t(i32b);
   }
 
   // compare
@@ -158,6 +174,10 @@ void entry()
   xassert(s.equals(s2));
   xassert(px2 == &x2);
   xassert(py2 == &y2);
+  xassert(u64 == u64b);
+  xassert(i64 == i64b);
+  xassert(u32 == u32b);
+  xassert(i32 == i32b);
 
   // delete the temp file
   remove("bflat.tmp");
