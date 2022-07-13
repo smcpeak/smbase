@@ -1,5 +1,5 @@
 // bflatten-test.cc
-// Tests for bflatten module.
+// Tests for flatten, flatutil, and bflatten.
 
 #include "bflatten.h"                  // module under test
 
@@ -9,6 +9,7 @@
 
 #include <sstream>                     // std::i/ostringstream
 #include <string>                      // std::string
+#include <vector>                      // std::vector
 
 
 enum SomeEnum {
@@ -32,6 +33,8 @@ public:      // data
   uint32_t u32;
   int32_t i32;
   SomeEnum e;
+  std::vector<unsigned char> uc_vec;
+  std::vector<int32_t> i32_vec;
 
 public:      // methods
   void init();
@@ -57,6 +60,9 @@ void SomeData::init()
   u32 = 0x21436587;
   i32 = -((int32_t)u32);
   e = SE2;
+
+  uc_vec = std::vector<unsigned char>{'h','e','l','l','o'};
+  i32_vec = std::vector<int32_t>{1,2,0x12345678,-0x12345678};
 }
 
 
@@ -75,6 +81,12 @@ void SomeData::xfer(Flatten &flat)
   flat.xfer_uint32_t(u32);
   flat.xfer_int32_t(i32);
   xferEnum(flat, e);
+  xferVectorBytewise(flat, uc_vec);
+
+  // This would not be a good way to do this for production use, since
+  // it would serialize the integers in a way that depends on host
+  // endianness, but it will suffice for testing.
+  xferVectorBytewise(flat, i32_vec);
 }
 
 
@@ -89,6 +101,8 @@ void SomeData::checkEqual(SomeData const &obj) const
   xassert(EMEMB(u32));
   xassert(EMEMB(i32));
   xassert(EMEMB(e));
+  xassert(EMEMB(uc_vec));
+  xassert(EMEMB(i32_vec));
 
   // This does not compare to 'obj', rather it checks a condition that I
   // know 'init' created in 'obj', and should be re-created by

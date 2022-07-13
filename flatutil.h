@@ -9,6 +9,8 @@
 #include "overflow.h"                  // convertWithoutLoss
 #include "xassert.h"                   // xassert
 
+#include <vector>                      // std::vector
+
 
 // Nominal way to create a 'T' object for unflattening; but you
 // can overload to do things differently where needed.
@@ -78,6 +80,42 @@ void xferEnum(Flatten &flat, E &e)
     flat.xfer_int32_t(i);
     convertWithoutLoss(e, i);
   }
+}
+
+
+// xfer a std::vector bytewise.
+//
+// It is not good to do this if T contains any scalar value that is
+// larger than a byte due to the resulting dependence on endianness.
+template <class T>
+void xferVectorBytewise(Flatten &flat, std::vector<T> &vec)
+{
+  // Read or write length.
+  {
+    int64_t numElements = 0;
+
+    if (flat.writing()) {
+      // Write length in elements.
+      convertWithoutLoss(numElements, vec.size());
+      flat.xfer_int64_t(numElements);
+    }
+
+    else {
+      // Read length in elements.
+      flat.xfer_int64_t(numElements);
+
+      // Convert to size_t with overflow check.
+      size_t st_ne;
+      convertWithoutLoss(st_ne, numElements);
+
+      // Set vector size accordingly.
+      vec.resize(st_ne);
+    }
+  }
+
+  // Read or write data.
+  size_t numBytes = multiplyWithOverflowCheck<size_t>(vec.size(), sizeof(T));
+  flat.xferSimple(vec.data(), numBytes);
 }
 
 
