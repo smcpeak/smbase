@@ -93,4 +93,27 @@ public:      // funcs
   void *readSerf();
 };
 
+
+// Serialize 'intValue' to 'bytes' in network byte order.  The latter
+// must be at least 'sizeof(T)' bytes.
+template <class T>
+void serializeIntNBO(unsigned char *bytes, T intValue)
+{
+  for (unsigned index=0; index < sizeof(T); index++) {
+    bytes[index] = (unsigned char)(intValue >> ((sizeof(T) - 1 - index) * 8));
+  }
+}
+
+
+// Deserialize 'bytes' to 'intValue' in network byte order.
+template <class T>
+void deserializeIntNBO(unsigned char const *bytes, T &intValue)
+{
+  intValue = 0;
+  for (unsigned index=0; index < sizeof(T); index++) {
+    intValue |= (T)(bytes[index]) << ((sizeof(T) - 1 - index) * 8);
+  }
+}
+
+
 #endif // SMBASE_FLATTEN_H

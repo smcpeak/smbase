@@ -74,14 +74,10 @@ void xferIntBigEndian(Flatten &flat, T &intValue)
     flat.xferSimple(bytes, sizeof(T));
 
     intValue = 0;
-    for (unsigned index=0; index < sizeof(T); index++) {
-      intValue |= (T)(bytes[index]) << ((sizeof(T) - 1 - index) * 8);
-    }
+    deserializeIntNBO(bytes, intValue);
   }
   else {
-    for (unsigned index=0; index < sizeof(T); index++) {
-      bytes[index] = (unsigned char)(intValue >> ((sizeof(T) - 1 - index) * 8));
-    }
+    serializeIntNBO(bytes, intValue);
 
     flat.xferSimple(bytes, sizeof(T));
   }
