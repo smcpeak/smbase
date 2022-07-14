@@ -196,6 +196,7 @@ SRCS :=
 SRCS += autofile.cc
 SRCS += bdffont.cc
 SRCS += bflatten.cc
+SRCS += binary-stdin.cc
 SRCS += bit2d.cc
 SRCS += bitarray.cc
 SRCS += boxprint.cc
@@ -462,6 +463,7 @@ unit-tests.exe: $(UNIT_TEST_OBJS) $(THIS)
 
 all: unit-tests.exe
 
+
 # Rule for tests that have dedicated .cc files, which is what I
 # would like to transition toward.
 #
@@ -471,6 +473,10 @@ all: unit-tests.exe
 #
 test-%.exe: test-%.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) test-$*.cc $(LIBS)
+
+# Same rule but for the other way of naming, which I am slowly adopting.
+%-test.exe: %-test.cc $(THIS)
+	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $*-test.cc $(LIBS)
 
 
 # Create a read-only file I can try to inspect in test-sm-file-util.cc.
@@ -498,6 +504,29 @@ check: out/boxprint.ok
 check: out/test-tree-print.ok
 
 
+# ------------------------- binary-stdin-test --------------------------
+all: binary-stdin-test.exe
+
+out/binary-stdin-test.ok: binary-stdin-test.exe
+	@mkdir -p $(dir $@)
+	@#
+	@# Generate a file with all 256 bytes.
+	./binary-stdin-test.exe allbytes out/allbytes.bin
+	@#
+	@# Test reading stdin with 'read'.
+	./binary-stdin-test.exe read0 allbytes < out/allbytes.bin
+	@#
+	@# Test writing stdout with 'write'.
+	./binary-stdin-test.exe allbytes write1 > out/allbytes-actual.bin
+	cmp out/allbytes-actual.bin out/allbytes.bin
+	@#
+	@# Done.
+	touch $@
+
+check: out/binary-stdin-test.ok
+
+
+# ------------------------------- check --------------------------------
 ifneq ($(CROSS_COMPILE),1)
   RUN :=
 else

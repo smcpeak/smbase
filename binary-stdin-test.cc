@@ -1,0 +1,141 @@
+// binary-stdin-test.cc
+// Tests for binary-stdin.
+
+#include "binary-stdin.h"              // module under test
+
+// smbase
+#include "autofile.h"                  // AutoFILE
+#include "syserr.h"                    // xsyserror
+
+// libc++
+#include <vector>                      // std::vector
+
+// POSIX
+#include <unistd.h>                    // read, write
+
+
+static std::vector<unsigned char> allbytes()
+{
+  std::vector<unsigned char> vec;
+  for (int i=0; i < 256; i++) {
+    vec.push_back((unsigned char)i);
+  }
+  return vec;
+}
+
+
+static void readSource(std::vector<unsigned char> &vec,
+                       char const *srcname)
+{
+  if (0==strcmp(srcname, "allbytes")) {
+    vec = allbytes();
+  }
+
+  else if (0==strcmp(srcname, "read0")) {
+    unsigned char buf[1024];
+    while (ssize_t numRead = read(0, buf, 1024)) {
+      if (numRead < 0) {
+        xsyserror("read", "stdin");
+      }
+
+      vec.insert(vec.end(), buf, buf+numRead);
+    }
+  }
+
+  else {
+    // Treat 'srcname' as a file name.
+    AutoFILE fp(srcname, "rb");
+
+    unsigned char buf[1024];
+    while (size_t numRead = fread(buf, 1, 1024, fp)) {
+      if (ferror(fp)) {
+        xsyserror("read", srcname);
+      }
+
+      vec.insert(vec.end(), buf, buf+numRead);
+    }
+  }
+}
+
+
+static void writeDestination(std::vector<unsigned char> const &vec,
+                             char const *destname)
+{
+  if (0==strcmp(destname, "allbytes")) {
+    // Require that 'vec' be 'allbytes'.  Don't actually write anything.
+    xassert(vec == allbytes());
+  }
+
+  else if (0==strcmp(destname, "write1")) {
+    size_t written = 0;
+    while (written < vec.size()) {
+      ssize_t res = write(1, vec.data()+written, vec.size()-written);
+      if (res < 0) {
+        xsyserror("write", "stdout");
+      }
+      if (res == 0) {
+        xfatal(stringb("Writing to stdout unexpectedly hit EOF after " <<
+                       written << " bytes."));
+      }
+      written += res;
+    }
+  }
+
+  else {
+    // Treat 'destname' as a file name'.
+    AutoFILE fp(destname, "wb");
+
+    size_t written = 0;
+    while (written < vec.size()) {
+      size_t res = fwrite(vec.data()+written, 1, vec.size()-written, fp);
+      if (ferror(fp)) {
+        xsyserror("write", destname);
+      }
+      if (res == 0) {
+        xfatal(stringb("Writing to " << destname <<
+                       " unexpectedly hit EOF after " <<
+                       written << " bytes."));
+      }
+
+      written += res;
+    }
+  }
+}
+
+
+int innerMain(int argc, char **argv)
+{
+  setStdinToBinary();
+  setStdoutToBinary();
+
+  // The Makefile target out/binary-stdin-test.ok invokes this program.
+  if (argc != 3) {
+    cerr << "usage: " << argv[0] << " <srcname> <destname>\n";
+    return 2;
+  }
+
+  char const *srcname = argv[1];
+  char const *destname = argv[2];
+
+  std::vector<unsigned char> vec;
+  readSource(vec, srcname);
+
+  writeDestination(vec, destname);
+
+  return 0;
+}
+
+
+int main(int argc, char **argv)
+{
+  try {
+    innerMain(argc, argv);
+  }
+  catch (xBase &x) {
+    cerr << x.why() << endl;
+    return 2;
+  }
+}
+
+
+// EOF
