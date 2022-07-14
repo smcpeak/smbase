@@ -56,6 +56,10 @@
 
 #include "nonport.h"      // this module
 
+#include <chrono>         // std::chrono::milliseconds
+#include <thread>         // std::this_thread
+
+
 
 NonportFailFunc nonportFail = defaultNonportFail;
 
@@ -230,6 +234,15 @@ void portableSleep(unsigned seconds)
 {
   // with proper headers included (above), "sleep" works
   sleep(seconds);
+}
+
+
+void sleepForMilliseconds(unsigned ms)
+{
+  // This depends on C++11, and might require linking with pthreads.  If
+  // either of those become a problem, I will provide an alternative
+  // implementation.
+  std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
 
 
@@ -797,6 +810,9 @@ int main(int argc, char **argv)
   // test sleep (mostly just to make sure it doesn't segfault)
   printf("sleeping for 1 second...\n");
   portableSleep(1);
+
+  printf("sleeping for 100 ms...\n");
+  sleepForMilliseconds(100);
 
   // test user name
   char buf[80];
