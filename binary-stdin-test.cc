@@ -24,6 +24,22 @@ static std::vector<unsigned char> allbytes()
 }
 
 
+// Read all available data from 'fp' into 'vec'.  'srcname' is used for
+// providing additional context in error reporting.
+static void freadAll(std::vector<unsigned char> &vec, FILE *fp,
+                     char const *srcname)
+{
+  unsigned char buf[1024];
+  while (size_t numRead = fread(buf, 1, 1024, fp)) {
+    if (ferror(fp)) {
+      xsyserror("read", srcname);
+    }
+
+    vec.insert(vec.end(), buf, buf+numRead);
+  }
+}
+
+
 static void readSource(std::vector<unsigned char> &vec,
                        char const *srcname)
 {
@@ -42,18 +58,37 @@ static void readSource(std::vector<unsigned char> &vec,
     }
   }
 
+  else if (0==strcmp(srcname, "fread_stdin")) {
+    freadAll(vec, stdin, srcname);
+  }
+
   else {
     // Treat 'srcname' as a file name.
     AutoFILE fp(srcname, "rb");
 
-    unsigned char buf[1024];
-    while (size_t numRead = fread(buf, 1, 1024, fp)) {
-      if (ferror(fp)) {
-        xsyserror("read", srcname);
-      }
+    freadAll(vec, fp, srcname);
+  }
+}
 
-      vec.insert(vec.end(), buf, buf+numRead);
+
+// Write all of 'vec' to 'fp'.  'destname' is used for error reporting
+// context.
+static void fwriteAll(std::vector<unsigned char> const &vec,
+                      FILE *fp, char const *destname)
+{
+  size_t written = 0;
+  while (written < vec.size()) {
+    size_t res = fwrite(vec.data()+written, 1, vec.size()-written, fp);
+    if (ferror(fp)) {
+      xsyserror("write", destname);
     }
+    if (res == 0) {
+      xfatal(stringb("Writing to " << destname <<
+                     " unexpectedly hit EOF after " <<
+                     written << " bytes."));
+    }
+
+    written += res;
   }
 }
 
@@ -81,24 +116,15 @@ static void writeDestination(std::vector<unsigned char> const &vec,
     }
   }
 
+  else if (0==strcmp(destname, "fwrite_stdout")) {
+    fwriteAll(vec, stdout, destname);
+  }
+
   else {
     // Treat 'destname' as a file name'.
     AutoFILE fp(destname, "wb");
 
-    size_t written = 0;
-    while (written < vec.size()) {
-      size_t res = fwrite(vec.data()+written, 1, vec.size()-written, fp);
-      if (ferror(fp)) {
-        xsyserror("write", destname);
-      }
-      if (res == 0) {
-        xfatal(stringb("Writing to " << destname <<
-                       " unexpectedly hit EOF after " <<
-                       written << " bytes."));
-      }
-
-      written += res;
-    }
+    fwriteAll(vec, fp, destname);
   }
 }
 

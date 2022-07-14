@@ -520,6 +520,13 @@ out/binary-stdin-test.ok: binary-stdin-test.exe
 	./binary-stdin-test.exe allbytes write1 > out/allbytes-actual.bin
 	cmp out/allbytes-actual.bin out/allbytes.bin
 	@#
+	@# Test reading stdin with 'fread'.
+	./binary-stdin-test.exe fread_stdin allbytes < out/allbytes.bin
+	@#
+	@# Test writing stdout with 'fwrite'.
+	./binary-stdin-test.exe allbytes fwrite_stdout > out/allbytes-actual.bin
+	cmp out/allbytes-actual.bin out/allbytes.bin
+	@#
 	@# Done.
 	touch $@
 
