@@ -58,6 +58,20 @@ static void readSource(std::vector<unsigned char> &vec,
     }
   }
 
+  else if (0==strcmp(srcname, "cin_read")) {
+    unsigned char buf[1024];
+    while (true) {
+      cin.read((char*)buf, 1024);
+      vec.insert(vec.end(), buf, buf+cin.gcount());
+      if (cin.eof()) {
+        break;
+      }
+      if (cin.fail()) {
+        xsyserror("read", "cin");
+      }
+    }
+  }
+
   else if (0==strcmp(srcname, "fread_stdin")) {
     freadAll(vec, stdin, srcname);
   }
@@ -113,6 +127,14 @@ static void writeDestination(std::vector<unsigned char> const &vec,
                        written << " bytes."));
       }
       written += res;
+    }
+  }
+
+  else if (0==strcmp(destname, "cout_write")) {
+    // No loop is required for ostream::write.
+    cout.write((char*)vec.data(), vec.size());
+    if (cout.fail()) {
+      xsyserror("write", "cout");
     }
   }
 

@@ -527,6 +527,13 @@ out/binary-stdin-test.ok: binary-stdin-test.exe
 	./binary-stdin-test.exe allbytes fwrite_stdout > out/allbytes-actual.bin
 	cmp out/allbytes-actual.bin out/allbytes.bin
 	@#
+	@# Test reading stdin with 'cin.read'.
+	./binary-stdin-test.exe cin_read allbytes < out/allbytes.bin
+	@#
+	@# Test writing stdout with 'cout.write'
+	./binary-stdin-test.exe allbytes cout_write > out/allbytes-actual.bin
+	cmp out/allbytes-actual.bin out/allbytes.bin
+	@#
 	@# Done.
 	touch $@
 
