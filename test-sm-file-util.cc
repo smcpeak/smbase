@@ -646,6 +646,24 @@ static void testCreateDirectoryAndParents()
 }
 
 
+static void testReadAndWriteFile()
+{
+  // All bytes.
+  std::vector<unsigned char> bytes;
+  for (int i=0; i < 256; i++) {
+    bytes.push_back((unsigned char)i);
+  }
+
+  SMFileUtil sfu;
+  string fname = "test.dir/allbytes.bin";
+  sfu.writeFile(fname, bytes);
+
+  std::vector<unsigned char> bytes2(sfu.readFile(fname));
+
+  xassert(bytes2 == bytes);
+}
+
+
 // Defined in sm-file-util.cc.
 void getDirectoryEntries_scanThenStat(SMFileUtil &sfu,
   ArrayStack<SMFileUtil::DirEntryInfo> /*OUT*/ &entries, string const &directory);
@@ -700,6 +718,7 @@ static void entry(int argc, char **argv)
   testGetFileKind();
   testAtomicallyRenameFile();
   testCreateDirectoryAndParents();
+  testReadAndWriteFile();
 
   cout << "test-sm-file-util ok" << endl;
 }

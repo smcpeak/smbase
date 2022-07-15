@@ -8,6 +8,7 @@
 #ifndef SM_FILE_UTIL_H
 #define SM_FILE_UTIL_H
 
+// smbase
 #include "array.h"                     // ArrayStack
 #include "sm-iostream.h"               // ostream
 #include "sm-macros.h"                 // NO_OBJECT_COPIES
@@ -15,6 +16,9 @@
 #include "sm-override.h"               // OVERRIDE
 #include "str.h"                       // string
 #include "stringset.h"                 // StringSet
+
+// libc++
+#include <vector>                      // std::vector
 
 
 // Structured representation of a file name.
@@ -258,6 +262,15 @@ public:      // funcs
   // directory separator from 'prefix'.
   virtual string joinFilename(string const &prefix,
                               string const &suffix);
+
+  // Read the contents of 'fname' in binary mode, returning the entire
+  // thing as a vector.  Throw xSysError on error.
+  virtual std::vector<unsigned char> readFile(string const &fname);
+
+  // Write 'bytes' into 'fname' in binary mode.  Throw xSysError on
+  // error.
+  virtual void writeFile(string const &fname,
+                         std::vector<unsigned char> const &bytes);
 
   // Get the names of entries in 'directory'.  If an error is
   // encountered, throw xSysError (syserr.h).  The entries are not

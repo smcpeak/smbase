@@ -5,6 +5,7 @@
 
 // smbase
 #include "array.h"                     // Array
+#include "autofile.h"                  // AutoFILE
 #include "codepoint.h"                 // isLetter
 #include "sm-windows.h"                // PLATFORM_IS_WINDOWS
 #include "strtokp.h"                   // StrtokParse
@@ -891,6 +892,45 @@ string SMFileUtil::joinFilename(string const &prefix,
   }
 
   return stringb(prefix << suffix);
+}
+
+
+std::vector<unsigned char> SMFileUtil::readFile(string const &fname)
+{
+  std::vector<unsigned char> bytes;
+
+  AutoFILE fp(fname.c_str(), "rb");
+
+  while (true) {
+    unsigned char buf[0x2000];
+    size_t res = fread(buf, 1, sizeof(buf), fp);
+    if (res == 0) {
+      if (ferror(fp)) {
+        xsyserror("read", fname);
+      }
+      else {
+        break;     // EOF
+      }
+    }
+
+    bytes.insert(bytes.end(), buf, buf+res);
+  }
+
+  return bytes;
+}
+
+
+void SMFileUtil::writeFile(string const &fname,
+                           std::vector<unsigned char> const &bytes)
+{
+  AutoFILE fp(fname.c_str(), "wb");
+
+  size_t res = fwrite(bytes.data(), 1, bytes.size(), fp);
+
+  if (res != bytes.size()) {
+    // fwrite only returns a short count if there is an error.
+    xsyserror("write", fname);
+  }
 }
 
 
