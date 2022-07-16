@@ -27,6 +27,37 @@ void xfer(Flatten &flat, T &t)
   t.xfer(flat);
 }
 
+// Overloads for things Flatten knows how to do directly.
+void xfer(Flatten &flat, char &c)
+{
+  flat.xferChar(c);
+}
+
+void xfer(Flatten &flat, bool &b)
+{
+  flat.xferBool(b);
+}
+
+void xfer(Flatten &flat, int32_t &i)
+{
+  flat.xfer_int32_t(i);
+}
+
+void xfer(Flatten &flat, uint32_t &i)
+{
+  flat.xfer_uint32_t(i);
+}
+
+void xfer(Flatten &flat, int64_t &i)
+{
+  flat.xfer_int64_t(i);
+}
+
+void xfer(Flatten &flat, uint64_t &i)
+{
+  flat.xfer_uint64_t(i);
+}
+
 
 // Transfer an owner list.  First we transfer the number of elements,
 // then each element in sequence.  If 'noteOwner' is true, the
@@ -83,6 +114,34 @@ void xferEnum(Flatten &flat, E &e)
 }
 
 
+// If writing, write the size of (number of elements in) 'vec'.
+//
+// If reading, resize 'vec' to the recorded element count.
+template <class T>
+void xferVectorSize(Flatten &flat, std::vector<T> &vec)
+{
+  int64_t numElements = 0;
+
+  if (flat.writing()) {
+    // Write length in elements.
+    convertWithoutLoss(numElements, vec.size());
+    flat.xfer_int64_t(numElements);
+  }
+
+  else {
+    // Read length in elements.
+    flat.xfer_int64_t(numElements);
+
+    // Convert to size_t with overflow check.
+    size_t st_ne;
+    convertWithoutLoss(st_ne, numElements);
+
+    // Set vector size accordingly.
+    vec.resize(st_ne);
+  }
+}
+
+
 // xfer a std::vector bytewise.
 //
 // It is not good to do this if T contains any scalar value that is
@@ -91,31 +150,25 @@ template <class T>
 void xferVectorBytewise(Flatten &flat, std::vector<T> &vec)
 {
   // Read or write length.
-  {
-    int64_t numElements = 0;
-
-    if (flat.writing()) {
-      // Write length in elements.
-      convertWithoutLoss(numElements, vec.size());
-      flat.xfer_int64_t(numElements);
-    }
-
-    else {
-      // Read length in elements.
-      flat.xfer_int64_t(numElements);
-
-      // Convert to size_t with overflow check.
-      size_t st_ne;
-      convertWithoutLoss(st_ne, numElements);
-
-      // Set vector size accordingly.
-      vec.resize(st_ne);
-    }
-  }
+  xferVectorSize(flat, vec);
 
   // Read or write data.
   size_t numBytes = multiplyWithOverflowCheck<size_t>(vec.size(), sizeof(T));
   flat.xferSimple(vec.data(), numBytes);
+}
+
+
+// xfer a vector element by element.
+//
+// This might be slower than bytewise, but is safer.
+template <class T>
+void xfer(Flatten &flat, std::vector<T> &vec)
+{
+  xferVectorSize(flat, vec);
+
+  for (T &t : vec) {
+    xfer(flat, t);
+  }
 }
 
 

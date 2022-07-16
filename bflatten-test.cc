@@ -3,7 +3,7 @@
 
 #include "bflatten.h"                  // module under test
 
-#include "flatutil.h"                  // xferEnum
+#include "flatutil.h"                  // xferEnum, xferVectorBytewise
 #include "sm-macros.h"                 // EMEMB
 #include "sm-test.h"                   // USUAL_MAIN
 
@@ -35,6 +35,7 @@ public:      // data
   SomeEnum e;
   std::vector<unsigned char> uc_vec;
   std::vector<int32_t> i32_vec;
+  std::vector<int32_t> i32_vec2;
 
 public:      // methods
   void init();
@@ -63,6 +64,7 @@ void SomeData::init()
 
   uc_vec = std::vector<unsigned char>{'h','e','l','l','o'};
   i32_vec = std::vector<int32_t>{1,2,0x12345678,-0x12345678};
+  i32_vec2 = i32_vec;
 }
 
 
@@ -87,6 +89,9 @@ void SomeData::xfer(Flatten &flat)
   // it would serialize the integers in a way that depends on host
   // endianness, but it will suffice for testing.
   xferVectorBytewise(flat, i32_vec);
+
+  // This is how to do it safely.
+  ::xfer(flat, i32_vec2);
 }
 
 
@@ -103,6 +108,7 @@ void SomeData::checkEqual(SomeData const &obj) const
   xassert(EMEMB(e));
   xassert(EMEMB(uc_vec));
   xassert(EMEMB(i32_vec));
+  xassert(EMEMB(i32_vec2));
 
   // This does not compare to 'obj', rather it checks a condition that I
   // know 'init' created in 'obj', and should be re-created by
