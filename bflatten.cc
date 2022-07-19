@@ -2,7 +2,7 @@
 // code for bflatten.h
 
 #include "bflatten.h"     // this module
-#include "exc.h"          // throw_XOpen, xformat
+#include "exc.h"          // xformat
 #include "sm-stdint.h"    // intptr_t
 #include "syserr.h"       // xsyserror
 
@@ -179,15 +179,15 @@ void StreamFlatten::xferSimple(void *var, size_t len)
 
 
 // ---------------------------- BFlatten -------------------------------
-// Attempt to open an ifstream or ofstream for 'fname', throwing XOpen
-// if the attempt fails.
+// Attempt to open an ifstream or ofstream for 'fname', throwing
+// xSysError if the attempt fails.
 template <class T>
 T *tryOpen(char const *fname)
 {
   T *stream = new T(fname, std::ios::binary);
   if (stream->fail()) {
     delete stream;
-    throw_XOpen(fname);
+    xsyserror("open", fname);
   }
   return stream;
 }

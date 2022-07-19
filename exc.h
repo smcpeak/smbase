@@ -178,39 +178,8 @@ void formatAssert_fail(char const *cond, char const *file, int line) NORETURN;
   ((cond)? (void)0 : formatAssert_fail(#cond, __FILE__, __LINE__))
 
 
-// -------------------- XOpen ---------------------
-// thrown when we fail to open a file
-class XOpen : public xBase {
-public:
-  string filename;
-
-public:
-  XOpen(rostring fname);
-  XOpen(XOpen const &obj);
-  ~XOpen();
-};
-
-void throw_XOpen(rostring fname) NORETURN;
-
-
-// -------------------- XOpenEx ---------------------
-// more informative
-class XOpenEx : public XOpen {
-public:
-  string mode;         // fopen-style mode string, e.g. "r"
-  string cause;        // errno-derived failure cause, e.g. "no such file"
-
-public:
-  XOpenEx(rostring fname, rostring mode, rostring cause);
-  XOpenEx(XOpenEx const &obj);
-  ~XOpenEx();
-
-  // convert a mode string as into human-readable participle,
-  // e.g. "r" becomes "reading"
-  static string interpretMode(rostring mode);
-};
-
-void throw_XOpenEx(rostring fname, rostring mode, rostring cause) NORETURN;
+// 2022-07-18: There was previously a class called XOpen, and another
+// called XOpenEx.  These have been removed in favor of xSysError.
 
 
 // ------------------- XUnimp ---------------------
