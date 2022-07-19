@@ -2,7 +2,7 @@
 // code for autofile.h
 
 #include "autofile.h"     // this module
-#include "exc.h"          // throw_XOpen
+#include "syserr.h"       // xsyserror
 
 #include <errno.h>        // errno
 #include <string.h>       // strerror
@@ -12,7 +12,7 @@ FILE *xfopen(char const *fname, char const *mode)
 {
   FILE *ret = fopen(fname, mode);
   if (!ret) {
-    throw_XOpenEx(fname, mode, strerror(errno));
+    xsyserror("open", fname);
   }
 
   return ret;
@@ -30,7 +30,6 @@ AutoFILE::~AutoFILE()
 
 
 // -------------------- test code -------------------
-// really this code is to test XOpenEx and strerror
 #ifdef TEST_AUTOFILE
 
 #include "sm-test.h"      // ARGS_MAIN
