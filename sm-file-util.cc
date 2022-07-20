@@ -460,9 +460,20 @@ bool SMFileUtil::isDirectorySeparator(char c)
 }
 
 
+bool SMFileUtil::endsWithDirectorySeparator(string const &name)
+{
+  if (name.empty() || !isDirectorySeparator(name[name.length()-1])) {
+    return false;
+  }
+  else {
+    return true;
+  }
+}
+
+
 string SMFileUtil::ensureEndsWithDirectorySeparator(string const &dir)
 {
-  if (dir.empty() || !isDirectorySeparator(dir[dir.length()-1])) {
+  if (!endsWithDirectorySeparator(dir)) {
     return stringb(dir << '/');
   }
   else {

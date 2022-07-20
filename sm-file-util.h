@@ -204,6 +204,10 @@ public:      // funcs
   // True if 'c' is considered a directory separator for the platform.
   virtual bool isDirectorySeparator(char c);
 
+  // True if 'name' has at least one character, and the last character
+  // 'isDirectorySeparator'.
+  bool endsWithDirectorySeparator(string const &name);
+
   // Given an ostensible directory name, if it does not end with a
   // directory separator, append '/' and return that.
   string ensureEndsWithDirectorySeparator(string const &dir);
