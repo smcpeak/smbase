@@ -49,4 +49,13 @@ StrongOrdering strongOrder(T a, T b)
 StrongOrdering strongOrder(char const *a, char const *b);
 
 
+// Return the StrongOrdering value corresponding to the sign of 'n'.
+inline StrongOrdering strongOrderFromInt(int n)
+{
+  return n <  0? StrongOrdering::less    :
+         n == 0? StrongOrdering::equal   :
+                 StrongOrdering::greater ;
+}
+
+
 #endif // SMBASE_SM_COMPARE_H
