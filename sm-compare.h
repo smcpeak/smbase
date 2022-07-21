@@ -58,4 +58,33 @@ inline StrongOrdering strongOrderFromInt(int n)
 }
 
 
+// Define a 'strongOrder' function from a 'compareTo' method.
+#define DEFINE_STRONG_ORDER_FROM_COMPARE_TO(TYPE)                 \
+  inline StrongOrdering strongOrder(TYPE const &a, TYPE const &b) \
+    { return a.compareTo(b); }
+
+
+// Define a single relational operator from a 'strongOrder' function.
+#define DEFINE_RELOP_FROM_STRONG_ORDER(TYPE, op)         \
+  inline bool operator op (TYPE const &a, TYPE const &b) \
+    { return strongOrder(a,b) op 0; }
+
+
+// Define a set of relational operators for a given type, assuming the
+// 'strongOrder' function can be applied.
+#define DEFINE_RELOPS_FROM_STRONG_ORDER(TYPE) \
+  DEFINE_RELOP_FROM_STRONG_ORDER(TYPE, == )   \
+  DEFINE_RELOP_FROM_STRONG_ORDER(TYPE, != )   \
+  DEFINE_RELOP_FROM_STRONG_ORDER(TYPE, <  )   \
+  DEFINE_RELOP_FROM_STRONG_ORDER(TYPE, >  )   \
+  DEFINE_RELOP_FROM_STRONG_ORDER(TYPE, <= )   \
+  DEFINE_RELOP_FROM_STRONG_ORDER(TYPE, >= )
+
+
+// Define 'strongOrder' and relational operators from 'compareTo'.
+#define DEFINE_RELOPS_FROM_COMPARE_TO(TYPE) \
+  DEFINE_STRONG_ORDER_FROM_COMPARE_TO(TYPE) \
+  DEFINE_RELOPS_FROM_STRONG_ORDER(TYPE)
+
+
 #endif // SMBASE_SM_COMPARE_H
