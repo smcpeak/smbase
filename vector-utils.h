@@ -11,6 +11,7 @@
 
 #include <algorithm>                   // std::remove
 #include <iostream>                    // std::ostream
+#include <set>                         // std::set
 #include <sstream>                     // std::ostringstream
 #include <vector>                      // std::vector
 
@@ -180,6 +181,18 @@ template <class T>
 void vec_erase(std::vector<T> &vec, T const &value)
 {
   vec.erase(std::remove(vec.begin(), vec.end(), value), vec.end());
+}
+
+
+// Return the set of elements in 'vec'.
+template <class T>
+std::set<T> vec_element_set(std::vector<T> const &vec)
+{
+  std::set<T> ret;
+  for (T const &t : vec) {
+    ret.insert(t);
+  }
+  return ret;
 }
 
 

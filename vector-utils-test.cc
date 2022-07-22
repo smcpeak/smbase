@@ -20,21 +20,26 @@ static void testAccumulateWith()
 }
 
 
+// Test 'vec_erase' and 'vec_element_set'.
 static void testVecErase()
 {
   std::vector<int> v{1,2,3,2,1};
 
   vec_erase(v, 4);
   xassert((v == std::vector<int>{1,2,3,2,1}));
+  xassert((vec_element_set(v) == std::set<int>{1,2,3}));
 
   vec_erase(v, 2);
   xassert((v == std::vector<int>{1,3,1}));
+  xassert((vec_element_set(v) == std::set<int>{1,3}));
 
   vec_erase(v, 3);
   xassert((v == std::vector<int>{1,1}));
+  xassert((vec_element_set(v) == std::set<int>{1}));
 
   vec_erase(v, 1);
   xassert((v == std::vector<int>{}));
+  xassert((vec_element_set(v) == std::set<int>{}));
 }
 
 
