@@ -7,7 +7,7 @@
 #include "str.h"                       // string
 
 
-void test_vector_utils()
+static void testAccumulateWith()
 {
   std::vector<string> v;
   EXPECT_EQ(accumulateWith(v, string("-")), "");
@@ -17,6 +17,31 @@ void test_vector_utils()
 
   v.push_back("b");
   EXPECT_EQ(accumulateWith(v, string("-")), "a-b");
+}
+
+
+static void testVecErase()
+{
+  std::vector<int> v{1,2,3,2,1};
+
+  vec_erase(v, 4);
+  xassert((v == std::vector<int>{1,2,3,2,1}));
+
+  vec_erase(v, 2);
+  xassert((v == std::vector<int>{1,3,1}));
+
+  vec_erase(v, 3);
+  xassert((v == std::vector<int>{1,1}));
+
+  vec_erase(v, 1);
+  xassert((v == std::vector<int>{}));
+}
+
+
+void test_vector_utils()
+{
+  testAccumulateWith();
+  testVecErase();
 
   cout << "test_vector_utils passed\n";
 }

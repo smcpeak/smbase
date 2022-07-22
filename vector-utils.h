@@ -9,6 +9,7 @@
 #include "xassert.h"                   // xfailure
 #include "sm-macros.h"                 // NO_OBJECT_COPIES
 
+#include <algorithm>                   // std::remove
 #include <iostream>                    // std::ostream
 #include <sstream>                     // std::ostringstream
 #include <vector>                      // std::vector
@@ -171,6 +172,14 @@ bool vec_contains(std::vector<T> const &vec, T const &value)
     }
   }
   return false;
+}
+
+
+// Remove all occurrences of 'value' from 'vec'.
+template <class T>
+void vec_erase(std::vector<T> &vec, T const &value)
+{
+  vec.erase(std::remove(vec.begin(), vec.end(), value), vec.end());
 }
 
 
