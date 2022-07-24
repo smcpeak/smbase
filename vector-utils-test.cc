@@ -29,9 +29,16 @@ static void testVecErase()
   xassert((v == std::vector<int>{1,2,3,2,1}));
   xassert((vec_element_set(v) == std::set<int>{1,2,3}));
 
+  // Also test 'vec_find_index'.
+  xassert(vec_find_index(v, 1) == 0);
+  xassert(vec_find_index(v, 2) == 1);
+  xassert(vec_find_index(v, 3) == 2);
+  xassert(vec_find_index(v, 4) == -1);
+
   vec_erase(v, 2);
   xassert((v == std::vector<int>{1,3,1}));
   xassert((vec_element_set(v) == std::set<int>{1,3}));
+  xassert(vec_find_index(v, 3) == 1);
 
   vec_erase(v, 3);
   xassert((v == std::vector<int>{1,1}));
@@ -40,6 +47,7 @@ static void testVecErase()
   vec_erase(v, 1);
   xassert((v == std::vector<int>{}));
   xassert((vec_element_set(v) == std::set<int>{}));
+  xassert(vec_find_index(v, 1) == -1);
 }
 
 

@@ -6,8 +6,9 @@
 
 #include "container-utils.h"           // CONTAINER_FOREACH
 #include "dev-warning.h"               // DEV_WARNING
-#include "xassert.h"                   // xfailure
+#include "overflow.h"                  // convertNumber
 #include "sm-macros.h"                 // NO_OBJECT_COPIES
+#include "xassert.h"                   // xfailure
 
 #include <algorithm>                   // std::remove
 #include <iostream>                    // std::ostream
@@ -193,6 +194,21 @@ std::set<T> vec_element_set(std::vector<T> const &vec)
     ret.insert(t);
   }
   return ret;
+}
+
+
+// Report the first index of 'value' in 'vec', or -1 if it is not
+// present.
+template <class T>
+long vec_find_index(std::vector<T> const &vec, T const &value)
+{
+  auto it = std::find(vec.begin(), vec.end(), value);
+  if (it != vec.end()) {
+    return convertNumber<long>(it - vec.begin());
+  }
+  else {
+    return -1;
+  }
 }
 
 
