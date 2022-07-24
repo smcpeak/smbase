@@ -214,7 +214,7 @@ static void cwlSuccess(SRC src)
 {
   DEST dest = 0;
   convertWithoutLoss(dest, src);
-  xassert(dest == src);
+  xassert(static_cast<SRC>(dest) == src);
 }
 
 
@@ -274,7 +274,7 @@ template <class DEST, class SRC>
 static void cnFail(SRC src)
 {
   try {
-    DEST dest = convertNumber<DEST>(src);
+    convertNumber<DEST>(src);
     xfailure("should have failed");
   }
   catch (XOverflow &x) {
