@@ -3,6 +3,7 @@
 
 #include "bflatten.h"     // this module
 #include "exc.h"          // xformat
+#include "overflow.h"     // convertNumber
 #include "sm-stdint.h"    // intptr_t
 #include "syserr.h"       // xsyserror
 
@@ -170,7 +171,7 @@ void StreamFlatten::xferSimple(void *var, size_t len)
       xsyserror("read");
     }
     std::streamsize ct = m_stream.is()->gcount();
-    if (ct < len) {
+    if (convertNumber<size_t>(ct) < len) {
       xformat(stringb("unexpected end of input (ct=" << ct <<
                       ", len=" << len << ")"));
     }
