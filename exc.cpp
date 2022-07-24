@@ -114,7 +114,7 @@ void x_assert_fail(char const *cond, char const *file, int line)
 
 // --------------- xFormat ------------------
 xFormat::xFormat(rostring cond)
-  : xBase(stringb("Formatting error: " << cond)),
+  : xBase(cond),
     condition(cond)
 {}
 
