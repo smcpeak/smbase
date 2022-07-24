@@ -262,6 +262,36 @@ static void testConvertWithoutLoss()
 }
 
 
+template <class DEST, class SRC>
+static void cnSuccess(SRC src)
+{
+  DEST dest = convertNumber<DEST>(src);
+  xassert(dest == src);
+}
+
+
+template <class DEST, class SRC>
+static void cnFail(SRC src)
+{
+  try {
+    DEST dest = convertNumber<DEST>(src);
+    xfailure("should have failed");
+  }
+  catch (XOverflow &x) {
+    cout << "as expected: " << x.why() << "\n";
+  }
+}
+
+
+static void testConvertNumber()
+{
+  cnSuccess<int, int>(3);
+  cnFail<char, int>(1234);
+  cnFail<unsigned, int>(-1);
+  cnFail<int, unsigned>(UINT_MAX);
+}
+
+
 int test_overflow()
 {
   // This test throws many exceptions.
@@ -277,6 +307,7 @@ int test_overflow()
 
   RUNTEST(testAddAndMultiply);
   RUNTEST(testConvertWithoutLoss);
+  RUNTEST(testConvertNumber);
 
   #undef RUNTEST
 
