@@ -87,4 +87,16 @@ inline StrongOrdering strongOrderFromInt(int n)
   DEFINE_RELOPS_FROM_STRONG_ORDER(TYPE)
 
 
+// Compare field 'memb' with that in 'obj', returning if the result is
+// not equal.  This is meant to be used as part of a sequence of member
+// comparisons to implement a lexicographical order.
+#define COMPARE_MEMB(memb)                            \
+  {                                                   \
+    StrongOrdering ord = strongOrder(memb, obj.memb); \
+    if (ord != StrongOrdering::equal) {               \
+      return ord;                                     \
+    }                                                 \
+  }
+
+
 #endif // SMBASE_SM_COMPARE_H
