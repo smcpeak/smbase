@@ -1,17 +1,25 @@
 // array.h            see license.txt for copyright and terms of use
 // some array classes
 
-#ifndef ARRAY_H
-#define ARRAY_H
+// These classes predate the wide availability of the C++ standard
+// library.  Except for ArrayStackEmbed, none of these should be used in
+// new code, as the standard provides preferable substitutes.
 
+#ifndef SMBASE_ARRAY_H
+#define SMBASE_ARRAY_H
+
+// smbase
 #include "sm-macros.h"                 // NO_OBJECT_COPIES
 #include "sm-swap.h"                   // swap
 #include "str.h"                       // string
 #include "xassert.h"                   // xassert
 
+// libc++
 #include <iterator>                    // std::random_access_iterator_tag
 #include <utility>                     // std::swap
+#include <vector>                      // std::vector
 
+// libc
 #include <stddef.h>                    // size_t, ptrdiff_t
 #include <stdlib.h>                    // qsort
 
@@ -354,6 +362,9 @@ public:      // funcs
   // shifting the intervening elements by one spot.  Both arguments
   // must be in [0,length()-1].
   void moveElement(int oldIndex, int newIndex);
+
+  // Yield the same sequence of elements as a std::vector.
+  std::vector<T> asVector() const;
 };
 
 template <class T>
@@ -398,6 +409,18 @@ void ArrayStack<T>::moveElement(int oldIndex, int newIndex)
   this->bc(newIndex);
 
   this->GrowArray<T>::moveElement(oldIndex, newIndex);
+}
+
+
+template <class T>
+std::vector<T> ArrayStack<T>::asVector() const
+{
+  std::vector<T> vec;
+  vec.reserve(this->length());
+  for (int i=0; i < this->length(); i++) {
+    vec.push_back(this->operator[](i));
+  }
+  return vec;
 }
 
 
@@ -905,4 +928,4 @@ void ArrayStackEmbed<T,n>::moveElement(int oldIndex, int newIndex)
 }
 
 
-#endif // ARRAY_H
+#endif // SMBASE_ARRAY_H
