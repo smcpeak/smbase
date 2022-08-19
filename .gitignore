@@ -38,6 +38,7 @@ mut
 mutant-compile.sh
 mutant.cc
 out
+personal-make-cmd.sh
 personal.mk
 srcloc.tmp
 strhash_1
