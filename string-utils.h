@@ -19,6 +19,14 @@ std::vector<std::string> splitNonEmpty(std::string const &text, char sep);
 std::string join(std::vector<std::string> const &vec,
                  std::string const &sep);
 
+// Return 'vec' except with each element prefixed by 'prefix'.
+std::vector<std::string> prefixAll(std::vector<std::string> const &vec,
+                                   std::string const &prefix);
+
+// Return 'vec' except with each element suffixed by 'suffix'.
+std::vector<std::string> suffixAll(std::vector<std::string> const &vec,
+                                   std::string const &suffix);
+
 // Insert 'str' into 'os', surrounded by double quotes, and using C-like
 // escape sequences for double-quotes, backslashes, and all
 // non-printable characters.

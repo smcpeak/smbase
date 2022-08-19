@@ -90,6 +90,38 @@ static void testJoin()
 }
 
 
+static void testPrefixAll()
+{
+  EXPECT_EQ(prefixAll(std::vector<std::string>{}, "foo"),
+                      std::vector<std::string>{});
+
+  EXPECT_EQ(prefixAll(std::vector<std::string>{"x"}, "foo"),
+                      std::vector<std::string>{"foox"});
+
+  EXPECT_EQ(prefixAll(std::vector<std::string>{"x", ""}, "foo"),
+                     (std::vector<std::string>{"foox", "foo"}));
+
+  EXPECT_EQ(prefixAll(std::vector<std::string>{"x", ""}, ""),
+                     (std::vector<std::string>{"x", ""}));
+}
+
+
+static void testSuffixAll()
+{
+  EXPECT_EQ(suffixAll(std::vector<std::string>{}, "foo"),
+                      std::vector<std::string>{});
+
+  EXPECT_EQ(suffixAll(std::vector<std::string>{"x"}, "foo"),
+                      std::vector<std::string>{"xfoo"});
+
+  EXPECT_EQ(suffixAll(std::vector<std::string>{"x", ""}, "foo"),
+                     (std::vector<std::string>{"xfoo", "foo"}));
+
+  EXPECT_EQ(suffixAll(std::vector<std::string>{"x", ""}, ""),
+                     (std::vector<std::string>{"x", ""}));
+}
+
+
 static void testDoubleQuote()
 {
   static struct Test {
@@ -245,6 +277,8 @@ void test_string_utils()
 {
   testSplitNonEmpty();
   testJoin();
+  testPrefixAll();
+  testSuffixAll();
   testDoubleQuote();
   testVectorToString();
   testStripExtension();
