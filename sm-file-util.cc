@@ -14,6 +14,7 @@
 
 // libc++
 #include <algorithm>                   // std::max
+#include <fstream>                     // std::fstream
 
 // libc
 #include <errno.h>                     // errno
@@ -1214,6 +1215,42 @@ void SMFileUtil::removeFile(string const &path)
   if (remove(path.c_str()) < 0) {
     xsyserror("remove", path);
   }
+}
+
+
+// I posted this code to SO at:
+// https://stackoverflow.com/questions/10677200/c-ofstream-doesnt-change-mtime/73414309
+bool SMFileUtil::touchFile(string const &path)
+{
+  char const *fname = path.c_str();
+
+  // Open the file for writing.  This fails if the file does not exist.
+  std::fstream stream(fname, std::ios::in | std::ios::out | std::ios::binary);
+  if (stream.fail()) {
+    // File does not exist, or a permission error.  Try creating the file.
+    stream.open(fname, std::ios::out | std::ios::binary);
+    return stream.good();
+  }
+
+  // Read the first character.
+  int ch = stream.get();
+  if (ch == std::char_traits<char>::eof()) {
+    // The file is empty.  Reopen with truncation.
+    stream.close();
+    stream.open(fname, std::ios::out | std::ios::binary);
+    return stream.good();
+  }
+
+  // Rewind the write head.
+  stream.seekp(0);
+  if (stream.fail()) {
+    return false;
+  }
+
+  // Write that same character.  A write is necessary to update the
+  // modification time.
+  stream.put(ch);
+  return stream.good();
 }
 
 

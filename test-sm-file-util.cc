@@ -9,7 +9,7 @@
 #include "sm-file-util.h"              // module to test
 
 // smbase
-#include "nonport.h"                   // GetMillisecondsAccumulator
+#include "nonport.h"                   // GetMillisecondsAccumulator, getFileModificationTime
 #include "run-process.h"               // RunProcess
 #include "sm-test.h"                   // ARGS_TEST_MAIN, PVAL
 #include "strutil.h"                   // compareStringPtrs
@@ -664,6 +664,51 @@ static void testReadAndWriteFile()
 }
 
 
+static void testTouchFile()
+{
+  SMFileUtil sfu;
+
+  string fname = "test.dir/tmp";
+
+  // Make sure the file is initially absent.
+  if (sfu.pathExists(fname)) {
+    sfu.removeFile(fname);
+  }
+  xassert(!sfu.pathExists(fname));
+
+  // Touch it to create it as empty.
+  sfu.touchFile(fname);
+  xassert(sfu.pathExists(fname));
+
+  int64_t ts1;
+  xassert(getFileModificationTime(fname.c_str(), ts1 /*OUT*/));
+
+  // Touch the empty file.
+  cout << "testTouchFile: sleep 1 ...\n";
+  portableSleep(1);
+  sfu.touchFile(fname);
+  int64_t ts2;
+  xassert(getFileModificationTime(fname.c_str(), ts2 /*OUT*/));
+  xassert(ts2 > ts1);
+
+  // Write it with a byte.
+  sfu.writeFile(fname, std::vector<unsigned char>{'x'});
+  int64_t ts3;
+  xassert(getFileModificationTime(fname.c_str(), ts3 /*OUT*/));
+
+  // Touch that.
+  cout << "testTouchFile: sleep 1 ...\n";
+  portableSleep(1);
+  sfu.touchFile(fname);
+  int64_t ts4;
+  xassert(getFileModificationTime(fname.c_str(), ts4 /*OUT*/));
+  xassert(ts4 > ts3);
+
+  // Clean up.
+  sfu.removeFile(fname);
+}
+
+
 // Defined in sm-file-util.cc.
 void getDirectoryEntries_scanThenStat(SMFileUtil &sfu,
   ArrayStack<SMFileUtil::DirEntryInfo> /*OUT*/ &entries, string const &directory);
@@ -719,6 +764,7 @@ static void entry(int argc, char **argv)
   testAtomicallyRenameFile();
   testCreateDirectoryAndParents();
   testReadAndWriteFile();
+  testTouchFile();
 
   cout << "test-sm-file-util ok" << endl;
 }
