@@ -65,6 +65,29 @@ B accumulateWithMap(std::vector<A> const &vec, MapOperation op,
 }
 
 
+// Apply 'op' to all elements.
+template <class DEST, class SRC, class MapOperation>
+std::vector<DEST> mapElements(std::vector<SRC> const &vec,
+                              MapOperation op)
+{
+  std::vector<DEST> ret;
+  ret.reserve(vec.size());
+  for (SRC const &s : vec) {
+    ret.push_back(op(s));
+  }
+  return ret;
+}
+
+
+// Convert elements from SRC to DEST.
+template <class DEST, class SRC>
+std::vector<DEST> convertElements(std::vector<SRC> const &vec)
+{
+  return mapElements<DEST, SRC>(vec,
+    [](SRC const &s) { return DEST(s); });
+}
+
+
 // Print 'vec' to 'os' by using 'operator<<' on each element.  Returns
 // 'os'.
 //

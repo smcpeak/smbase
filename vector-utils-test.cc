@@ -5,6 +5,9 @@
 
 #include "sm-test.h"                   // EXPECT_EQ
 #include "str.h"                       // string
+#include "strutil.h"                   // quoted
+
+#include <string>                      // std::string
 
 
 static void testAccumulateWith()
@@ -51,10 +54,35 @@ static void testVecErase()
 }
 
 
+static void testMapElements()
+{
+  std::vector<string> src {"a", "b"};
+  std::vector<string> dest(mapElements<string>(src, [](string const &s) { return quoted(s); }));
+  EXPECT_EQ(dest, (std::vector<string>{"\"a\"", "\"b\""}));
+
+  // I do not like that I have to specify '<string>' here, but I do not
+  // know how to avoid it.
+  dest = mapElements<string>(src, quoted);
+  EXPECT_EQ(dest, (std::vector<string>{"\"a\"", "\"b\""}));
+}
+
+
+static void testConvertElements()
+{
+  std::vector<string> src {"a", "b", "c"};
+
+  // Convert smbase 'string' to 'std::string'.
+  std::vector<std::string> dest(convertElements<std::string>(src));
+  EXPECT_EQ(dest, (std::vector<std::string>{"a", "b", "c"}));
+}
+
+
 void test_vector_utils()
 {
   testAccumulateWith();
   testVecErase();
+  testMapElements();
+  testConvertElements();
 
   cout << "test_vector_utils passed\n";
 }
