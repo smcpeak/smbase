@@ -907,6 +907,18 @@ string SMFileUtil::joinFilename(string const &prefix,
 }
 
 
+string SMFileUtil::joinIfRelativeFilename(string const &prefix,
+                                          string const &suffix)
+{
+  if (isAbsolutePath(suffix)) {
+    return suffix;
+  }
+  else {
+    return joinFilename(prefix, suffix);
+  }
+}
+
+
 std::vector<unsigned char> SMFileUtil::readFile(string const &fname)
 {
   std::vector<unsigned char> bytes;

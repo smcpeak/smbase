@@ -308,6 +308,34 @@ static void testJoinFilename()
 }
 
 
+static void expectJoinIRF(char const *a, char const *b, char const *expect)
+{
+  SMFileUtil sfu;
+  EXPECT_EQ(sfu.joinIfRelativeFilename(a, b), string(expect));
+}
+
+
+static void testJoinIfRelativeFilename()
+{
+  expectJoinIRF("", "", "");
+  expectJoinIRF("a", "", "a");
+  expectJoinIRF("", "b", "b");
+  expectJoinIRF("a", "b", "a/b");
+  expectJoinIRF("a/", "b", "a/b");
+  expectJoinIRF("a", "d:/b", "d:/b");      // keep absolute suffix
+  expectJoinIRF("a/", "d:/b", "d:/b");     // keep absolute suffix
+  expectJoinIRF("a", "b/", "a/b/");
+
+  SMFileUtil sfu;
+  if (sfu.isDirectorySeparator('\\')) {
+    expectJoinIRF("a", "d:\\b", "d:\\b");
+  }
+  else {
+    expectJoinIRF("a", "\\b", "a/\\b");
+  }
+}
+
+
 static void expectRelExists(char const *fname, bool expect)
 {
   SMFileUtil sfu;
@@ -752,6 +780,7 @@ static void entry(int argc, char **argv)
   testFileName();
   printSomeStuff();
   testJoinFilename();
+  testJoinIfRelativeFilename();
   testAbsolutePathExists();
   testTestSMFileUtil();
   testSplitPath();

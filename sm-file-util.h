@@ -267,6 +267,12 @@ public:      // funcs
   virtual string joinFilename(string const &prefix,
                               string const &suffix);
 
+  // Like 'joinFilename', except if 'suffix' is absolute, then return it
+  // as-is.  The idea is to treat 'suffix' as being relative to 'prefix'
+  // unless it is absolute already.
+  string joinIfRelativeFilename(string const &prefix,
+                                string const &suffix);
+
   // Read the contents of 'fname' in binary mode, returning the entire
   // thing as a vector.  Throw xSysError on error.
   virtual std::vector<unsigned char> readFile(string const &fname);
