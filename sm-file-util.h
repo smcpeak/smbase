@@ -62,8 +62,11 @@ private:     // data
   // A path like "a//b" is treated the same as "a/b".
   ArrayStack<string> m_pathComponents;
 
-  // True if the file name is intended to designate a directory.  This
-  // corresponds to a trailing slash in the string representation.
+  // True if the file name has at least one component and ends with a
+  // directory separator.  That normally means it is intended to
+  // designate a directory.
+  //
+  // Invariant: !m_trailingSlash || hasPathComponents()
   bool m_trailingSlash;
 
 public:      // types
@@ -113,6 +116,9 @@ public:      // data
 
   ~SMFileName();
 
+  // Assert invariants.
+  void selfCheck() const;
+
   // True if all components are equal, including letter case.
   bool operator== (SMFileName const &obj) const;
   NOTEQUAL_OPERATOR(SMFileName)
@@ -122,6 +128,10 @@ public:      // data
   bool isAbsolute() const { return m_isAbsolute; }
   void getPathComponents(ArrayStack<string> /*OUT*/ &pathComponents) const;
   bool hasTrailingSlash() const { return m_trailingSlash; }
+
+  // True if there is at least one path component, which is a
+  // requirement for having a trailing slash.
+  bool hasPathComponents() const { return m_pathComponents.isNotEmpty(); }
 
   // Create new names by replacing components.
   SMFileName withFileSystem(string const &newFileSystem) const;
@@ -134,6 +144,11 @@ public:      // data
 
   // Get just the path components as a string separated by forward slashes.
   string getPathComponentsString() const;
+
+  // True if the string representation ends with a path separator,
+  // either because it is absolute and has no components, or because it
+  // has a trailing slash.
+  bool endsWithPathSeparator() const;
 
   // True if 'syntax' is S_NATIVE and we are running under Windows,
   // or is S_WINDOWS.
@@ -150,6 +165,22 @@ public:      // data
 // them to be replaced with mock implementations for testing.  Code
 // that does not care about that can just make an instance of
 // SMFileUtil itself in the ordinary way.
+//
+// TODO: This class has become a mishmash of several ideas:
+//
+//   1. Queries about file names themselves, optionally (via virtual
+//      functions) applying Windows or POSIX semantics, which overlaps
+//      with the SMFileName class, above.
+//
+//   2. Manipulation of file names, such as joining them, which
+//      SMFileName does not do but probably should.
+//
+//   3. Queries to execute against the local file system via system
+//      calls, which is a form of interprocess communication.
+//
+// I think 3 should be split from 1 and 2, and then something done to
+// resolve the tension between (1,2) and SMFileName.
+//
 class SMFileUtil {
   NO_OBJECT_COPIES(SMFileUtil);
 

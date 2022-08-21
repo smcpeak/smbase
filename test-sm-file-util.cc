@@ -33,7 +33,24 @@ static void checkFNObject(SMFileName const &fn, SMFileName::Syntax syntax)
   fn.getPathComponents(comps2);
   comps2.push("x");
   xassert(fn.withPathComponents(comps2) != fn);
-  xassert(fn.withTrailingSlash(!fn.hasTrailingSlash()) != fn);
+
+  if (fn.hasPathComponents()) {
+    // We can only freely toggle the trailing slash if there are path
+    // components.
+    xassert(fn.withTrailingSlash(!fn.hasTrailingSlash()) != fn);
+  }
+}
+
+
+// Check that 'sfu' reports the same properties as 'fn' on 'input'.
+static void checkAgainstSFU(
+  SMFileUtil &sfu,
+  string const &input,
+  SMFileName const &fn)
+{
+  EXPECT_EQ(sfu.isAbsolutePath(input), fn.isAbsolute());
+  EXPECT_EQ(sfu.endsWithDirectorySeparator(input),
+            fn.endsWithPathSeparator());
 }
 
 
@@ -51,6 +68,11 @@ static void expectFNp(
   EXPECT_EQ(fn.hasTrailingSlash(), expectTrailingSlash);
 
   checkFNObject(fn, SMFileName::S_POSIX);
+
+  // Test against SMFileUtil too.
+  TestSMFileUtil sfu;
+  sfu.m_windowsPathSemantics = false;
+  checkAgainstSFU(sfu, input, fn);
 }
 
 
@@ -69,6 +91,11 @@ static void expectFNw(
   EXPECT_EQ(fn.hasTrailingSlash(), expectTrailingSlash);
 
   checkFNObject(fn, SMFileName::S_WINDOWS);
+
+  // Test against SMFileUtil too.
+  TestSMFileUtil sfu;
+  sfu.m_windowsPathSemantics = true;
+  checkAgainstSFU(sfu, input, fn);
 }
 
 
@@ -87,6 +114,10 @@ static void expectFNn(
   EXPECT_EQ(fn.hasTrailingSlash(), expectTrailingSlash);
 
   checkFNObject(fn, SMFileName::S_NATIVE);
+
+  // Test against SMFileUtil too.
+  SMFileUtil sfu;
+  checkAgainstSFU(sfu, input, fn);
 }
 
 
@@ -322,13 +353,13 @@ static void testJoinIfRelativeFilename()
   expectJoinIRF("", "b", "b");
   expectJoinIRF("a", "b", "a/b");
   expectJoinIRF("a/", "b", "a/b");
-  expectJoinIRF("a", "d:/b", "d:/b");      // keep absolute suffix
-  expectJoinIRF("a/", "d:/b", "d:/b");     // keep absolute suffix
+  expectJoinIRF("a", "/b", "/b");      // keep absolute suffix
+  expectJoinIRF("a/", "/b", "/b");     // keep absolute suffix
   expectJoinIRF("a", "b/", "a/b/");
 
   SMFileUtil sfu;
   if (sfu.isDirectorySeparator('\\')) {
-    expectJoinIRF("a", "d:\\b", "d:\\b");
+    expectJoinIRF("a", "\\b", "\\b");
   }
   else {
     expectJoinIRF("a", "\\b", "a/\\b");

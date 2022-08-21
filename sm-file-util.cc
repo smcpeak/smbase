@@ -216,7 +216,9 @@ SMFileName::SMFileName(string fileSystem, bool isAbsolute,
     m_isAbsolute(isAbsolute),
     m_pathComponents(pathComponents),
     m_trailingSlash(trailingSlash)
-{}
+{
+  selfCheck();
+}
 
 
 SMFileName::SMFileName(SMFileName const &obj)
@@ -229,6 +231,12 @@ SMFileName::SMFileName(SMFileName const &obj)
 
 SMFileName::~SMFileName()
 {}
+
+
+void SMFileName::selfCheck() const
+{
+  xassert(!m_trailingSlash || hasPathComponents());
+}
 
 
 bool SMFileName::operator== (SMFileName const &obj) const
@@ -296,6 +304,13 @@ string SMFileName::getPathComponentsString() const
     }
   }
   return sb.str();
+}
+
+
+bool SMFileName::endsWithPathSeparator() const
+{
+  return (m_isAbsolute && m_pathComponents.isEmpty()) ||
+         m_trailingSlash;
 }
 
 
@@ -525,10 +540,10 @@ bool SMFileUtil::isAbsolutePath(string const &path)
       return true;
     }
   }
-  else {
-    if (isDirectorySeparator(path[0])) {
-      return true;
-    }
+
+  // Even on Windows, a leading separator is treated as absolute.
+  if (isDirectorySeparator(path[0])) {
+    return true;
   }
 
   return false;
