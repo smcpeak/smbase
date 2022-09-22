@@ -56,10 +56,6 @@
 
 #include "nonport.h"      // this module
 
-#include <chrono>         // std::chrono::milliseconds
-#include <thread>         // std::this_thread
-
-
 
 NonportFailFunc nonportFail = defaultNonportFail;
 
@@ -239,10 +235,23 @@ void portableSleep(unsigned seconds)
 
 void sleepForMilliseconds(unsigned ms)
 {
-  // This depends on C++11, and might require linking with pthreads.  If
-  // either of those become a problem, I will provide an alternative
-  // implementation.
-  std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+  #if defined(__WIN32__)
+    Sleep(ms);
+  #else
+    // Let's hope that 'usleep' is available.
+    usleep(ms * (useconds_t)1000);
+  #endif
+
+  // This depends on C++11, and requires linking with pthreads on
+  // Windows (which is implicit with Mingw GCC but not Clang), so I am
+  // not using it anymore.
+  #if 0
+    // Would also be needed at the top:
+    #include <chrono>         // std::chrono::milliseconds
+    #include <thread>         // std::this_thread
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+  #endif
 }
 
 
