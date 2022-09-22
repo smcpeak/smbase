@@ -429,7 +429,7 @@ bitarray.exe: bitarray.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_BITARRAY $(LDFLAGS) bitarray.cc $(LIBS)
 
 d2vector.exe: d2vector.c $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_D2VECTOR $(LDFLAGS) d2vector.c $(LIBS)
+	$(CC) -o $@ $(CFLAGS) -DTEST_D2VECTOR $(LDFLAGS) d2vector.c $(LIBS)
 
 bdffont.exe: bdffont.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_BDFFONT $(LDFLAGS) bdffont.cc $(LIBS)
