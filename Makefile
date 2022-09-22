@@ -70,7 +70,7 @@ PYTHON3 = python3
 RUN_COMPARE_EXPECT = $(PYTHON3) ./run-compare-expect.py
 
 # This invokes a script called 'mygcov', which is a personal wrapper
-# around 'gcov' that filters out some common false positives.  This
+# around 'gcov' that filters out some common false positives.  You
 # could just replace this with 'gcov' if you don't have that script.
 GCOV = mygcov
 
