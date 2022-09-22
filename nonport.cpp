@@ -350,7 +350,7 @@ void applyToDirContents(char const *dirName,
     if (buf[strlen(buf)-1] != '\\') strcat(buf, "\\");
     strcat(buf, "*");
     intptr_t handle = _findfirst(buf, &fb);
-    delete buf;
+    delete[] buf;
     int done = (handle == -1);
     if (handle == -1 && errno != ENOENT) // ENOENT = no matching entries
       fail("_findfirst", dirName);
