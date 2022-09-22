@@ -51,8 +51,11 @@ CPPFLAGS = $(INCLUDES) $(DEFINES)
 CFLAGS   = $(DEBUG_FLAGS) $(OPTIMIZATION_FLAGS) $(WARNING_FLAGS) $(C_STD_FLAGS) $(CPPFLAGS)
 CXXFLAGS = $(DEBUG_FLAGS) $(OPTIMIZATION_FLAGS) $(WARNING_FLAGS) $(CXX_WARNING_FLAGS) $(CXX_STD_FLAGS) $(CPPFLAGS)
 
+# System libraries needed.
+SYSLIBS =
+
 # Libraries to link with when creating test executables.
-LIBS = $(THIS)
+LIBS = $(THIS) $(SYSLIBS)
 
 # Flags to add to a link command *in addition* to either $(CFLAGS) or
 # $(CXXFLAGS), depending on whether C++ modules are included.
@@ -336,7 +339,7 @@ tests: $(TESTS)
 
 # this one is explicitly *not* linked against $(THIS)
 nonport.exe: nonport.cpp nonport.h gprintf.o
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cpp gprintf.o
+	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cpp gprintf.o $(SYSLIBS)
 
 voidlist.exe: voidlist.cc voidlist.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_VOIDLIST $(LDFLAGS) voidlist.cc $(LIBS)
@@ -381,16 +384,16 @@ mysig.exe: mysig.cc mysig.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_MYSIG $(LDFLAGS) mysig.cc $(LIBS)
 
 mypopen.exe: mypopen.c mypopen.h
-	$(CC) -o $@ $(CFLAGS) -DTEST_MYPOPEN $(LDFLAGS) mypopen.c
+	$(CC) -o $@ $(CFLAGS) -DTEST_MYPOPEN $(LDFLAGS) mypopen.c $(SYSLIBS)
 
 tobjpool.exe: tobjpool.cc objpool.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) tobjpool.cc $(LIBS)
 
 cycles.exe: cycles.h cycles.c
-	$(CC) -o $@ $(CFLAGS) -DTEST_CYCLES $(LDFLAGS) cycles.c
+	$(CC) -o $@ $(CFLAGS) -DTEST_CYCLES $(LDFLAGS) cycles.c $(SYSLIBS)
 
 crc.exe: crc.cpp
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_CRC $(LDFLAGS) crc.cpp
+	$(CXX) -o $@ $(CXXFLAGS) -DTEST_CRC $(LDFLAGS) crc.cpp $(SYSLIBS)
 
 srcloc.exe: srcloc.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_SRCLOC $(LDFLAGS) srcloc.cc $(LIBS)
@@ -399,7 +402,7 @@ hashline.exe: hashline.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_HASHLINE $(LDFLAGS) hashline.cc $(LIBS)
 
 gprintf.exe: gprintf.c gprintf.h
-	$(CC) -o $@ $(CFLAGS) -DTEST_GPRINTF $(LDFLAGS) gprintf.c
+	$(CC) -o $@ $(CFLAGS) -DTEST_GPRINTF $(LDFLAGS) gprintf.c $(SYSLIBS)
 
 smregexp.exe: smregexp.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_SMREGEXP $(LDFLAGS) smregexp.cc $(LIBS)
