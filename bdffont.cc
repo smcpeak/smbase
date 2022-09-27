@@ -517,7 +517,6 @@ static void parseGlyph(char const *&p, BDFFont::Glyph *glyph,
                        BDFFont const &font)
 {
   bool sawBBX = false;
-  bool sawBITMAP = false;
 
   for (;;) {
     skipBlanks(p);
@@ -558,11 +557,6 @@ static void parseGlyph(char const *&p, BDFFont::Glyph *glyph,
         if (!sawBBX) {
           XFORMAT("encountered BITMAP before BBX");
         }
-
-        if (sawBITMAP) {
-          XFORMAT("more than one BITMAP section");
-        }
-        sawBITMAP = true;
 
         if (!glyph->metrics.bbSize.isZero()) {
           glyph->bitmap = new Bit2d(glyph->metrics.bbSize);
