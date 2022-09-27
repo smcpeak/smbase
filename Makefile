@@ -15,6 +15,10 @@ CC = gcc
 # C++ compiler.
 CXX = g++
 
+# To use Clang on Windows:
+#CC = clang.exe --target=x86_64-w64-windows-gnu
+#CXX = clang++.exe --target=x86_64-w64-windows-gnu
+
 # Flags to control generation of debug info.
 DEBUG_FLAGS = -g
 
@@ -26,6 +30,9 @@ OPTIMIZATION_FLAGS = -O2
 
 # Flags to control compiler warnings.
 WARNING_FLAGS =
+
+# To stop on warnings:
+#WARNING_FLAGS = -Wall -Werror
 
 # Warning flags for C++ specifically.
 CXX_WARNING_FLAGS =
@@ -89,6 +96,10 @@ GENSRC = 0
 # Set to 1 to compute code coverage.
 COVERAGE = 0
 
+# If 1, generate the *.o.json files used to create
+# compile_commands.json.  This requires that we are using Clang.
+CREATE_O_JSON_FILES = 0
+
 
 # ---- Automatic Configuration ----
 # Pull in settings from ./configure.  They override the defaults above,
@@ -129,13 +140,13 @@ include sm-lib.mk
 
 # Compile .cc to .o, also generating dependency files.
 %.o: %.cc
-	$(CXX) -c -o $@ $(GENDEPS_FLAGS) $(CXXFLAGS) $<
+	$(CXX) -c -o $@ $(GENDEPS_FLAGS) $(call MJ_FLAG,$*) $(CXXFLAGS) $<
 
 %.o: %.cpp
-	$(CXX) -c -o $@ $(GENDEPS_FLAGS) $(CXXFLAGS) $<
+	$(CXX) -c -o $@ $(GENDEPS_FLAGS) $(call MJ_FLAG,$*) $(CXXFLAGS) $<
 
 %.o: %.c
-	$(CC) -c -o $@ $(GENDEPS_FLAGS) $(CFLAGS) $<
+	$(CC) -c -o $@ $(GENDEPS_FLAGS) $(call MJ_FLAG,$*) $(CFLAGS) $<
 
 
 # $(PRE_TARGET) is usually nothing, but can be set in personal.mk to
@@ -734,14 +745,26 @@ gcov-clean:
 	$(RM) *.gcov *.gcda *.gcno
 
 
+# ----------------------- compile_commands.json ------------------------
+# Claim this is "phony" so we can regenerate with just "make
+# compile_commands.json".  Also, I do not clean this file so I can make
+# it using clang then switch back to gcc.
+.PHONY: compile_commands.json
+
+# This requires that the build was run with Clang and
+# CREATE_O_JSON_FILES.
+compile_commands.json:
+	(echo "["; cat *.o.json; echo "]") > $@
+
+
 # --------------------- clean --------------------
 # delete compiling/editing byproducts
 clean: gcov-clean
-	rm -f *.o *~ *.a *.d *.exe gmon.out srcloc.tmp testcout flattest.tmp
+	rm -f *.o *.o.json *~ *.a *.d *.exe gmon.out srcloc.tmp testcout flattest.tmp
 	rm -rf test.dir out
 
 distclean: clean
-	rm -f config.mk
+	rm -f config.mk compile_commands.json
 	rm -rf gendoc
 
 # remove crap that vc makes
