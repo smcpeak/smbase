@@ -669,6 +669,12 @@ rce-tests: out/rce_nostderr.ok
 rce-tests: out/rce_nostderr_nosep.ok
 
 
+# Test --chdir.
+RCE_CMD_chdir1 := --chdir fonts ls sample1.bdf
+
+rce-tests: out/rce_chdir1.ok
+
+
 .PHONY: rce-tests
 check: rce-tests
 
