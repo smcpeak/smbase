@@ -449,6 +449,7 @@ UNIT_TEST_OBJS += gcc-options-test.o
 UNIT_TEST_OBJS += map-utils-test.o
 UNIT_TEST_OBJS += overflow-test.o
 UNIT_TEST_OBJS += parsestring-test.o
+UNIT_TEST_OBJS += sm-pp-util-test.o
 UNIT_TEST_OBJS += sm-rc-ptr-test.o
 UNIT_TEST_OBJS += string-utils-test.o
 UNIT_TEST_OBJS += vector-utils-test.o

@@ -10,6 +10,7 @@
 #include "datablok.h"                  // test_datablok
 #include "overflow.h"                  // test_overflow
 #include "parsestring.h"               // test_parsestring
+#include "sm-pp-util.h"                // test_sm_pp_util
 #include "sm-test.h"                   // ARGS_TEST_MAIN
 #include "str.h"                       // streq
 
@@ -51,6 +52,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(map_utils);
   RUN_TEST(overflow);
   RUN_TEST(parsestring);
+  RUN_TEST(sm_pp_util);
   RUN_TEST(sm_rc_ptr);
   RUN_TEST(string_utils);
   RUN_TEST(vector_utils);
