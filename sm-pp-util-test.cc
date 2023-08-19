@@ -93,12 +93,61 @@ static void test_getEName()
 }
 
 
+#define QUALIFIED_ENUM_TABLE_LOOKUP_ENTRY(scopeQualifier, enumerator) \
+  { scopeQualifier enumerator, #enumerator },
+
+
+#define QUALIFIED_ENUM_TABLE_LOOKUP(scopeQualifier, EnumType, key, enumerators, ...) \
+  static struct Entry {                                                              \
+    scopeQualifier EnumType m_key;                                                   \
+    char const *m_value;                                                             \
+  } const entries[] = {                                                              \
+    SM_PP_MAP_WITH_ARG(QUALIFIED_ENUM_TABLE_LOOKUP_ENTRY, scopeQualifier,            \
+                       enumerators, __VA_ARGS__)                                     \
+  };                                                                                 \
+                                                                                     \
+  for (Entry const &e : entries) {                                                   \
+    if (e.m_key == key) {                                                            \
+      return e.m_value;                                                              \
+    }                                                                                \
+  }
+
+
+namespace NS {
+  enum AnotherEnum {
+    AE_Z,
+    AE_O,
+    AE_T
+  };
+}
+
+static char const *getAEName(NS::AnotherEnum key)
+{
+  QUALIFIED_ENUM_TABLE_LOOKUP(NS::, AnotherEnum, key,
+    AE_Z,
+    AE_O,
+    AE_T
+  )
+
+  return "none";
+}
+
+static void test_getAEName()
+{
+  assert(0==strcmp("AE_Z", getAEName(NS::AE_Z)));
+  assert(0==strcmp("AE_O", getAEName(NS::AE_O)));
+  assert(0==strcmp("AE_T", getAEName(NS::AE_T)));
+  assert(0==strcmp("none", getAEName(static_cast<NS::AnotherEnum>(7))));
+}
+
+
 void test_sm_pp_util()
 {
   test_not();
   test_bool();
   test_if_else();
   test_getEName();
+  test_getAEName();
 }
 
 

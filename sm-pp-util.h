@@ -135,6 +135,22 @@
 #define SM_PP_MAP(macro, ...) SM_PP_EVAL(SM_PP_PRIVATE_MAP_IMPL(macro, __VA_ARGS__))
 
 
+// Like 'SM_PP_MAP, but also pass 'arg' as the first argument to every
+// invocation of 'macro'.
+#define SM_PP_PRIVATE_MAP_WITH_ARG_IMPL(macro, arg, first, ...)                          \
+  SM_PP_IF_ELSE(SM_PP_PRIVATE_FIRST_IS_EMPTY(first))                                     \
+    ()                                                                                   \
+    (macro(arg, first)                                                                   \
+     SM_PP_PRIVATE_DEFER2(SM_PP_PRIVATE_MAP_WITH_ARG_HELPER)()(macro, arg, __VA_ARGS__))
+
+#define SM_PP_PRIVATE_MAP_WITH_ARG_HELPER() SM_PP_PRIVATE_MAP_WITH_ARG_IMPL
+
+
+// Apply 'macro' to all of the arguments.
+#define SM_PP_MAP_WITH_ARG(macro, arg, ...) \
+  SM_PP_EVAL(SM_PP_PRIVATE_MAP_WITH_ARG_IMPL(macro, arg, __VA_ARGS__))
+
+
 // Tests, defined in sm-pp-util-test.cc.
 void test_sm_pp_util();
 
