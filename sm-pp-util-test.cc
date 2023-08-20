@@ -141,6 +141,51 @@ static void test_getAEName()
 }
 
 
+// A list that can be re-used as an argument.
+#define ARGS (1,2,3)
+
+
+static void test_map_list()
+{
+  static struct Entry {
+    int n;
+  } const entries[] = {
+    #define ENTRY(arg) {arg},
+
+    SM_PP_MAP_LIST(ENTRY, ARGS)
+
+    #undef ENTRY
+  };
+
+  int sum=0;
+  for (Entry const &e : entries) {
+    sum += e.n;
+  }
+  assert(sum==6);
+}
+
+
+static void test_map_list_with_arg()
+{
+  static struct Entry {
+    int first;
+    int n;
+  } const entries[] = {
+    #define ENTRY(first, arg) {first, arg},
+
+    SM_PP_MAP_LIST_WITH_ARG(ENTRY, 7, ARGS)
+
+    #undef ENTRY
+  };
+
+  int sum=0;
+  for (Entry const &e : entries) {
+    sum += e.first + e.n;
+  }
+  assert(sum == 21 + 6);
+}
+
+
 void test_sm_pp_util()
 {
   test_not();
@@ -148,6 +193,8 @@ void test_sm_pp_util()
   test_if_else();
   test_getEName();
   test_getAEName();
+  test_map_list();
+  test_map_list_with_arg();
 }
 
 

@@ -96,7 +96,10 @@
 #define SM_PP_PRIVATE_DEFER2(macro) macro SM_PP_PRIVATE_EMPTY SM_PP_PRIVATE_EMPTY()()
 
 
-// Return the first argument.
+// Return the first argument:
+//
+//   SM_PP_PRIVATE_FIRST(1, 2, 3) -> 1
+//
 #define SM_PP_PRIVATE_FIRST(a, ...) a
 
 
@@ -131,11 +134,40 @@
 #define SM_PP_PRIVATE_MAP_HELPER() SM_PP_PRIVATE_MAP_IMPL
 
 
-// Apply 'macro' to all of the arguments.
+// Apply 'macro' to all of the arguments:
+//
+//   SM_PP_MAP(foo, 1, 2, 3) -> foo(1) foo(2) foo(3)
+//
 #define SM_PP_MAP(macro, ...) SM_PP_EVAL(SM_PP_PRIVATE_MAP_IMPL(macro, __VA_ARGS__))
 
 
-// Like 'SM_PP_MAP, but also pass 'arg' as the first argument to every
+// Remove a layer of parentheses from the argument list:
+//
+//   SM_PP_EATPARENS(1,2,3) -> 1,2,3
+//
+#define SM_PP_EATPARENS(...) __VA_ARGS__
+
+// Prepend an element to a parenthesized list:
+//
+//   SM_PP_PREPEND(1, (2,3)) -> (1,2,3)
+//
+#define SM_PP_PREPEND(first, ...) (first, SM_PP_EATPARENS __VA_ARGS__)
+
+// Apply a macro to a parentheszied argument list:
+//
+//   SM_PP_APPLY(foo, (1,2,3)) -> foo(1,2,3)
+//
+#define SM_PP_APPLY(macro, arglist) macro arglist
+
+// Invoke 'macro' on each element of parenthesized 'arglist':
+//
+//   SM_PP_MAP_LIST(foo, (1,2,3)) -> foo(1) foo(2) foo(3)
+//
+#define SM_PP_MAP_LIST(macro, arglist) \
+  SM_PP_APPLY(SM_PP_MAP, SM_PP_PREPEND(macro, arglist))
+
+
+// Like 'SM_PP_MAP', but also pass 'arg' as the first argument to every
 // invocation of 'macro'.
 #define SM_PP_PRIVATE_MAP_WITH_ARG_IMPL(macro, arg, first, ...)                          \
   SM_PP_IF_ELSE(SM_PP_PRIVATE_FIRST_IS_EMPTY(first))                                     \
@@ -146,9 +178,21 @@
 #define SM_PP_PRIVATE_MAP_WITH_ARG_HELPER() SM_PP_PRIVATE_MAP_WITH_ARG_IMPL
 
 
-// Apply 'macro' to all of the arguments.
+// Apply 'macro' to all of the arguments, with an initial 'arg':
+//
+//   SM_PP_MAP_WITH_ARG(foo, 0, 1, 2, 3) -> foo(0,1) foo(0,2) foo(0,3)
+//
 #define SM_PP_MAP_WITH_ARG(macro, arg, ...) \
   SM_PP_EVAL(SM_PP_PRIVATE_MAP_WITH_ARG_IMPL(macro, arg, __VA_ARGS__))
+
+
+// Apply 'macro' to all elements of the parenthesized 'arglist', with an
+// initial 'arg':
+//
+//   SM_PP_MAP_LIST_WITH_ARG(foo, 0, (1, 2, 3)) -> foo(0,1) foo(0,2) foo(0,3)
+//
+#define SM_PP_MAP_LIST_WITH_ARG(macro, arg, arglist) \
+  SM_PP_APPLY(SM_PP_MAP_WITH_ARG, SM_PP_PREPEND(macro, SM_PP_PREPEND(arg, arglist)))
 
 
 // Tests, defined in sm-pp-util-test.cc.
