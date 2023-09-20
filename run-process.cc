@@ -237,7 +237,7 @@ bool RunProcess::interrupted() const
     return getSignal() == STATUS_CONTROL_C_EXIT;
   }
   else if (PLATFORM_IS_POSIX) {
-    return getSignal() == SIGINT;
+    return getSignal() == POSIX_SIGINT;
   }
   else {
     xfailure("run-process.cc: unknown platform");
@@ -253,7 +253,7 @@ bool RunProcess::aborted() const
   }
 
   if (PLATFORM_IS_POSIX) {
-    return getSignal() == SIGABRT;
+    return getSignal() == POSIX_SIGABRT;
   }
   else {
     // At least when using Cygwin, 'abort()' looks the same to the

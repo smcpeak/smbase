@@ -165,13 +165,17 @@ static void testAborted()
   cout << "-- testAborted --\n";
   RunProcess rproc;
   rproc.setCommand(std::vector<string>{programName, "--abort"});
-  rproc.runAndWait();
 
   if (PLATFORM_IS_POSIX) {
+    rproc.runAndWait();
     xassert(rproc.aborted());
   }
   else {
     // The 'aborted' function does not work on Windows, so just skip it.
+
+    // Under winlibs mingw64, 'abort()' pops up the annoying dialog box
+    // about reporting the problem to Microsoft, so do not even run the
+    // child process.
   }
 }
 

@@ -23,6 +23,9 @@
 #include <sys/wait.h>                  // waitpid
 #include <unistd.h>                    // fork, exec
 
+#define POSIX_SIGINT SIGINT
+#define POSIX_SIGABRT SIGABRT
+
 
 #else // PLATFORM_IS_POSIX
 
@@ -33,6 +36,14 @@ pid_t waitpid(pid_t pid, int *stat_loc, int options);
 #define WEXITSTATUS(s) 0
 #define WIFSIGNALED(s) 0
 #define WTERMSIG(s) 0
+
+// Arbitrary values; these are only meant to be used inside an 'if'
+// that is disabled for non-POSIX.
+//
+// I can't use SIGINT and SIGABRT themselves because, at least with
+// winlibs mingw64, they are not defined.
+#define POSIX_SIGINT 2
+#define POSIX_SIGABRT 5
 
 
 #endif // PLATFORM_IS_POSIX
