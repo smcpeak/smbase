@@ -39,14 +39,22 @@ public:      // methods
   virtual ~RefCountObject();
 
   // A newly-created copy also has an initial count of zero.
-  RefCountObject(RefCountObject const &obj)
+  //
+  // This accepts an 'obj' parameter to match the signature of a copy
+  // constructor, but it doesn't do anything with it because here we
+  // are just initializing the reference count.
+  RefCountObject(RefCountObject const & /*obj*/)
     : m_referenceCount(0)
   {
     ++s_objectCount;
   }
 
   // Copy assignment does *not* alter the reference count.
-  RefCountObject& operator= (RefCountObject const &obj)
+  //
+  // Like with the copy ctor, this accepts 'obj' to have the right
+  // signature, but nothing is done with it since its refcount is not
+  // relevant.
+  RefCountObject& operator= (RefCountObject const & /*obj*/)
   {
     return *this;
   }

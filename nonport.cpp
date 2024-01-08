@@ -49,16 +49,13 @@
 #include <sys/stat.h>     // chmod, mode macros
 #include <time.h>         // tzset, localtime, time
 #include "sm-iostream.h"  // cout
+#include "sm-macros.h"    // PRETEND_USED
 
 #if !defined(__WIN32__) || defined(__BORLANDC__)
   #include <dirent.h>       // opendir
 #endif
 
 #include "nonport.h"      // this module
-
-#include <chrono>         // std::chrono::milliseconds
-#include <thread>         // std::this_thread
-
 
 
 NonportFailFunc nonportFail = defaultNonportFail;
@@ -77,6 +74,7 @@ void setRawMode(bool raw)
 {
 # ifdef __WIN32__
     // nothing necessary; getConsoleChar handles it
+    PRETEND_USED(raw);
 
 # else
     int res;
@@ -239,10 +237,23 @@ void portableSleep(unsigned seconds)
 
 void sleepForMilliseconds(unsigned ms)
 {
-  // This depends on C++11, and might require linking with pthreads.  If
-  // either of those become a problem, I will provide an alternative
-  // implementation.
-  std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+  #if defined(__WIN32__)
+    Sleep(ms);
+  #else
+    // Let's hope that 'usleep' is available.
+    usleep(ms * (useconds_t)1000);
+  #endif
+
+  // This depends on C++11, and requires linking with pthreads on
+  // Windows (which is implicit with Mingw GCC but not Clang), so I am
+  // not using it anymore.
+  #if 0
+    // Would also be needed at the top:
+    #include <chrono>         // std::chrono::milliseconds
+    #include <thread>         // std::this_thread
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+  #endif
 }
 
 
@@ -350,7 +361,7 @@ void applyToDirContents(char const *dirName,
     if (buf[strlen(buf)-1] != '\\') strcat(buf, "\\");
     strcat(buf, "*");
     intptr_t handle = _findfirst(buf, &fb);
-    delete buf;
+    delete[] buf;
     int done = (handle == -1);
     if (handle == -1 && errno != ENOENT) // ENOENT = no matching entries
       fail("_findfirst", dirName);
@@ -585,7 +596,7 @@ int getProcessId()
   // no vsnprintf, will use gprintf (which is slow, and overestimates sometimes)
   #include "gprintf.h"        // general_vprintf
 
-  static int counting_output_function(void *extra, int ch)
+  static int counting_output_function(void *extra, int /*ch*/)
   {
     // 'extra' is a pointer to the count
     int *ct = (int*)extra;

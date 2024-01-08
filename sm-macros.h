@@ -299,6 +299,14 @@ public:
   ENUM_BITWISE_NOT(Type, ALL)
 
 
+// Iterate over the elements of 'Enumeration', assuming that the first
+// element has code 0.
+#define FOR_EACH_ENUM_ELEMENT(Enumeration, NUM_ELTS, iter) \
+  for (Enumeration iter = static_cast<Enumeration>(0);     \
+       iter < NUM_ELTS;                                    \
+       iter = static_cast<Enumeration>(iter+1))
+
+
 // macro to conditionalize something on NDEBUG; I typically use this
 // to hide the declaration of a variable whose value is only used by
 // debugging trace statements (and thus provokes warnings about unused
@@ -352,15 +360,20 @@ public:
 #define DEFINE_ENUMERATION_TO_STRING(Enumeration, NUM_VALUES, nameList) \
   char const *toString(Enumeration value)                               \
   {                                                                     \
-    static char const * const names[] =                                 \
-      { SMBASE_PP_UNWRAP_PARENS nameList };                             \
-    ASSERT_TABLESIZE(names, (NUM_VALUES));                              \
-    if ((unsigned)value < TABLESIZE(names)) {                           \
-      return names[value];                                              \
-    }                                                                   \
-    else {                                                              \
-      return "unknown";                                                 \
-    }                                                                   \
+    RETURN_ENUMERATION_STRING(Enumeration, NUM_VALUES, nameList, value) \
+  }
+
+// The core of the enum-to-string logic, exposed separately so I can use
+// it to define functions not called 'toString()'.
+#define RETURN_ENUMERATION_STRING(Enumeration, NUM_VALUES, nameList, value) \
+  static char const * const names[] =                                       \
+    { SMBASE_PP_UNWRAP_PARENS nameList };                                   \
+  ASSERT_TABLESIZE(names, (NUM_VALUES));                                    \
+  if ((unsigned)value < TABLESIZE(names)) {                                 \
+    return names[value];                                                    \
+  }                                                                         \
+  else {                                                                    \
+    return "unknown";                                                       \
   }
 
 

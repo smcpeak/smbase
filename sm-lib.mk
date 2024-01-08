@@ -24,6 +24,18 @@ endef
 CREATE_OUTPUT_DIRECTORY = @mkdir -p $(dir $@)
 
 
+# If CREATE_O_JSON_FILES, then $(call MJ_FLAG,filename) will expand to
+# -MJfilename.o.json, which is understood by Clang.
+ifeq ($(CREATE_O_JSON_FILES),1)
+define MJ_FLAG
+-MJ$1.o.json
+endef
+else
+define MJ_FLAG
+endef
+endif
+
+
 # Eliminate all implicit rules.
 .SUFFIXES:
 
