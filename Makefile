@@ -66,6 +66,10 @@ CXXFLAGS = $(DEBUG_FLAGS) $(OPTIMIZATION_FLAGS) $(WARNING_FLAGS) $(CXX_WARNING_F
 # System libraries needed.
 SYSLIBS =
 
+# Math library for executables that use floating-point functions.  I
+# haven't historically needed this, but now I do with GCC 9.3 on Linux?
+MATHLIB = -lm
+
 # Libraries to link with when creating test executables.
 LIBS = $(THIS) $(SYSLIBS)
 
@@ -445,7 +449,7 @@ bitarray.exe: bitarray.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_BITARRAY $(LDFLAGS) bitarray.cc $(LIBS)
 
 d2vector.exe: d2vector.c $(THIS)
-	$(CC) -o $@ $(CFLAGS) -DTEST_D2VECTOR $(LDFLAGS) d2vector.c $(LIBS)
+	$(CC) -o $@ $(CFLAGS) -DTEST_D2VECTOR $(LDFLAGS) d2vector.c $(LIBS) $(MATHLIB)
 
 bdffont.exe: bdffont.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_BDFFONT $(LDFLAGS) bdffont.cc $(LIBS)
