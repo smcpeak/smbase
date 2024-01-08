@@ -20,7 +20,7 @@ public:      // data
 
 public:      // funcs
   Integer(int i) : m_i(i) {}
-  Integer(Integer const &obj) : m_i(obj.m_i) {}
+  Integer(Integer const &obj) : SerfRefCount(), m_i(obj.m_i) {}
 
   Integer& operator= (Integer const &obj)
   {

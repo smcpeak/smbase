@@ -530,7 +530,7 @@ int main(int argc, char **argv)
   test(1);
 
   cout << "stringf: " << stringf("int=%d hex=%X str=%s char=%c float=%f",
-                                 5, 0xAA, "hi", 'f', 3.4) << endl;
+                                 argc, 0xAA, "hi", 'f', 3.4) << endl;
 
   cout << "ptr: " << stringb(argv) << endl;
 

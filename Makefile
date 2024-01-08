@@ -28,13 +28,18 @@ GENDEPS_FLAGS = -MMD
 # Flags to control optimization.
 OPTIMIZATION_FLAGS = -O2
 
-# Flags to control compiler warnings.
+# Flags to control compiler warnings.  The default is no warnings since
+# it's aimed at people just using the library rather than developing it.
 WARNING_FLAGS =
 
-# To stop on warnings:
+# Normal developer flags, which stop on warnings:
 #WARNING_FLAGS = -Wall -Werror
 
-# Warning flags for C++ specifically.
+# More warnings, but also disabling some that I don't want to fix.
+#WARNING_FLAGS = -Wall -Werror -Wextra -Wno-type-limits -Wno-cast-function-type
+
+# Warning flags for C++ specifically.  These are added to
+# $(WARINING_FLAGS) for C++ compilation.
 CXX_WARNING_FLAGS =
 
 # Flags for C or C++ standard to use.

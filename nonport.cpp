@@ -49,6 +49,7 @@
 #include <sys/stat.h>     // chmod, mode macros
 #include <time.h>         // tzset, localtime, time
 #include "sm-iostream.h"  // cout
+#include "sm-macros.h"    // PRETEND_USED
 
 #if !defined(__WIN32__) || defined(__BORLANDC__)
   #include <dirent.h>       // opendir
@@ -73,6 +74,7 @@ void setRawMode(bool raw)
 {
 # ifdef __WIN32__
     // nothing necessary; getConsoleChar handles it
+    PRETEND_USED(raw);
 
 # else
     int res;
@@ -594,7 +596,7 @@ int getProcessId()
   // no vsnprintf, will use gprintf (which is slow, and overestimates sometimes)
   #include "gprintf.h"        // general_vprintf
 
-  static int counting_output_function(void *extra, int ch)
+  static int counting_output_function(void *extra, int /*ch*/)
   {
     // 'extra' is a pointer to the count
     int *ct = (int*)extra;
