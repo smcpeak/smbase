@@ -14,7 +14,7 @@
   #include <io.h>                      // _setmode
 #else
   // Dummy definitions so the inactive code can compile.
-  static int _setmode(int fd, int mode) { return 0; }
+  static int _setmode(int /*fd*/, int /*mode*/) { return 0; }
   #define _O_BINARY 0
 #endif
 
