@@ -114,7 +114,7 @@ void x_assert_fail(char const *cond, char const *file, int line)
 
 // --------------- xFormat ------------------
 xFormat::xFormat(rostring cond)
-  : xBase(stringb("Formatting error: " << cond)),
+  : xBase(cond),
     condition(cond)
 {}
 
@@ -138,89 +138,6 @@ void formatAssert_fail(char const *cond, char const *file, int line)
   xFormat x(stringc << "format assertion failed, "
                     << file << ":" << line << ": "
                     << cond);
-  THROW(x);
-}
-
-
-// -------------------- XOpen -------------------
-XOpen::XOpen(rostring fname)
-  : xBase(stringc << "failed to open file: " << fname),
-    filename(fname)
-{}
-
-XOpen::XOpen(XOpen const &obj)
-  : xBase(obj),
-    DMEMB(filename)
-{}
-
-XOpen::~XOpen()
-{}
-
-
-void throw_XOpen(rostring fname)
-{
-  XOpen x(fname);
-  THROW(x);
-}
-
-
-// -------------------- XOpenEx ---------------------
-XOpenEx::XOpenEx(rostring fname, rostring m, rostring c)
-  : XOpen(fname),
-    mode(m),
-    cause(c)
-{
-  msg = stringc << "failed to open file \"" << fname
-                << "\" for " << interpretMode(mode)
-                << ": " << cause;
-}
-
-XOpenEx::XOpenEx(XOpenEx const &obj)
-  : XOpen(obj),
-    DMEMB(mode),
-    DMEMB(cause)
-{}
-
-XOpenEx::~XOpenEx()
-{}
-
-
-STATICDEF string XOpenEx::interpretMode(rostring mode)
-{
-  if (mode[0]=='r') {
-    if (mode[1]=='+') {
-      return "reading and writing";
-    }
-    else {
-      return "reading";
-    }
-  }
-
-  if (mode[0]=='w') {
-    if (mode[1]=='+') {
-      return "reading and writing";
-    }
-    else {
-      return "writing";
-    }
-  }
-
-  if (mode[0]=='a') {
-    if (mode[1]=='+') {
-      return "reading and appending";
-    }
-    else {
-      return "appending";
-    }
-  }
-
-  return stringc << "(unknown action mode \"" << mode << "\")";
-}
-
-
-void throw_XOpenEx(rostring fname, rostring mode, rostring cause)
-{
-  XOpenEx x(fname, mode, cause);
   THROW(x);
 }
 

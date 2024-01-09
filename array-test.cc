@@ -89,9 +89,23 @@ static void testEmbedArraySort()
 }
 
 
+static void testAsVector()
+{
+  ArrayStack<int> stk;
+  xassert(stk.asVector() == std::vector<int>{});
+
+  stk.push(1);
+  xassert(stk.asVector() == std::vector<int>{1});
+
+  stk.push(2);
+  xassert((stk.asVector() == std::vector<int>{1, 2}));
+}
+
+
 void test_array()
 {
   testEmbedArraySort();
+  testAsVector();
 }
 
 

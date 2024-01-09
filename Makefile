@@ -15,6 +15,10 @@ CC = gcc
 # C++ compiler.
 CXX = g++
 
+# To use Clang on Windows:
+#CC = clang.exe --target=x86_64-w64-windows-gnu
+#CXX = clang++.exe --target=x86_64-w64-windows-gnu
+
 # Flags to control generation of debug info.
 DEBUG_FLAGS = -g
 
@@ -24,10 +28,18 @@ GENDEPS_FLAGS = -MMD
 # Flags to control optimization.
 OPTIMIZATION_FLAGS = -O2
 
-# Flags to control compiler warnings.
+# Flags to control compiler warnings.  The default is no warnings since
+# it's aimed at people just using the library rather than developing it.
 WARNING_FLAGS =
 
-# Warning flags for C++ specifically.
+# Normal developer flags, which stop on warnings:
+#WARNING_FLAGS = -Wall -Werror
+
+# More warnings, but also disabling some that I don't want to fix.
+#WARNING_FLAGS = -Wall -Werror -Wextra -Wno-type-limits -Wno-cast-function-type
+
+# Warning flags for C++ specifically.  These are added to
+# $(WARINING_FLAGS) for C++ compilation.
 CXX_WARNING_FLAGS =
 
 # Flags for C or C++ standard to use.
@@ -51,8 +63,15 @@ CPPFLAGS = $(INCLUDES) $(DEFINES)
 CFLAGS   = $(DEBUG_FLAGS) $(OPTIMIZATION_FLAGS) $(WARNING_FLAGS) $(C_STD_FLAGS) $(CPPFLAGS)
 CXXFLAGS = $(DEBUG_FLAGS) $(OPTIMIZATION_FLAGS) $(WARNING_FLAGS) $(CXX_WARNING_FLAGS) $(CXX_STD_FLAGS) $(CPPFLAGS)
 
+# System libraries needed.
+SYSLIBS =
+
+# Math library for executables that use floating-point functions.  I
+# haven't historically needed this, but now I do with GCC 9.3 on Linux?
+MATHLIB = -lm
+
 # Libraries to link with when creating test executables.
-LIBS = $(THIS)
+LIBS = $(THIS) $(SYSLIBS)
 
 # Flags to add to a link command *in addition* to either $(CFLAGS) or
 # $(CXXFLAGS), depending on whether C++ modules are included.
@@ -67,7 +86,7 @@ PYTHON3 = python3
 RUN_COMPARE_EXPECT = $(PYTHON3) ./run-compare-expect.py
 
 # This invokes a script called 'mygcov', which is a personal wrapper
-# around 'gcov' that filters out some common false positives.  This
+# around 'gcov' that filters out some common false positives.  You
 # could just replace this with 'gcov' if you don't have that script.
 GCOV = mygcov
 
@@ -85,6 +104,10 @@ GENSRC = 0
 
 # Set to 1 to compute code coverage.
 COVERAGE = 0
+
+# If 1, generate the *.o.json files used to create
+# compile_commands.json.  This requires that we are using Clang.
+CREATE_O_JSON_FILES = 0
 
 
 # ---- Automatic Configuration ----
@@ -126,13 +149,13 @@ include sm-lib.mk
 
 # Compile .cc to .o, also generating dependency files.
 %.o: %.cc
-	$(CXX) -c -o $@ $(GENDEPS_FLAGS) $(CXXFLAGS) $<
+	$(CXX) -c -o $@ $(GENDEPS_FLAGS) $(call MJ_FLAG,$*) $(CXXFLAGS) $<
 
 %.o: %.cpp
-	$(CXX) -c -o $@ $(GENDEPS_FLAGS) $(CXXFLAGS) $<
+	$(CXX) -c -o $@ $(GENDEPS_FLAGS) $(call MJ_FLAG,$*) $(CXXFLAGS) $<
 
 %.o: %.c
-	$(CC) -c -o $@ $(GENDEPS_FLAGS) $(CFLAGS) $<
+	$(CC) -c -o $@ $(GENDEPS_FLAGS) $(call MJ_FLAG,$*) $(CFLAGS) $<
 
 
 # $(PRE_TARGET) is usually nothing, but can be set in personal.mk to
@@ -196,6 +219,7 @@ SRCS :=
 SRCS += autofile.cc
 SRCS += bdffont.cc
 SRCS += bflatten.cc
+SRCS += binary-stdin.cc
 SRCS += bit2d.cc
 SRCS += bitarray.cc
 SRCS += boxprint.cc
@@ -272,11 +296,13 @@ $(THIS): $(OBJS)
 
 
 # ---------- module tests ----------------
-# test program targets
+# Test program targets.
+#
+# TODO: I would like to eliminate these stand-alone test programs in
+# favor of testing as much as possible from unit-tests.exe.
 TESTS :=
 TESTS += autofile.exe
 TESTS += bdffont.exe
-TESTS += bflatten.exe
 TESTS += bit2d.exe
 TESTS += bitarray.exe
 TESTS += boxprint.exe
@@ -333,7 +359,7 @@ tests: $(TESTS)
 
 # this one is explicitly *not* linked against $(THIS)
 nonport.exe: nonport.cpp nonport.h gprintf.o
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cpp gprintf.o
+	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cpp gprintf.o $(SYSLIBS)
 
 voidlist.exe: voidlist.cc voidlist.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_VOIDLIST $(LDFLAGS) voidlist.cc $(LIBS)
@@ -374,23 +400,20 @@ strhash.exe: strhash.cc strhash.h $(THIS)
 trdelete.exe: trdelete.cc trdelete.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_TRDELETE $(LDFLAGS) trdelete.cc $(LIBS)
 
-bflatten.exe: bflatten.cc bflatten.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_BFLATTEN $(LDFLAGS) bflatten.cc $(LIBS)
-
 mysig.exe: mysig.cc mysig.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_MYSIG $(LDFLAGS) mysig.cc $(LIBS)
 
 mypopen.exe: mypopen.c mypopen.h
-	$(CC) -o $@ $(CFLAGS) -DTEST_MYPOPEN $(LDFLAGS) mypopen.c
+	$(CC) -o $@ $(CFLAGS) -DTEST_MYPOPEN $(LDFLAGS) mypopen.c $(SYSLIBS)
 
 tobjpool.exe: tobjpool.cc objpool.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) tobjpool.cc $(LIBS)
 
 cycles.exe: cycles.h cycles.c
-	$(CC) -o $@ $(CFLAGS) -DTEST_CYCLES $(LDFLAGS) cycles.c
+	$(CC) -o $@ $(CFLAGS) -DTEST_CYCLES $(LDFLAGS) cycles.c $(SYSLIBS)
 
 crc.exe: crc.cpp
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_CRC $(LDFLAGS) crc.cpp
+	$(CXX) -o $@ $(CXXFLAGS) -DTEST_CRC $(LDFLAGS) crc.cpp $(SYSLIBS)
 
 srcloc.exe: srcloc.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_SRCLOC $(LDFLAGS) srcloc.cc $(LIBS)
@@ -399,7 +422,7 @@ hashline.exe: hashline.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_HASHLINE $(LDFLAGS) hashline.cc $(LIBS)
 
 gprintf.exe: gprintf.c gprintf.h
-	$(CC) -o $@ $(CFLAGS) -DTEST_GPRINTF $(LDFLAGS) gprintf.c
+	$(CC) -o $@ $(CFLAGS) -DTEST_GPRINTF $(LDFLAGS) gprintf.c $(SYSLIBS)
 
 smregexp.exe: smregexp.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_SMREGEXP $(LDFLAGS) smregexp.cc $(LIBS)
@@ -426,7 +449,7 @@ bitarray.exe: bitarray.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_BITARRAY $(LDFLAGS) bitarray.cc $(LIBS)
 
 d2vector.exe: d2vector.c $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_D2VECTOR $(LDFLAGS) d2vector.c $(LIBS)
+	$(CC) -o $@ $(CFLAGS) -DTEST_D2VECTOR $(LDFLAGS) d2vector.c $(LIBS) $(MATHLIB)
 
 bdffont.exe: bdffont.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_BDFFONT $(LDFLAGS) bdffont.cc $(LIBS)
@@ -434,20 +457,27 @@ bdffont.exe: bdffont.cc $(THIS)
 tarray2d.exe: tarray2d.cc array2d.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_TARRAY2D $(LDFLAGS) tarray2d.cc $(LIBS)
 
-# TODO: Rename the modules that begin with "test" to end with it instead.
+# Component test modules.
+#
+# The naming convention is "<module>-test" so that, in an alphabetic
+# file name listing, the test is next to the module it tests.
 UNIT_TEST_OBJS :=
 UNIT_TEST_OBJS += array-test.o
 UNIT_TEST_OBJS += astlist-test.o
+UNIT_TEST_OBJS += bflatten-test.o
+UNIT_TEST_OBJS += datablok-test.o
+UNIT_TEST_OBJS += dict-test.o
 UNIT_TEST_OBJS += functional-set-test.o
 UNIT_TEST_OBJS += gcc-options-test.o
 UNIT_TEST_OBJS += map-utils-test.o
+UNIT_TEST_OBJS += overflow-test.o
+UNIT_TEST_OBJS += parsestring-test.o
+UNIT_TEST_OBJS += sm-pp-util-test.o
 UNIT_TEST_OBJS += sm-rc-ptr-test.o
 UNIT_TEST_OBJS += string-utils-test.o
-UNIT_TEST_OBJS += test-dict.o
-UNIT_TEST_OBJS += test-datablok.o
-UNIT_TEST_OBJS += test-overflow.o
-UNIT_TEST_OBJS += test-parsestring.o
-UNIT_TEST_OBJS += test-vector-utils.o
+UNIT_TEST_OBJS += vector-utils-test.o
+
+# Master unit test module.
 UNIT_TEST_OBJS += unit-tests.o
 
 -include $(UNIT_TEST_OBJS:.o=.d)
@@ -457,10 +487,20 @@ unit-tests.exe: $(UNIT_TEST_OBJS) $(THIS)
 
 all: unit-tests.exe
 
+
 # Rule for tests that have dedicated .cc files, which is what I
 # would like to transition toward.
+#
+# Well, I would like to transition *away* from having tests inside the
+# main .cc file.  But, preferably, tests are run from the main unit test
+# program rather than as stand-alone programs.
+#
 test-%.exe: test-%.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) test-$*.cc $(LIBS)
+
+# Same rule but for the other way of naming, which I am slowly adopting.
+%-test.exe: %-test.cc $(THIS)
+	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $*-test.cc $(LIBS)
 
 
 # Create a read-only file I can try to inspect in test-sm-file-util.cc.
@@ -488,6 +528,43 @@ check: out/boxprint.ok
 check: out/test-tree-print.ok
 
 
+# ------------------------- binary-stdin-test --------------------------
+all: binary-stdin-test.exe
+
+out/binary-stdin-test.ok: binary-stdin-test.exe
+	@mkdir -p $(dir $@)
+	@#
+	@# Generate a file with all 256 bytes.
+	./binary-stdin-test.exe allbytes out/allbytes.bin
+	@#
+	@# Test reading stdin with 'read'.
+	./binary-stdin-test.exe read0 allbytes < out/allbytes.bin
+	@#
+	@# Test writing stdout with 'write'.
+	./binary-stdin-test.exe allbytes write1 > out/allbytes-actual.bin
+	cmp out/allbytes-actual.bin out/allbytes.bin
+	@#
+	@# Test reading stdin with 'fread'.
+	./binary-stdin-test.exe fread_stdin allbytes < out/allbytes.bin
+	@#
+	@# Test writing stdout with 'fwrite'.
+	./binary-stdin-test.exe allbytes fwrite_stdout > out/allbytes-actual.bin
+	cmp out/allbytes-actual.bin out/allbytes.bin
+	@#
+	@# Test reading stdin with 'cin.read'.
+	./binary-stdin-test.exe cin_read allbytes < out/allbytes.bin
+	@#
+	@# Test writing stdout with 'cout.write'
+	./binary-stdin-test.exe allbytes cout_write > out/allbytes-actual.bin
+	cmp out/allbytes-actual.bin out/allbytes.bin
+	@#
+	@# Done.
+	touch $@
+
+check: out/binary-stdin-test.ok
+
+
+# ------------------------------- check --------------------------------
 ifneq ($(CROSS_COMPILE),1)
   RUN :=
 else
@@ -512,7 +589,6 @@ check: $(TESTS)
 	$(RUN)./strutil.exe
 	$(RUN)./strhash.exe
 	$(RUN)./trdelete.exe
-	$(RUN)./bflatten.exe
 	$(RUN)./tobjpool.exe
 	$(RUN)./cycles.exe
 	$(RUN)./tsobjlist.exe
@@ -617,6 +693,12 @@ rce-tests: out/rce_nostderr.ok
 rce-tests: out/rce_nostderr_nosep.ok
 
 
+# Test --chdir.
+RCE_CMD_chdir1 := --chdir fonts ls sample1.bdf
+
+rce-tests: out/rce_chdir1.ok
+
+
 .PHONY: rce-tests
 check: rce-tests
 
@@ -679,14 +761,26 @@ gcov-clean:
 	$(RM) *.gcov *.gcda *.gcno
 
 
+# ----------------------- compile_commands.json ------------------------
+# Claim this is "phony" so we can regenerate with just "make
+# compile_commands.json".  Also, I do not clean this file so I can make
+# it using clang then switch back to gcc.
+.PHONY: compile_commands.json
+
+# This requires that the build was run with Clang and
+# CREATE_O_JSON_FILES.
+compile_commands.json:
+	(echo "["; cat *.o.json; echo "]") > $@
+
+
 # --------------------- clean --------------------
 # delete compiling/editing byproducts
 clean: gcov-clean
-	rm -f *.o *~ *.a *.d *.exe gmon.out srcloc.tmp testcout flattest.tmp
+	rm -f *.o *.o.json *~ *.a *.d *.exe gmon.out srcloc.tmp testcout flattest.tmp
 	rm -rf test.dir out
 
 distclean: clean
-	rm -f config.mk
+	rm -f config.mk compile_commands.json
 	rm -rf gendoc
 
 # remove crap that vc makes

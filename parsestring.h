@@ -100,7 +100,7 @@ public:      // funcs
 };
 
 
-// Unit tests, in test-parsestring.cc.
+// Unit tests, in parsestring-test.cc.
 void test_parsestring();
 
 

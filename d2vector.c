@@ -8,6 +8,7 @@
 
 // Get M_PI, a POSIX extension, from math.h.
 #define _USE_MATH_DEFINES
+#undef __STRICT_ANSI__  // Need this too with -std=c99.
 
 #include "d2vector.h"   // this module
 

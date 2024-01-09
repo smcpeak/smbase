@@ -63,6 +63,30 @@ std::string join(std::vector<std::string> const &vec,
 }
 
 
+std::vector<std::string> prefixAll(std::vector<std::string> const &vec,
+                                   std::string const &prefix)
+{
+  std::vector<std::string> ret;
+  ret.reserve(vec.size());
+  for (auto const &s : vec) {
+    ret.push_back(prefix + s);
+  }
+  return ret;
+}
+
+
+std::vector<std::string> suffixAll(std::vector<std::string> const &vec,
+                                   std::string const &suffix)
+{
+  std::vector<std::string> ret;
+  ret.reserve(vec.size());
+  for (auto const &s : vec) {
+    ret.push_back(s + suffix);
+  }
+  return ret;
+}
+
+
 void insertDoubleQuoted(std::ostream &os, std::string const &str)
 {
   os << '"' << std::oct;

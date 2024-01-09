@@ -10,7 +10,7 @@
 // libc++
 #include <map>                         // std::map
 #include <set>                         // set::set
-#include <utility>                     // std::make_pair
+#include <utility>                     // std::make_pair, std::move
 
 
 // Return the set of keys in 'm'.
@@ -57,6 +57,15 @@ template <class K, class V>
 void insertMapUnique(std::map<K,V> &map, K const &k, V const &v)
 {
   auto it = map.insert(std::make_pair(k, v));
+  xassert(it.second);
+}
+
+
+// Insert '(k,v)' into 'm', moving 'v'.  Throw if 'k' is already mapped.
+template <class K, class V>
+void insertMapUniqueMove(std::map<K,V> &map, K const &k, V &&v)
+{
+  auto it = map.insert(std::make_pair(k, std::move(v)));
   xassert(it.second);
 }
 

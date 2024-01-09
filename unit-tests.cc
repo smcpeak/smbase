@@ -10,18 +10,20 @@
 #include "datablok.h"                  // test_datablok
 #include "overflow.h"                  // test_overflow
 #include "parsestring.h"               // test_parsestring
+#include "sm-pp-util.h"                // test_sm_pp_util
 #include "sm-test.h"                   // ARGS_TEST_MAIN
 #include "str.h"                       // streq
 
 void test_array();                     // array-test.cc
 void test_astlist();                   // astlist-test.cc
-void test_dict();                      // test-dict.cc
+void test_bflatten();                  // bflatten-test.cc
+void test_dict();                      // dict-test.cc
 void test_functional_set();            // functional-set-test.cc
 void test_gcc_options();               // gcc-options-test.cc
 void test_map_utils();                 // map-utils-test.cc
 void test_sm_rc_ptr();                 // sm-rc-ptr-test.cc
 void test_string_utils();              // string-utils-test.cc
-void test_vector_utils();              // test-vector-utils.cc
+void test_vector_utils();              // vector-utils-test.cc
 
 
 static void entry(int argc, char **argv)
@@ -42,6 +44,7 @@ static void entry(int argc, char **argv)
 
   RUN_TEST(array);
   RUN_TEST(astlist);
+  RUN_TEST(bflatten);
   RUN_TEST(datablok);
   RUN_TEST(dict);
   RUN_TEST(functional_set);
@@ -49,6 +52,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(map_utils);
   RUN_TEST(overflow);
   RUN_TEST(parsestring);
+  RUN_TEST(sm_pp_util);
   RUN_TEST(sm_rc_ptr);
   RUN_TEST(string_utils);
   RUN_TEST(vector_utils);

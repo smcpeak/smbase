@@ -26,7 +26,8 @@ public:      // methods
   }
 
   Foo(Foo const &obj)
-    : x(obj.x)
+    : RefCountObject(),
+      x(obj.x)
   {
     std::cout << "  called Foo::Foo(Foo const &): " << (void*)this << "\n";
   }

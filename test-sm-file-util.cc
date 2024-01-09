@@ -9,7 +9,7 @@
 #include "sm-file-util.h"              // module to test
 
 // smbase
-#include "nonport.h"                   // GetMillisecondsAccumulator
+#include "nonport.h"                   // GetMillisecondsAccumulator, getFileModificationTime
 #include "run-process.h"               // RunProcess
 #include "sm-test.h"                   // ARGS_TEST_MAIN, PVAL
 #include "strutil.h"                   // compareStringPtrs
@@ -33,7 +33,24 @@ static void checkFNObject(SMFileName const &fn, SMFileName::Syntax syntax)
   fn.getPathComponents(comps2);
   comps2.push("x");
   xassert(fn.withPathComponents(comps2) != fn);
-  xassert(fn.withTrailingSlash(!fn.hasTrailingSlash()) != fn);
+
+  if (fn.hasPathComponents()) {
+    // We can only freely toggle the trailing slash if there are path
+    // components.
+    xassert(fn.withTrailingSlash(!fn.hasTrailingSlash()) != fn);
+  }
+}
+
+
+// Check that 'sfu' reports the same properties as 'fn' on 'input'.
+static void checkAgainstSFU(
+  SMFileUtil &sfu,
+  string const &input,
+  SMFileName const &fn)
+{
+  EXPECT_EQ(sfu.isAbsolutePath(input), fn.isAbsolute());
+  EXPECT_EQ(sfu.endsWithDirectorySeparator(input),
+            fn.endsWithPathSeparator());
 }
 
 
@@ -51,6 +68,11 @@ static void expectFNp(
   EXPECT_EQ(fn.hasTrailingSlash(), expectTrailingSlash);
 
   checkFNObject(fn, SMFileName::S_POSIX);
+
+  // Test against SMFileUtil too.
+  TestSMFileUtil sfu;
+  sfu.m_windowsPathSemantics = false;
+  checkAgainstSFU(sfu, input, fn);
 }
 
 
@@ -69,6 +91,11 @@ static void expectFNw(
   EXPECT_EQ(fn.hasTrailingSlash(), expectTrailingSlash);
 
   checkFNObject(fn, SMFileName::S_WINDOWS);
+
+  // Test against SMFileUtil too.
+  TestSMFileUtil sfu;
+  sfu.m_windowsPathSemantics = true;
+  checkAgainstSFU(sfu, input, fn);
 }
 
 
@@ -87,6 +114,10 @@ static void expectFNn(
   EXPECT_EQ(fn.hasTrailingSlash(), expectTrailingSlash);
 
   checkFNObject(fn, SMFileName::S_NATIVE);
+
+  // Test against SMFileUtil too.
+  SMFileUtil sfu;
+  checkAgainstSFU(sfu, input, fn);
 }
 
 
@@ -304,6 +335,34 @@ static void testJoinFilename()
   }
   else {
     expectJoin("a\\", "/b", "a\\/b");
+  }
+}
+
+
+static void expectJoinIRF(char const *a, char const *b, char const *expect)
+{
+  SMFileUtil sfu;
+  EXPECT_EQ(sfu.joinIfRelativeFilename(a, b), string(expect));
+}
+
+
+static void testJoinIfRelativeFilename()
+{
+  expectJoinIRF("", "", "");
+  expectJoinIRF("a", "", "a");
+  expectJoinIRF("", "b", "b");
+  expectJoinIRF("a", "b", "a/b");
+  expectJoinIRF("a/", "b", "a/b");
+  expectJoinIRF("a", "/b", "/b");      // keep absolute suffix
+  expectJoinIRF("a/", "/b", "/b");     // keep absolute suffix
+  expectJoinIRF("a", "b/", "a/b/");
+
+  SMFileUtil sfu;
+  if (sfu.isDirectorySeparator('\\')) {
+    expectJoinIRF("a", "\\b", "\\b");
+  }
+  else {
+    expectJoinIRF("a", "\\b", "a/\\b");
   }
 }
 
@@ -646,6 +705,69 @@ static void testCreateDirectoryAndParents()
 }
 
 
+static void testReadAndWriteFile()
+{
+  // All bytes.
+  std::vector<unsigned char> bytes;
+  for (int i=0; i < 256; i++) {
+    bytes.push_back((unsigned char)i);
+  }
+
+  SMFileUtil sfu;
+  string fname = "test.dir/allbytes.bin";
+  sfu.writeFile(fname, bytes);
+
+  std::vector<unsigned char> bytes2(sfu.readFile(fname));
+
+  xassert(bytes2 == bytes);
+}
+
+
+static void testTouchFile()
+{
+  SMFileUtil sfu;
+
+  string fname = "test.dir/tmp";
+
+  // Make sure the file is initially absent.
+  if (sfu.pathExists(fname)) {
+    sfu.removeFile(fname);
+  }
+  xassert(!sfu.pathExists(fname));
+
+  // Touch it to create it as empty.
+  sfu.touchFile(fname);
+  xassert(sfu.pathExists(fname));
+
+  int64_t ts1;
+  xassert(getFileModificationTime(fname.c_str(), ts1 /*OUT*/));
+
+  // Touch the empty file.
+  cout << "testTouchFile: sleep 1 ...\n";
+  portableSleep(1);
+  sfu.touchFile(fname);
+  int64_t ts2;
+  xassert(getFileModificationTime(fname.c_str(), ts2 /*OUT*/));
+  xassert(ts2 > ts1);
+
+  // Write it with a byte.
+  sfu.writeFile(fname, std::vector<unsigned char>{'x'});
+  int64_t ts3;
+  xassert(getFileModificationTime(fname.c_str(), ts3 /*OUT*/));
+
+  // Touch that.
+  cout << "testTouchFile: sleep 1 ...\n";
+  portableSleep(1);
+  sfu.touchFile(fname);
+  int64_t ts4;
+  xassert(getFileModificationTime(fname.c_str(), ts4 /*OUT*/));
+  xassert(ts4 > ts3);
+
+  // Clean up.
+  sfu.removeFile(fname);
+}
+
+
 // Defined in sm-file-util.cc.
 void getDirectoryEntries_scanThenStat(SMFileUtil &sfu,
   ArrayStack<SMFileUtil::DirEntryInfo> /*OUT*/ &entries, string const &directory);
@@ -689,6 +811,7 @@ static void entry(int argc, char **argv)
   testFileName();
   printSomeStuff();
   testJoinFilename();
+  testJoinIfRelativeFilename();
   testAbsolutePathExists();
   testTestSMFileUtil();
   testSplitPath();
@@ -700,6 +823,8 @@ static void entry(int argc, char **argv)
   testGetFileKind();
   testAtomicallyRenameFile();
   testCreateDirectoryAndParents();
+  testReadAndWriteFile();
+  testTouchFile();
 
   cout << "test-sm-file-util ok" << endl;
 }

@@ -89,6 +89,9 @@ private:     // types
       : charOffset(c), lineOffset(L), arrayOffset(a) {}
     Marker(Marker const &obj)
       : DMEMB(charOffset), DMEMB(lineOffset), DMEMB(arrayOffset) {}
+
+    Marker& operator= (Marker const &obj)
+      { CMEMB(charOffset); CMEMB(lineOffset); CMEMB(arrayOffset); return *this; }
   };
 
 public:      // types

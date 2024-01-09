@@ -255,8 +255,8 @@ public:
   explicit stringBuilder(int length=0);    // creates an empty string
   explicit stringBuilder(char const *str);
            stringBuilder(char const *str, int length);
-  explicit stringBuilder(string const &str) { dup(str.c_str()); }
-  stringBuilder(stringBuilder const &obj) { dup(obj.c_str()); }
+  explicit stringBuilder(string const &str) : string() { dup(str.c_str()); }
+  stringBuilder(stringBuilder const &obj) : string() { dup(obj.c_str()); }
   ~stringBuilder() {}
 
   stringBuilder& operator= (char const *src);

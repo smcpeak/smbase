@@ -11,6 +11,7 @@
 *.i
 *.lib
 *.o
+*.o.json
 *.tmp
 *.~DE
 .cproject
@@ -22,6 +23,7 @@
 Makefile.base.mk
 TAGS
 changes
+compile_commands.json
 config.mk
 dependencies.png
 diff
@@ -38,6 +40,7 @@ mut
 mutant-compile.sh
 mutant.cc
 out
+personal-make-cmd.sh
 personal.mk
 srcloc.tmp
 strhash_1

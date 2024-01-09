@@ -15,7 +15,7 @@
 #define OVERFLOW_H
 
 #include "exc.h"                       // DEFINE_XBASE_SUBCLASS
-#include "str.h"                       // stringBuilder
+#include "str.h"                       // stringBuilder, stringb
 
 #include <limits>                      // std::numeric_limits
 #include <typeinfo>                    // typeid
@@ -140,7 +140,52 @@ NUM multiplyWithOverflowCheck(NUM a, NUM b)
 }
 
 
-// Unit tests, in test-overflow.cc.
+// Convert 'src' to type 'DEST', throwing XOverflow if it cannot be
+// converted back without loss of information.
+//
+// This is not the same as being convertible without overflow, since
+// converting -1 to unsigned is a form of overflow, but does not lose
+// information.
+template <class DEST, class SRC>
+void convertWithoutLoss(DEST &dest, SRC const &src)
+{
+  dest = static_cast<DEST>(src);
+  SRC s2 = static_cast<SRC>(dest);
+  if (s2 != src) {
+    // Printing '+src', etc., ensures that types like 'char' will print
+    // as numbers.
+    throw XOverflow(stringb(
+      "convertWithoutLoss: Source value " << +src <<
+      " converts to destination value " << +dest <<
+      " and back to different value " << +s2 <<
+      " (ss=" << sizeof(SRC) << " ds=" << sizeof(DEST) << ")."));
+  }
+}
+
+
+// Convert 'src' to 'dest', ensuring the value is exactly representable
+// in the destination type.
+//
+// This is different from 'convertWithoutLoss' in that it requires the
+// sign to be preserved.
+template <class DEST, class SRC>
+DEST convertNumber(SRC const &src)
+{
+  DEST dest;
+  convertWithoutLoss(dest, src);
+
+  if ((dest < 0) != (src < 0)) {
+    throw XOverflow(stringb(
+      "convertNumber: Source value " << +src <<
+      " and destination value " << +dest <<
+      " have different signs."));
+  }
+
+  return dest;
+}
+
+
+// Unit tests, in overflow-test.cc.
 int test_overflow();
 
 

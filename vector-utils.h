@@ -6,10 +6,13 @@
 
 #include "container-utils.h"           // CONTAINER_FOREACH
 #include "dev-warning.h"               // DEV_WARNING
-#include "xassert.h"                   // xfailure
+#include "overflow.h"                  // convertNumber
 #include "sm-macros.h"                 // NO_OBJECT_COPIES
+#include "xassert.h"                   // xfailure
 
+#include <algorithm>                   // std::remove
 #include <iostream>                    // std::ostream
+#include <set>                         // std::set
 #include <sstream>                     // std::ostringstream
 #include <vector>                      // std::vector
 
@@ -59,6 +62,29 @@ B accumulateWithMap(std::vector<A> const &vec, MapOperation op,
   }
 
   return ret;
+}
+
+
+// Apply 'op' to all elements.
+template <class DEST, class SRC, class MapOperation>
+std::vector<DEST> mapElements(std::vector<SRC> const &vec,
+                              MapOperation op)
+{
+  std::vector<DEST> ret;
+  ret.reserve(vec.size());
+  for (SRC const &s : vec) {
+    ret.push_back(op(s));
+  }
+  return ret;
+}
+
+
+// Convert elements from SRC to DEST.
+template <class DEST, class SRC>
+std::vector<DEST> convertElements(std::vector<SRC> const &vec)
+{
+  return mapElements<DEST, SRC>(vec,
+    [](SRC const &s) { return DEST(s); });
 }
 
 
@@ -171,6 +197,41 @@ bool vec_contains(std::vector<T> const &vec, T const &value)
     }
   }
   return false;
+}
+
+
+// Remove all occurrences of 'value' from 'vec'.
+template <class T>
+void vec_erase(std::vector<T> &vec, T const &value)
+{
+  vec.erase(std::remove(vec.begin(), vec.end(), value), vec.end());
+}
+
+
+// Return the set of elements in 'vec'.
+template <class T>
+std::set<T> vec_element_set(std::vector<T> const &vec)
+{
+  std::set<T> ret;
+  for (T const &t : vec) {
+    ret.insert(t);
+  }
+  return ret;
+}
+
+
+// Report the first index of 'value' in 'vec', or -1 if it is not
+// present.
+template <class T>
+long vec_find_index(std::vector<T> const &vec, T const &value)
+{
+  auto it = std::find(vec.begin(), vec.end(), value);
+  if (it != vec.end()) {
+    return convertNumber<long>(it - vec.begin());
+  }
+  else {
+    return -1;
+  }
 }
 
 

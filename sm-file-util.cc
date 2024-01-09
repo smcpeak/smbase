@@ -5,6 +5,7 @@
 
 // smbase
 #include "array.h"                     // Array
+#include "autofile.h"                  // AutoFILE
 #include "codepoint.h"                 // isLetter
 #include "sm-windows.h"                // PLATFORM_IS_WINDOWS
 #include "strtokp.h"                   // StrtokParse
@@ -13,6 +14,7 @@
 
 // libc++
 #include <algorithm>                   // std::max
+#include <fstream>                     // std::fstream
 
 // libc
 #include <errno.h>                     // errno
@@ -214,7 +216,9 @@ SMFileName::SMFileName(string fileSystem, bool isAbsolute,
     m_isAbsolute(isAbsolute),
     m_pathComponents(pathComponents),
     m_trailingSlash(trailingSlash)
-{}
+{
+  selfCheck();
+}
 
 
 SMFileName::SMFileName(SMFileName const &obj)
@@ -227,6 +231,12 @@ SMFileName::SMFileName(SMFileName const &obj)
 
 SMFileName::~SMFileName()
 {}
+
+
+void SMFileName::selfCheck() const
+{
+  xassert(!m_trailingSlash || hasPathComponents());
+}
 
 
 bool SMFileName::operator== (SMFileName const &obj) const
@@ -294,6 +304,13 @@ string SMFileName::getPathComponentsString() const
     }
   }
   return sb.str();
+}
+
+
+bool SMFileName::endsWithPathSeparator() const
+{
+  return (m_isAbsolute && m_pathComponents.isEmpty()) ||
+         m_trailingSlash;
 }
 
 
@@ -459,9 +476,20 @@ bool SMFileUtil::isDirectorySeparator(char c)
 }
 
 
+bool SMFileUtil::endsWithDirectorySeparator(string const &name)
+{
+  if (name.empty() || !isDirectorySeparator(name[name.length()-1])) {
+    return false;
+  }
+  else {
+    return true;
+  }
+}
+
+
 string SMFileUtil::ensureEndsWithDirectorySeparator(string const &dir)
 {
-  if (dir.empty() || !isDirectorySeparator(dir[dir.length()-1])) {
+  if (!endsWithDirectorySeparator(dir)) {
     return stringb(dir << '/');
   }
   else {
@@ -512,10 +540,10 @@ bool SMFileUtil::isAbsolutePath(string const &path)
       return true;
     }
   }
-  else {
-    if (isDirectorySeparator(path[0])) {
-      return true;
-    }
+
+  // Even on Windows, a leading separator is treated as absolute.
+  if (isDirectorySeparator(path[0])) {
+    return true;
   }
 
   return false;
@@ -638,7 +666,11 @@ void SMFileUtil::createDirectoryAndParents(string const &path_)
     createDirectoryAndParents(dir);
   }
 
-  int res = mkdir(path.c_str(), 0755);
+  int res = mkdir(path.c_str()
+    #ifndef __WIN32__
+      , 0755
+    #endif
+  );
   if (res != 0) {
     xsyserror("mkdir", path);
   }
@@ -887,6 +919,57 @@ string SMFileUtil::joinFilename(string const &prefix,
   }
 
   return stringb(prefix << suffix);
+}
+
+
+string SMFileUtil::joinIfRelativeFilename(string const &prefix,
+                                          string const &suffix)
+{
+  if (isAbsolutePath(suffix)) {
+    return suffix;
+  }
+  else {
+    return joinFilename(prefix, suffix);
+  }
+}
+
+
+std::vector<unsigned char> SMFileUtil::readFile(string const &fname)
+{
+  std::vector<unsigned char> bytes;
+
+  AutoFILE fp(fname.c_str(), "rb");
+
+  while (true) {
+    unsigned char buf[0x2000];
+    size_t res = fread(buf, 1, sizeof(buf), fp);
+    if (res == 0) {
+      if (ferror(fp)) {
+        xsyserror("read", fname);
+      }
+      else {
+        break;     // EOF
+      }
+    }
+
+    bytes.insert(bytes.end(), buf, buf+res);
+  }
+
+  return bytes;
+}
+
+
+void SMFileUtil::writeFile(string const &fname,
+                           std::vector<unsigned char> const &bytes)
+{
+  AutoFILE fp(fname.c_str(), "wb");
+
+  size_t res = fwrite(bytes.data(), 1, bytes.size(), fp);
+
+  if (res != bytes.size()) {
+    // fwrite only returns a short count if there is an error.
+    xsyserror("write", fname);
+  }
 }
 
 
@@ -1159,6 +1242,42 @@ void SMFileUtil::removeFile(string const &path)
   if (remove(path.c_str()) < 0) {
     xsyserror("remove", path);
   }
+}
+
+
+// I posted this code to SO at:
+// https://stackoverflow.com/questions/10677200/c-ofstream-doesnt-change-mtime/73414309
+bool SMFileUtil::touchFile(string const &path)
+{
+  char const *fname = path.c_str();
+
+  // Open the file for writing.  This fails if the file does not exist.
+  std::fstream stream(fname, std::ios::in | std::ios::out | std::ios::binary);
+  if (stream.fail()) {
+    // File does not exist, or a permission error.  Try creating the file.
+    stream.open(fname, std::ios::out | std::ios::binary);
+    return stream.good();
+  }
+
+  // Read the first character.
+  int ch = stream.get();
+  if (ch == std::char_traits<char>::eof()) {
+    // The file is empty.  Reopen with truncation.
+    stream.close();
+    stream.open(fname, std::ios::out | std::ios::binary);
+    return stream.good();
+  }
+
+  // Rewind the write head.
+  stream.seekp(0);
+  if (stream.fail()) {
+    return false;
+  }
+
+  // Write that same character.  A write is necessary to update the
+  // modification time.
+  stream.put(ch);
+  return stream.good();
 }
 
 

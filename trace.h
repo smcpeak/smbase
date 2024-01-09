@@ -31,6 +31,10 @@ ostream &trace(char const *sysName);
 // (the tracer will do that)
 void trstr(char const *sysName, char const *traceString);
 
+// Like 'trace', but also print elapsed milliseconds since program
+// start.
+ostream &trace_ms(char const *sysName);
+
 // trace macro which disables itself when NDEBUG is true,
 // and automatically supplies 'endl' when it's not true
 //
@@ -49,8 +53,10 @@ void trstr(char const *sysName, char const *traceString);
 #endif
 #if DO_TRACE != 0
   #define TRACE(tag, exp) trace(tag) << exp << endl /* user ; */
+  #define TRACE_MS(tag, exp) trace_ms(tag) << exp << endl /* user ; */
 #else
   #define TRACE(tag, exp) ((void)0)
+  #define TRACE_MS(tag, exp) ((void)0)
 #endif
 
 

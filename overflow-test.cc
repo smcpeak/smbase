@@ -1,4 +1,4 @@
-// test-overflow.cc
+// overflow-test.cc
 // Unit tests for 'overflow' module.
 
 #include "overflow.h"                  // this module
@@ -6,9 +6,10 @@
 #include "exc.h"                       // xassert
 #include "sm-iostream.h"               // cout
 #include "sm-test.h"                   // PVAL
+#include "str.h"                       // streq
 #include "typ.h"                       // int64_t, uint64_t, INT64_C
 
-#include <limits.h>                    // INT_MIN
+#include <limits.h>                    // INT_MIN, INT_MIN
 
 
 // Add, and expect success.
@@ -208,14 +209,109 @@ static void testAddAndMultiply()
 }
 
 
+template <class DEST, class SRC>
+static void cwlSuccess(SRC src)
+{
+  DEST dest = 0;
+  convertWithoutLoss(dest, src);
+  xassert(static_cast<SRC>(dest) == src);
+}
+
+
+template <class DEST, class SRC>
+static void cwlFail(SRC src)
+{
+  DEST dest = 0;
+  try {
+    convertWithoutLoss(dest, src);
+    xfailure("should have failed");
+  }
+  catch (XOverflow &x) {
+    cout << "as expected: " << x.why() << "\n";
+  }
+}
+
+
+enum SomeEnum {
+  SE0,
+  SE1,
+  SE2,
+  SE_MAX = INT_MAX,
+  SE_MIN = INT_MIN
+};
+
+
+static void testConvertWithoutLoss()
+{
+  cwlSuccess<int, int>(3);
+  cwlFail<char, int>(12345);
+
+  cwlSuccess<unsigned, int>(-3);
+  cwlFail<unsigned char, int>(-3);
+  cwlSuccess<unsigned, signed char>(-3);
+
+  cwlSuccess<int, SomeEnum>(SE2);
+  cwlSuccess<int, SomeEnum>(SE_MAX);
+  cwlSuccess<int, SomeEnum>(SE_MIN);
+  cwlSuccess<unsigned, SomeEnum>(SE2);
+  cwlSuccess<unsigned, SomeEnum>(SE_MAX);
+  cwlSuccess<unsigned, SomeEnum>(SE_MIN);
+
+  cwlSuccess<unsigned char, SomeEnum>(SE2);
+  cwlFail<unsigned char, SomeEnum>(SE_MAX);
+}
+
+
+template <class DEST, class SRC>
+static void cnSuccess(SRC src)
+{
+  DEST dest = convertNumber<DEST>(src);
+  xassert(dest == src);
+}
+
+
+template <class DEST, class SRC>
+static void cnFail(SRC src)
+{
+  try {
+    convertNumber<DEST>(src);
+    xfailure("should have failed");
+  }
+  catch (XOverflow &x) {
+    cout << "as expected: " << x.why() << "\n";
+  }
+}
+
+
+static void testConvertNumber()
+{
+  cnSuccess<int, int>(3);
+  cnFail<char, int>(1234);
+  cnFail<unsigned, int>(-1);
+  cnFail<int, unsigned>(UINT_MAX);
+}
+
+
 int test_overflow()
 {
   // This test throws many exceptions.
   RESTORER(bool, xBase::logExceptions, false);
 
-  testAddAndMultiply();
+  char const *selTest = getenv("TEST_OVERFLOW_SELTEST");
 
-  cout << "test-overflow: PASSED" << endl;
+  #define RUNTEST(func)                              \
+    if (selTest==nullptr || streq(selTest, #func)) { \
+      cout << #func << "\n";                         \
+      func();                                        \
+    }
+
+  RUNTEST(testAddAndMultiply);
+  RUNTEST(testConvertWithoutLoss);
+  RUNTEST(testConvertNumber);
+
+  #undef RUNTEST
+
+  cout << "overflow-test: PASSED" << endl;
   return 0;
 }
 

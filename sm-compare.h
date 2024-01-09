@@ -49,4 +49,54 @@ StrongOrdering strongOrder(T a, T b)
 StrongOrdering strongOrder(char const *a, char const *b);
 
 
+// Return the StrongOrdering value corresponding to the sign of 'n'.
+inline StrongOrdering strongOrderFromInt(int n)
+{
+  return n <  0? StrongOrdering::less    :
+         n == 0? StrongOrdering::equal   :
+                 StrongOrdering::greater ;
+}
+
+
+// Define a 'strongOrder' function from a 'compareTo' method.
+#define DEFINE_STRONG_ORDER_FROM_COMPARE_TO(TYPE)                 \
+  inline StrongOrdering strongOrder(TYPE const &a, TYPE const &b) \
+    { return a.compareTo(b); }
+
+
+// Define a single relational operator from a 'strongOrder' function.
+#define DEFINE_RELOP_FROM_STRONG_ORDER(TYPE, op)         \
+  inline bool operator op (TYPE const &a, TYPE const &b) \
+    { return strongOrder(a,b) op 0; }
+
+
+// Define a set of relational operators for a given type, assuming the
+// 'strongOrder' function can be applied.
+#define DEFINE_RELOPS_FROM_STRONG_ORDER(TYPE) \
+  DEFINE_RELOP_FROM_STRONG_ORDER(TYPE, == )   \
+  DEFINE_RELOP_FROM_STRONG_ORDER(TYPE, != )   \
+  DEFINE_RELOP_FROM_STRONG_ORDER(TYPE, <  )   \
+  DEFINE_RELOP_FROM_STRONG_ORDER(TYPE, >  )   \
+  DEFINE_RELOP_FROM_STRONG_ORDER(TYPE, <= )   \
+  DEFINE_RELOP_FROM_STRONG_ORDER(TYPE, >= )
+
+
+// Define 'strongOrder' and relational operators from 'compareTo'.
+#define DEFINE_RELOPS_FROM_COMPARE_TO(TYPE) \
+  DEFINE_STRONG_ORDER_FROM_COMPARE_TO(TYPE) \
+  DEFINE_RELOPS_FROM_STRONG_ORDER(TYPE)
+
+
+// Compare field 'memb' with that in 'obj', returning if the result is
+// not equal.  This is meant to be used as part of a sequence of member
+// comparisons to implement a lexicographical order.
+#define COMPARE_MEMB(memb)                            \
+  {                                                   \
+    StrongOrdering ord = strongOrder(memb, obj.memb); \
+    if (ord != StrongOrdering::equal) {               \
+      return ord;                                     \
+    }                                                 \
+  }
+
+
 #endif // SMBASE_SM_COMPARE_H

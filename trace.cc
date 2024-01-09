@@ -21,6 +21,9 @@ static ObjList<string> tracers;
 ofstream devNullObj("/dev/null");
 static ostream *devNull = &devNullObj;
 
+// True to print a timestamp with each message.
+static bool g_printTimestamps = false;
+
 
 // initialize
 static void init()
@@ -80,12 +83,22 @@ void traceRemoveAll()
 }
 
 
+static long elapsed_ms()
+{
+  static long progStart = getMilliseconds();
+  return getMilliseconds() - progStart;
+}
+
+
 ostream &trace(char const *sysName)
 {
   init();
 
   if (tracingSys(sysName)) {
     cout << "%%% " << sysName << ": ";
+    if (g_printTimestamps) {
+      cout << elapsed_ms() << "ms: ";
+    }
     return cout;
   }
   else {
@@ -100,13 +113,17 @@ void trstr(char const *sysName, char const *traceString)
 }
 
 
+ostream &trace_ms(char const *sysName)
+{
+  return trace(sysName) << elapsed_ms() << "ms: ";
+}
+
+
 ostream &traceProgress(int level)
 {
   if ( (level == 1) ||
        (level == 2 && tracingSys("progress2")) ) {
-    static long progStart = getMilliseconds();
-
-    return trace("progress") << (getMilliseconds() - progStart) << "ms: ";
+    return trace("progress") << elapsed_ms() << "ms: ";
   }
   else {
     return *devNull;
@@ -166,6 +183,10 @@ void traceAddFromEnvVar()
   char const *var = getenv("TRACE");
   if (var) {
     traceAddMultiSys(var);
+  }
+
+  if (getenv("TRACE_TIMESTAMPS")) {
+    g_printTimestamps = true;
   }
 
   ignoreTraceEnvVar = true;

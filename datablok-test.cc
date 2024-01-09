@@ -1,4 +1,4 @@
-// test-datablok.cc
+// datablok-test.cc
 // Unit tests for datablok module.
 
 #include "datablok.h"                  // module under test

@@ -32,7 +32,7 @@ BitArray::BitArray(Flatten&)
 
 void BitArray::xfer(Flatten &flat)
 {
-  flat.xferInt(numBits);
+  flat.xferInt32(numBits);
 
   if (flat.reading()) {
     allocBits();

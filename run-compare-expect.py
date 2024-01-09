@@ -180,6 +180,8 @@ def main():
     help="Do not print the stdout/stderr/exit code separators.")
   parser.add_argument("--no-stderr", action="store_true",
     help="Do not capture stderr; instead let it pass through.")
+  parser.add_argument("--chdir",
+    help="Change directory to CHDIR before running the program.")
   parser.add_argument("program",
     help="Program to run.")
   parser.add_argument("progArgs", nargs=argparse.REMAINDER,
@@ -218,13 +220,19 @@ def main():
     if opts.argfile:
       actualLines += [f"======== {' '.join(command)} ========"]
 
-    # Run the program, capturing output.
+    # Keyword arguments for 'subprocess.run'.
+    runArgs = {}
+
+    runArgs['stdout'] = subprocess.PIPE
     capture_stderr = not opts.no_stderr
     if capture_stderr:
-      proc = subprocess.run(command, stdout=subprocess.PIPE,
-                                     stderr=subprocess.PIPE);
-    else:
-      proc = subprocess.run(command, stdout=subprocess.PIPE);
+      runArgs['stderr'] = subprocess.PIPE
+
+    if opts.chdir:
+      runArgs['cwd'] = opts.chdir
+
+    # Run the program, capturing output.
+    proc = subprocess.run(command, **runArgs)
 
     # Combine the stdout, stderr, and exit code into one list.
     sep = not opts.no_separators

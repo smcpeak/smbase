@@ -37,6 +37,9 @@ class HashLineMap {
       : ppLine(pl), origLine(ol), origFname(of) {}
     HashLine(HashLine const &obj)
       : DMEMB(ppLine), DMEMB(origLine), DMEMB(origFname) {}
+
+    HashLine& operator= (HashLine const &obj)
+      { CMEMB(ppLine); CMEMB(origLine); CMEMB(origFname); return *this; }
   };
 
 public:

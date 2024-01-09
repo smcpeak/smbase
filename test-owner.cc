@@ -3,6 +3,7 @@
 
 #include "owner.h"                     // module to test
 
+#include "sm-macros.h"                 // PRETEND_USED
 #include "xassert.h"                   // xassert
 
 #include <stdio.h>                     // printf
@@ -14,6 +15,8 @@ void someCrap(Foo *f)
   // good -- egcs-1.1.2 doesn't allow this, so I won't accidentally
   // get destructors missed because of forward decls (like could
   // happen with Borland)
+
+  PRETEND_USED(f);
 }
 
 

@@ -170,7 +170,7 @@ public:       // funcs
 };
 
 
-// Unit test defined in test-datablok.cc.
+// Unit test defined in datablok-test.cc.
 void test_datablok();
 
 

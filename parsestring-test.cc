@@ -1,4 +1,4 @@
-// test-parsestring.cc
+// parsestring-test.cc
 // Tests for 'parsestring' module.
 
 #include "parsestring.h"               // module to test

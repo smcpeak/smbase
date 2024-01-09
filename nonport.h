@@ -123,6 +123,9 @@ void getCurrentDate(int &month, int &day, int &year);
 // sleep for a bit (low resolution)
 void portableSleep(unsigned seconds);
 
+// Sleep for a given number of milliseconds.
+void sleepForMilliseconds(unsigned ms);
+
 
 // determine usable name of current user, and write it into 'buffer'
 void getCurrentUsername(char *buffer, int buflen);
