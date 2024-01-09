@@ -28,32 +28,32 @@ void xfer(Flatten &flat, T &t)
 }
 
 // Overloads for things Flatten knows how to do directly.
-void xfer(Flatten &flat, char &c)
+inline void xfer(Flatten &flat, char &c)
 {
   flat.xferChar(c);
 }
 
-void xfer(Flatten &flat, bool &b)
+inline void xfer(Flatten &flat, bool &b)
 {
   flat.xferBool(b);
 }
 
-void xfer(Flatten &flat, int32_t &i)
+inline void xfer(Flatten &flat, int32_t &i)
 {
   flat.xfer_int32_t(i);
 }
 
-void xfer(Flatten &flat, uint32_t &i)
+inline void xfer(Flatten &flat, uint32_t &i)
 {
   flat.xfer_uint32_t(i);
 }
 
-void xfer(Flatten &flat, int64_t &i)
+inline void xfer(Flatten &flat, int64_t &i)
 {
   flat.xfer_int64_t(i);
 }
 
-void xfer(Flatten &flat, uint64_t &i)
+inline void xfer(Flatten &flat, uint64_t &i)
 {
   flat.xfer_uint64_t(i);
 }
