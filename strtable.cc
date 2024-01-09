@@ -43,7 +43,7 @@ void StringTable::clear()
   while (longStrings != NULL) {
     LongString *temp = longStrings;
     longStrings = longStrings->next;
-    delete temp->data;
+    delete[] temp->data;
     delete temp;
   }
 }
