@@ -100,8 +100,12 @@ def main():
     help="Exclude a dependency.  Can be repeated.")
   parser.add_argument("--include", action="append", metavar="DEP",
     help="Include as a dependency even when checked in.  Can be repeated.")
+  parser.add_argument("--add", action="append", metavar="RULE",
+    help="Add RULE like 'target: depfile' even if .d files do not mention it. "+
+         "Meant for dependencies that are conditional upon build configuration. "+
+         "Can be repeated.")
   parser.add_argument("files", nargs="+", metavar="file.d",
-    help="Dependency files to analyze.")
+    help="Dependency files to analyze, created using 'gcc -MMD'.")
   opts = parser.parse_args()
 
   # Process inclusions and exclusions.
@@ -168,6 +172,12 @@ def main():
 
     for dep in deps:
       dependencyLines.append(f"{target}: {dep}")
+
+  # Add the --add rules.
+  if opts.add:
+    for addition in opts.add:
+      if addition not in dependencyLines:
+        dependencyLines.append(addition)
 
   # This sorts in Unicode code point order, so should be stable across
   # environments.  The reason to sort is I intend to check the output
