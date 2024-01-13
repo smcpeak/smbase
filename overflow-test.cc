@@ -12,6 +12,9 @@
 #include <limits.h>                    // INT_MIN, INT_MIN
 
 
+namespace { // anonymous namespace for test code
+
+
 // Add, and expect success.
 template <class NUM>
 void testOneAdd(NUM a, NUM b, NUM expect)
@@ -148,7 +151,7 @@ void testAddMultiplyAllSmallUsingInt64()
 }
 
 
-static void testAddAndMultiply()
+void testAddAndMultiply()
 {
   testOneAdd<int8_t>(1, 2, 3);
 
@@ -210,7 +213,7 @@ static void testAddAndMultiply()
 
 
 template <class DEST, class SRC>
-static void cwlSuccess(SRC src)
+void cwlSuccess(SRC src)
 {
   DEST dest = 0;
   convertWithoutLoss(dest, src);
@@ -219,7 +222,7 @@ static void cwlSuccess(SRC src)
 
 
 template <class DEST, class SRC>
-static void cwlFail(SRC src)
+void cwlFail(SRC src)
 {
   DEST dest = 0;
   try {
@@ -241,7 +244,7 @@ enum SomeEnum {
 };
 
 
-static void testConvertWithoutLoss()
+void testConvertWithoutLoss()
 {
   cwlSuccess<int, int>(3);
   cwlFail<char, int>(12345);
@@ -263,7 +266,7 @@ static void testConvertWithoutLoss()
 
 
 template <class DEST, class SRC>
-static void cnSuccess(SRC src)
+void cnSuccess(SRC src)
 {
   DEST dest = convertNumber<DEST>(src);
   xassert(dest == src);
@@ -271,7 +274,7 @@ static void cnSuccess(SRC src)
 
 
 template <class DEST, class SRC>
-static void cnFail(SRC src)
+void cnFail(SRC src)
 {
   try {
     convertNumber<DEST>(src);
@@ -283,13 +286,16 @@ static void cnFail(SRC src)
 }
 
 
-static void testConvertNumber()
+void testConvertNumber()
 {
   cnSuccess<int, int>(3);
   cnFail<char, int>(1234);
   cnFail<unsigned, int>(-1);
   cnFail<int, unsigned>(UINT_MAX);
 }
+
+
+} // end anonymous namespace for test code
 
 
 int test_overflow()

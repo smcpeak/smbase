@@ -12,6 +12,9 @@
 #include <vector>                      // std::vector
 
 
+namespace { // anonymous namespace for test code
+
+
 enum SomeEnum {
   SE0,
   SE1,
@@ -116,6 +119,9 @@ void SomeData::checkEqual(SomeData const &obj) const
   xassert(px == &x);
   xassert(py == &y);
 }
+
+
+} // end anonymous namespace for test code
 
 
 // Called by unit-tests.cc.
