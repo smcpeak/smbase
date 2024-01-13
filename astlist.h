@@ -37,14 +37,40 @@ public:
   ASTList()                             : list() {}
   ~ASTList()                            { deleteAll(); }
 
-  // ctor to make singleton list; often quite useful
-  ASTList(T *elt)                       : list() { prepend(elt); }
+  // Make a list with 'elt' as the only element.
+  explicit ASTList(T *elt)              : list() { prepend(elt); }
 
-  // stealing ctor; among other things, since &src->list is assumed to
-  // point at 'src', this class can't have virtual functions;
-  // these ctors delete 'src'
-  ASTList(ASTList<T> *src)              : list(&src->list) {}
-  void steal(ASTList<T> *src)           { deleteAll(); list.steal(&src->list); }
+  // If 'src' is not nullptr, this constructor first "steals" all of its
+  // elements, then deallocates the 'src' object itself.  Otherwise, it
+  // simply constructs an empty list.
+  explicit ASTList(ASTList<T> * /*nullable owner*/ src)
+    : list()
+  {
+    if (src) {
+      list.stealElements(&src->list);
+      delete src;
+    }
+  }
+
+  // First, delete all elements from 'this'.  Then, if 'src' is not
+  // nullptr, transfer all of its elements to 'this', leaving it empty.
+  void stealElements(ASTList<T> * /*nullable*/ src)
+  {
+    deleteAll();
+    if (src) {
+      list.stealElements(&src->list);
+    }
+  }
+
+  // Empty 'this', then steal all of the elements from 'src', and
+  // finally deallocate the 'src' object itself.
+  void steal(ASTList<T> * /*nullable owner*/ src)
+  {
+    stealElements(src);
+    if (src) {
+      delete src;
+    }
+  }
 
   // selectors
   int count() const                     { return list.count(); }

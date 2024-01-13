@@ -32,11 +32,37 @@ public:
   // ctor to make singleton list; often quite useful
   TailList(T *elt)                       : list() { prepend((void*)elt); }
 
-  // stealing ctor; among other things, since &src->list is assumed to
-  // point at 'src', this class can't have virtual functions;
-  // these ctors delete 'src'
-  TailList(TailList<T> *src)              : list(&src->list) {}
-  void steal(TailList<T> *src)           { list.steal(&src->list); }
+  // If 'src' is not nullptr, this constructor first "steals" all of its
+  // elements, then deallocates the 'src' object itself.  Otherwise, it
+  // simply constructs an empty list.
+  explicit TailList(TailList<T> * /*nullable owner*/ src)
+    : list()
+  {
+    if (src) {
+      list.stealElements(&src->list);
+      delete src;
+    }
+  }
+
+  // First, remove all elements from 'this'.  Then, if 'src' is not
+  // nullptr, transfer all of its elements to 'this', leaving it empty.
+  void stealElements(TailList<T> * /*nullable*/ src)
+  {
+    removeAll();
+    if (src) {
+      list.stealElements(src);
+    }
+  }
+
+  // Empty 'this', then steal all of the elements from 'src', and
+  // finally deallocate the 'src' object itself.
+  void steal(TailList<T> * /*nullable owner*/ src)
+  {
+    stealElements(src);
+    if (src) {
+      delete src;
+    }
+  }
 
   // selectors
   int count() const                     { return list.count(); }
@@ -61,6 +87,7 @@ public:
   T *removeLast()                       { return (T*)list.removeLast(); }
   T *removeAt(int index)                { return (T*)list.removeAt(index); }
   void removeItem(T *item)              { list.removeItem((void*)item); }
+  void removeAll()                      { list.removeAll(); }
 
   // list-as-set: selectors
   int indexOf(T const *item) const      { return list.indexOf((void*)item); }

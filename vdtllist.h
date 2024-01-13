@@ -28,12 +28,16 @@ private:
   void adjustTail();
 
 public:
-  VoidTailList()                     { tail = NULL; }
+  VoidTailList()                     : VoidList(), tail(nullptr) {}
   ~VoidTailList()                    {}
 
-  // special ctor which steals the list and then deallocates the header
-  VoidTailList(VoidTailList *src)    { tail = NULL; steal(src); }
-  void steal(VoidTailList *src);     // deletes 'src'
+  // 2024-01-12: Removed the 'steal' method.  See comments at the top of
+  // vdtllist.cc for rationale.
+
+  // Assert that 'this' is empty, then if 'src' is not nullptr, transfer
+  // all of the elements of 'src' into 'this', leaving 'src' empty.
+  // This does *not* deallocate the 'src' object.
+  void stealElements(VoidTailList * /*nullable*/ src);
 
   // this syntax just makes the implementation inherited from
   // 'VoidList' public, whereas it would default to private,

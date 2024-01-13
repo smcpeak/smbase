@@ -89,12 +89,52 @@ static void testSTLBasics()
 }
 
 
+static void testStealingCtor()
+{
+  ASTList<Integer> *list1 = new ASTList<Integer>(new Integer(1));
+  list1->append(new Integer(2));
+
+  // Deallocates 'list1'.
+  ASTList<Integer> list2(list1);
+  xassert(list2.size() == 2);
+}
+
+static void testSteal()
+{
+  ASTList<Integer> *list1 = new ASTList<Integer>(new Integer(1));
+  list1->append(new Integer(2));
+
+  ASTList<Integer> list2;
+
+  // Deallocates 'list1'.
+  list2.steal(list1);
+  xassert(list2.size() == 2);
+}
+
+static void testStealElements()
+{
+  ASTList<Integer> list1(new Integer(1));
+  list1.append(new Integer(2));
+
+  ASTList<Integer> list2;
+  list2.stealElements(&list1);
+
+  xassert(list1.size() == 0);
+  xassert(list2.size() == 2);
+}
+
+
 // TODO: Test other things!
 
 
 void test_astlist()
 {
   testSTLBasics();
+  testStealingCtor();
+  testSteal();
+  testStealElements();
+
+  xassert(Integer::s_objectCount == 0);
 }
 
 

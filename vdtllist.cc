@@ -3,17 +3,39 @@
 
 #include "vdtllist.h"      // this module
 
-void VoidTailList::steal(VoidTailList *src)
+
+// 2024-01-12: Since its inception decades ago, 'VoidTailList' had a
+// 'steal' method that would transfer the elements of the source list
+// and then deallocate the 'src' object.  The deallocation was usually
+// undefined behavior because VoidTailList was usually a sub-object of
+// an ASTList, but the C++ standard only allows that if there is a
+// virtual destructor.  In practice this wasn't a problem because the
+// ASTList destructor did not do anything beyond what the VoidTailList
+// dtor did (when the list is empty, which it always was after stealing
+// the elements).  However, 'gcc -fsanitize=undefined' complains about a
+// related abuse, namely passing '&src->list' when 'src' itself is
+// nullptr (but again, in practice, this worked because 'list' is at
+// offset zero).
+//
+// I've now solved both of these problems by moving the deallocation up
+// into ASTList and removed 'VoidTailList::steal'.  The new
+// 'stealElements' method transfers the elements but does not deallocate
+// the list object itself.
+//
+// The interface exposed by ASTList is unchanged, so existing code
+// should not break.
+
+
+void VoidTailList::stealElements(VoidTailList * /*nullable*/ src)
 {
+  xassert(top == nullptr);
+  xassert(tail == nullptr);
+
   if (src) {
     top = src->top;
     tail = src->tail;
-    src->top = NULL;    // paranoia
-    delete src;
-  }
-  else {
-    top = NULL;
-    tail = NULL;
+    src->top = nullptr;
+    src->tail = nullptr;
   }
 }
 
