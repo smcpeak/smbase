@@ -156,4 +156,15 @@ bool isShellMetacharacter(int c)
 }
 
 
+int convertUSASCIIToUpper(int c)
+{
+  if (0x61 /*'a'*/ <= c && c <= 0x7a /*'z'*/) {
+    return c - 0x20;
+  }
+  else {
+    return c;
+  }
+}
+
+
 // EOF

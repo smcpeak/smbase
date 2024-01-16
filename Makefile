@@ -253,6 +253,7 @@ SRCS += run-process.cc
 SRCS += sm-compare.cc
 SRCS += sm-file-util.cc
 SRCS += sm-rc-obj.cc
+SRCS += sm-stristr.cc
 SRCS += sm-to-std-string.cc
 SRCS += smregexp.cc
 SRCS += srcloc.cc
@@ -474,7 +475,9 @@ UNIT_TEST_OBJS += overflow-test.o
 UNIT_TEST_OBJS += parsestring-test.o
 UNIT_TEST_OBJS += sm-pp-util-test.o
 UNIT_TEST_OBJS += sm-rc-ptr-test.o
+UNIT_TEST_OBJS += sm-stristr-test.o
 UNIT_TEST_OBJS += string-utils-test.o
+UNIT_TEST_OBJS += strutil-test.o
 UNIT_TEST_OBJS += vector-utils-test.o
 
 # Master unit test module.

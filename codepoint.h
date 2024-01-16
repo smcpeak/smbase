@@ -56,4 +56,11 @@ bool isASCIIOctDigit(int c);
 bool isShellMetacharacter(int c);
 
 
+// ---------------------------- Conversions ----------------------------
+// If 'c' encodes a lowercase letter in US-ASCII, return the
+// corresponding uppercase letter code according to American English.
+// Otherwise, return 'c'.
+int convertUSASCIIToUpper(int c);
+
+
 #endif // CODEPOINT_H

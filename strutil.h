@@ -130,6 +130,14 @@ bool hasSubstring(string const &haystack, string const &needle);
 int indexOfSubstring(string const &haystack, string const &needle);
 
 
+// Variants of the above where we treat the characters as US-ASCII and
+// ignore letter case.
+bool hasSubstring_insens_ascii(string const &haystack,
+                               string const &needle);
+int indexOfSubstring_insens_ascii(string const &haystack,
+                                  string const &needle);
+
+
 // read/write strings <-> files
 void writeStringToFile(rostring str, rostring fname);
 string readStringFromFile(rostring fname);
@@ -168,6 +176,10 @@ void qsortStringArray(char const **strings, int size);
 
 // Variant for use with ArrayStack::sort.
 int compareStringPtrs(string const *a, string const *b);
+
+
+// Unit tests, implemented in strutil-test.cc.
+void test_strutil();
 
 
 #endif // STRUTIL_H

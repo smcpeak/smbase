@@ -8,6 +8,7 @@
 #include "autofile.h"                  // AutoFILE
 #include "codepoint.h"                 // isPrintableASCII, isShellMetacharacter
 #include "exc.h"                       // xformat
+#include "sm-stristr.h"                // findSubstring_insens_ascii
 
 // libc
 #include <ctype.h>                     // isspace
@@ -557,6 +558,27 @@ int indexOfSubstring(string const &haystack, string const &needle)
 {
   char const *h = haystack.c_str();
   char const *occ = strstr(h, needle.c_str());
+  if (occ) {
+    return occ - h;
+  }
+  else {
+    return -1;
+  }
+}
+
+
+bool hasSubstring_insens_ascii(string const &haystack,
+                               string const &needle)
+{
+  return indexOfSubstring_insens_ascii(haystack, needle) >= 0;
+}
+
+
+int indexOfSubstring_insens_ascii(string const &haystack,
+                                  string const &needle)
+{
+  char const *h = haystack.c_str();
+  char const *occ = findSubstring_insens_ascii(h, needle.c_str());
   if (occ) {
     return occ - h;
   }
