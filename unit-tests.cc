@@ -40,6 +40,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(gdvalue);
   RUN_TEST(growbuf);
   RUN_TEST(map_utils);
+  RUN_TEST(mysig);
   RUN_TEST(objlist);
   RUN_TEST(overflow);
   RUN_TEST(parsestring);

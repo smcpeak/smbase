@@ -230,10 +230,6 @@ endif # GENSRC==1
 
 # ---------------------------- Main target -----------------------------
 
-# mysig needs some flags to *not* be set ....
-mysig.o: mysig.cc mysig.h
-	$(CXX) -c -g mysig.cc
-
 # Library source files in "LANG=C sort" order
 SRCS :=
 SRCS += autofile.cc
@@ -301,7 +297,7 @@ SRCS += warn.cpp
 
 # Some modules do not build on Mingw; for the moment I do not need them.
 ifeq ($(TARGET_PLATFORM_IS_MINGW),1)
-  SRCS := $(filter-out mypopen.c mysig.cc smregexp.cc,$(SRCS))
+  SRCS := $(filter-out mypopen.c smregexp.cc,$(SRCS))
 endif
 
 # Library object files.
@@ -334,7 +330,6 @@ TESTS += d2vector.exe
 TESTS += gprintf.exe
 TESTS += hashline.exe
 TESTS += mypopen.exe
-TESTS += mysig.exe
 TESTS += nonport.exe
 TESTS += pprint.exe
 TESTS += smregexp.exe
@@ -357,7 +352,6 @@ TESTS += vptrmap.exe
 # Some programs do not build on Mingw.
 NON_MINGW_TESTS :=
 NON_MINGW_TESTS += mypopen.exe
-NON_MINGW_TESTS += mysig.exe
 NON_MINGW_TESTS += smregexp.exe
 
 ifeq ($(TARGET_PLATFORM_IS_MINGW),1)
@@ -370,9 +364,6 @@ tests: $(TESTS)
 # this one is explicitly *not* linked against $(THIS)
 nonport.exe: nonport.cpp nonport.h gprintf.o
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cpp gprintf.o $(SYSLIBS)
-
-mysig.exe: mysig.cc mysig.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_MYSIG $(LDFLAGS) mysig.cc $(LIBS)
 
 mypopen.exe: mypopen.c mypopen.h
 	$(CC) -o $@ $(CFLAGS) -DTEST_MYPOPEN $(LDFLAGS) mypopen.c $(SYSLIBS)
@@ -443,6 +434,7 @@ UNIT_TEST_OBJS += gcc-options-test.o
 UNIT_TEST_OBJS += gdvalue-test.o
 UNIT_TEST_OBJS += growbuf-test.o
 UNIT_TEST_OBJS += map-utils-test.o
+UNIT_TEST_OBJS += mysig-test.o
 UNIT_TEST_OBJS += objlist-test.o
 UNIT_TEST_OBJS += overflow-test.o
 UNIT_TEST_OBJS += parsestring-test.o
@@ -590,7 +582,6 @@ check: $(TESTS)
 	$(RUN)./test-sm-file-util.exe
 	$(RUN)./test-stringset.exe
 ifneq ($(TARGET_PLATFORM_IS_MINGW),1)
-	$(RUN)./mysig.exe
 	$(RUN)./mypopen.exe
 	$(RUN)./smregexp.exe
 endif
