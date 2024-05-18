@@ -1,12 +1,19 @@
 // mypopen.h            see license.txt for copyright and terms of use
 // open a process and yield pipes to its stdin/stdout/stderr
 
-#ifndef MYPOPEN_H
-#define MYPOPEN_H
+#ifndef SMBASE_MYPOPEN_H
+#define SMBASE_MYPOPEN_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+// Returns true if this 'mypopen' module is working.  Otherwise, we are
+// running on a platform where it does not work.
+int mypopenModuleWorks();
+
+// Wrapper for 'wait' that just returns -1 for an unsupported platform.
+int mypopenWait(int *status);
 
 // create a pipe and retrieve the read and write file descriptors
 void makePipe(int *readEnd, int *writeEnd);
@@ -34,4 +41,4 @@ int popen_execvp(int *parentWritesChild, int *parentReadsChild,
 }
 #endif
 
-#endif // MYPOPEN_H
+#endif // SMBASE_MYPOPEN_H

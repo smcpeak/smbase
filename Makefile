@@ -297,7 +297,7 @@ SRCS += warn.cpp
 
 # Some modules do not build on Mingw; for the moment I do not need them.
 ifeq ($(TARGET_PLATFORM_IS_MINGW),1)
-  SRCS := $(filter-out mypopen.c smregexp.cc,$(SRCS))
+  SRCS := $(filter-out smregexp.cc,$(SRCS))
 endif
 
 # Library object files.
@@ -351,7 +351,6 @@ TESTS += vptrmap.exe
 
 # Some programs do not build on Mingw.
 NON_MINGW_TESTS :=
-NON_MINGW_TESTS += mypopen.exe
 NON_MINGW_TESTS += smregexp.exe
 
 ifeq ($(TARGET_PLATFORM_IS_MINGW),1)
@@ -581,8 +580,8 @@ check: $(TESTS)
 	$(RUN)./test-run-process.exe --unit-test
 	$(RUN)./test-sm-file-util.exe
 	$(RUN)./test-stringset.exe
-ifneq ($(TARGET_PLATFORM_IS_MINGW),1)
 	$(RUN)./mypopen.exe
+ifneq ($(TARGET_PLATFORM_IS_MINGW),1)
 	$(RUN)./smregexp.exe
 endif
 ifneq ($(CROSS_COMPILE),1)

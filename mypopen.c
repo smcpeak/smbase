@@ -3,14 +3,18 @@
 // this module's implementation is in C, and not dependent on anything
 // else in smbase, so it can be extracted and used independently
 
-#include "mypopen.h"    // this module
+#include "mypopen.h"         // this module
 
-#include <stdlib.h>     // exit, perror
-#include <stdio.h>      // printf
-#include <unistd.h>     // pipe, read, etc.
-#include <string.h>     // strlen
-#include <sys/types.h>  // pid_t
-#include <sys/wait.h>   // wait
+#include <stdlib.h>          // exit, perror
+#include <stdio.h>           // printf
+#include <string.h>          // strlen
+
+// POSIX
+#include <unistd.h>          // pipe, read, etc.
+#ifndef __WIN32__
+  #include <sys/types.h>     // pid_t
+  #include <sys/wait.h>      // wait
+#endif
 
 #define STDIN 0
 #define STDOUT 1
@@ -20,7 +24,7 @@
   #define max(a,b) ((a)>(b)?(a):(b))
 #endif
 
-// -------------------- helpers ----------------------
+
 static void die(char const *fn)
 {
   perror(fn);
@@ -28,6 +32,23 @@ static void die(char const *fn)
 }
 
 
+// The entire module only works on non-Windows.
+#ifndef __WIN32__
+
+
+int mypopenModuleWorks()
+{
+  return 1;
+}
+
+
+int mypopenWait(int *status)
+{
+  return wait(status);
+}
+
+
+// -------------------- helpers ----------------------
 void makePipe(int *readEnd, int *writeEnd)
 {
   int pipes[2];
@@ -161,6 +182,50 @@ int popen_pipes(int *parentWritesChild, int *parentReadsChild,
 }
 
 
+#else // __WIN32__
+
+int mypopenModuleWorks()
+{
+  return 0;
+}
+
+
+static int unsupported()
+{
+  errno = ENOSYS;
+  return -1;
+}
+
+
+int mypopenWait(int *status)
+{
+  return unsupported();
+}
+
+
+void makePipe(int *readEnd, int *writeEnd)
+{}
+
+
+int popen_pipes(int *parentWritesChild, int *parentReadsChild,
+                int *childStderr,
+                execFunction func, void *extraArgs)
+{
+  return unsupported();
+}
+
+
+int popen_execvp(int *parentWritesChild, int *parentReadsChild,
+                 int *childStderr,
+                 char const *file, char const * const *argv)
+{
+  return unsupported();
+}
+
+
+#endif
+
+
 // ------------------ test code ----------------------
 #ifdef TEST_MYPOPEN
 
@@ -168,6 +233,11 @@ int main()
 {
   char buf[80];
   int stat;
+
+  if (!mypopenModuleWorks()) {
+    printf("mypopen module does not work on this platform, skipping test\n");
+    return 0;
+  }
 
   // try cat
   {
@@ -210,7 +280,7 @@ int main()
     close(out);
 
     printf("waiting for cat to exit..\n");
-    if (wait(&stat) < 1) {
+    if (mypopenWait(&stat) < 1) {
       perror("wait");
     }
     else {
@@ -242,7 +312,7 @@ int main()
     close(err);
 
     printf("waiting for child to exit..\n");
-    if (wait(&stat) < 1) {
+    if (mypopenWait(&stat) < 1) {
       perror("wait");
     }
     else {
@@ -273,7 +343,7 @@ int main()
     close(out);
 
     printf("waiting for child to exit..\n");
-    if (wait(&stat) < 1) {
+    if (mypopenWait(&stat) < 1) {
       perror("wait");
     }
     else {
