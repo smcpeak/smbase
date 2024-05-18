@@ -145,11 +145,16 @@ void printSegfaultAddrs()
 
 static void infiniteRecursion()
 {
-  char buf[1024];
+  char volatile buf[1024];
   buf[0] = 4;
   buf[1] = buf[0];     // silence an icc warning
   buf[1023] = 6;
-  infiniteRecursion();
+
+  // This useless test is here to suppress a Clang infinite loop
+  // warning.
+  if (buf[0]) {
+    infiniteRecursion();
+  }
 }
 
 int main(int argc, char **argv)
@@ -166,7 +171,7 @@ int main(int argc, char **argv)
 
     long addr = strtoul(argv[1], NULL /*endp*/, 0 /*radix*/);
     printf("about to access 0x%lX ...\n", addr);
-    *((int*)addr) = 0;
+    *((int volatile*)addr) = 0;
     return 0;     // won't be reached for most values of 'addr'
   }
 
@@ -182,7 +187,7 @@ int main(int argc, char **argv)
     printf("about to deliberately cause a segfault ...\n");
     printf("(Note: 'gcc -fsanitize=undefined' will report a "
            "\"runtime error\" here too, which can be ignored.)\n");
-    *((int*)0) = 0;    // segfault!
+    *((int volatile*)0) = 0;    // segfault!
 
     printf("didn't segfault??\n");
     return 2;

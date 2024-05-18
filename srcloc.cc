@@ -702,7 +702,7 @@ SourceLoc SourceLocManager::encodeStatic(StaticLoc const &obj)
 
 SourceLocManager::File *SourceLocManager::findFileWithLoc(SourceLoc loc)
 {
-  static int count1 = 0;
+  static volatile int count1 = 0;
   ++count1;
 
   // check cache

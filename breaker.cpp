@@ -12,7 +12,7 @@ void ackackack(int*) {}
 
 void breaker()
 {
-  static int i=0;
+  static volatile int i=0;
   int a=1;               // all this junk is just to make sure
                          // that this function has a complete
   ackackack(&a);         // stack frame, so the debugger can unwind
