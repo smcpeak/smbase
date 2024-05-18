@@ -186,7 +186,7 @@ DEST convertNumber(SRC const &src)
 
 
 // Unit tests, in overflow-test.cc.
-int test_overflow();
+void test_overflow();
 
 
 #endif // OVERFLOW_H

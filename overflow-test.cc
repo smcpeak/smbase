@@ -298,7 +298,7 @@ void testConvertNumber()
 } // end anonymous namespace for test code
 
 
-int test_overflow()
+void test_overflow()
 {
   // This test throws many exceptions.
   RESTORER(bool, xBase::logExceptions, false);
@@ -318,7 +318,6 @@ int test_overflow()
   #undef RUNTEST
 
   cout << "overflow-test: PASSED" << endl;
-  return 0;
 }
 
 
