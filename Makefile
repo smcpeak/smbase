@@ -325,7 +325,6 @@ $(THIS): $(OBJS)
 # TODO: I would like to eliminate these stand-alone test programs in
 # favor of testing as much as possible from unit-tests.exe.
 TESTS :=
-TESTS += autofile.exe
 TESTS += bdffont.exe
 TESTS += bit2d.exe
 TESTS += bitarray.exe
@@ -466,9 +465,6 @@ tarrayqueue.exe: tarrayqueue.cc $(THIS)
 testarray.exe: testarray.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) testarray.cc $(LIBS)
 
-autofile.exe: autofile.cc $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_AUTOFILE $(LDFLAGS) autofile.cc $(LIBS)
-
 bitarray.exe: bitarray.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_BITARRAY $(LDFLAGS) bitarray.cc $(LIBS)
 
@@ -488,6 +484,7 @@ tarray2d.exe: tarray2d.cc array2d.h $(THIS)
 UNIT_TEST_OBJS :=
 UNIT_TEST_OBJS += array-test.o
 UNIT_TEST_OBJS += astlist-test.o
+UNIT_TEST_OBJS += autofile-test.o
 UNIT_TEST_OBJS += bflatten-test.o
 UNIT_TEST_OBJS += counting-ostream-test.o
 UNIT_TEST_OBJS += datablok-test.o
@@ -602,6 +599,13 @@ endif
 .PHONY: check-full
 check-full: check
 
+out/unit-tests.exe.ok: unit-tests.exe
+	$(CREATE_OUTPUT_DIRECTORY)
+	./unit-tests.exe
+	touch $@
+
+check: out/unit-tests.exe.ok
+
 check: $(TESTS)
 	$(RUN)./nonport.exe
 	$(RUN)./voidlist.exe
@@ -626,7 +630,6 @@ check: $(TESTS)
 	$(RUN)./tarrayqueue.exe
 	$(RUN)./testarray.exe
 	$(RUN)./taillist_test.exe
-	$(RUN)./autofile.exe autofile.cc
 	$(RUN)./bitarray.exe
 	$(RUN)./d2vector.exe
 	$(RUN)./bdffont.exe
@@ -638,7 +641,6 @@ check: $(TESTS)
 	$(RUN)./test-run-process.exe --unit-test
 	$(RUN)./test-sm-file-util.exe
 	$(RUN)./test-stringset.exe
-	$(RUN)./unit-tests.exe
 ifneq ($(TARGET_PLATFORM_IS_MINGW),1)
 	$(RUN)./mysig.exe
 	$(RUN)./mypopen.exe

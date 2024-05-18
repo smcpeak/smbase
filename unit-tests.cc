@@ -16,6 +16,7 @@
 
 void test_array();                     // array-test.cc
 void test_astlist();                   // astlist-test.cc
+void test_autofile();                  // autofile-test.cc
 void test_bflatten();                  // bflatten-test.cc
 void test_counting_ostream();          // counting-ostream-test.cc
 void test_dict();                      // dict-test.cc
@@ -46,6 +47,7 @@ static void entry(int argc, char **argv)
 
   RUN_TEST(array);
   RUN_TEST(astlist);
+  RUN_TEST(autofile);
   RUN_TEST(bflatten);
   RUN_TEST(counting_ostream);
   RUN_TEST(datablok);
