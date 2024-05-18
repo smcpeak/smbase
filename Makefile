@@ -364,7 +364,6 @@ TESTS += trdelete.exe
 TESTS += tsobjlist.exe
 TESTS += unit-tests.exe
 TESTS += vdtllist.exe
-TESTS += voidlist.exe
 TESTS += vptrmap.exe
 
 # Some programs do not build on Mingw.
@@ -384,20 +383,17 @@ tests: $(TESTS)
 nonport.exe: nonport.cpp nonport.h gprintf.o
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cpp gprintf.o $(SYSLIBS)
 
-voidlist.exe: voidlist.cc voidlist.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_VOIDLIST $(LDFLAGS) voidlist.cc $(LIBS)
-
 vdtllist.exe: vdtllist.cc vdtllist.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_VDTLLIST $(LDFLAGS) vdtllist.cc $(LIBS)
 
 taillist_test.exe: taillist_test.cc taillist.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) taillist_test.cc $(LIBS)
 
-tobjlist.exe: tobjlist.cc objlist.h voidlist.o $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) tobjlist.cc voidlist.o $(LIBS)
+tobjlist.exe: tobjlist.cc objlist.h $(THIS)
+	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) tobjlist.cc $(LIBS)
 
-tsobjlist.exe: tsobjlist.cc sobjlist.h voidlist.o $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) tsobjlist.cc voidlist.o $(LIBS)
+tsobjlist.exe: tsobjlist.cc sobjlist.h $(THIS)
+	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) tsobjlist.cc $(LIBS)
 
 bit2d.exe: bit2d.cc bit2d.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_BIT2D $(LDFLAGS) bit2d.cc $(LIBS)
@@ -499,6 +495,7 @@ UNIT_TEST_OBJS += sm-pp-util-test.o
 UNIT_TEST_OBJS += sm-rc-ptr-test.o
 UNIT_TEST_OBJS += string-utils-test.o
 UNIT_TEST_OBJS += vector-utils-test.o
+UNIT_TEST_OBJS += voidlist-test.o
 
 # Master unit test module.
 UNIT_TEST_OBJS += unit-tests.o
@@ -608,7 +605,6 @@ check: out/unit-tests.exe.ok
 
 check: $(TESTS)
 	$(RUN)./nonport.exe
-	$(RUN)./voidlist.exe
 	$(RUN)./vdtllist.exe
 	$(RUN)./tobjlist.exe
 	$(RUN)./bit2d.exe
