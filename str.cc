@@ -508,35 +508,4 @@ OldSmbaseString vstringf(char const *format, va_list args)
 }
 
 
-// ------------------ test code --------------------
-#ifdef TEST_STR
-
-#include "sm-iostream.h"    // cout
-
-void test(unsigned long val)
-{
-  //cout << stringb(val << " in hex: 0x" << stringBuilder::Hex(val)) << endl;
-
-  cout << stringb(val << " in hex: " << SBHex(val)) << endl;
-}
-
-int main(int argc, char **argv)
-{
-  // for the moment I just want to test the hex formatting
-  test(64);
-  test(0xFFFFFFFF);
-  test(0);
-  test((unsigned long)(-1));
-  test(1);
-
-  cout << "stringf: " << stringf("int=%d hex=%X str=%s char=%c float=%f",
-                                 argc, 0xAA, "hi", 'f', 3.4) << endl;
-
-  cout << "ptr: " << stringb(argv) << endl;
-
-  cout << "tests passed\n";
-
-  return 0;
-}
-
-#endif // TEST_STR
+// EOF

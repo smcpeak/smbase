@@ -46,6 +46,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(sm_pp_util);
   RUN_TEST(sm_rc_ptr);
   RUN_TEST(sobjlist);
+  RUN_TEST(str);
   RUN_TEST(strdict);
   RUN_TEST(string_utils);
   RUN_TEST(svdict);
