@@ -27,6 +27,7 @@ void test_map_utils();                 // map-utils-test.cc
 void test_sm_rc_ptr();                 // sm-rc-ptr-test.cc
 void test_string_utils();              // string-utils-test.cc
 void test_vector_utils();              // vector-utils-test.cc
+void test_vdtllist();                  // vdtllist-test.cc
 void test_voidlist();                  // voidlist-test.cc
 
 
@@ -62,6 +63,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(sm_pp_util);
   RUN_TEST(sm_rc_ptr);
   RUN_TEST(string_utils);
+  RUN_TEST(vdtllist);
   RUN_TEST(vector_utils);
   RUN_TEST(voidlist);
 

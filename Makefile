@@ -363,7 +363,6 @@ TESTS += tobjpool.exe
 TESTS += trdelete.exe
 TESTS += tsobjlist.exe
 TESTS += unit-tests.exe
-TESTS += vdtllist.exe
 TESTS += vptrmap.exe
 
 # Some programs do not build on Mingw.
@@ -382,9 +381,6 @@ tests: $(TESTS)
 # this one is explicitly *not* linked against $(THIS)
 nonport.exe: nonport.cpp nonport.h gprintf.o
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cpp gprintf.o $(SYSLIBS)
-
-vdtllist.exe: vdtllist.cc vdtllist.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_VDTLLIST $(LDFLAGS) vdtllist.cc $(LIBS)
 
 taillist_test.exe: taillist_test.cc taillist.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) taillist_test.cc $(LIBS)
@@ -494,6 +490,7 @@ UNIT_TEST_OBJS += parsestring-test.o
 UNIT_TEST_OBJS += sm-pp-util-test.o
 UNIT_TEST_OBJS += sm-rc-ptr-test.o
 UNIT_TEST_OBJS += string-utils-test.o
+UNIT_TEST_OBJS += vdtllist-test.o
 UNIT_TEST_OBJS += vector-utils-test.o
 UNIT_TEST_OBJS += voidlist-test.o
 
@@ -605,7 +602,6 @@ check: out/unit-tests.exe.ok
 
 check: $(TESTS)
 	$(RUN)./nonport.exe
-	$(RUN)./vdtllist.exe
 	$(RUN)./tobjlist.exe
 	$(RUN)./bit2d.exe
 	$(RUN)./growbuf.exe
