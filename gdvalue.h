@@ -290,8 +290,13 @@ public:      // methods
   GDVALUE_CORE_CTOR GDValue(T const *str) = delete;
 
   // Then define the actual constructor I want as a specialization.
-  template <>
-  GDVALUE_CORE_CTOR GDValue(char const *str);
+  //
+  // Hmmm, it seems that GCC does not allow this.
+  // https://stackoverflow.com/questions/49707184/explicit-specialization-in-non-namespace-scope-does-not-compile-in-gcc
+  //
+  // Moving the declaration to namespace scope...
+  //template <>
+  //GDVALUE_CORE_CTOR GDValue(char const *str);
 
   void stringSet(GDVString const &str);
   void stringSet(GDVString      &&str);
@@ -406,6 +411,12 @@ public:      // methods
 
   #undef DECLARE_GDV_KIND_ITERATORS
 };
+
+
+// Declare the ctor specialization that GCC does not like to have inside
+// the class body.
+template <>
+GDVALUE_CORE_CTOR GDValue::GDValue(char const *str);
 
 
 #define DEFINE_GDV_KIND_ITERABLE(GDVKindName, kindName)              \
