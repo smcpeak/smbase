@@ -332,7 +332,6 @@ TESTS += crc.exe
 TESTS += cycles.exe
 TESTS += d2vector.exe
 TESTS += gprintf.exe
-TESTS += growbuf.exe
 TESTS += hashline.exe
 TESTS += mypopen.exe
 TESTS += mysig.exe
@@ -377,9 +376,6 @@ tests: $(TESTS)
 # this one is explicitly *not* linked against $(THIS)
 nonport.exe: nonport.cpp nonport.h gprintf.o
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cpp gprintf.o $(SYSLIBS)
-
-growbuf.exe: growbuf.cc growbuf.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_GROWBUF $(LDFLAGS) growbuf.cc $(LIBS)
 
 strdict.exe: strdict.cc strdict.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_STRDICT $(LDFLAGS) strdict.cc $(LIBS)
@@ -469,6 +465,7 @@ UNIT_TEST_OBJS += dict-test.o
 UNIT_TEST_OBJS += functional-set-test.o
 UNIT_TEST_OBJS += gcc-options-test.o
 UNIT_TEST_OBJS += gdvalue-test.o
+UNIT_TEST_OBJS += growbuf-test.o
 UNIT_TEST_OBJS += map-utils-test.o
 UNIT_TEST_OBJS += objlist-test.o
 UNIT_TEST_OBJS += overflow-test.o
@@ -590,7 +587,6 @@ check: out/unit-tests.exe.ok
 
 check: $(TESTS)
 	$(RUN)./nonport.exe
-	$(RUN)./growbuf.exe
 	$(RUN)./strdict.exe
 	$(RUN)./svdict.exe
 	$(RUN)./str.exe
