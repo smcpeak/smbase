@@ -1,10 +1,11 @@
-// taillist_test.cc; see License.txt for copyright and terms of use
-
+// taillist-test.cc; see License.txt for copyright and terms of use
 // test code for taillist
-#include "taillist.h"
-#include "sm-test.h" // USUAL_MAIN
 
-void entry()
+#include "taillist.h"                  // module under test
+
+
+// Called from unit-tests.cc.
+void test_taillist()
 {
   int a = 2,b = 4,c = 8,d = 16, e = 42;
 
@@ -38,7 +39,7 @@ void entry()
     xassert( *(iter.data()) == count);
     count *= 2;
   }
-
 }
 
-USUAL_MAIN
+
+// EOF

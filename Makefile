@@ -346,7 +346,6 @@ TESTS += strdict.exe
 TESTS += strhash.exe
 TESTS += strutil.exe
 TESTS += svdict.exe
-TESTS += taillist_test.exe
 TESTS += tarray2d.exe
 TESTS += tarrayqueue.exe
 TESTS += test-codepoint.exe
@@ -381,9 +380,6 @@ tests: $(TESTS)
 # this one is explicitly *not* linked against $(THIS)
 nonport.exe: nonport.cpp nonport.h gprintf.o
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cpp gprintf.o $(SYSLIBS)
-
-taillist_test.exe: taillist_test.cc taillist.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) taillist_test.cc $(LIBS)
 
 tobjlist.exe: tobjlist.cc objlist.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) tobjlist.cc $(LIBS)
@@ -490,6 +486,7 @@ UNIT_TEST_OBJS += parsestring-test.o
 UNIT_TEST_OBJS += sm-pp-util-test.o
 UNIT_TEST_OBJS += sm-rc-ptr-test.o
 UNIT_TEST_OBJS += string-utils-test.o
+UNIT_TEST_OBJS += taillist-test.o
 UNIT_TEST_OBJS += vdtllist-test.o
 UNIT_TEST_OBJS += vector-utils-test.o
 UNIT_TEST_OBJS += voidlist-test.o
@@ -621,7 +618,6 @@ check: $(TESTS)
 	$(RUN)./pprint.exe
 	$(RUN)./tarrayqueue.exe
 	$(RUN)./testarray.exe
-	$(RUN)./taillist_test.exe
 	$(RUN)./bitarray.exe
 	$(RUN)./d2vector.exe
 	$(RUN)./bdffont.exe
