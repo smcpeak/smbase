@@ -29,6 +29,7 @@ void test_map_utils();                 // map-utils-test.cc
 void test_objlist();                   // objlist-test.cc
 void test_sm_rc_ptr();                 // sm-rc-ptr-test.cc
 void test_sobjlist();                  // sobjlist-test.cc
+void test_strdict();                   // strdict-test.cc
 void test_string_utils();              // string-utils-test.cc
 void test_taillist();                  // taillist-test.cc
 void test_vector_utils();              // vector-utils-test.cc
@@ -71,6 +72,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(sm_pp_util);
   RUN_TEST(sm_rc_ptr);
   RUN_TEST(sobjlist);
+  RUN_TEST(strdict);
   RUN_TEST(string_utils);
   RUN_TEST(taillist);
   RUN_TEST(vdtllist);

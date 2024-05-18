@@ -340,7 +340,6 @@ TESTS += pprint.exe
 TESTS += smregexp.exe
 TESTS += srcloc.exe
 TESTS += str.exe
-TESTS += strdict.exe
 TESTS += strhash.exe
 TESTS += strutil.exe
 TESTS += svdict.exe
@@ -376,9 +375,6 @@ tests: $(TESTS)
 # this one is explicitly *not* linked against $(THIS)
 nonport.exe: nonport.cpp nonport.h gprintf.o
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cpp gprintf.o $(SYSLIBS)
-
-strdict.exe: strdict.cc strdict.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_STRDICT $(LDFLAGS) strdict.cc $(LIBS)
 
 svdict.exe: svdict.cc svdict.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_SVDICT $(LDFLAGS) svdict.cc $(LIBS)
@@ -473,6 +469,7 @@ UNIT_TEST_OBJS += parsestring-test.o
 UNIT_TEST_OBJS += sm-pp-util-test.o
 UNIT_TEST_OBJS += sm-rc-ptr-test.o
 UNIT_TEST_OBJS += sobjlist-test.o
+UNIT_TEST_OBJS += strdict-test.o
 UNIT_TEST_OBJS += string-utils-test.o
 UNIT_TEST_OBJS += taillist-test.o
 UNIT_TEST_OBJS += vdtllist-test.o
@@ -587,7 +584,6 @@ check: out/unit-tests.exe.ok
 
 check: $(TESTS)
 	$(RUN)./nonport.exe
-	$(RUN)./strdict.exe
 	$(RUN)./svdict.exe
 	$(RUN)./str.exe
 	$(RUN)./strutil.exe
