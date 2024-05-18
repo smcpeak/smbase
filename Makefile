@@ -351,7 +351,6 @@ TESTS += test-stringset.exe
 TESTS += test-tree-print.exe
 TESTS += testarray.exe
 TESTS += tobjpool.exe
-TESTS += trdelete.exe
 TESTS += unit-tests.exe
 TESTS += vptrmap.exe
 
@@ -371,9 +370,6 @@ tests: $(TESTS)
 # this one is explicitly *not* linked against $(THIS)
 nonport.exe: nonport.cpp nonport.h gprintf.o
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cpp gprintf.o $(SYSLIBS)
-
-trdelete.exe: trdelete.cc trdelete.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_TRDELETE $(LDFLAGS) trdelete.cc $(LIBS)
 
 mysig.exe: mysig.cc mysig.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_MYSIG $(LDFLAGS) mysig.cc $(LIBS)
@@ -460,6 +456,7 @@ UNIT_TEST_OBJS += string-utils-test.o
 UNIT_TEST_OBJS += strutil-test.o
 UNIT_TEST_OBJS += svdict-test.o
 UNIT_TEST_OBJS += taillist-test.o
+UNIT_TEST_OBJS += trdelete-test.o
 UNIT_TEST_OBJS += vdtllist-test.o
 UNIT_TEST_OBJS += vector-utils-test.o
 UNIT_TEST_OBJS += voidlist-test.o
@@ -572,7 +569,6 @@ check: out/unit-tests.exe.ok
 
 check: $(TESTS)
 	$(RUN)./nonport.exe
-	$(RUN)./trdelete.exe
 	$(RUN)./tobjpool.exe
 	$(RUN)./cycles.exe
 	$(RUN)./hashline.exe

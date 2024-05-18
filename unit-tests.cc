@@ -53,6 +53,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(strutil);
   RUN_TEST(svdict);
   RUN_TEST(taillist);
+  RUN_TEST(trdelete);
   RUN_TEST(vdtllist);
   RUN_TEST(vector_utils);
   RUN_TEST(voidlist);

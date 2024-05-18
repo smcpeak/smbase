@@ -1,11 +1,12 @@
 // trdelete.cc            see license.txt for copyright and terms of use
 // code for trdelete.h
 
-#include <stdlib.h>       // abs
 #include "trdelete.h"     // this module
-#include "string.h"       // memset
+
 #include "breaker.h"      // breaker
 
+#include <stdlib.h>       // abs
+#include <string.h>       // memset
 
 // There is a surprising twist to our story.  When an object is created with
 // 'new' on the dynamic heap, and it throws an exception, its destructor is not
@@ -68,60 +69,4 @@ void trashingDeleteArr(void *blk, size_t size)
 }
 
 
-// ------------------------ test code ---------------------
-#ifdef TEST_TRDELETE
-
-#include <assert.h>     // assert
-#include <stdio.h>      // printf
-
-class Foo {
-public:
-  TRASHINGDELETE
-  int junk[10];         // stay away from malloc's data structures
-  int x;
-  int moreJunk[10];     // more padding
-};
-
-class Bar {
-public:
-  int junk[10];         // stay away from malloc's data structures
-  int x;
-  int moreJunk[10];     // more padding
-};
-
-
-// Pointer I can use to read memory after 'delete' has done its thing.
-// Using this does not avoid the undefined behavior, but it should
-// hide the UB from the compiler so the optimizer will not stray from
-// my intended behavior.
-int volatile * volatile fieldptr;
-
-int main()
-{
-  printf("malloc: %p\n", malloc(10));
-
-  Foo *f = new Foo;
-  f->x = 5;
-  fieldptr = &(f->x);
-  assert(*fieldptr == 5);
-  delete f;
-  if (*fieldptr == 5) {
-    printf("trashing-delete failed\n");
-    return 2;
-  }
-
-  Bar *b = new Bar;
-  b->x = 7;
-  fieldptr = &(b->x);
-  assert(*fieldptr == 7);
-  delete b;
-  if ((unsigned)(*fieldptr) == 0xAAAAAAAAu) {    // did it trash it anyway?
-    printf("non-trashing-delete failed\n");
-    return 2;
-  }
-
-  printf("trashing delete works\n");
-  return 0;
-}
-
-#endif // TEST_TRDELETE
+// EOF
