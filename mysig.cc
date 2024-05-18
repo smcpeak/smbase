@@ -17,7 +17,8 @@
 #endif
 
 
-#ifndef __CYGWIN__      // everything here is for *not* cygwin
+// Everything here is for platforms other than Windows.
+#if !(defined(__WIN32__))
 
 
 int mysigModuleWorks()
@@ -151,7 +152,7 @@ void printSegfaultAddrs()
 }
 
 
-#else   // cygwin -- just stubs so it compiles
+#else   // Windows -- just stubs so it compiles
 
 int mysigModuleWorks()
 {
@@ -165,7 +166,7 @@ void jmpHandler(int) {}
 void printSegfaultAddrs() {}
 
 
-#endif     // cygwin
+#endif  // Windows
 
 
 // EOF

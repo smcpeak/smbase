@@ -4,6 +4,7 @@
 #include "mysig.h"                     // module under test
 
 #include <setjmp.h>                    // setjmp
+#include <stdint.h>                    // uintptr_t
 #include <stdio.h>                     // printf
 #include <stdlib.h>                    // strtoul, exit
 #include <string.h>                    // strcmp
@@ -36,7 +37,7 @@ static void runTest()
       infiniteRecursion();
     }
 
-    long addr = strtoul(segfaultAddr, NULL /*endp*/, 0 /*radix*/);
+    uintptr_t addr = strtoul(segfaultAddr, NULL /*endp*/, 0 /*radix*/);
     printf("about to access 0x%lX ...\n", addr);
     *((int volatile*)addr) = 0;
     return;     // won't be reached for most values of 'addr'
@@ -45,9 +46,16 @@ static void runTest()
   if (setjmp(sane_state) == 0) {   // normal flow
     setHandler(SIGINT, printHandler);
     setHandler(SIGTERM, printHandler);
-    setHandler(SIGUSR1, jmpHandler);
     setHandler(SIGSEGV, jmpHandler);
-    setHandler(SIGBUS, jmpHandler);   // osx gives SIBGUS instead of SIGSEGV
+    #ifdef __WIN32__
+      // Windows does not seem to have SIGUSR1 or SIGBUS definitions.
+      // I'm not going to run this code on Windows, but compiling it is
+      // good for detecting syntax errors, so I'll just avoid the
+      // problematic symbols.
+    #else
+      setHandler(SIGUSR1, jmpHandler);
+      setHandler(SIGBUS, jmpHandler);   // osx gives SIBGUS instead of SIGSEGV
+    #endif
 
     //printf("I'm pid %d waiting to be killed...\n", getpid());
     //sleep(10);
