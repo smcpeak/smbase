@@ -4,12 +4,12 @@
 #include "sm-to-std-string.h"          // this module
 
 
-std::vector<string> toSMStringVector(
+std::vector<OldSmbaseString> toSMStringVector(
   std::vector<std::string> const &vec)
 {
-  std::vector<string> ret;
+  std::vector<OldSmbaseString> ret;
   for (std::string const &s : vec) {
-    ret.push_back(string(s.c_str()));
+    ret.push_back(OldSmbaseString(s.c_str()));
   }
   return ret;
 }

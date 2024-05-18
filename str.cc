@@ -18,7 +18,7 @@
 #include "array.h"          // Array
 
 
-// ----------------------- string ---------------------
+// ----------------------- OldSmbaseString ---------------------
 
 // put the empty string itself in read-only memory
 char const nul_byte = 0;
@@ -26,10 +26,10 @@ char const nul_byte = 0;
 // deliberately cast away the constness; I cannot declare
 // 'emptyString' to be const because it gets assigned to 's', but it
 // is nevertheless the intent that I never modify 'nul_byte'
-char * const string::emptyString = const_cast<char*>(&nul_byte);
+char * const OldSmbaseString::emptyString = const_cast<char*>(&nul_byte);
 
 
-string::string(char const *src, int length, SmbaseStringFunc)
+OldSmbaseString::OldSmbaseString(char const *src, int length, SmbaseStringFunc)
 {
   s=emptyString;
   setlength(length);       // setlength already has the +1; sets final NUL
@@ -38,7 +38,7 @@ string::string(char const *src, int length, SmbaseStringFunc)
 
 
 // This is the same code as the above constructor.
-string::string(char const *src, int length)
+OldSmbaseString::OldSmbaseString(char const *src, int length)
 {
   s=emptyString;
   setlength(length);
@@ -46,7 +46,7 @@ string::string(char const *src, int length)
 }
 
 
-void string::dup(char const *src)
+void OldSmbaseString::dup(char const *src)
 {
   // std::string does not accept NULL pointers
   xassert(src != NULL);
@@ -61,7 +61,7 @@ void string::dup(char const *src)
   }
 }
 
-void string::kill()
+void OldSmbaseString::kill()
 {
   if (s != emptyString) {
     delete[] s;         // found by Coverity Prevent
@@ -69,30 +69,30 @@ void string::kill()
 }
 
 
-string::string(Flatten&)
+OldSmbaseString::OldSmbaseString(Flatten&)
   : s(emptyString)
 {}
 
-void string::xfer(Flatten &flat)
+void OldSmbaseString::xfer(Flatten &flat)
 {
   flat.xferCharString(s);
 }
 
 
-int string::length() const
+int OldSmbaseString::length() const
 {
   xassert(s);
   return strlen(s);
 }
 
-bool string::contains(char c) const
+bool OldSmbaseString::contains(char c) const
 {
   xassert(s);
   return !!strchr(s, c);
 }
 
 
-string string::substring(int startIndex, int len) const
+OldSmbaseString OldSmbaseString::substring(int startIndex, int len) const
 {
   xassert(startIndex >= 0 &&
           len >= 0 &&
@@ -102,14 +102,14 @@ string string::substring(int startIndex, int len) const
 }
 
 
-string::string(std::string const &src)
+OldSmbaseString::OldSmbaseString(std::string const &src)
   : s(emptyString)
 {
   dup(src.c_str());
 }
 
 
-string &string::setlength(int length)
+OldSmbaseString &OldSmbaseString::setlength(int length)
 {
   kill();
   if (length > 0) {
@@ -126,12 +126,12 @@ string &string::setlength(int length)
 }
 
 
-int string::compareTo(string const &src) const
+int OldSmbaseString::compareTo(OldSmbaseString const &src) const
 {
   return compareTo(src.s);
 }
 
-int string::compareTo(char const *src) const
+int OldSmbaseString::compareTo(char const *src) const
 {
   if (src == NULL) {
     src = emptyString;
@@ -140,21 +140,21 @@ int string::compareTo(char const *src) const
 }
 
 
-string string::operator+(string const &tail) const
+OldSmbaseString OldSmbaseString::operator+(OldSmbaseString const &tail) const
 {
-  string dest(length() + tail.length(), SMBASE_STRING_FUNC);
+  OldSmbaseString dest(length() + tail.length(), SMBASE_STRING_FUNC);
   strcpy(dest.s, s);
   strcat(dest.s, tail.s);
   return dest;
 }
 
-string& string::operator+=(string const &tail)
+OldSmbaseString& OldSmbaseString::operator+=(OldSmbaseString const &tail)
 {
   return *this = *this + tail;
 }
 
 
-void string::readdelim(istream &is, char const *delim)
+void OldSmbaseString::readdelim(istream &is, char const *delim)
 {
   stringBuilder sb;
   sb.readdelim(is, delim);
@@ -162,13 +162,13 @@ void string::readdelim(istream &is, char const *delim)
 }
 
 
-void string::write(ostream &os) const
+void OldSmbaseString::write(ostream &os) const
 {
   os << s;     // standard char* writing routine
 }
 
 
-void string::selfCheck() const
+void OldSmbaseString::selfCheck() const
 {}
 
 
@@ -192,9 +192,9 @@ int atoi(rostring s)
   return atoi(toCStr(s));
 }
 
-string substring(char const *p, int n)
+OldSmbaseString substring(char const *p, int n)
 {
-  return string(p, n, SMBASE_STRING_FUNC);
+  return OldSmbaseString(p, n, SMBASE_STRING_FUNC);
 }
 
 
@@ -206,7 +206,7 @@ stringBuilder::stringBuilder(int len)
 
 void stringBuilder::init(int initSize)
 {
-  size = initSize + EXTRA_SPACE + 1;     // +1 to be like string::setlength
+  size = initSize + EXTRA_SPACE + 1;     // +1 to be like OldSmbaseString::setlength
   s = new char[size];
   end = s;
   end[initSize] = 0;
@@ -425,10 +425,10 @@ void stringBuilder::readdelim(istream &is, char const *delim)
 
 
 // ---------------------- toString ---------------------
-#define TOSTRING(type)        \
-  string toString(type val)   \
-  {                           \
-    return stringc << val;    \
+#define TOSTRING(type)               \
+  OldSmbaseString toString(type val) \
+  {                                  \
+    return stringc << val;           \
   }
 
 TOSTRING(int)
@@ -441,23 +441,23 @@ TOSTRING(float)
 
 // this one is more liberal than 'stringc << null' because it gets
 // used by the PRINT_GENERIC macro in my astgen tool
-string toString(char const *str)
+OldSmbaseString toString(char const *str)
 {
   if (!str) {
-    return string("(null)");
+    return OldSmbaseString("(null)");
   }
   else {
-    return string(str);
+    return OldSmbaseString(str);
   }
 }
 
 
 // ------------------- stringf -----------------
-string stringf(char const *format, ...)
+OldSmbaseString stringf(char const *format, ...)
 {
   va_list args;
   va_start(args, format);
-  string ret = vstringf(format, args);
+  OldSmbaseString ret = vstringf(format, args);
   va_end(args);
   return ret;
 }
@@ -473,7 +473,7 @@ string stringf(char const *format, ...)
 #endif
 
 
-string vstringf(char const *format, va_list args)
+OldSmbaseString vstringf(char const *format, va_list args)
 {
   // estimate string length
   va_list args2;
@@ -504,7 +504,7 @@ string vstringf(char const *format, va_list args)
   }
 
   // happy
-  return string(buf.ptrC());
+  return OldSmbaseString(buf.ptrC());
 }
 
 

@@ -153,7 +153,7 @@ BitArray stringToBitArray(char const *src)
   return ret;
 }
 
-string toString(BitArray const &b)
+OldSmbaseString toString(BitArray const &b)
 {
   int len = b.length();
   stringBuilder ret(len);
@@ -199,7 +199,7 @@ void BitArray::Iter::adv()
 
 #include "sm-test.h"  // USUAL_MAIN
 
-string toStringViaIter(BitArray const &b)
+OldSmbaseString toStringViaIter(BitArray const &b)
 {
   stringBuilder sb;
   int index = 0;
@@ -227,8 +227,8 @@ void testIter(char const *str)
   BitArray b = stringToBitArray(str);
   b.selfCheck();
 
-  string s1 = toString(b);
-  string s2 = toStringViaIter(b);
+  OldSmbaseString s1 = toString(b);
+  OldSmbaseString s2 = toStringViaIter(b);
   if (s1 != s2 ||
       !s1.equals(str)) {
     cout << "str: " << str << endl;
@@ -247,7 +247,7 @@ void testIter(char const *str)
     inv << (str[i]=='0'? '1' : '0');
   }
 
-  string cStr = toString(c);
+  OldSmbaseString cStr = toString(c);
   if (!inv.equals(cStr)) {
     cout << " inv: " << inv << endl;
     cout << "cStr: " << cStr << endl;
@@ -273,8 +273,8 @@ void testUnionIntersection(char const *s1, char const *s2)
   BitArray u = b1 | b2;
   BitArray i = b1 & b2;
 
-  string uStr = toString(u);
-  string iStr = toString(i);
+  OldSmbaseString uStr = toString(u);
+  OldSmbaseString iStr = toString(i);
 
   if (!uStr.equals(expectUnion)) {
     cout << "         s1: " << s1 << endl;

@@ -48,7 +48,7 @@ public:
 private:    // data
   // name of the pp file; this is needed for queries to lines
   // before any #line is encountered
-  string ppFname;
+  OldSmbaseString ppFname;
 
   // map for canonical storage of orig filenames
   StringTable filenames;
@@ -89,8 +89,8 @@ public:     // funcs
   // int numUniqueFilenames() { return filenames.size(); }
 
   // XML serialization only
-  string &serializationOnly_get_ppFname() { return ppFname; }
-  void serializationOnly_set_ppFname(string const &ppFname0) { ppFname = ppFname0; }
+  OldSmbaseString &serializationOnly_get_ppFname() { return ppFname; }
+  void serializationOnly_set_ppFname(OldSmbaseString const &ppFname0) { ppFname = ppFname0; }
   ArrayStack<HashLine> &serializationOnly_get_directives() { return directives; }
 };
 

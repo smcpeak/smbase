@@ -23,7 +23,7 @@
 class StringIntDict {
 public:     // types
   // 'foreach' iterator functions
-  typedef bool (*ForeachFn)(string const &key, intptr_t value, void *extra);
+  typedef bool (*ForeachFn)(OldSmbaseString const &key, intptr_t value, void *extra);
 
   // external iterator
   class Iter {
@@ -38,7 +38,7 @@ public:     // types
     bool isDone() const { return iter.isDone(); }
     Iter& next() { iter.next(); return *this; }
 
-    string const &key() const { return iter.key(); }
+    OldSmbaseString const &key() const { return iter.key(); }
     intptr_t &value() const { return (intptr_t &)iter.value(); }
 
     int private_getCurrent() const { return iter.private_getCurrent(); }
@@ -57,7 +57,7 @@ public:     // types
     bool isDone() const { return iter.isDone(); }
     IterC& next() { iter.next(); return *this; }
 
-    string const &key() const { return iter.key(); }
+    OldSmbaseString const &key() const { return iter.key(); }
     intptr_t value() const { return (intptr_t)iter.value(); }
 
     int private_getCurrent() const { return iter.private_getCurrent(); }

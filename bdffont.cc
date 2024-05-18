@@ -21,7 +21,7 @@ BDFFont::Property::Property(rostring n, int i)
 {}
 
 
-BDFFont::Property::Property(rostring n, string s)
+BDFFont::Property::Property(rostring n, OldSmbaseString s)
   : name(n),
     isInteger(false),
     intValue(0),
@@ -158,7 +158,7 @@ static void expect(char const *&p, char const *expected)
 
   if (*expected != 0) {
     XFORMAT("expected \"" << origExpected <<
-            "\", but found \"" << string(origP, p-origP) << "\"");
+            "\", but found \"" << OldSmbaseString(origP, p-origP) << "\"");
   }
 }
 
@@ -196,7 +196,7 @@ static void skipSpaces(char const *&p)
 
 
 // Read characters up to the next newline.  Skip the newline.
-static string parseString(char const *&p)
+static OldSmbaseString parseString(char const *&p)
 {
   stringBuilder ret;
   for (; *p != 0 && *p != '\n'; p++) {
@@ -226,7 +226,7 @@ static string parseString(char const *&p)
 
 
 // Read characters up to next space.  Skip the spaces.
-static string parseWord(char const *&p)
+static OldSmbaseString parseWord(char const *&p)
 {
   stringBuilder ret;
 
@@ -294,7 +294,7 @@ static void skipNewline(char const *&p)
 
 // Parse a "number" which is a decimal fractional value.  Return the
 // representation string.  Skip any following spaces.
-static string parseNumber(char const *&p)
+static OldSmbaseString parseNumber(char const *&p)
 {
   char const *orig = p;
 
@@ -306,7 +306,7 @@ static string parseNumber(char const *&p)
     XFORMAT("expected a decimal value: '" << *p << "'");
   }
 
-  string ret(orig, p-orig);
+  OldSmbaseString ret(orig, p-orig);
 
   skipSpacesOpt(p);
 
@@ -361,7 +361,7 @@ static bool parseMetricsAttribute(char const *&p, rostring keyword,
 
 
 // Parse a quoted string at 'p'.
-static string parseQuotedString(char const *&p)
+static OldSmbaseString parseQuotedString(char const *&p)
 {
   expect(p, "\"");
 
@@ -401,7 +401,7 @@ static void parseProperties(char const *&p, int numProps,
                             ObjList<BDFFont::Property> &properties)
 {
   for (int i=0; i < numProps; i++) {
-    string name = parseWord(p);
+    OldSmbaseString name = parseWord(p);
     if (name == "ENDPROPERTIES") {
       XFORMAT("unexpected ENDPROPERTIES; only read " << i <<
               " out of " << numProps << " properties");
@@ -418,7 +418,7 @@ static void parseProperties(char const *&p, int numProps,
 
   properties.reverse();
 
-  string end = parseWord(p);
+  OldSmbaseString end = parseWord(p);
   if (end != "ENDPROPERTIES") {
     XFORMAT("expected ENDPROPERTIES, but got: " << end);
   }
@@ -523,7 +523,7 @@ static void parseGlyph(char const *&p, BDFFont::Glyph *glyph,
 
   for (;;) {
     skipBlanks(p);
-    string keyword = parseWord(p);
+    OldSmbaseString keyword = parseWord(p);
 
     try {
       if (keyword == "ENCODING") {
@@ -603,7 +603,7 @@ static void parseChars(char const *&p, int numChars, BDFFont &font)
     // I store this in a local, in addition to 'glyph->name', so that
     // I can be sure it will be available in the exception handler
     // even after 'glyph' itself might become NULL.
-    string glyphName = parseString(p);
+    OldSmbaseString glyphName = parseString(p);
 
     Owner<BDFFont::Glyph> glyph(new BDFFont::Glyph);
     glyph->name = glyphName;
@@ -641,7 +641,7 @@ static void parseChars(char const *&p, int numChars, BDFFont &font)
 
 // Return a string of the form "<line>:<col>" describing where 'end'
 // is, if 'start' ss 1:1.
-static string getLineCol(char const *start, char const *end)
+static OldSmbaseString getLineCol(char const *start, char const *end)
 {
   int line = 1;
   int col = 1;
@@ -674,7 +674,7 @@ void parseBDFString(BDFFont &font, char const *bdfSourceData)
     // drop into loop reading font-wide characteristics
     for (;;) {
       skipBlanks(p);
-      string keyword = parseWord(p);
+      OldSmbaseString keyword = parseWord(p);
 
       try {
         if (keyword == "COMMENT") {
@@ -763,7 +763,7 @@ void parseBDFString(BDFFont &font, char const *bdfSourceData)
 void parseBDFFile(BDFFont &font, char const *bdfFileName)
 {
   try {
-    string contents = readStringFromFile(bdfFileName);
+    OldSmbaseString contents = readStringFromFile(bdfFileName);
     parseBDFString(font, contents.c_str());
   }
   catch (xBase &x) {
@@ -782,7 +782,7 @@ void parseBDFFile(BDFFont &font, char const *bdfFileName)
 
 
 // Render the point as "<x> <y>", i.e., with a space.
-static string writePoint(point const &p)
+static OldSmbaseString writePoint(point const &p)
 {
   return stringb(p.x << " " << p.y);
 }

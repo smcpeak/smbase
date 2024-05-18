@@ -18,7 +18,7 @@
 
 
 // replace all instances of oldstr in src with newstr, return result
-string replace(rostring origSrc, rostring oldstr, rostring newstr)
+OldSmbaseString replace(rostring origSrc, rostring oldstr, rostring newstr)
 {
   stringBuilder ret;
   char const *src = toCStr(origSrc);
@@ -44,7 +44,7 @@ string replace(rostring origSrc, rostring oldstr, rostring newstr)
 }
 
 
-string expandRanges(char const *chars_)
+OldSmbaseString expandRanges(char const *chars_)
 {
   stringBuilder ret;
 
@@ -78,15 +78,15 @@ string expandRanges(char const *chars_)
 }
 
 
-string translate(rostring origSrc, rostring srcchars, rostring destchars)
+OldSmbaseString translate(rostring origSrc, rostring srcchars, rostring destchars)
 {
   // first, expand range notation in the specification sequences
-  string srcSpec = expandRanges(toCStr(srcchars));
-  string destSpec = expandRanges(toCStr(destchars));
+  OldSmbaseString srcSpec = expandRanges(toCStr(srcchars));
+  OldSmbaseString destSpec = expandRanges(toCStr(destchars));
 
   // build a translation map
   char map[256];
-  string::size_type i;
+  OldSmbaseString::size_type i;
   for (i=0; i<256; i++) {
     map[i] = i;
   }
@@ -107,22 +107,22 @@ string translate(rostring origSrc, rostring srcchars, rostring destchars)
   }
   *dest = 0;    // final nul terminator
 
-  return string(ret.ptrC());
+  return OldSmbaseString(ret.ptrC());
 }
 
 
-string stringToupper(rostring src)
+OldSmbaseString stringToupper(rostring src)
 {
   return translate(src, "a-z", "A-Z");
 }
 
-string stringTolower(rostring src)
+OldSmbaseString stringTolower(rostring src)
 {
   return translate(src, "A-Z", "a-z");
 }
 
 
-string trimWhitespace(rostring origStr)
+OldSmbaseString trimWhitespace(rostring origStr)
 {
   char const *str = toCStr(origStr);
 
@@ -143,7 +143,7 @@ string trimWhitespace(rostring origStr)
 }
 
 
-string firstAlphanumToken(rostring origStr)
+OldSmbaseString firstAlphanumToken(rostring origStr)
 {
   char const *str = toCStr(origStr);
 
@@ -183,7 +183,7 @@ static struct Escape {
 };
 
 
-string encodeWithEscapes(char const *p, int len)
+OldSmbaseString encodeWithEscapes(char const *p, int len)
 {
   stringBuilder sb;
 
@@ -216,13 +216,13 @@ string encodeWithEscapes(char const *p, int len)
 }
 
 
-string encodeWithEscapes(rostring p)
+OldSmbaseString encodeWithEscapes(rostring p)
 {
   return encodeWithEscapes(toCStr(p), strlen(p));
 }
 
 
-string quoted(rostring src)
+OldSmbaseString quoted(rostring src)
 {
   return stringc << "\""
                  << encodeWithEscapes(src)
@@ -324,7 +324,7 @@ void decodeEscapes(ArrayStack<char> &dest, rostring origSrc,
 }
 
 
-string parseQuotedString(rostring text)
+OldSmbaseString parseQuotedString(rostring text)
 {
   if (!( text[0] == '"' &&
          text[strlen(text)-1] == '"' )) {
@@ -332,7 +332,7 @@ string parseQuotedString(rostring text)
   }
 
   // strip the quotes
-  string noQuotes = substring(toCStr(text)+1, strlen(text)-2);
+  OldSmbaseString noQuotes = substring(toCStr(text)+1, strlen(text)-2);
 
   // decode escapes
   ArrayStack<char> buf;
@@ -342,11 +342,11 @@ string parseQuotedString(rostring text)
   // return string contents up to first NUL, which isn't necessarily
   // the same as the one just pushed; by invoking this function, the
   // caller is accepting responsibility for this condition
-  return string(buf.getArray());
+  return OldSmbaseString(buf.getArray());
 }
 
 
-string quoteCharacter(int c)
+OldSmbaseString quoteCharacter(int c)
 {
   if (isASCIIPrintable(c)) {
     if (c == '\'') {
@@ -375,7 +375,7 @@ string quoteCharacter(int c)
 }
 
 
-static bool hasShellMetaOrNonprint(string const &s)
+static bool hasShellMetaOrNonprint(OldSmbaseString const &s)
 {
   int len = s.length();
   for (int i=0; i<len; i++) {
@@ -392,7 +392,7 @@ static bool hasShellMetaOrNonprint(string const &s)
 
 // Reference on shell double-quote syntax in the POSIX shell:
 // http://pubs.opengroup.org/onlinepubs/009695399/utilities/xcu_chap02.html#tag_02_02_03
-string shellDoubleQuote(string const &s)
+OldSmbaseString shellDoubleQuote(OldSmbaseString const &s)
 {
   if (s.empty() || hasShellMetaOrNonprint(s)) {
     stringBuilder sb;
@@ -426,7 +426,7 @@ string shellDoubleQuote(string const &s)
 }
 
 
-string sm_basename(rostring origSrc)
+OldSmbaseString sm_basename(rostring origSrc)
 {
   char const *src = toCStr(origSrc);
 
@@ -438,21 +438,21 @@ string sm_basename(rostring origSrc)
   }
 
   if (sl) {
-    return string(sl+1);     // everything after the slash
+    return OldSmbaseString(sl+1);     // everything after the slash
   }
   else {
-    return string(src);      // entire string if no slashes
+    return OldSmbaseString(src);      // entire string if no slashes
   }
 }
 
-string dirname(rostring origSrc)
+OldSmbaseString dirname(rostring origSrc)
 {
   char const *src = toCStr(origSrc);
 
   char const *sl = strrchr(src, '/');   // locate last slash
   if (sl == src) {
     // last slash is leading slash
-    return string("/");
+    return OldSmbaseString("/");
   }
 
   if (sl && sl[1] == 0) {
@@ -465,21 +465,21 @@ string dirname(rostring origSrc)
     return substring(src, sl-src);     // everything before slash
   }
   else {
-    return string(".");
+    return OldSmbaseString(".");
   }
 }
 
 
 // I will expand this definition to use more knowledge about English
 // irregularities as I need it
-string plural(int n, rostring prefix)
+OldSmbaseString plural(int n, rostring prefix)
 {
   if (n==1) {
     return prefix;
   }
 
   if (0==strcmp(prefix, "was")) {
-    return string("were");
+    return OldSmbaseString("were");
   }
   if (prefix[strlen(prefix)-1] == 'y') {
     return stringc << substring(prefix, strlen(prefix)-1) << "ies";
@@ -489,13 +489,13 @@ string plural(int n, rostring prefix)
   }
 }
 
-string pluraln(int n, rostring prefix)
+OldSmbaseString pluraln(int n, rostring prefix)
 {
   return stringc << n << " " << plural(n, prefix);
 }
 
 
-string a_or_an(rostring noun)
+OldSmbaseString a_or_an(rostring noun)
 {
   bool use_an = false;
 
@@ -548,12 +548,12 @@ bool suffixEquals(rostring str, rostring suffix)
 }
 
 
-bool hasSubstring(string const &haystack, string const &needle)
+bool hasSubstring(OldSmbaseString const &haystack, OldSmbaseString const &needle)
 {
   return indexOfSubstring(haystack, needle) >= 0;
 }
 
-int indexOfSubstring(string const &haystack, string const &needle)
+int indexOfSubstring(OldSmbaseString const &haystack, OldSmbaseString const &needle)
 {
   char const *h = haystack.c_str();
   char const *occ = strstr(h, needle.c_str());
@@ -576,7 +576,7 @@ void writeStringToFile(rostring str, rostring fname)
 }
 
 
-string readStringFromFile(rostring fname)
+OldSmbaseString readStringFromFile(rostring fname)
 {
   AutoFILE fp(toCStr(fname), "r");
 
@@ -599,11 +599,12 @@ string readStringFromFile(rostring fname)
 }
 
 
-void readLinesFromFile(ArrayStack<string> /*INOUT*/ &dest, rostring fname,
+void readLinesFromFile(ArrayStack<OldSmbaseString> /*INOUT*/ &dest,
+                       rostring fname,
                        bool doChomp)
 {
   AutoFILE fp(toCStr(fname), "r");
-  string line;
+  OldSmbaseString line;
   while (readLine(line, fp)) {
     if (doChomp) {
       line = chomp(line);
@@ -613,7 +614,7 @@ void readLinesFromFile(ArrayStack<string> /*INOUT*/ &dest, rostring fname,
 }
 
 
-bool readLine(string &dest, FILE *fp)
+bool readLine(OldSmbaseString &dest, FILE *fp)
 {
   char buf[80];
 
@@ -644,7 +645,7 @@ bool readLine(string &dest, FILE *fp)
 }
 
 
-string chomp(rostring src)
+OldSmbaseString chomp(rostring src)
 {
   if (!src.empty() && src[strlen(src)-1] == '\n') {
     return substring(src, strlen(src)-1);
@@ -677,7 +678,7 @@ void qsortStringArray(char const **strings, int size) {
 }
 
 
-int compareStringPtrs(string const *a, string const *b)
+int compareStringPtrs(OldSmbaseString const *a, OldSmbaseString const *b)
 {
   return a->compareTo(*b);
 }
@@ -696,14 +697,14 @@ int compareStringPtrs(string const *a, string const *b)
 void expRangeVector(char const *in, char const *out)
 {
   printf("expRangeVector(%s, %s)\n", in, out);
-  string result = expandRanges(in);
+  OldSmbaseString result = expandRanges(in);
   xassert(result.equals(out));
 }
 
 void trVector(char const *in, char const *srcSpec, char const *destSpec, char const *out)
 {
   printf("trVector(%s, %s, %s, %s)\n", in, srcSpec, destSpec, out);
-  string result = translate(in, srcSpec, destSpec);
+  OldSmbaseString result = translate(in, srcSpec, destSpec);
   xassert(result.equals(out));
 }
 
@@ -719,21 +720,21 @@ void decodeVector(char const *in, char const *out, int outLen)
 void basenameVector(char const *in, char const *out)
 {
   printf("basenameVector(%s, %s)\n", in, out);
-  string result = sm_basename(in);
+  OldSmbaseString result = sm_basename(in);
   xassert(result.equals(out));
 }
 
 void dirnameVector(char const *in, char const *out)
 {
   printf("dirnameVector(%s, %s)\n", in, out);
-  string result = dirname(in);
+  OldSmbaseString result = dirname(in);
   xassert(result.equals(out));
 }
 
 void pluralVector(int n, char const *in, char const *out)
 {
   printf("pluralVector(%d, %s, %s)\n", n, in, out);
-  string result = plural(n, in);
+  OldSmbaseString result = plural(n, in);
   xassert(result.equals(out));
 }
 
@@ -768,9 +769,9 @@ void translateAscii()
 }
 
 
-static void expectSDQ(string const &s, string const &expect)
+static void expectSDQ(OldSmbaseString const &s, OldSmbaseString const &expect)
 {
-  string actual = shellDoubleQuote(s);
+  OldSmbaseString actual = shellDoubleQuote(s);
 #if 0
   cout << "shellDoubleQuote:\n"
        << "  s     : " << s << "\n"
@@ -798,8 +799,8 @@ static void testShellDoubleQuote()
 }
 
 
-static void expectIndexOfSubstring(string const &haystack,
-  string const &needle, int expect)
+static void expectIndexOfSubstring(OldSmbaseString const &haystack,
+  OldSmbaseString const &needle, int expect)
 {
   int actual = indexOfSubstring(haystack, needle);
   EXPECT_EQ(actual, expect);
@@ -825,9 +826,9 @@ static void testIndexOfSubstring()
 }
 
 
-static void expectQuoteCharacter(int c, string const &expect)
+static void expectQuoteCharacter(int c, OldSmbaseString const &expect)
 {
-  string actual = quoteCharacter(c);
+  OldSmbaseString actual = quoteCharacter(c);
   EXPECT_EQ(actual, expect);
 }
 
@@ -861,7 +862,7 @@ static void testQuoteCharacter()
 
 static void testReadLinesFromFile()
 {
-  ArrayStack<string> lines;
+  ArrayStack<OldSmbaseString> lines;
   readLinesFromFile(lines, "test/trlff.txt");
   EXPECT_EQ(lines.length(), 4);
   EXPECT_EQ(lines[0], "This is test input for strutil.cc, testReadLinesFromFile().");
@@ -924,8 +925,8 @@ void entry()
   translateAscii();
 
   {
-    string x("x");
-    string y("y");
+    OldSmbaseString x("x");
+    OldSmbaseString y("y");
     xassert(compareStringPtrs(&x, &y) < 0);
     xassert(compareStringPtrs(&y, &y) == 0);
     xassert(compareStringPtrs(&y, &x) > 0);

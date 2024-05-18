@@ -60,7 +60,7 @@ bool filesIdentical(const char *f1, const char *f2)
   }
 }
 
-const char *ofstreamTS::init_fname(string const &destFname0)
+const char *ofstreamTS::init_fname(OldSmbaseString const &destFname0)
 {
   destFname = destFname0;
   tmpFname = destFname0 + ".tmp";

@@ -619,11 +619,11 @@ void SourceLocManager::loadFile(FileData const *fileData)
 //      FOREACH_ARRAYSTACK_NC(HashLineMap::HashLine, fileData->hashLines->directives, iter) {
 //        HashLineMap::HashLine *line = iter.data();
 //        char const * const origFname = line->origFname;
-//        StringObjDict<string> &filenames = fileData->hashLines->serializationOnly_get_filenames();
+//        StringObjDict<OldSmbaseString> &filenames = fileData->hashLines->serializationOnly_get_filenames();
 //        // load the 'filenames' dictionary with the origFnames of the FileDatas.
-//        string *canon = filenames.queryif(origFname);
+//        OldSmbaseString *canon = filenames.queryif(origFname);
 //        if (!canon) {
-//          canon = new string(origFname);
+//          canon = new OldSmbaseString(origFname);
 //          filenames.add(origFname, canon);
 //        }
 //        line->origFname = canon->c_str();
@@ -892,12 +892,12 @@ int SourceLocManager::getCol(SourceLoc loc)
 }
 
 
-string SourceLocManager::getString(SourceLoc loc)
+OldSmbaseString SourceLocManager::getString(SourceLoc loc)
 {
   return getString_explicitHL(loc, this->useHashLines);
 }
 
-string SourceLocManager::getString_explicitHL(SourceLoc loc, bool localUseHashLines)
+OldSmbaseString SourceLocManager::getString_explicitHL(SourceLoc loc, bool localUseHashLines)
 {
   char const *name;
   int line, col;
@@ -906,7 +906,7 @@ string SourceLocManager::getString_explicitHL(SourceLoc loc, bool localUseHashLi
   return stringc << name << ":" << line << ":" << col;
 }
 
-string SourceLocManager::getLCString(SourceLoc loc)
+OldSmbaseString SourceLocManager::getLCString(SourceLoc loc)
 {
   char const *name;
   int line, col;
@@ -916,7 +916,7 @@ string SourceLocManager::getLCString(SourceLoc loc)
 }
 
 
-string locToStr(SourceLoc sl)
+OldSmbaseString locToStr(SourceLoc sl)
 {
   return sourceLocManager->getString(sl);
 }
@@ -1073,7 +1073,7 @@ void expect(SourceLoc loc, char const *expFname, int expLine, int expCol)
 
 
 // should this be exported?
-string locString(char const *fname, int line, int col)
+OldSmbaseString locString(char const *fname, int line, int col)
 {
   return stringc << fname << ":" << line << ":" << col;
 }
@@ -1110,7 +1110,7 @@ void buildHashMap(SourceLocManager::File *pp, char const *fname, int &expanderLi
 
     int origLine = atoi(tok[1]);
     char const *tok2 = tok[2];
-    string origFname = substring(tok2+1, strlen(tok2)-2);  // remove quotes
+    OldSmbaseString origFname = substring(tok2+1, strlen(tok2)-2);  // remove quotes
     pp->addHashLine(ppLine, origLine, origFname.c_str());
   }
   pp->doneAdding();

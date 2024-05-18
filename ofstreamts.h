@@ -5,8 +5,8 @@
 #ifndef OFSTREAMTS_H
 #define OFSTREAMTS_H
 
-#include "sm-fstream.h"
-#include "str.h"
+#include "sm-fstream.h"                // ofstream
+#include "str.h"                       // OldSmbaseString
 
 // An ofstream which is timestamp-conscious.  It first writes to a temporary
 // file, and on success renames it to the target destination.  However, it
@@ -20,20 +20,20 @@
 // Call 'dontsave()' to avoid saving, e.g. if an error occurred.
 class ofstreamTS : public ofstream {
   // The name of the file where the data is eventually saved
-  string destFname;
+  OldSmbaseString destFname;
 
   // The name of a temporary file where we write until we rename.
   //
   // This is currently "filename.tmp".  Since it is 'rename'd to destFname, it
   // must be in the same file system as destFname (i.e. generally not in
   // /tmp)
-  string tmpFname;
+  OldSmbaseString tmpFname;
 
   // Flag indicating whether the destructor should save.  See dontsave().
   bool dosave;
 
   // Initialize the member filenames; used internally by constructor
-  const char *init_fname(string const &destFname0);
+  const char *init_fname(OldSmbaseString const &destFname0);
 
   // Open the temporary file.
   //
@@ -49,7 +49,7 @@ class ofstreamTS : public ofstream {
   void deleteTmp();
 
 public:
-  ofstreamTS(string const &destFname0) : dosave(true)
+  ofstreamTS(OldSmbaseString const &destFname0) : dosave(true)
   { init_fname(destFname0); openTmp(); }
   ~ofstreamTS() { if (dosave) save(); }
 

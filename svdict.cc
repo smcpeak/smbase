@@ -165,7 +165,7 @@ void StringVoidDict::add(char const *key, void *value)
 // reference-counting implementation of 'string' then this is more efficient.
 // (The strdup inside this Node construction happens to be the bottleneck in
 // XML deserialization.)
-void StringVoidDict::add(string const &key, void *value)
+void StringVoidDict::add(OldSmbaseString const &key, void *value)
 {
   xassert(!isMapped(key.c_str()));
 
@@ -385,7 +385,7 @@ void StringVoidDict::insertOstream(ostream &os) const
 }
 
 
-string StringVoidDict::toString() const
+OldSmbaseString StringVoidDict::toString() const
 {
   stringBuilder sb;
   sb << "{";
@@ -415,7 +415,7 @@ char randChar()
   return (char)(myrandom(127-32+1)+32);
 }
 
-string randString(int len)
+OldSmbaseString randString(int len)
 {
   stringBuilder str;
   loopj(len) {
@@ -424,12 +424,12 @@ string randString(int len)
   return str;
 }
 
-string randStringRandLen(int maxlen)
+OldSmbaseString randStringRandLen(int maxlen)
 {
   return randString(myrandom(maxlen)+1);
 }
 
-string randKey(StringVoidDict const &dict)
+OldSmbaseString randKey(StringVoidDict const &dict)
 {
   int size = dict.size();
   xassert(size > 0);
@@ -458,7 +458,7 @@ void entry()
     switch (myrandom(6)) {
       case 0: {
         // insert a random element
-        string key = randStringRandLen(10);
+        OldSmbaseString key = randStringRandLen(10);
         void *value = randVoidPtr();
 
         if (!dict.isMapped(key.c_str())) {
@@ -477,7 +477,7 @@ void entry()
           break;
         }
 
-        string key = randKey(dict);
+        OldSmbaseString key = randKey(dict);
         dict.remove(key.c_str());
         size--;
         break;
@@ -485,7 +485,7 @@ void entry()
 
       case 2: {
         // check a random element that should not be there
-        string key = randStringRandLen(10);
+        OldSmbaseString key = randStringRandLen(10);
         if (dict.isMapped(key.c_str())) {
           collisions++;
         }
@@ -506,7 +506,7 @@ void entry()
 
         // modify it, then verify inequality
         if (!dict2.isEmpty()) {
-          string key = randKey(dict2);
+          OldSmbaseString key = randKey(dict2);
           void *value = dict2.queryf(key.c_str());
 
           if (myrandom(2) == 0) {
@@ -524,7 +524,7 @@ void entry()
       case 5: {
         // random modification
         if (!dict.isEmpty()) {
-          string key = randKey(dict);
+          OldSmbaseString key = randKey(dict);
           dict.modify(key.c_str(), randVoidPtr());
         }
         break;

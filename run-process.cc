@@ -26,7 +26,7 @@ RunProcess::~RunProcess()
 {}
 
 
-void RunProcess::setCommand(std::vector<string> const &command)
+void RunProcess::setCommand(std::vector<OldSmbaseString> const &command)
 {
   xassert(!command.empty());
   m_command = command;
@@ -265,16 +265,16 @@ bool RunProcess::aborted() const
 }
 
 
-string RunProcess::exitDescription() const
+OldSmbaseString RunProcess::exitDescription() const
 {
   if (exitedNormally()) {
     return stringb("Exit " << getExitCode());
   }
   else if (interrupted()) {
-    return string("Interrupted");
+    return OldSmbaseString("Interrupted");
   }
   else if (aborted()) {
-    return string("Aborted");
+    return OldSmbaseString("Aborted");
   }
   else {
     unsigned sig = getSignal();
@@ -291,13 +291,13 @@ string RunProcess::exitDescription() const
 }
 
 
-/*static*/ void RunProcess::check_run(std::vector<string> const &command)
+/*static*/ void RunProcess::check_run(std::vector<OldSmbaseString> const &command)
 {
   RunProcess rproc;
   rproc.setCommand(command);
   rproc.runAndWait();
   if (!rproc.exitedWith0()) {
-    xfatal("Command \"" << accumulateWith(command, string(" ")) <<
+    xfatal("Command \"" << accumulateWith(command, OldSmbaseString(" ")) <<
            "\" failed: " << rproc.exitDescription());
   }
 }
@@ -312,7 +312,7 @@ string RunProcess::exitDescription() const
 // are evidently what we're forced to use.
 //
 /*static*/ void RunProcess::buildWindowsCommandLine(
-  std::vector<char> &commandLine, std::vector<string> const &command)
+  std::vector<char> &commandLine, std::vector<OldSmbaseString> const &command)
 {
   xassert(!command.empty());
 

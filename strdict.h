@@ -4,12 +4,12 @@
 
 // entire module is case sensitive
 
-#ifndef __STRDICT_H
-#define __STRDICT_H
+#ifndef SMBASE_STRDICT_H
+#define SMBASE_STRDICT_H
 
 #include "sm-iostream.h"// ostream
 #include "sm-macros.h"  // DMEMB
-#include "str.h"        // string
+#include "str.h"        // OldSmbaseString
 #include "typ.h"        // MUTABLE
 #include "xassert.h"    // xassert
 
@@ -18,7 +18,7 @@ private:    // types
   class Node {
   public:
     Node *next;
-    string key, value;
+    OldSmbaseString key, value;
 
   public:
     Node(char const *k, char const *v, Node *n = NULL)
@@ -44,8 +44,8 @@ public:     // types
     Iter& next() { xassert(current); current = current->next; return *this; }
       // 'next' returns a value primarily to allow use in for-loop comma exprs
 
-    string& key() const { return current->key; }
-    string& value() const { return current->value; }
+    OldSmbaseString& key() const { return current->key; }
+    OldSmbaseString& value() const { return current->value; }
   };
   friend class Iter;
 
@@ -62,8 +62,8 @@ public:     // types
     using Iter::next;
 
     // others must be const-ified
-    string const &key() const { return Iter::key(); }
-    string const &value() const { return Iter::value(); }
+    OldSmbaseString const &key() const { return Iter::key(); }
+    OldSmbaseString const &value() const { return Iter::value(); }
   };
 
 private:    // data
@@ -100,11 +100,11 @@ public:
   bool isNotEmpty() const
     { return !isEmpty(); }
 
-  bool query(char const *key, string &value) const;
+  bool query(char const *key, OldSmbaseString &value) const;
     // if 'key' is mapped to a value, put it into 'value' and return true;
     // otherwise, return false
 
-  string queryf(char const *key) const;
+  OldSmbaseString queryf(char const *key) const;
     // return the value corresponding to 'key', or throw an exception of it's
     // not mapped
 
@@ -142,7 +142,7 @@ public:
 
   // ------------ misc --------------
   INSERT_OSTREAM(StringDict)
-  string toString() const;
+  OldSmbaseString toString() const;
 };
 
-#endif // __STRDICT_H
+#endif // SMBASE_STRDICT_H

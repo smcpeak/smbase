@@ -10,10 +10,10 @@
 // the interfaces below accept 'rostring', not 'char const *'.  (See
 // string.txt.)
 
-#ifndef __STRTOKP_H
-#define __STRTOKP_H
+#ifndef SMBASE_STRTOKP_H
+#define SMBASE_STRTOKP_H
 
-#include "str.h"       // string
+#include "str.h"       // OldSmbaseString
 #include "array.h"     // Array
 #include <string.h>    // strlen
 
@@ -42,13 +42,13 @@ public:
   char const* operator[] (int which) const { return tokv(which); }
     // access to tokens; must make local copies to modify
 
-  string reassemble(int firstTok, int lastTok, rostring originalString) const;
+  OldSmbaseString reassemble(int firstTok, int lastTok, rostring originalString) const;
     // return the substring of the original string spanned by the
     // given range of tokens; if firstTok==lastTok, only that token is
     // returned (without any separators); must be that firstTok <=
     // lastTok
 
-  string join(int firstTok, int lastTok, rostring separator) const;
+  OldSmbaseString join(int firstTok, int lastTok, rostring separator) const;
     // return a string created by concatenating the given range of tokens
     // together with 'separator' in between them
 
@@ -68,5 +68,5 @@ public:
     // principle subject to change)
 };
 
-#endif // __STRTOKP_H
+#endif // SMBASE_STRTOKP_H
 

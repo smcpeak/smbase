@@ -75,10 +75,10 @@ public:     // types
 m4_dnl  typedef outputCondTemplate([[[XSTROBJDICT<T>]]], [[[XSTROBJDICT]]]) [[[XSTROBJDICT_type]]];
   // 'foreach' iterator functions
 outputCond([[[m4_dnl
-  typedef bool (*ForeachFn)(string const &key, TPTR value, void *extra);
+  typedef bool (*ForeachFn)(OldSmbaseString const &key, TPTR value, void *extra);
 ]]],[[[m4_dnl
-  typedef bool (*ForeachCFn)(string const &key, TCPTR value, void *extra);
-  typedef bool (*ForeachFn)(string const &key, TPTR /*serf*/ value, void *extra);
+  typedef bool (*ForeachCFn)(OldSmbaseString const &key, TCPTR value, void *extra);
+  typedef bool (*ForeachFn)(OldSmbaseString const &key, TPTR /*serf*/ value, void *extra);
 ]]])m4_dnl
 
 outputCond([[[m4_dnl
@@ -95,7 +95,7 @@ outputCond([[[m4_dnl
     bool isDone() const { return iter.isDone(); }
     Iter& next() { iter.next(); return *this; }
 
-    string const &key() const { return iter.key(); }
+    OldSmbaseString const &key() const { return iter.key(); }
     TPTR &value() const { return (TPTR &)iter.value(); }
 
     int private_getCurrent() const { return iter.private_getCurrent(); }
@@ -114,7 +114,7 @@ outputCond([[[m4_dnl
     bool isDone() const { return iter.isDone(); }
     IterC& next() { iter.next(); return *this; }
 
-    string const &key() const { return iter.key(); }
+    OldSmbaseString const &key() const { return iter.key(); }
     TPTR value() const { return (TPTR)iter.value(); }
 
     int private_getCurrent() const { return iter.private_getCurrent(); }
@@ -134,7 +134,7 @@ outputCond([[[m4_dnl
     bool isDone() const { return iter.isDone(); }
     Iter& next() { iter.next(); return *this; }
 
-    string const &key() const { return iter.key(); }
+    OldSmbaseString const &key() const { return iter.key(); }
     TCPTR &value() const { return (TCPTR &)iter.value(); }
 
     int private_getCurrent() const { return iter.private_getCurrent(); }
@@ -282,7 +282,16 @@ outputCond([[[m4_dnl
   // --------- iters -------------
 outputCond([[[m4_dnl
   void foreach(ForeachFn func, void *extra=NULL) const
-    { dict.foreach((StringVoidDict::ForeachFn)func, extra); }
+  {
+    // GCC -Wextra complains about this cast because the 'void*'
+    // parameter in the destination type does not match the 'intptr_t'
+    // parameter in the source type.  It's probably right that this is
+    // technically undefined behavior, but fixing that is a significant
+    // retrofit to old code that works in practice on every
+    // implementation I'm aware of, so for now I'm choosing not to fix
+    // it.  Instead, I use -Wno-cast-function-type.
+    dict.foreach((StringVoidDict::ForeachFn)func, extra);
+  }
 ]]],[[[m4_dnl
   void foreachC(ForeachCFn func, void *extra=NULL) const
     { dict.foreach((StringVoidDict::ForeachFn)func, extra); }

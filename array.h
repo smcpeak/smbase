@@ -11,7 +11,7 @@
 // smbase
 #include "sm-macros.h"                 // NO_OBJECT_COPIES
 #include "sm-swap.h"                   // swap
-#include "str.h"                       // string
+#include "str.h"                       // OldSmbaseString
 #include "xassert.h"                   // xassert
 
 // libc++
@@ -446,15 +446,15 @@ bool operator!= (ArrayStack<T> const &a1, ArrayStack<T> const &a2)
 }
 
 
-inline string toString(ArrayStack<char> const &arr)
+inline OldSmbaseString toString(ArrayStack<char> const &arr)
 {
-  return string(arr.getArray(), arr.length());
+  return OldSmbaseString(arr.getArray(), arr.length());
 }
 
 
-inline string toString(ArrayStack<unsigned char> const &arr)
+inline OldSmbaseString toString(ArrayStack<unsigned char> const &arr)
 {
-  return string((char const *)arr.getArray(), arr.length());
+  return OldSmbaseString((char const *)arr.getArray(), arr.length());
 }
 
 

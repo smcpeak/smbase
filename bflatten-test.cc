@@ -27,8 +27,8 @@ class SomeData {
 public:      // data
   int x;
   int y;
-  string s;
-  string s2;
+  OldSmbaseString s;
+  OldSmbaseString s2;
   int *px;
   int *py;
   uint64_t u64;

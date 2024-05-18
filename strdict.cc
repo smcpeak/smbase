@@ -103,7 +103,7 @@ int StringDict::size() const
 }
 
 
-bool StringDict::query(char const *key, string &value) const
+bool StringDict::query(char const *key, OldSmbaseString &value) const
 {
   FOREACH_ITERC(*this, entry) {
     if (0==strcmp(entry.key(), key)) {
@@ -116,9 +116,9 @@ bool StringDict::query(char const *key, string &value) const
 }
 
 
-string StringDict::queryf(char const *key) const
+OldSmbaseString StringDict::queryf(char const *key) const
 {
-  string ret;
+  OldSmbaseString ret;
   bool ok = query(key, ret);
   xassert(ok);
   return ret;
@@ -127,7 +127,7 @@ string StringDict::queryf(char const *key) const
 
 bool StringDict::isMapped(char const *key) const
 {
-  string dummy;
+  OldSmbaseString dummy;
   return query(key, dummy);
 }
 
@@ -326,7 +326,7 @@ void StringDict::insertOstream(ostream &os) const
 }
 
 
-string StringDict::toString() const
+OldSmbaseString StringDict::toString() const
 {
   stringBuilder sb;
   sb << "{";
@@ -355,7 +355,7 @@ char randChar()
   return (char)(myrandom(127-32+1)+32);
 }
 
-string randString(int len)
+OldSmbaseString randString(int len)
 {
   stringBuilder str;
   loopj(len) {
@@ -364,12 +364,12 @@ string randString(int len)
   return str;
 }
 
-string randStringRandLen(int maxlen)
+OldSmbaseString randStringRandLen(int maxlen)
 {
   return randString(myrandom(maxlen)+1);
 }
 
-string randKey(StringDict const &dict)
+OldSmbaseString randKey(StringDict const &dict)
 {
   int size = dict.size();
   xassert(size > 0);
@@ -393,8 +393,8 @@ void entry()
     switch (myrandom(6)) {
       case 0: {
         // insert a random element
-        string key = randStringRandLen(10);
-        string value = randStringRandLen(30);
+        OldSmbaseString key = randStringRandLen(10);
+        OldSmbaseString value = randStringRandLen(30);
 
         if (!dict.isMapped(key.c_str())) {
           dict.add(key.c_str(), value.c_str());
@@ -412,7 +412,7 @@ void entry()
           break;
         }
 
-        string key = randKey(dict);
+        OldSmbaseString key = randKey(dict);
         dict.remove(key.c_str());
         size--;
         break;
@@ -420,7 +420,7 @@ void entry()
 
       case 2: {
         // check a random element that should not be there
-        string key = randStringRandLen(10);
+        OldSmbaseString key = randStringRandLen(10);
         if (dict.isMapped(key.c_str())) {
           collisions++;
         }
@@ -441,8 +441,8 @@ void entry()
 
         // modify it, then verify inequality
         if (!dict2.isEmpty()) {
-          string key = randKey(dict2);
-          string value = dict2.queryf(key.c_str());
+          OldSmbaseString key = randKey(dict2);
+          OldSmbaseString value = dict2.queryf(key.c_str());
 
           if (myrandom(2) == 0) {
             dict2.remove(key.c_str());
@@ -459,7 +459,7 @@ void entry()
       case 5: {
         // random modification
         if (!dict.isEmpty()) {
-          string key = randKey(dict);
+          OldSmbaseString key = randKey(dict);
           dict.modify(key.c_str(), randStringRandLen(30).c_str());
         }
         break;

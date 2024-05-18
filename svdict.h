@@ -10,7 +10,7 @@
 
 #include "sm-iostream.h"// ostream
 #include "sm-macros.h"  // DMEMB
-#include "str.h"        // string
+#include "str.h"        // OldSmbaseString
 #include "strhash.h"    // StringHash
 #include "typ.h"        // MUTABLE
 #include "xassert.h"    // xassert
@@ -28,13 +28,13 @@ private:    // types
   class Node {
   public:
     Node *next;
-    string key;
+    OldSmbaseString key;
     void *value;
 
   public:
     Node(char const *k, void *v, Node *n = NULL)
       : next(n), key(k), value(v) {}
-    Node(string const &k, void *v, Node *n = NULL)
+    Node(OldSmbaseString const &k, void *v, Node *n = NULL)
       : next(n), key(k), value(v) {}
     ~Node() {}
 
@@ -44,7 +44,7 @@ private:    // types
 public:     // types
   // function for general foreach; return false to continue,
   // true to stop iterating
-  typedef bool (*ForeachFn)(string const &key, void *value, void *extra);
+  typedef bool (*ForeachFn)(OldSmbaseString const &key, void *value, void *extra);
 
   // function type to delete void*s while emptying
   typedef void (*DelFn)(void *value);
@@ -67,7 +67,7 @@ public:     // types
     Iter& next() { xassert(current); current = current->next; return *this; }
       // 'next' returns a value primarily to allow use in for-loop comma exprs
 
-    string &key() const { return current->key; }
+    OldSmbaseString &key() const { return current->key; }
     void *&value() const { return current->value; }
 
     uintptr_t private_getCurrent() const { return (uintptr_t)current; }
@@ -88,7 +88,7 @@ public:     // types
     using Iter::private_getCurrent;
 
     // others must be const-ified
-    string const &key() const { return Iter::key(); }
+    OldSmbaseString const &key() const { return Iter::key(); }
     void const *&value() const { return (void const *&)Iter::value(); }
   };
 
@@ -148,7 +148,7 @@ public:
 
   // -------- mutators -----------
   void add(char const *key, void *value);
-  void add(string const &key, void *value);
+  void add(OldSmbaseString const &key, void *value);
     // add a mapping from 'key' to 'value'; 'key' must initially be unmapped
 
   void *modify(char const *key, void *newValue);
@@ -182,7 +182,7 @@ public:
 
   // ------------ misc --------------
   INSERT_OSTREAM(StringVoidDict)
-  string toString() const;
+  OldSmbaseString toString() const;
 
   // debugging...
   uintptr_t private_getTopAddr() const { return (uintptr_t)top; }

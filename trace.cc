@@ -3,7 +3,7 @@
 
 #include "trace.h"     // this module
 #include "objlist.h"   // List
-#include "str.h"       // string
+#include "str.h"       // OldSmbaseString
 #include "strtokp.h"   // StrtokParse
 #include "nonport.h"   // getMilliseconds()
 
@@ -15,7 +15,7 @@
 static bool inited = false;
 
 // list of active tracers, initially empty
-static ObjList<string> tracers;
+static ObjList<OldSmbaseString> tracers;
 
 // stream connected to /dev/null
 ofstream devNullObj("/dev/null");
@@ -46,7 +46,7 @@ void traceAddSys(char const *sysName)
 {
   init();
 
-  tracers.prepend(new string(sysName));
+  tracers.prepend(new OldSmbaseString(sysName));
 }
 
 
@@ -54,7 +54,7 @@ void traceRemoveSys(char const *sysName)
 {
   init();
 
-  MUTATE_EACH_OBJLIST(string, tracers, mut) {
+  MUTATE_EACH_OBJLIST(OldSmbaseString, tracers, mut) {
     if (mut.data()->compareTo(sysName) == 0) {
       mut.deleteIt();
       return;
@@ -68,7 +68,7 @@ bool tracingSys(char const *sysName)
 {
   init();
 
-  FOREACH_OBJLIST(string, tracers, iter) {
+  FOREACH_OBJLIST(OldSmbaseString, tracers, iter) {
     if (iter.data()->compareTo(sysName) == 0) {
       return true;
     }
@@ -196,7 +196,7 @@ void traceAddFromEnvVar()
 void printTracers(ostream &out, char const *delim)
 {
   bool first = true;
-  FOREACH_OBJLIST(string, tracers, iter) {
+  FOREACH_OBJLIST(OldSmbaseString, tracers, iter) {
     if (first) first = false;
     else out << delim;
     out << iter.data()->c_str();

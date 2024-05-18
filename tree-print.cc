@@ -72,7 +72,7 @@ TreePrint::TPNode::~TPNode()
 
 
 // ---------------------------- TPString -------------------------------
-TreePrint::TPString::TPString(string const &s)
+TreePrint::TPString::TPString(OldSmbaseString const &s)
   : m_string(s)
 {
   m_length = m_string.length();
@@ -271,7 +271,7 @@ void TreePrint::append(TPNode *node)
 
 TreePrint& TreePrint::operator<< (char const *str)
 {
-  return operator<< (string(str));
+  return operator<< (OldSmbaseString(str));
 }
 
 
@@ -287,7 +287,7 @@ TreePrint& TreePrint::operator<< (char c)
 }
 
 
-TreePrint& TreePrint::operator<< (string const &str)
+TreePrint& TreePrint::operator<< (OldSmbaseString const &str)
 {
   append(new TPString(str));
   return *this;

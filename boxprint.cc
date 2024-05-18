@@ -45,11 +45,11 @@ void BPRender::breakLine(int ind)
 }
 
 
-string BPRender::takeAndRender(BoxPrint &bld)
+OldSmbaseString BPRender::takeAndRender(BoxPrint &bld)
 {
   BPBox* /*owner*/ tree = bld.takeTree();
   tree->render(*this);
-  string ret(sb);
+  OldSmbaseString ret(sb);
   sb.clear();
   delete tree;
   return ret;

@@ -6,7 +6,7 @@
 
 #include "sm-macros.h"                 // NOTEQUAL_OPERATOR
 #include "sm-override.h"               // OVERRIDE
-#include "str.h"                       // string
+#include "str.h"                       // OldSmbaseString
 
 #include <iostream>                    // std::ostream
 
@@ -142,19 +142,19 @@ public:      // funcs
   // special treatment.  That means there might be more digits than
   // suggested by the format string above, and might be extra '-'
   // characters due to negative values.
-  string toString() const;
+  OldSmbaseString toString() const;
 
   // Date and time only: "YYYY-MM-DD hh:mm:ss".
-  string dateTimeString() const;
+  OldSmbaseString dateTimeString() const;
 
   // Date only: "YYYY-MM-DD".
-  string dateString() const;
+  OldSmbaseString dateString() const;
 
   // "hh:mm:ss".
-  string timeString() const;
+  OldSmbaseString timeString() const;
 
   // "+hh:ss" or "-hh:ss".
-  string zoneString() const;
+  OldSmbaseString zoneString() const;
 
   // Write in same format as 'toString'.
   std::ostream& insertOstream(std::ostream &os) const;
@@ -165,7 +165,7 @@ public:      // funcs
 
 // Return the current time in the format of
 // DateTimeSeconds::dateTimeString().
-string localTimeString();
+OldSmbaseString localTimeString();
 
 
 #endif // DATETIME_H

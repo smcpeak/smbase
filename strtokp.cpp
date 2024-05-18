@@ -74,7 +74,7 @@ char const *StrtokParse::tokv(int which) const
 }
 
 
-string StrtokParse::
+OldSmbaseString StrtokParse::
   reassemble(int firstTok, int lastTok, rostring original) const
 {
   int left = offset(firstTok);
@@ -84,7 +84,7 @@ string StrtokParse::
 }
 
 
-string StrtokParse::
+OldSmbaseString StrtokParse::
   join(int firstTok, int lastTok, rostring separator) const
 {
   stringBuilder sb;

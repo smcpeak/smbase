@@ -22,7 +22,7 @@ template <class T>
 class StringSObjDict {
 public:     // types
   // 'foreach' iterator functions
-  typedef bool (*ForeachFn)(string const &key, T * value, void *extra);
+  typedef bool (*ForeachFn)(OldSmbaseString const &key, T * value, void *extra);
 
   // external iterator
   class Iter {
@@ -37,7 +37,7 @@ public:     // types
     bool isDone() const { return iter.isDone(); }
     Iter& next() { iter.next(); return *this; }
 
-    string const &key() const { return iter.key(); }
+    OldSmbaseString const &key() const { return iter.key(); }
     T * &value() const { return (T * &)iter.value(); }
 
     int private_getCurrent() const { return iter.private_getCurrent(); }
@@ -56,7 +56,7 @@ public:     // types
     bool isDone() const { return iter.isDone(); }
     IterC& next() { iter.next(); return *this; }
 
-    string const &key() const { return iter.key(); }
+    OldSmbaseString const &key() const { return iter.key(); }
     T * value() const { return (T *)iter.value(); }
 
     int private_getCurrent() const { return iter.private_getCurrent(); }
@@ -174,7 +174,16 @@ public:
 
   // --------- iters -------------
   void foreach(ForeachFn func, void *extra=NULL) const
-    { dict.foreach((StringVoidDict::ForeachFn)func, extra); }
+  {
+    // GCC -Wextra complains about this cast because the 'void*'
+    // parameter in the destination type does not match the 'intptr_t'
+    // parameter in the source type.  It's probably right that this is
+    // technically undefined behavior, but fixing that is a significant
+    // retrofit to old code that works in practice on every
+    // implementation I'm aware of, so for now I'm choosing not to fix
+    // it.  Instead, I use -Wno-cast-function-type.
+    dict.foreach((StringVoidDict::ForeachFn)func, extra);
+  }
 
   // ------------ misc --------------
   // debugging

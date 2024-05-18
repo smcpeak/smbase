@@ -9,16 +9,16 @@
 
 
 // ------------------------- XParseString ---------------------------
-static string formatCondition(string const &str, int offset,
-  string const &conflict)
+static OldSmbaseString formatCondition(OldSmbaseString const &str, int offset,
+  OldSmbaseString const &conflict)
 {
   return stringb("at location " << offset << " in " << quoted(str) <<
                  ": " << conflict);
 }
 
 
-XParseString::XParseString(string const &str, int offset,
-                           string const &conflict)
+XParseString::XParseString(OldSmbaseString const &str, int offset,
+                           OldSmbaseString const &conflict)
   : xFormat(formatCondition(str, offset, conflict)),
     m_str(str),
     m_offset(offset),
@@ -39,7 +39,7 @@ XParseString::~XParseString()
 
 
 // ------------------------- ParseString ----------------------------
-ParseString::ParseString(string const &str)
+ParseString::ParseString(OldSmbaseString const &str)
   : m_str(str),
     m_len(str.length()),
     m_cur(0)
@@ -50,7 +50,7 @@ ParseString::~ParseString()
 {}
 
 
-void ParseString::throwErr(string const &conflict)
+void ParseString::throwErr(OldSmbaseString const &conflict)
 {
   throw XParseString(m_str, m_cur, conflict);
 }
@@ -64,7 +64,7 @@ int ParseString::cur() const
 }
 
 
-string ParseString::quoteCur() const
+OldSmbaseString ParseString::quoteCur() const
 {
   return quoteCharacter(cur());
 }
@@ -142,7 +142,7 @@ int ParseString::parseDecimalUInt()
 }
 
 
-string ParseString::parseCToken()
+OldSmbaseString ParseString::parseCToken()
 {
   int c = cur();
   if (c == '"') {
@@ -164,7 +164,7 @@ string ParseString::parseCToken()
 }
 
 
-string ParseString::parseCDelimLiteral(int delim)
+OldSmbaseString ParseString::parseCDelimLiteral(int delim)
 {
   stringBuilder sb;
 
@@ -188,7 +188,7 @@ string ParseString::parseCDelimLiteral(int delim)
 }
 
 
-string ParseString::parseCNumberLiteral()
+OldSmbaseString ParseString::parseCNumberLiteral()
 {
   stringBuilder sb;
 
@@ -229,7 +229,7 @@ string ParseString::parseCNumberLiteral()
 }
 
 
-string ParseString::parseCIdentifier()
+OldSmbaseString ParseString::parseCIdentifier()
 {
   stringBuilder sb;
 

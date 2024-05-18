@@ -61,7 +61,7 @@ xSysError::xSysError(xSysError::Reason r, int sysCode, rostring sysReason,
 {}
 
 
-STATICDEF string xSysError::
+STATICDEF OldSmbaseString xSysError::
   constructWhyString(xSysError::Reason r, rostring sysReason,
                      rostring syscall, rostring ctx)
 {
@@ -115,7 +115,7 @@ STATICDEF void xSysError::
   int code = getSystemErrorCode();
 
   // translate it into one of ours
-  string sysMsg;
+  OldSmbaseString sysMsg;
   Reason r = portablize(code, sysMsg);
 
   // construct an object to throw
@@ -127,7 +127,7 @@ STATICDEF void xSysError::
 
 void xsyserror(char const *syscallName)
 {
-  xSysError::xsyserror(syscallName, string(""));
+  xSysError::xsyserror(syscallName, OldSmbaseString(""));
 }
 
 void xsyserror(rostring syscallName, rostring context)
@@ -136,17 +136,19 @@ void xsyserror(rostring syscallName, rostring context)
 }
 
 
-string sysErrorCodeString(int systemErrorCode, rostring syscallName,
-                                               rostring context)
+OldSmbaseString sysErrorCodeString(int systemErrorCode,
+                                   rostring syscallName,
+                                   rostring context)
 {
-  string sysMsg;
+  OldSmbaseString sysMsg;
   xSysError::Reason r = xSysError::portablize(systemErrorCode, sysMsg);
   return xSysError::constructWhyString(
            r, sysMsg,
            syscallName, context);
 }
 
-string sysErrorString(char const *syscallName, char const *context)
+OldSmbaseString sysErrorString(char const *syscallName,
+                               char const *context)
 {
   return sysErrorCodeString(xSysError::getSystemErrorCode(),
                             syscallName, context);
@@ -202,7 +204,8 @@ STATICDEF int xSysError::getSystemErrorCode()
 }
 
 
-STATICDEF xSysError::Reason xSysError::portablize(int sysErrorCode, string &sysMsg)
+STATICDEF xSysError::Reason xSysError::portablize(
+  int sysErrorCode, OldSmbaseString &sysMsg)
 {
   // I'd like to put this into a static class member, but then
   // the table would have to prepend R_ constants with xSysError::,
@@ -300,7 +303,8 @@ STATICDEF int xSysError::getSystemErrorCode()
 }
 
 
-STATICDEF xSysError::Reason xSysError::portablize(int sysErrorCode, string &sysMsg)
+STATICDEF xSysError::Reason xSysError::portablize(
+  int sysErrorCode, OldSmbaseString &sysMsg)
 {
   sysMsg = strerror(sysErrorCode);
     // operator= copies to local storage

@@ -14,7 +14,7 @@
 #include "sm-macros.h"                 // NO_OBJECT_COPIES
 #include "sm-noexcept.h"               // NOEXCEPT
 #include "sm-override.h"               // OVERRIDE
-#include "str.h"                       // string
+#include "str.h"                       // OldSmbaseString
 #include "stringset.h"                 // StringSet
 
 // libc++
@@ -50,7 +50,7 @@ private:     // data
   // file names always lack this.  For a Windows file name like
   // "C:/Windows", the file system is "C:" (two-character string).
   // For a UNC path like "//server/share", the file system is "/".
-  string m_fileSystem;
+  OldSmbaseString m_fileSystem;
 
   // True if this path is absolute, i.e., has a leading slash.  This is
   // true for UNC paths, and for the path "/".  It is false for "".
@@ -60,7 +60,7 @@ private:     // data
   // for paths like "", "/", "c:", and "C:/".  But "." has a single
   // path component, ".".  Each path component is a non-empty string.
   // A path like "a//b" is treated the same as "a/b".
-  ArrayStack<string> m_pathComponents;
+  ArrayStack<OldSmbaseString> m_pathComponents;
 
   // True if the file name has at least one component and ends with a
   // directory separator.  That normally means it is intended to
@@ -106,11 +106,11 @@ public:      // data
   // with values outside [0,126] are regarded as valid but with no
   // special significance.  This is compatible with both Latin-1 and
   // UTF-8 encodings.
-  explicit SMFileName(string const &path, Syntax syntax = S_NATIVE);
+  explicit SMFileName(OldSmbaseString const &path, Syntax syntax = S_NATIVE);
 
   // Construct from components.
-  SMFileName(string fileSystem, bool isAbsolute,
-             ArrayStack<string> const &pathComponents, bool trailingSlash);
+  SMFileName(OldSmbaseString fileSystem, bool isAbsolute,
+             ArrayStack<OldSmbaseString> const &pathComponents, bool trailingSlash);
 
   SMFileName(SMFileName const &obj);
 
@@ -124,9 +124,9 @@ public:      // data
   NOTEQUAL_OPERATOR(SMFileName)
 
   // Retrieve components.
-  string getFileSystem() const { return m_fileSystem; }
+  OldSmbaseString getFileSystem() const { return m_fileSystem; }
   bool isAbsolute() const { return m_isAbsolute; }
-  void getPathComponents(ArrayStack<string> /*OUT*/ &pathComponents) const;
+  void getPathComponents(ArrayStack<OldSmbaseString> /*OUT*/ &pathComponents) const;
   bool hasTrailingSlash() const { return m_trailingSlash; }
 
   // True if there is at least one path component, which is a
@@ -134,16 +134,16 @@ public:      // data
   bool hasPathComponents() const { return m_pathComponents.isNotEmpty(); }
 
   // Create new names by replacing components.
-  SMFileName withFileSystem(string const &newFileSystem) const;
+  SMFileName withFileSystem(OldSmbaseString const &newFileSystem) const;
   SMFileName withIsAbsolute(bool newIsAbsolute) const;
-  SMFileName withPathComponents(ArrayStack<string> const &newPathComponents) const;
+  SMFileName withPathComponents(ArrayStack<OldSmbaseString> const &newPathComponents) const;
   SMFileName withTrailingSlash(bool newTrailingSlash) const;
 
   // Render as a string.
-  string toString(Syntax syntax = S_NATIVE) const;
+  OldSmbaseString toString(Syntax syntax = S_NATIVE) const;
 
   // Get just the path components as a string separated by forward slashes.
-  string getPathComponentsString() const;
+  OldSmbaseString getPathComponentsString() const;
 
   // True if the string representation ends with a path separator,
   // either because it is absolute and has no components, or because it
@@ -199,13 +199,13 @@ public:      // types
   class DirEntryInfo {
   public:    // data
     // Name of the directory entry, not including any path.
-    string m_name;
+    OldSmbaseString m_name;
 
     // What sort of file it is.
     FileKind m_kind;
 
   public:
-    DirEntryInfo(string const &name, FileKind kind);
+    DirEntryInfo(OldSmbaseString const &name, FileKind kind);
     DirEntryInfo(DirEntryInfo const &obj);
     DirEntryInfo();      // Empty name, FK_NONE.
     ~DirEntryInfo();
@@ -227,56 +227,56 @@ public:      // funcs
   virtual bool windowsPathSemantics();
 
   // Return a string with all path separators as forward slashes.
-  virtual string normalizePathSeparators(string const &s);
+  virtual OldSmbaseString normalizePathSeparators(OldSmbaseString const &s);
 
   // Return the current directory as an absolute path name.
-  virtual string currentDirectory();
+  virtual OldSmbaseString currentDirectory();
 
   // True if 'c' is considered a directory separator for the platform.
   virtual bool isDirectorySeparator(char c);
 
   // True if 'name' has at least one character, and the last character
   // 'isDirectorySeparator'.
-  bool endsWithDirectorySeparator(string const &name);
+  bool endsWithDirectorySeparator(OldSmbaseString const &name);
 
   // Given an ostensible directory name, if it does not end with a
   // directory separator, append '/' and return that.
-  string ensureEndsWithDirectorySeparator(string const &dir);
+  OldSmbaseString ensureEndsWithDirectorySeparator(OldSmbaseString const &dir);
 
   // Remove a trailing separator from a directory unless it is "/" or,
   // on Windows, "<letter>:<separator>".
-  string stripTrailingDirectorySeparator(string const &dir);
+  OldSmbaseString stripTrailingDirectorySeparator(OldSmbaseString const &dir);
 
   // True if the given path is absolute.  On unix, an absolute path
   // starts with '/'.  On Windows, it starts with '//' (UNC path) or
   // "<letter>:/", or the equivalent with backslash.
-  virtual bool isAbsolutePath(string const &path);
+  virtual bool isAbsolutePath(OldSmbaseString const &path);
 
   // Convert 'path' to an absolute path.  If it is relative, we
   // prepend 'currentDirectory()'.
-  virtual string getAbsolutePath(string const &path);
+  virtual OldSmbaseString getAbsolutePath(OldSmbaseString const &path);
 
   // Return true if 'path' is absolute and names an existing entity
   // (file, directory, etc.) on disk.  Throws xSysError on permission
   // errors or the like.
-  virtual bool absolutePathExists(string const &path);
+  virtual bool absolutePathExists(OldSmbaseString const &path);
 
   // Like above, except it specifically has to be an ordinary file.
   // Throws xSysError on permission errors or the like.
-  virtual bool absoluteFileExists(string const &path);
+  virtual bool absoluteFileExists(OldSmbaseString const &path);
 
   // True if 'path' names a directory.  Relative paths are relative to
   // the current working directory.  Throws xSysError on permission
   // errors or the like.
-  virtual bool directoryExists(string const &path);
+  virtual bool directoryExists(OldSmbaseString const &path);
 
   // Get the file kind, or FK_NONE if it does not exist.  Relative paths
   // are relative to the current working directory.  Throws xSysError on
   // permission errors or the like.
-  virtual FileKind getFileKind(string const &path);
+  virtual FileKind getFileKind(OldSmbaseString const &path);
 
   // True if 'path' exists.
-  bool pathExists(string const &path)
+  bool pathExists(OldSmbaseString const &path)
     { return getFileKind(path) != FK_NONE; }
 
   // Create 'path' and any needed parents if it does not already exist.
@@ -285,49 +285,49 @@ public:      // funcs
   // causes 'xSysError' to be thrown.  If no exception is thrown, then
   // after this call, the directory exists.  A trailing directory
   // separator on 'path' is ignored.
-  virtual void createDirectoryAndParents(string const &path);
+  virtual void createDirectoryAndParents(OldSmbaseString const &path);
 
   // True if 'path' exists, but the current user does not have write
   // permission for it.  This does not throw; it returns false if the
   // file does not exist or we cannot determine whether it is read-only.
-  virtual bool isReadOnly(string const &path) NOEXCEPT;
+  virtual bool isReadOnly(OldSmbaseString const &path) NOEXCEPT;
 
   // Return prefix+suffix, except if neither is empty, add a directory
   // separator if none is present, and remove an extra trailing
   // directory separator from 'prefix'.
-  virtual string joinFilename(string const &prefix,
-                              string const &suffix);
+  virtual OldSmbaseString joinFilename(OldSmbaseString const &prefix,
+                                       OldSmbaseString const &suffix);
 
   // Like 'joinFilename', except if 'suffix' is absolute, then return it
   // as-is.  The idea is to treat 'suffix' as being relative to 'prefix'
   // unless it is absolute already.
-  string joinIfRelativeFilename(string const &prefix,
-                                string const &suffix);
+  OldSmbaseString joinIfRelativeFilename(OldSmbaseString const &prefix,
+                                         OldSmbaseString const &suffix);
 
   // Read the contents of 'fname' in binary mode, returning the entire
   // thing as a vector.  Throw xSysError on error.
-  virtual std::vector<unsigned char> readFile(string const &fname);
+  virtual std::vector<unsigned char> readFile(OldSmbaseString const &fname);
 
   // Write 'bytes' into 'fname' in binary mode.  Throw xSysError on
   // error.
-  virtual void writeFile(string const &fname,
+  virtual void writeFile(OldSmbaseString const &fname,
                          std::vector<unsigned char> const &bytes);
 
   // Get the names of entries in 'directory'.  If an error is
   // encountered, throw xSysError (syserr.h).  The entries are not
   // guaranteed to be returned in any particular order.  They may
   // include "." and ".." if they exist in the given directory.
-  virtual void getDirectoryNames(ArrayStack<string> /*OUT*/ &entries,
-                                 string const &directory);
+  virtual void getDirectoryNames(ArrayStack<OldSmbaseString> /*OUT*/ &entries,
+                                 OldSmbaseString const &directory);
 
   // Get names and file kinds.  This may be more expensive than just
   // getting the names.
   virtual void getDirectoryEntries(
-    ArrayStack<DirEntryInfo> /*OUT*/ &entries, string const &directory);
+    ArrayStack<DirEntryInfo> /*OUT*/ &entries, OldSmbaseString const &directory);
 
   // Same, but return in alphabetical order.
   void getSortedDirectoryEntries(
-    ArrayStack<DirEntryInfo> /*OUT*/ &entries, string const &directory);
+    ArrayStack<DirEntryInfo> /*OUT*/ &entries, OldSmbaseString const &directory);
 
   // Split 'inputPath' into two strings, 'dir' and 'base', such that:
   //
@@ -336,33 +336,33 @@ public:      // funcs
   //     is true.
   //   * 'base' is the longest string such that the above are true.
   //
-  void splitPath(string /*OUT*/ &dir, string /*OUT*/ &base,
-                 string const &inputPath);
+  void splitPath(OldSmbaseString /*OUT*/ &dir, OldSmbaseString /*OUT*/ &base,
+                 OldSmbaseString const &inputPath);
 
   // Get the 'dir' output of 'splitPath'.
-  string splitPathDir(string const &inputPath);
+  OldSmbaseString splitPathDir(OldSmbaseString const &inputPath);
 
   // Get the 'base' output of 'splitPath'.
-  string splitPathBase(string const &inputPath);
+  OldSmbaseString splitPathBase(OldSmbaseString const &inputPath);
 
   // If 'inputPath' has any occurrences of "." or "..", collapse them
   // as much as possible.  The result may have a sequence of "../" at
   // the start, or consist entirely of ".", or have neither.
-  string collapseDots(string const &inputPath);
+  OldSmbaseString collapseDots(OldSmbaseString const &inputPath);
 
   // Atomically rename 'oldPath' to 'newPath', replacing the latter if
   // it exists.  This is meant to act like POSIX 'rename' even on
   // Windows using MSVCRT.  It refuses to work on directories.
-  void atomicallyRenameFile(string const &oldPath, string const &newPath);
+  void atomicallyRenameFile(OldSmbaseString const &oldPath, OldSmbaseString const &newPath);
 
   // Delete 'path'.  This is basically POSIX 'remove' except using
   // exceptions to communicate errors.  This includes the case of the
   // file not existing.
-  void removeFile(string const &path);
+  void removeFile(OldSmbaseString const &path);
 
   // Update the modification time of 'path' or create it if it does not
   // exist.  Return false on error, but there are no details.
-  bool touchFile(string const &path);
+  bool touchFile(OldSmbaseString const &path);
 };
 
 
@@ -398,7 +398,7 @@ public:      // funcs
   virtual bool windowsPathSemantics() OVERRIDE;
 
   // Returns true iff 'path' is in 'm_existingPaths'.
-  virtual bool absolutePathExists(string const &path) OVERRIDE;
+  virtual bool absolutePathExists(OldSmbaseString const &path) OVERRIDE;
 };
 
 

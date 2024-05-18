@@ -357,17 +357,17 @@ void DateTimeSeconds::validateFields() const
 }
 
 
-string DateTimeSeconds::toString() const
+OldSmbaseString DateTimeSeconds::toString() const
 {
   return stringb(this->dateTimeString() << ' ' << this->zoneString());
 }
 
-string DateTimeSeconds::dateTimeString() const
+OldSmbaseString DateTimeSeconds::dateTimeString() const
 {
   return stringb(this->dateString() << ' ' << this->timeString());
 }
 
-string DateTimeSeconds::dateString() const
+OldSmbaseString DateTimeSeconds::dateString() const
 {
   return stringf("%04d-%02d-%02d",
     this->year,
@@ -375,7 +375,7 @@ string DateTimeSeconds::dateString() const
     this->day);
 }
 
-string DateTimeSeconds::timeString() const
+OldSmbaseString DateTimeSeconds::timeString() const
 {
   return stringf("%02d:%02d:%02d",
     this->hour,
@@ -383,7 +383,7 @@ string DateTimeSeconds::timeString() const
     this->second);
 }
 
-string DateTimeSeconds::zoneString() const
+OldSmbaseString DateTimeSeconds::zoneString() const
 {
   int minuteOffset = this->tzOffsetMinutes;
   char signChar = '+';
@@ -406,7 +406,7 @@ std::ostream& DateTimeSeconds::insertOstream(std::ostream &os) const
 }
 
 
-string localTimeString()
+OldSmbaseString localTimeString()
 {
   DateTimeSeconds d;
   d.fromCurrentTime();
