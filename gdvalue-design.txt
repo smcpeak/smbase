@@ -1,0 +1,94 @@
+gdvalue-design.txt
+==================
+
+
+Goals
+=====
+
+* Have a C++ class, 'GDValue', that can store a variety of useful data
+  types as a discriminated union:
+  - Absent value
+  - Boolean
+  - Number
+    - Arbitrary-precision integer
+    - Floating-point number?
+  - String-like
+    - Symbol: strings that represent names of things or concepts
+    - String: sequence of Unicode code points
+    - Octet array
+  - Container
+    - Tuple?
+    - Sequence of GDValue
+    - Set of GDValue
+    - Map from GDValue to GDValue
+    - each with an optional symbol identifying its type/role?
+
+* Reasonably efficient memory usage, but no need to over-optimize
+  - GDValue itself should be something like a 16-bit structure
+  - Small integers do not require memory allocation
+  - Symbols are represented as a pointer to a global symbol table, from
+    which items are never removed (during the program lifetime)
+  - STL containers of GDValue should be fine
+
+* GDValues are *not* immutable, but the API protects those stored in
+  sets and used as map keys from being modified.
+
+* GDValues are totally ordered.
+
+* GDValue exposes a hash code.
+
+* Serialize and deserialize to text in a form vaguely like JSON.
+
+* Serialize and deserialze to a compact binary form.
+
+
+Text representation
+===================
+
+The text form is a sequence of Unicode characters represented as UTF-8.
+
+A value begins and ends with non-whitespace, and must be followed by a
+punctuation character or whitespace.  This way, a streaming reader
+always knows when it has read a complete value without having to look
+ahead even a single character.
+
+The absent value is 'null'.  Syntactically, 'null' is a symbol, but it
+has special meaning.
+
+Booleans are 'true' and 'false'.
+
+Integers use the regex: (0|-?([1-9][0-9]+))
+
+Symbols use the regex: [a-zA-Z_][a-zA-Z0-9_]
+
+  Ideally I would extend this to any unicode sequence that has similar
+  starting and continuation conditions.
+
+Strings are similar to those in C++, with a double-quoted form and a
+"raw" form.
+
+  Or maybe use Python syntax instead?
+
+  Perhaps strings can be continued by following the last character with
+  '+'?
+
+Octet sequences are, perhaps, like in Python.
+
+Sequence: (1 2 3)
+
+  Note that there is no punctuation between values.
+
+Set: {1 2 3}
+
+Map: {(a 1) (b 2) (c 3)}
+
+  A map is a set that satisfies some additional constraints.
+
+
+
+
+
+
+
+
+EOF
