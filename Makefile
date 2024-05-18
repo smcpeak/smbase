@@ -7,15 +7,17 @@ all: pre-target $(THIS)
 .PHONY: all
 
 
-# ------------------------- Configuration --------------------------
-# ---- Running other programs ----
+# ----------------------- Default configuration ------------------------
+# The settings in this section provide defaults that can be overridden
+# in config.mk or personal.mk.
+
 # C preprocessor, compiler and linker.
 CC = gcc
 
 # C++ compiler.
 CXX = g++
 
-# To use Clang on Windows:
+# To use Clang to create MSVCRT-based executables on Windows:
 #CC = clang.exe --target=x86_64-w64-windows-gnu
 #CXX = clang++.exe --target=x86_64-w64-windows-gnu
 
@@ -77,6 +79,14 @@ LIBS = $(THIS) $(SYSLIBS)
 # $(CXXFLAGS), depending on whether C++ modules are included.
 LDFLAGS =
 
+# Flags to add to C and C++ compilations to enable coverage measurement.
+COVERAGE_CFLAGS = --coverage
+COVERAGE_CXXFLAGS = --coverage
+
+# When measuring coverage with gcov, if optimization is enabled then it
+# falsely reports some lines as uncovered.
+COVERAGE_OPTIMIZATION_FLAGS =
+
 # Some other tools.
 AR      = ar
 RANLIB  = ranlib
@@ -90,10 +100,10 @@ RUN_COMPARE_EXPECT = $(PYTHON3) ./run-compare-expect.py
 # could just replace this with 'gcov' if you don't have that script.
 GCOV = mygcov
 
-
-# ---- Options within this Makefile ----
-# Set to 1 if we are building for MinGW.
-TARGET_PLATFORM_IS_MINGW = 0
+# Set to 1 if we are building for MinGW, which disables a few modules
+# and tests that don't work.  The default, 'detect', means to check the
+# output of "$(CC) -dumpmachine".
+TARGET_PLATFORM_IS_MINGW = detect
 
 # Set to 1 if we are cross-compiling, meaning the executables we make
 # do not run on the build machine.
@@ -109,19 +119,13 @@ COVERAGE = 0
 # compile_commands.json.  This requires that we are using Clang.
 CREATE_O_JSON_FILES = 0
 
-
-# ---- Automatic Configuration ----
-# Pull in settings from ./configure.  They override the defaults above,
-# and are in turn overridden by personal.mk, below.
-ifeq ($(wildcard config.mk),)
-  $(error The file 'config.mk' does not exist.  Run './configure' before 'make'.)
-endif
-include config.mk
+# Path to the null device.
+DEV_NULL = /dev/null
 
 
-# ---- Customization ----
+# ------------------------- User customization -------------------------
 # Allow customization of the above variables in a separate file.  Just
-# create personal.mk with desired settings.
+# create config.mk and/or personal.mk with desired settings.
 #
 # Common things to set during development:
 #
@@ -130,19 +134,35 @@ include config.mk
 #   OPTIMIZATION_FLAGS =
 #   CXX_WARNING_FLAGS = -Wsuggest-override
 #
+-include config.mk
 -include personal.mk
 
 
-ifeq ($(COVERAGE),1)
-  CFLAGS += --coverage
-  CXXFLAGS += --coverage
+# ---------------------- Configuration adjustment ----------------------
+# React to user customizations.
 
-  # gcov gets false positives if optimization is enabled.
-  OPTIMIZATION_FLAGS =
+# If coverage is enabled, turn on the relevant settings.
+ifeq ($(COVERAGE),1)
+  CFLAGS += $(COVERAGE_CFLAGS)
+  CXXFLAGS += $(COVERAGE_CXXFLAGS)
+  OPTIMIZATION_FLAGS = $(COVERAGE_OPTIMIZATION_FLAGS)
 endif
 
 
-# ----------------------------- Rules ------------------------------
+# Detect if we are targeting mingw.
+ifeq ($(TARGET_PLATFORM_IS_MINGW),detect)
+  CC_DUMPMACHINE_OUTPUT := $(shell $(CC) -dumpmachine 2>$(DEV_NULL))
+  #$(info CC_DUMPMACHINE_OUTPUT: $(CC_DUMPMACHINE_OUTPUT))
+  DUMPMACHINE_MINGW := $(findstring mingw,$(CC_DUMPMACHINE_OUTPUT))
+  #$(info DUMPMACHINE_MINGW: $(DUMPMACHINE_MINGW))
+  ifneq ($(DUMPMACHINE_MINGW),)
+    TARGET_PLATFORM_IS_MINGW := 1
+    #$(info Detected MinGW target.)
+  endif
+endif
+
+
+# ------------------------------- Rules --------------------------------
 # Standard stuff.
 include sm-lib.mk
 
@@ -165,7 +185,7 @@ pre-target: $(PRE_TARGET)
 .PHONY: pre-target
 
 
-# -------- experimenting with m4 for related files -------
+# -------------- Experimenting with m4 for related files ---------------
 # This section is disabled by default because the generated files are
 # checked in to the repo, but when git checks them out, they have random
 # timestamps so 'make' usually thinks some are out of date.  If you
@@ -208,7 +228,7 @@ $(eval $(call RUN_M4,strintdict.h,xstrobjdict.h))
 endif # GENSRC==1
 
 
-# --------------------- main target ---------------------
+# ---------------------------- Main target -----------------------------
 
 # mysig needs some flags to *not* be set ....
 mysig.o: mysig.cc mysig.h
@@ -295,7 +315,7 @@ $(THIS): $(OBJS)
 	-$(RANLIB) $(THIS)
 
 
-# ---------- module tests ----------------
+# ---------------------------- Module tests ----------------------------
 # Test program targets.
 #
 # TODO: I would like to eliminate these stand-alone test programs in
@@ -650,7 +670,7 @@ out/rce_%.ok: test/rce_expect_% run-compare-expect.py
 # behavior even if the user has that variable set.
 RCE_CMD_droplines := \
   env UPDATE_EXPECT=0 $(RUN_COMPARE_EXPECT) \
-    --expect /dev/null \
+    --expect $(DEV_NULL) \
     --drop-lines 'extern' \
     --drop-lines '^x//' \
     --drop-lines '^\s*$$' \
@@ -703,7 +723,7 @@ rce-tests: out/rce_chdir1.ok
 check: rce-tests
 
 
-# ------------------- documentation -------------------------
+# --------------------------- Documentation ----------------------------
 # directory of generated documentation
 gendoc:
 	mkdir gendoc
@@ -725,7 +745,7 @@ gendoc/dependencies.dot:
 # check to see if they have dot
 .PHONY: dot
 dot:
-	@if ! which dot >/dev/null; then \
+	@if ! which dot >$(DEV_NULL); then \
 	  echo "You don't have the 'dot' tool.  You can get it at:"; \
 	  echo "http://www.research.att.com/sw/tools/graphviz/"; \
 	  exit 2; \
@@ -773,7 +793,7 @@ compile_commands.json:
 	(echo "["; cat *.o.json; echo "]") > $@
 
 
-# --------------------- clean --------------------
+# ------------------------------- clean --------------------------------
 # delete compiling/editing byproducts
 clean: gcov-clean
 	rm -f *.o *.o.json *~ *.a *.d *.exe gmon.out srcloc.tmp testcout flattest.tmp
@@ -788,4 +808,4 @@ vc-clean:
 	rm -f *.plg *.[ip]db *.pch
 
 
-# end of Makefile
+# EOF
