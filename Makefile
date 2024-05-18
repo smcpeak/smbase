@@ -100,11 +100,6 @@ RUN_COMPARE_EXPECT = $(PYTHON3) ./run-compare-expect.py
 # could just replace this with 'gcov' if you don't have that script.
 GCOV = mygcov
 
-# Set to 1 if we are building for MinGW, which disables a few modules
-# and tests that don't work.  The default, 'detect', means to check the
-# output of "$(CC) -dumpmachine".
-TARGET_PLATFORM_IS_MINGW = detect
-
 # Set to 1 if we are cross-compiling, meaning the executables we make
 # do not run on the build machine.
 CROSS_COMPILE = 0
@@ -146,19 +141,6 @@ ifeq ($(COVERAGE),1)
   CFLAGS += $(COVERAGE_CFLAGS)
   CXXFLAGS += $(COVERAGE_CXXFLAGS)
   OPTIMIZATION_FLAGS = $(COVERAGE_OPTIMIZATION_FLAGS)
-endif
-
-
-# Detect if we are targeting mingw.
-ifeq ($(TARGET_PLATFORM_IS_MINGW),detect)
-  CC_DUMPMACHINE_OUTPUT := $(shell $(CC) -dumpmachine 2>$(DEV_NULL))
-  #$(info CC_DUMPMACHINE_OUTPUT: $(CC_DUMPMACHINE_OUTPUT))
-  DUMPMACHINE_MINGW := $(findstring mingw,$(CC_DUMPMACHINE_OUTPUT))
-  #$(info DUMPMACHINE_MINGW: $(DUMPMACHINE_MINGW))
-  ifneq ($(DUMPMACHINE_MINGW),)
-    TARGET_PLATFORM_IS_MINGW := 1
-    #$(info Detected MinGW target.)
-  endif
 endif
 
 
