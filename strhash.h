@@ -7,10 +7,11 @@
 // it is at the core of some performance-critical modules (such
 // as StringTable) that don't want extra allocation going on.
 
-#ifndef STRHASH_H
-#define STRHASH_H
+#ifndef SMBASE_STRHASH_H
+#define SMBASE_STRHASH_H
 
 #include "hashtbl.h"      // HashTable
+
 
 class StringHash : private HashTable {
 public:     // types
@@ -78,4 +79,9 @@ public:
 };
 
 
-#endif // STRHASH_H
+// Numeric code indicating which algorithm is selected in the
+// implementation.  This is exposed only because the tests print it.
+extern int const strhashAlgorithmCode;
+
+
+#endif // SMBASE_STRHASH_H

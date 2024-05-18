@@ -48,6 +48,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(sobjlist);
   RUN_TEST(str);
   RUN_TEST(strdict);
+  RUN_TEST(strhash);
   RUN_TEST(string_utils);
   RUN_TEST(strutil);
   RUN_TEST(svdict);
