@@ -485,6 +485,7 @@ UNIT_TEST_OBJS :=
 UNIT_TEST_OBJS += array-test.o
 UNIT_TEST_OBJS += astlist-test.o
 UNIT_TEST_OBJS += bflatten-test.o
+UNIT_TEST_OBJS += counting-ostream-test.o
 UNIT_TEST_OBJS += datablok-test.o
 UNIT_TEST_OBJS += dict-test.o
 UNIT_TEST_OBJS += functional-set-test.o
