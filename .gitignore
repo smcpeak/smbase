@@ -9,6 +9,7 @@
 *.gcno
 *.gcov
 *.i
+*.ii
 *.lib
 *.o
 *.o.json
