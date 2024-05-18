@@ -1,7 +1,9 @@
-// strdict-test.cc
-// Tests for strdict.
+// svdict-test.cc
+// Tests for svdict.
 
-#include "strdict.h"                   // module under test
+#include "svdict.h"                    // module under test
+
+#include "sm-stdint.h"                 // intptr_t
 
 #include <stdlib.h>                    // rand
 
@@ -29,26 +31,31 @@ OldSmbaseString randStringRandLen(int maxlen)
   return randString(myrandom(maxlen)+1);
 }
 
-OldSmbaseString randKey(StringDict const &dict)
+OldSmbaseString randKey(StringVoidDict const &dict)
 {
   int size = dict.size();
   xassert(size > 0);
 
   int nth = myrandom(size);
-  StringDict::IterC entry(dict);
+  StringVoidDict::IterC entry(dict);
   for (; nth > 0; entry.next(), nth--)
     {}
 
   return entry.key();
 }
 
+void *randVoidPtr()
+{
+  return (void*)(intptr_t)(myrandom(100) * 8);
+}
+
 } // anonymous namespace
 
 
 // Called from unit-tests.cc.
-void test_strdict()
+void test_svdict()
 {
-  StringDict dict;
+  StringVoidDict dict;
   int size=0, collisions=0;
 
   int iters = 1000;
@@ -57,10 +64,10 @@ void test_strdict()
       case 0: {
         // insert a random element
         OldSmbaseString key = randStringRandLen(10);
-        OldSmbaseString value = randStringRandLen(30);
+        void *value = randVoidPtr();
 
         if (!dict.isMapped(key.c_str())) {
-          dict.add(key.c_str(), value.c_str());
+          dict.add(key.c_str(), value);
           size++;
         }
         else {
@@ -98,20 +105,20 @@ void test_strdict()
 
       case 4: {
         // test == and =
-        StringDict dict2(dict);
+        StringVoidDict dict2(dict);
         xassert(dict2 == dict);
         xassert(dict2.size() == dict.size());
 
         // modify it, then verify inequality
         if (!dict2.isEmpty()) {
           OldSmbaseString key = randKey(dict2);
-          OldSmbaseString value = dict2.queryf(key.c_str());
+          void *value = dict2.queryf(key.c_str());
 
           if (myrandom(2) == 0) {
             dict2.remove(key.c_str());
           }
           else {
-            dict2.modify(key.c_str(), stringc << value << "x");
+            dict2.modify(key.c_str(), (void*)((char const *)value + 24));
           }
           xassert(dict2 != dict);
         }
@@ -123,7 +130,7 @@ void test_strdict()
         // random modification
         if (!dict.isEmpty()) {
           OldSmbaseString key = randKey(dict);
-          dict.modify(key.c_str(), randStringRandLen(30).c_str());
+          dict.modify(key.c_str(), randVoidPtr());
         }
         break;
       }
