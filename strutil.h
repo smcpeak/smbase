@@ -15,6 +15,9 @@
 // (newstr may be "")
 OldSmbaseString replace(rostring src, rostring oldstr, rostring newstr);
 
+// Expand a string that may contain 'tr'-like ranges.
+OldSmbaseString expandRanges(char const *chars);
+
 // works like unix "tr": the source string is translated character-by-character,
 // with occurrences of 'srcchars' replaced by corresponding characters from
 // 'destchars'; further, either set may use the "X-Y" notation to denote a

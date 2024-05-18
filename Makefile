@@ -340,7 +340,6 @@ TESTS += pprint.exe
 TESTS += smregexp.exe
 TESTS += srcloc.exe
 TESTS += strhash.exe
-TESTS += strutil.exe
 TESTS += tarray2d.exe
 TESTS += tarrayqueue.exe
 TESTS += test-codepoint.exe
@@ -373,9 +372,6 @@ tests: $(TESTS)
 # this one is explicitly *not* linked against $(THIS)
 nonport.exe: nonport.cpp nonport.h gprintf.o
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cpp gprintf.o $(SYSLIBS)
-
-strutil.exe: strutil.cc strutil.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_STRUTIL $(LDFLAGS) strutil.cc $(LIBS)
 
 strhash.exe: strhash.cc strhash.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_STRHASH $(LDFLAGS) strhash.cc $(LIBS)
@@ -464,6 +460,7 @@ UNIT_TEST_OBJS += sobjlist-test.o
 UNIT_TEST_OBJS += str-test.o
 UNIT_TEST_OBJS += strdict-test.o
 UNIT_TEST_OBJS += string-utils-test.o
+UNIT_TEST_OBJS += strutil-test.o
 UNIT_TEST_OBJS += svdict-test.o
 UNIT_TEST_OBJS += taillist-test.o
 UNIT_TEST_OBJS += vdtllist-test.o
@@ -578,7 +575,6 @@ check: out/unit-tests.exe.ok
 
 check: $(TESTS)
 	$(RUN)./nonport.exe
-	$(RUN)./strutil.exe
 	$(RUN)./strhash.exe
 	$(RUN)./trdelete.exe
 	$(RUN)./tobjpool.exe

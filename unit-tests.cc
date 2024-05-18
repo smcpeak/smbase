@@ -49,6 +49,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(str);
   RUN_TEST(strdict);
   RUN_TEST(string_utils);
+  RUN_TEST(strutil);
   RUN_TEST(svdict);
   RUN_TEST(taillist);
   RUN_TEST(vdtllist);
