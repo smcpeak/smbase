@@ -359,7 +359,6 @@ TESTS += test-tree-print.exe
 TESTS += testarray.exe
 TESTS += tobjpool.exe
 TESTS += trdelete.exe
-TESTS += tsobjlist.exe
 TESTS += unit-tests.exe
 TESTS += vptrmap.exe
 
@@ -379,9 +378,6 @@ tests: $(TESTS)
 # this one is explicitly *not* linked against $(THIS)
 nonport.exe: nonport.cpp nonport.h gprintf.o
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cpp gprintf.o $(SYSLIBS)
-
-tsobjlist.exe: tsobjlist.cc sobjlist.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) tsobjlist.cc $(LIBS)
 
 bit2d.exe: bit2d.cc bit2d.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_BIT2D $(LDFLAGS) bit2d.cc $(LIBS)
@@ -482,6 +478,7 @@ UNIT_TEST_OBJS += overflow-test.o
 UNIT_TEST_OBJS += parsestring-test.o
 UNIT_TEST_OBJS += sm-pp-util-test.o
 UNIT_TEST_OBJS += sm-rc-ptr-test.o
+UNIT_TEST_OBJS += sobjlist-test.o
 UNIT_TEST_OBJS += string-utils-test.o
 UNIT_TEST_OBJS += taillist-test.o
 UNIT_TEST_OBJS += vdtllist-test.o
@@ -606,7 +603,6 @@ check: $(TESTS)
 	$(RUN)./trdelete.exe
 	$(RUN)./tobjpool.exe
 	$(RUN)./cycles.exe
-	$(RUN)./tsobjlist.exe
 	$(RUN)./hashline.exe
 	$(RUN)./srcloc.exe
 	$(RUN)./gprintf.exe

@@ -1,10 +1,12 @@
-// tsobjlist.cc            see license.txt for copyright and terms of use
+// sobjlist-test.cc            see license.txt for copyright and terms of use
 // test of sobjlist.h
 
 #include "sobjlist.h"    // SObjList
 #include <stdio.h>       // printf
 
-int main()
+
+// Called from unit-tests.cc.
+void test_sobjlist()
 {
   char const *hi = "hi there";
   char const *what = "what's up?";
@@ -33,6 +35,7 @@ int main()
   // (gcc-2.95.3 doesn't like it, interesting..)
   int const /*const*/ x = 5;
   printf("x is %d\n", x);
-
-  return 0;
 }
+
+
+// EOF
