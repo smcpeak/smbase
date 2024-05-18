@@ -326,7 +326,6 @@ $(THIS): $(OBJS)
 # favor of testing as much as possible from unit-tests.exe.
 TESTS :=
 TESTS += bdffont.exe
-TESTS += bit2d.exe
 TESTS += bitarray.exe
 TESTS += boxprint.exe
 TESTS += crc.exe
@@ -378,9 +377,6 @@ tests: $(TESTS)
 # this one is explicitly *not* linked against $(THIS)
 nonport.exe: nonport.cpp nonport.h gprintf.o
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cpp gprintf.o $(SYSLIBS)
-
-bit2d.exe: bit2d.cc bit2d.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_BIT2D $(LDFLAGS) bit2d.cc $(LIBS)
 
 growbuf.exe: growbuf.cc growbuf.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_GROWBUF $(LDFLAGS) growbuf.cc $(LIBS)
@@ -466,6 +462,7 @@ UNIT_TEST_OBJS += array-test.o
 UNIT_TEST_OBJS += astlist-test.o
 UNIT_TEST_OBJS += autofile-test.o
 UNIT_TEST_OBJS += bflatten-test.o
+UNIT_TEST_OBJS += bit2d-test.o
 UNIT_TEST_OBJS += counting-ostream-test.o
 UNIT_TEST_OBJS += datablok-test.o
 UNIT_TEST_OBJS += dict-test.o
@@ -593,7 +590,6 @@ check: out/unit-tests.exe.ok
 
 check: $(TESTS)
 	$(RUN)./nonport.exe
-	$(RUN)./bit2d.exe
 	$(RUN)./growbuf.exe
 	$(RUN)./strdict.exe
 	$(RUN)./svdict.exe

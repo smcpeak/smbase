@@ -18,6 +18,7 @@ void test_array();                     // array-test.cc
 void test_astlist();                   // astlist-test.cc
 void test_autofile();                  // autofile-test.cc
 void test_bflatten();                  // bflatten-test.cc
+void test_bit2d();                     // bit2d-test.cc
 void test_counting_ostream();          // counting-ostream-test.cc
 void test_dict();                      // dict-test.cc
 void test_functional_set();            // functional-set-test.cc
@@ -54,6 +55,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(astlist);
   RUN_TEST(autofile);
   RUN_TEST(bflatten);
+  RUN_TEST(bit2d);
   RUN_TEST(counting_ostream);
   RUN_TEST(datablok);
   RUN_TEST(dict);
