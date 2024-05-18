@@ -1,9 +1,8 @@
-// tobjlist.cc            see license.txt for copyright and terms of use
+// objlist-test.cc            see license.txt for copyright and terms of use
 // test code for objlist.h
 
 #include "objlist.h"    // this module
 #include "breaker.h"    // breaker
-#include "sm-test.h"    // USUAL_MAIN
 
 #include <stdlib.h>     // rand()
 #include <stdio.h>      // printf()
@@ -116,7 +115,8 @@ void testSorting()
 }
 
 
-void entry()
+// Called from unit-tests.cc.
+void test_objlist()
 {
   // first set of tests
   {
@@ -209,5 +209,5 @@ void entry()
   printf("ObjList<Integer> ok\n");
 }
 
-USUAL_MAIN
 
+// EOF

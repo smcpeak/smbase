@@ -357,7 +357,6 @@ TESTS += test-sm-file-util.exe
 TESTS += test-stringset.exe
 TESTS += test-tree-print.exe
 TESTS += testarray.exe
-TESTS += tobjlist.exe
 TESTS += tobjpool.exe
 TESTS += trdelete.exe
 TESTS += tsobjlist.exe
@@ -380,9 +379,6 @@ tests: $(TESTS)
 # this one is explicitly *not* linked against $(THIS)
 nonport.exe: nonport.cpp nonport.h gprintf.o
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cpp gprintf.o $(SYSLIBS)
-
-tobjlist.exe: tobjlist.cc objlist.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) tobjlist.cc $(LIBS)
 
 tsobjlist.exe: tsobjlist.cc sobjlist.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) tsobjlist.cc $(LIBS)
@@ -481,6 +477,7 @@ UNIT_TEST_OBJS += functional-set-test.o
 UNIT_TEST_OBJS += gcc-options-test.o
 UNIT_TEST_OBJS += gdvalue-test.o
 UNIT_TEST_OBJS += map-utils-test.o
+UNIT_TEST_OBJS += objlist-test.o
 UNIT_TEST_OBJS += overflow-test.o
 UNIT_TEST_OBJS += parsestring-test.o
 UNIT_TEST_OBJS += sm-pp-util-test.o
@@ -599,7 +596,6 @@ check: out/unit-tests.exe.ok
 
 check: $(TESTS)
 	$(RUN)./nonport.exe
-	$(RUN)./tobjlist.exe
 	$(RUN)./bit2d.exe
 	$(RUN)./growbuf.exe
 	$(RUN)./strdict.exe
