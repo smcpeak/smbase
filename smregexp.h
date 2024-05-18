@@ -19,6 +19,10 @@
 #include "str.h"         // string
 
 
+// True if this module works on this platform.
+bool smregexpModuleWorks();
+
+
 // ----------------- Regexp class -------------------
 // This class represents a compiled regexp pattern.  For maximum
 // efficiency, repeated uses of the same pattern should use the

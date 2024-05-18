@@ -295,11 +295,6 @@ SRCS += voidlist.cc
 SRCS += vptrmap.cc
 SRCS += warn.cpp
 
-# Some modules do not build on Mingw; for the moment I do not need them.
-ifeq ($(TARGET_PLATFORM_IS_MINGW),1)
-  SRCS := $(filter-out smregexp.cc,$(SRCS))
-endif
-
 # Library object files.
 OBJS := $(SRCS)
 OBJS := $(patsubst %.c,%.o,$(OBJS))
@@ -348,14 +343,6 @@ TESTS += testarray.exe
 TESTS += tobjpool.exe
 TESTS += unit-tests.exe
 TESTS += vptrmap.exe
-
-# Some programs do not build on Mingw.
-NON_MINGW_TESTS :=
-NON_MINGW_TESTS += smregexp.exe
-
-ifeq ($(TARGET_PLATFORM_IS_MINGW),1)
-  TESTS := $(filter-out $(NON_MINGW_TESTS),$(TESTS))
-endif
 
 tests: $(TESTS)
 
@@ -581,9 +568,7 @@ check: $(TESTS)
 	$(RUN)./test-sm-file-util.exe
 	$(RUN)./test-stringset.exe
 	$(RUN)./mypopen.exe
-ifneq ($(TARGET_PLATFORM_IS_MINGW),1)
 	$(RUN)./smregexp.exe
-endif
 ifneq ($(CROSS_COMPILE),1)
 	@echo
 	@echo "make check: all the tests PASSED"

@@ -8,6 +8,11 @@
 
 #include <stddef.h>       // size_t
 
+
+// The entire module does not work on Windows.
+#ifndef __WIN32__
+
+
 // for now, I implement everything using the libc POSIX regex
 // facilities
 //
@@ -19,6 +24,12 @@
 #else
   #include <gnuregex.h>
 #endif
+
+
+bool smregexpModuleWorks()
+{
+  return true;
+}
 
 
 // get an error string
@@ -127,6 +138,35 @@ bool regexpMatch(rostring str, rostring exp)
 }
 
 
+#else // windows
+
+bool smregexpModuleWorks()
+{
+  return false;
+}
+
+
+// Stubs.
+Regexp::Regexp(rostring exp, CFlags flags)
+{}
+
+Regexp::~Regexp()
+{}
+
+bool Regexp::match(rostring str, EFlags flags)
+{
+  return false;
+}
+
+bool regexpMatch(rostring str, rostring exp)
+{
+  return false;
+}
+
+
+#endif // windows
+
+
 // ----------------- test code --------------------
 #ifdef TEST_SMREGEXP
 
@@ -150,6 +190,11 @@ void matchVector(char const *str, char const *exp, bool expect)
 
 int main()
 {
+  if (!smregexpModuleWorks()) {
+    printf("smregexp does not work on this platform, skipping test\n");
+    return 0;
+  }
+
   matchVector("abc", "a", true);
   matchVector("abc", "b", true);
   matchVector("abc", "c", true);
