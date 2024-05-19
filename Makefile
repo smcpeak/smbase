@@ -100,10 +100,6 @@ RUN_COMPARE_EXPECT = $(PYTHON3) ./run-compare-expect.py
 # could just replace this with 'gcov' if you don't have that script.
 GCOV = mygcov
 
-# Set to 1 if we are cross-compiling, meaning the executables we make
-# do not run on the build machine.
-CROSS_COMPILE = 0
-
 # Set to 1 to activate the rules that generate source code.
 GENSRC = 0
 
@@ -457,6 +453,7 @@ out/binary-stdin-test.ok: binary-stdin-test.exe
 	@# Done.
 	touch $@
 
+.PHONY: check
 check: out/binary-stdin-test.ok
 
 
@@ -466,36 +463,13 @@ call-abort.exe: call-abort.cc
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $<
 
 
-# ------------------------------- check --------------------------------
-ifneq ($(CROSS_COMPILE),1)
-  RUN :=
-else
-  # there is a necessary space at the end of the next line ...
-  RUN := true 
-endif
-
-# for now, check-full is just check
-.PHONY: check-full
-check-full: check
-
+# -------------------------- run unit tests ----------------------------
 out/unit-tests.exe.ok: unit-tests.exe call-abort.exe test.dir/read-only.txt
 	$(CREATE_OUTPUT_DIRECTORY)
 	./unit-tests.exe
 	touch $@
 
 check: out/unit-tests.exe.ok
-
-check: $(TESTS)
-ifneq ($(CROSS_COMPILE),1)
-	@echo
-	@echo "make check: all the tests PASSED"
-else
-	@echo
-	@echo "make check: all the test programs were built, but I did not"
-	@echo "try to run any of them because of cross-compile mode; you"
-	@echo "may want to try running the above commands yourself on the target"
-	@echo "(remove the 'true' prefixes)"
-endif
 
 
 # ------------------- test run-compare-expect.py -----------------------
