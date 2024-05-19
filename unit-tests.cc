@@ -9,6 +9,7 @@
 #include "sm-test.h"                   // ARGS_TEST_MAIN
 #include "str.h"                       // streq
 
+extern "C" void test_cycles();         // cycles-test.c
 extern "C" void test_mypopen();        // mypopen-test.c
 
 
@@ -40,6 +41,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(bflatten);
   RUN_TEST(bit2d);
   RUN_TEST(counting_ostream);
+  RUN_TEST_NO_DECL(cycles);
   RUN_TEST(datablok);
   RUN_TEST(dict);
   RUN_TEST(functional_set);
