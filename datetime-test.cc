@@ -1,4 +1,4 @@
-// test-datetime.cc
+// datetime-test.cc
 // Tests for 'datetime' module.
 
 #include "datetime.h"                  // module to test
@@ -51,7 +51,8 @@ static void testFromUnixTime()
 }
 
 
-void entry()
+// Called from unit-test.cc.
+void test_datetime()
 {
   testFromUnixTime();
 
@@ -92,8 +93,6 @@ void entry()
 
   cout << "test-datetime PASSED\n";
 }
-
-USUAL_MAIN
 
 
 // EOF

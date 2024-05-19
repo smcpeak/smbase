@@ -76,6 +76,7 @@ static void entry(int argc, char **argv)
   RUN_TEST_NO_DECL(cycles);
   RUN_TEST_NO_DECL(d2vector);
   RUN_TEST(datablok);
+  RUN_TEST(datetime);
   RUN_TEST(dict);
   RUN_TEST(functional_set);
   RUN_TEST(gcc_options);

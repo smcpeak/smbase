@@ -297,7 +297,6 @@ $(THIS): $(OBJS)
 # TODO: I would like to eliminate these stand-alone test programs in
 # favor of testing as much as possible from unit-tests.exe.
 TESTS :=
-TESTS += test-datetime.exe
 TESTS += test-owner.exe
 TESTS += test-refct-serf.exe
 TESTS += test-run-process.exe
@@ -330,6 +329,7 @@ UNIT_TEST_OBJS += crc-test.o
 UNIT_TEST_OBJS += cycles-test.o
 UNIT_TEST_OBJS += d2vector-test.o
 UNIT_TEST_OBJS += datablok-test.o
+UNIT_TEST_OBJS += datetime-test.o
 UNIT_TEST_OBJS += dict-test.o
 UNIT_TEST_OBJS += functional-set-test.o
 UNIT_TEST_OBJS += gcc-options-test.o
@@ -481,7 +481,6 @@ out/unit-tests.exe.ok: unit-tests.exe
 check: out/unit-tests.exe.ok
 
 check: $(TESTS)
-	$(RUN)./test-datetime.exe
 	$(RUN)./test-owner.exe
 	$(RUN)./test-refct-serf.exe
 	$(RUN)./test-run-process.exe --unit-test
