@@ -60,6 +60,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(sm_rc_ptr);
   RUN_TEST(smregexp);
   RUN_TEST(sobjlist);
+  RUN_TEST(srcloc);
   RUN_TEST(str);
   RUN_TEST(strdict);
   RUN_TEST(strhash);

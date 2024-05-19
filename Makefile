@@ -305,7 +305,6 @@ TESTS += gprintf.exe
 TESTS += hashline.exe
 TESTS += nonport.exe
 TESTS += pprint.exe
-TESTS += srcloc.exe
 TESTS += tarray2d.exe
 TESTS += tarrayqueue.exe
 TESTS += test-codepoint.exe
@@ -326,9 +325,6 @@ tests: $(TESTS)
 # this one is explicitly *not* linked against $(THIS)
 nonport.exe: nonport.cc nonport.h gprintf.o
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cc gprintf.o $(SYSLIBS)
-
-srcloc.exe: srcloc.cc $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_SRCLOC $(LDFLAGS) srcloc.cc $(LIBS)
 
 hashline.exe: hashline.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_HASHLINE $(LDFLAGS) hashline.cc $(LIBS)
@@ -393,6 +389,7 @@ UNIT_TEST_OBJS += sm-pp-util-test.o
 UNIT_TEST_OBJS += sm-rc-ptr-test.o
 UNIT_TEST_OBJS += smregexp-test.o
 UNIT_TEST_OBJS += sobjlist-test.o
+UNIT_TEST_OBJS += srcloc-test.o
 UNIT_TEST_OBJS += str-test.o
 UNIT_TEST_OBJS += strdict-test.o
 UNIT_TEST_OBJS += strhash-test.o
@@ -514,7 +511,6 @@ check: out/unit-tests.exe.ok
 check: $(TESTS)
 	$(RUN)./nonport.exe
 	$(RUN)./hashline.exe
-	$(RUN)./srcloc.exe
 	$(RUN)./gprintf.exe
 	$(RUN)./vptrmap.exe
 	$(RUN)./pprint.exe
