@@ -1,23 +1,23 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-
-<HTML>
+<!DOCTYPE html>
+<HTML lang="en">
 
 <HEAD>
   <TITLE>smbase</TITLE>
-  <meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
-  <style type="text/css">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <style>
     H1 { font-size: 150% }
     H2 { font-size: 125% }
     H3 { font-size: 100% }
-    P.title { font-size: 175% }
+    P.title {
+      font-size: 175%;
+      text-align: center;
+    }
   </style>
 </HEAD>
 
 <body>
 
-<center>
 <p class="title"><b>smbase: A Utility Library</b></p>
-</center>
 
 <h1>Introduction</h1>
 
@@ -53,13 +53,13 @@ modules are now considered obsolete (marked below as such).
 </pre>
 
 <p>
-<a href="configure"><tt>./configure</tt></a> does nothing, but exists
+<a href="configure"><code>./configure</code></a> does nothing, but exists
 for consistency with other packages.
 
 <p>
-Configuration is done by creating <tt>config.mk</tt> and setting
+Configuration is done by creating <code>config.mk</code> and setting
 variables that are described at the top of
-<a href="Makefile"><tt>Makefile</tt></a>.
+<a href="Makefile"><code>Makefile</code></a>.
 
 <h1>Modules</h1>
 
@@ -346,8 +346,8 @@ Strings are sequences of characters.
 <li><a href="str.h">str.h</a>,
     <a href="str.cc">str.cc</a>:
 The string class itself.  Using the string class instead of
-<tt>char*</tt> makes handling strings as convenent as manipulating
-fundamental types like <tt>int</tt> or <tt>float</tt>.
+<code>char*</code> makes handling strings as convenent as manipulating
+fundamental types like <code>int</code> or <code>float</code>.
 See also <a href="string.txt">string.txt</a>.
 
 <li><a href="stringset.h">stringset.h</a>,
@@ -432,7 +432,7 @@ defined in nonport.
 A bunch of useful macros.
 
 <li><a href="typ.h">typ.h</a>:
-Some type definitions like <tt>byte</tt> and <tt>bool</tt>, plus a few
+Some type definitions like <code>byte</code> and <code>bool</code>, plus a few
 utility macros.  Not clearly distinguished from <a href="macros.h">macros.h</a>
 in purpose.
 
@@ -519,7 +519,7 @@ appropriate index structures.
 
 <li><a href="boxprint.h">boxprint.h</a>
     <a href="boxprint.cc">boxprint.cc</a>:
-BoxPrint functions as an output stream (sort of like <tt>cout</tt>)
+BoxPrint functions as an output stream (sort of like <code>cout</code>)
 with operations to indicate structure within the emitted text, so that
 it can break lines intelligently.  It's used as part of a source-code
 pretty-printer.
@@ -550,7 +550,7 @@ It is documented in <a href="trace.html">trace.html</a>.
 
 <li><a href="trdelete.h">trdelete.h</a>,
     <a href="trdelete.cc">trdelete.cc</a>:
-An <tt>operator delete</tt> which overwrites the deallocated memory with
+An <code>operator delete</code> which overwrites the deallocated memory with
 0xAA before deallocating it.
 
 </ul>
@@ -626,12 +626,6 @@ some of the main script's global variables.
 
 </ul>
 
-
-<p>
-  <a href="http://validator.w3.org/check/referer"><img border="0"
-      src="http://www.w3.org/Icons/valid-html401"
-      alt="Valid HTML 4.01!" height="31" width="88"></a>
-</p>
 
 </body>
 
