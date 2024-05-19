@@ -30,11 +30,10 @@ library is in the public domain.
 <p>
 There is some overlap in functionality between smbase and the C++
 Standard Library.  Partly this is because smbase predates the standard
-library, and partly this is because that library has aspects to its
-design that I disagree with (for example, I think it is excessively
-templatized, given flaws in the C++ template mechanism).  However, the
-intent is that client code can use smbase and the standard library at
-the same time.
+library, and partly this is due to my disagreement with certain aspects
+of the standard library design (although the relevance of those
+disagreements has diminished with time).  My intent, going forward, is
+to use standard library facilities when possible.
 
 <p>
 smbase has developed organically, in response to specific needs.
@@ -42,6 +41,7 @@ While each module individually has been reasonably carefully designed,
 the library as a whole has not.  Consequently, the modules to not
 always orthogonally cover a given design space, and some of the
 modules are now considered obsolete (marked below as such).
+
 
 <h1>Build Instructions</h1>
 
@@ -57,15 +57,17 @@ modules are now considered obsolete (marked below as such).
 for consistency with other packages.
 
 <p>
-Configuration is done by creating <code>config.mk</code> and setting
-variables that are described at the top of
-<a href="Makefile"><code>Makefile</code></a>.
+Configuration is done by creating an optional <code>config.mk</code>
+file and, in that file, setting variables that are described at the top
+of <a href="Makefile"><code>Makefile</code></a>.
+
 
 <h1>Modules</h1>
 
 <p>
 The following sections list all the smbase modules, grouped by
 functionality.
+
 
 <h2>Linked Lists</h2>
 
@@ -75,11 +77,30 @@ and iterators for traversal.  Most also have <em>mutators</em> for
 traversing and modifying.
 
 <p>
-The two main lists classes are ObjList and SObjList.  Both are lists
-of pointers to objects; the former <em>owns</em> the objects, and will
-delete them when it goes away, while the latter does not.
+There are a couple of variants that support O(1) appending:
 
 <ul>
+<li><a href="vdtllist.h">vdtllist.h</a>,
+    <a href="vdtllist.cc">vdtllist.cc</a>:
+VoidTailList, the core of a linked list implementation which maintains
+a pointer to the last node for O(1) appends.
+Used by <a href="astlist.h">astlist.h</a> and <a href="taillist.h">taillist.h</a>.
+
+<li><a href="taillist.h">taillist.h</a>:
+Template class built on top of VoidTailList (<a href="vdtllist.h">vdtllist.h</a>).
+
+<li><a href="astlist.h">astlist.h</a>:
+ASTList, a list class for use in abstract syntax trees.
+
+</ul>
+
+<p>
+The remainder of this section is obsolete, with
+<code>std::list</code>, possibly in combination with
+<code>std::unique_ptr</code>, replacing it.
+
+<ul>
+
 <li><a href="objlist.h">objlist.h</a>:
 ObjList, a general linked list of objects.  ObjList considers itself
 to "own" (be responsible for deallocating) the things on its list.
@@ -100,33 +121,6 @@ to make <a href="objlist.h">objlist.h</a> and <a href="sobjlist.h">sobjlist.h</a
 The core of the linked list implementation used by
 <a href="objlist.h">objlist.h</a> and <a href="sobjlist.h">sobjlist.h</a>.
 
-</ul>
-
-<p>
-There are a couple of variants that support O(1) appending.
-
-<ul>
-<li><a href="vdtllist.h">vdtllist.h</a>,
-    <a href="vdtllist.cc">vdtllist.cc</a>:
-VoidTailList, the core of a linked list implementation which maintains
-a pointer to the last node for O(1) appends.
-Used by <a href="astlist.h">astlist.h</a> and <a href="taillist.h">taillist.h</a>.
-
-<li><a href="taillist.h">taillist.h</a>:
-Template class built on top of VoidTailList (<a href="vdtllist.h">vdtllist.h</a>).
-
-<li><a href="astlist.h">astlist.h</a>:
-ASTList, a list class for use in abstract syntax trees.
-
-</ul>
-
-<p>
-Finally, two stacks implemented with lists.  Recently, I've been
-preferring to use array-based stacks (<a href="array.h">array.h</a>),
-so these are somewhat obsolete.
-
-<ul>
-
 <li><a href="objstack.h">objstack.h</a>:
 ObjStack, a stack of owned objects.  Built with a linked list.
 
@@ -135,17 +129,14 @@ SObjStack, a stack of non-owned objects.  Built with a linked list.
 
 </ul>
 
+
 <h2>Arrays</h2>
 
 <p>
 Arrays are sequences of objects with O(1) random access and replacement.
 
 <p>
-The main array header, <a href="array.h">array.h</a>, contains several
-array classes.  GrowArray supports bounds checking and a method to
-grow the array.  ArrayStack supports a distinction between the <em>length</em>
-of the sequence and the <em>size</em> of the array allocated to store it,
-and grows the latter automatically.
+Everything in this section is obsoleted by <code>std::vector</code>.
 
 <ul>
 
@@ -154,13 +145,6 @@ Several array-like template classes, including growable arrays.
 
 <li><a href="bitwise_array.h">bitwise_array.h</a>:
 Similar classes which use bitwise copying semantics when growing.
-
-</ul>
-
-<p>
-The other array modules are less-used.
-
-<ul>
 
 <li><a href="arrayqueue.h">arrayqueue.h</a>:
 ArrayQueue, a template class implementing a queue with an array.
@@ -175,13 +159,6 @@ data may contain NUL ('\0') bytes.
     <a href="growbuf.cc">growbuf.cc</a>:
 Extension of DataBlock (<a href="datablok.h">datablok.h</a>) that
 provides an append() function.
-
-</ul>
-
-<p>
-This is obsolete.
-
-<ul>
 
 <li><a href="arraymap.h">arraymap.h</a>:
 ArrayMap, a map from integers to object pointers. Obsolete.
@@ -207,12 +184,18 @@ One-dimensional array of bits.
 
 </ul>
 
+
 <h2>Hash Tables and Maps</h2>
 
 <p>
 Maps support mapping from arbitrary domains to arbitrary ranges.  Mappings
 can be added and queried in amortized O(1) time, but the constant factor
 is considerably higher than for arrays and lists.
+
+<p>
+Everything in this section is obsoleted by <code>std::map</code>,
+possibly in combination with <code>std::unique_ptr</code>, and perhaps
+<code>std::unordered_map</code> in some cases.
 
 <p>
 Probably the most common map is the PtrMap template, which will map
@@ -280,12 +263,17 @@ with type-safe keys ("k" for keys).
 
 </ul>
 
+
 <h2>Maps with Strings as Keys</h2>
 
 <p>
 Mapping from strings is a nontrivial extension of the above maps
 because comparison is more than a pointer equality test.  So there
 are some specialized maps from strings.
+
+<p>
+Everything in this section is obsolete, as it can be done using standard
+library maps and an appropriate comparator.
 
 <p>
 If you have a function that can map from data to (string) key,
@@ -341,18 +329,11 @@ better.
 <p>
 Strings are sequences of characters.
 
+<p>
+These two modules still have some utility, although they currently are
+still based on the obsolete <code>str</code> module:
+
 <ul>
-
-<li><a href="str.h">str.h</a>,
-    <a href="str.cc">str.cc</a>:
-The string class itself.  Using the string class instead of
-<code>char*</code> makes handling strings as convenent as manipulating
-fundamental types like <code>int</code> or <code>float</code>.
-See also <a href="string.txt">string.txt</a>.
-
-<li><a href="stringset.h">stringset.h</a>,
-    <a href="stringset.cc">stringset.cc</a>:
-StringSet, a set of strings.
 
 <li><a href="strtokp.h">strtokp.h</a>,
     <a href="strtokp.cc">strtokp.cc</a>:
@@ -365,11 +346,33 @@ Similar to Java's StringTokenizer.
 A set of generic string utilities, including replace(), translate(),
 trimWhitespace(), encodeWithEscapes(), etc.
 
+</ul>
+
+All of these are obsolete:
+
+<ul>
+
+<li><a href="str.h">str.h</a>,
+    <a href="str.cc">str.cc</a>:
+The string class itself.  Using the string class instead of
+<code>char*</code> makes handling strings as convenent as manipulating
+fundamental types like <code>int</code> or <code>float</code>.
+See also <a href="string.txt">string.txt</a>.
+
+2024-05-19: The class is now called <code>OldSmbaseString</code> to
+emphasize its deprecated status and avoid clashes with
+<code>std::string</code>.
+
+<li><a href="stringset.h">stringset.h</a>,
+    <a href="stringset.cc">stringset.cc</a>:
+StringSet, a set of strings.
+
 <li><a href="smregexp.h">smregexp.h</a>,
     <a href="smregexp.cc">smregexp.cc</a>:
 Regular expression matching.
 
 </ul>
+
 
 <h2>System Utilities</h2>
 
@@ -383,11 +386,6 @@ low-level system services.
     <a href="autofile.cc">autofile.cc</a>:
 AutoFILE, a simple wrapper around FILE* to open it or throw
 an exception, and automatically close it.
-
-<li><a href="cycles.h">cycles.h</a>
-    <a href="cycles.c">cycles.c</a>:
-Report total number of processor cycles since the machine was turned on.
-Uses the RDTSC instruction on x86.
 
 <li><a href="missing.h">missing.h</a>,
     <a href="missing.cc">missing.cc</a>:
@@ -408,11 +406,26 @@ Intended to be a portable encapsulation of system-dependent error
 facilities like UNIX's errno and Win32's GetLastError().  It's not
 very complete right now.
 
-<li><a href="unixutil.h">unixutil.h</a>,
-    <a href="unixutil.c">unixutil.c</a>:
+<li><a href="sm-unixutil.h">sm-unixutil.h</a>,
+    <a href="sm-unixutil.c">sm-unixutil.c</a>:
 Some utilities on top of unix functions: writeAll(), readString().
 
 </ul>
+
+
+<p>
+These are obsolete:
+
+<ul>
+
+<li><a href="cycles.h">cycles.h</a>
+    <a href="cycles.c">cycles.c</a>:
+Report total number of processor cycles since the machine was turned on.
+Uses the RDTSC instruction on x86.  This hasn't been updated to work
+with x86-64 and RDTSC is not very useful anyway.
+
+</ul>
+
 
 <h2>Portability</h2>
 
@@ -428,15 +441,16 @@ A library of utility functions whose implementation is system-specific.
 Generally, I try to encapsulate all system depenencies as functions
 defined in nonport.
 
-<li><a href="macros.h">macros.h</a>:
+<li><a href="sm-macros.h">sm-macros.h</a>:
 A bunch of useful macros.
 
 <li><a href="typ.h">typ.h</a>:
 Some type definitions like <code>byte</code> and <code>bool</code>, plus a few
-utility macros.  Not clearly distinguished from <a href="macros.h">macros.h</a>
+utility macros.  Not clearly distinguished from <a href="sm-macros.h">sm-macros.h</a>
 in purpose.
 
 </ul>
+
 
 <h2>Allocation</h2>
 
@@ -450,6 +464,7 @@ ObjPool, a custom allocator for fixed-size objects with embedded
 'next' links.
 
 </ul>
+
 
 <h2>Exceptions</h2>
 
@@ -471,6 +486,7 @@ fails, instead of calling abort().
 
 </ul>
 
+
 <h2>Serialization</h2>
 
 <p>
@@ -491,6 +507,7 @@ Similar to Java's Serializable, but independently conceived, and has
 superior version control facilities.
 
 </ul>
+
 
 <h2>Compiler/Translator Support</h2>
 
@@ -531,6 +548,7 @@ design never really worked well.
 
 </ul>
 
+
 <h2>Testing and Debugging</h2>
 
 <ul>
@@ -555,6 +573,7 @@ An <code>operator delete</code> which overwrites the deallocated memory with
 
 </ul>
 
+
 <h2>Miscellaneous</h2>
 
 <ul>
@@ -577,40 +596,6 @@ Point, a pair of integers.
 
 </ul>
 
-<h2>Test Drivers</h2>
-
-<p>
-Test drivers.  Below are the modules that are purely test drivers
-for other modules.  They're separated out from the list above to
-avoid the clutter.
-
-<ul>
-
-<li><a href="testmalloc.cc">testmalloc.cc</a>:
-A program to test the interface exposed by <a href="ckheap.h">ckheap.h</a>.
-
-<li><a href="tmalloc.c">tmalloc.c</a>:
-Test my debugging enhancements to <a href="malloc.c">malloc.c</a>.
-
-<li><a href="tarrayqueue.cc">tarrayqueue.cc</a>:
-Test driver for <a href="arrayqueue.h">arrayqueue.h</a>.
-
-<li><a href="testarray.cc">testarray.cc</a>:
-Test driver for <a href="array.h">array.h</a>.
-
-<li><a href="testcout.cc">testcout.cc</a>:
-This is a little test program for use by <a href="configure.pl">configure.pl</a>.
-
-<li><a href="tobjlist.cc">tobjlist.cc</a>:
-Test driver for <a href="objlist.h">objlist.h</a>.
-
-<li><a href="tobjpool.cc">tobjpool.cc</a>
-Test driver for <a href="objpool.h">objpool.h</a>.
-
-<li><a href="tsobjlist.cc">tsobjlist.cc</a>:
-Test driver for <a href="sobjlist.h">sobjlist.h</a>.
-
-</ul>
 
 <h2>Utility Scripts</h2>
 
@@ -618,11 +603,6 @@ Test driver for <a href="sobjlist.h">sobjlist.h</a>.
 
 <li><a href="run-flex.pl">run-flex.pl</a>:
 Perl script to run flex and massage its output for portability.
-
-<li><a href="sm_config.pm">sm_config.pm</a>:
-This is a Perl module, intended to be used by configure scripts.
-It is mostly a library of useful routines, but also reads and writes
-some of the main script's global variables.
 
 </ul>
 
