@@ -167,48 +167,4 @@ bool regexpMatch(rostring str, rostring exp)
 #endif // windows
 
 
-// ----------------- test code --------------------
-#ifdef TEST_SMREGEXP
-
-#include <stdlib.h>    // exit
-#include <stdio.h>     // printf
-
-
-void matchVector(char const *str, char const *exp, bool expect)
-{
-  bool actual = regexpMatch(str, exp);
-  if (actual != expect) {
-    printf("regexp failure\n");
-    printf("  str: %s\n", str);
-    printf("  exp: %s\n", exp);
-    printf("  expect: %s\n", (expect? "true" : "false"));
-    printf("  actual: %s\n", (actual? "true" : "false"));
-    exit(2);
-  }
-}
-
-
-int main()
-{
-  if (!smregexpModuleWorks()) {
-    printf("smregexp does not work on this platform, skipping test\n");
-    return 0;
-  }
-
-  matchVector("abc", "a", true);
-  matchVector("abc", "b", true);
-  matchVector("abc", "c", true);
-  matchVector("abc", "d", false);
-
-  matchVector("abc", "^a", true);
-  matchVector("abc", "^b", false);
-  matchVector("abc", "b$", false);
-  matchVector("abc", "c$", true);
-  matchVector("abc", "^d", false);
-
-  printf("regexp works\n");
-  return 0;
-}
-
-
-#endif // TEST_SMREGEXP
+// EOF

@@ -308,7 +308,6 @@ TESTS += gprintf.exe
 TESTS += hashline.exe
 TESTS += nonport.exe
 TESTS += pprint.exe
-TESTS += smregexp.exe
 TESTS += srcloc.exe
 TESTS += tarray2d.exe
 TESTS += tarrayqueue.exe
@@ -349,9 +348,6 @@ hashline.exe: hashline.cc $(THIS)
 
 gprintf.exe: gprintf.c gprintf.h
 	$(CC) -o $@ $(CFLAGS) -DTEST_GPRINTF $(LDFLAGS) gprintf.c $(SYSLIBS)
-
-smregexp.exe: smregexp.cc $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_SMREGEXP $(LDFLAGS) smregexp.cc $(LIBS)
 
 vptrmap.exe: vptrmap.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_VPTRMAP $(LDFLAGS) vptrmap.cc $(LIBS)
@@ -405,6 +401,7 @@ UNIT_TEST_OBJS += overflow-test.o
 UNIT_TEST_OBJS += parsestring-test.o
 UNIT_TEST_OBJS += sm-pp-util-test.o
 UNIT_TEST_OBJS += sm-rc-ptr-test.o
+UNIT_TEST_OBJS += smregexp-test.o
 UNIT_TEST_OBJS += sobjlist-test.o
 UNIT_TEST_OBJS += str-test.o
 UNIT_TEST_OBJS += strdict-test.o
@@ -546,7 +543,6 @@ check: $(TESTS)
 	$(RUN)./test-run-process.exe --unit-test
 	$(RUN)./test-sm-file-util.exe
 	$(RUN)./test-stringset.exe
-	$(RUN)./smregexp.exe
 ifneq ($(CROSS_COMPILE),1)
 	@echo
 	@echo "make check: all the tests PASSED"
