@@ -1,4 +1,4 @@
-// tarray2d.cc
+// array2d-test.cc
 // test array2d.h
 
 #include "array2d.h"         // module to test
@@ -8,7 +8,9 @@
 
 #include <stdlib.h>          // exit
 
-void entry()
+
+// Called from unit-tests.cc.
+void test_array2d()
 {
   Array2D<int> zero(3,5);
   zero.setAll(0);
@@ -112,6 +114,5 @@ void entry()
   cout << "array2d seems to work\n";
 }
 
-USUAL_MAIN
 
 // EOF

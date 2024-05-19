@@ -40,6 +40,7 @@ static void entry(int argc, char **argv)
     RUN_TEST_NO_DECL(name)
 
   RUN_TEST(array);
+  RUN_TEST(array2d);
   RUN_TEST(arrayqueue);
   RUN_TEST(astlist);
   RUN_TEST(autofile);

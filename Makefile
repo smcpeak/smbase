@@ -298,7 +298,6 @@ $(THIS): $(OBJS)
 # favor of testing as much as possible from unit-tests.exe.
 TESTS :=
 TESTS += nonport.exe
-TESTS += tarray2d.exe
 TESTS += test-codepoint.exe
 TESTS += test-datetime.exe
 TESTS += test-owner.exe
@@ -316,15 +315,13 @@ tests: $(TESTS)
 nonport.exe: nonport.cc nonport.h gprintf.o
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cc gprintf.o $(SYSLIBS)
 
-tarray2d.exe: tarray2d.cc array2d.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_TARRAY2D $(LDFLAGS) tarray2d.cc $(LIBS)
-
 # Component test modules.
 #
 # The naming convention is "<module>-test" so that, in an alphabetic
 # file name listing, the test is next to the module it tests.
 UNIT_TEST_OBJS :=
 UNIT_TEST_OBJS += array-test.o
+UNIT_TEST_OBJS += array2d-test.o
 UNIT_TEST_OBJS += arrayqueue-test.o
 UNIT_TEST_OBJS += astlist-test.o
 UNIT_TEST_OBJS += autofile-test.o
@@ -489,7 +486,6 @@ check: out/unit-tests.exe.ok
 
 check: $(TESTS)
 	$(RUN)./nonport.exe
-	$(RUN)./tarray2d.exe
 	$(RUN)./test-codepoint.exe
 	$(RUN)./test-datetime.exe
 	$(RUN)./test-owner.exe
