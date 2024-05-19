@@ -289,16 +289,6 @@ $(THIS): $(OBJS)
 
 
 # ---------------------------- Module tests ----------------------------
-# Test program targets.
-#
-# TODO: I would like to eliminate these stand-alone test programs in
-# favor of testing as much as possible from unit-tests.exe.
-TESTS :=
-TESTS += unit-tests.exe
-
-tests: $(TESTS)
-
-
 # Component test modules.
 #
 # The naming convention is "<module>-test" so that, in an alphabetic
@@ -372,17 +362,8 @@ unit-tests.exe: $(UNIT_TEST_OBJS) $(THIS)
 all: unit-tests.exe
 
 
-# Rule for tests that have dedicated .cc files, which is what I
-# would like to transition toward.
-#
-# Well, I would like to transition *away* from having tests inside the
-# main .cc file.  But, preferably, tests are run from the main unit test
-# program rather than as stand-alone programs.
-#
-test-%.exe: test-%.cc $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) test-$*.cc $(LIBS)
-
-# Same rule but for the other way of naming, which I am slowly adopting.
+# Rule for tests that have dedicated .cc files, which is currently just
+# binary-stdin-test.exe.
 %-test.exe: %-test.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $*-test.cc $(LIBS)
 
