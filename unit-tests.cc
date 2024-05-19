@@ -50,6 +50,7 @@ static void entry(int argc, char **argv)
   RUN_TEST_NO_DECL(mypopen);
   RUN_TEST(mysig);
   RUN_TEST(objlist);
+  RUN_TEST(objpool);
   RUN_TEST(overflow);
   RUN_TEST(parsestring);
   RUN_TEST(sm_pp_util);

@@ -1,10 +1,13 @@
-// tobjpool.cc            see license.txt for copyright and terms of use
+// objpool-test.cc            see license.txt for copyright and terms of use
 // test ObjectPool
 
 #include "objpool.h"     // ObjectPool
 
 #include <stdlib.h>      // rand
 #include "sm-iostream.h" // cout
+
+
+namespace {
 
 
 // class we're going to make a pool of
@@ -40,7 +43,12 @@ void Foo::checkInvariant(int index) const
 
 enum { SMALL=30, BIG=100, ITERS=10000 };
 
-int main()
+
+} // anonymous namespace
+
+
+// Called from unit-tests.cc.
+void test_objpool()
 {
   ObjectPool<Foo> pool(SMALL);
   int i;
@@ -95,7 +103,7 @@ int main()
 
   cout << "pool capacity at end: " << pool.freeObjectsInPool() << endl;
   cout << "tobjpool works!\n";
-
-  return 0;
 }
 
+
+// EOF

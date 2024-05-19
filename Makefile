@@ -320,7 +320,6 @@ TESTS += test-sm-file-util.exe
 TESTS += test-stringset.exe
 TESTS += test-tree-print.exe
 TESTS += testarray.exe
-TESTS += tobjpool.exe
 TESTS += unit-tests.exe
 TESTS += vptrmap.exe
 
@@ -330,9 +329,6 @@ tests: $(TESTS)
 # this one is explicitly *not* linked against $(THIS)
 nonport.exe: nonport.cpp nonport.h gprintf.o
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cpp gprintf.o $(SYSLIBS)
-
-tobjpool.exe: tobjpool.cc objpool.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) tobjpool.cc $(LIBS)
 
 cycles.exe: cycles.h cycles.c
 	$(CC) -o $@ $(CFLAGS) -DTEST_CYCLES $(LDFLAGS) cycles.c $(SYSLIBS)
@@ -397,6 +393,7 @@ UNIT_TEST_OBJS += map-utils-test.o
 UNIT_TEST_OBJS += mypopen-test.o
 UNIT_TEST_OBJS += mysig-test.o
 UNIT_TEST_OBJS += objlist-test.o
+UNIT_TEST_OBJS += objpool-test.o
 UNIT_TEST_OBJS += overflow-test.o
 UNIT_TEST_OBJS += parsestring-test.o
 UNIT_TEST_OBJS += sm-pp-util-test.o
@@ -523,7 +520,6 @@ check: out/unit-tests.exe.ok
 
 check: $(TESTS)
 	$(RUN)./nonport.exe
-	$(RUN)./tobjpool.exe
 	$(RUN)./cycles.exe
 	$(RUN)./hashline.exe
 	$(RUN)./srcloc.exe
