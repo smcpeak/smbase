@@ -297,7 +297,6 @@ $(THIS): $(OBJS)
 # TODO: I would like to eliminate these stand-alone test programs in
 # favor of testing as much as possible from unit-tests.exe.
 TESTS :=
-TESTS += test-run-process.exe
 TESTS += test-sm-file-util.exe
 TESTS += test-stringset.exe
 TESTS += test-tree-print.exe
@@ -346,6 +345,7 @@ UNIT_TEST_OBJS += owner-test.o
 UNIT_TEST_OBJS += parsestring-test.o
 UNIT_TEST_OBJS += pprint-test.o
 UNIT_TEST_OBJS += refct-serf-test.o
+UNIT_TEST_OBJS += run-process-test.o
 UNIT_TEST_OBJS += sm-pp-util-test.o
 UNIT_TEST_OBJS += sm-rc-ptr-test.o
 UNIT_TEST_OBJS += smregexp-test.o
@@ -461,6 +461,12 @@ out/binary-stdin-test.ok: binary-stdin-test.exe
 check: out/binary-stdin-test.ok
 
 
+# ---------------------------- call-abort ------------------------------
+# Test program used by run-process-test.cc.
+call-abort.exe: call-abort.cc
+	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $<
+
+
 # ------------------------------- check --------------------------------
 ifneq ($(CROSS_COMPILE),1)
   RUN :=
@@ -473,7 +479,7 @@ endif
 .PHONY: check-full
 check-full: check
 
-out/unit-tests.exe.ok: unit-tests.exe
+out/unit-tests.exe.ok: unit-tests.exe call-abort.exe
 	$(CREATE_OUTPUT_DIRECTORY)
 	./unit-tests.exe
 	touch $@
@@ -481,7 +487,6 @@ out/unit-tests.exe.ok: unit-tests.exe
 check: out/unit-tests.exe.ok
 
 check: $(TESTS)
-	$(RUN)./test-run-process.exe --unit-test
 	$(RUN)./test-sm-file-util.exe
 	$(RUN)./test-stringset.exe
 ifneq ($(CROSS_COMPILE),1)

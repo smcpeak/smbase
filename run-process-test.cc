@@ -1,10 +1,14 @@
-// test-run-process.cc
+// run-process-test.cc
 // Tests for run-process module.
 
 #include "run-process.h"               // module under test
 
 #include "exc.h"                       // xBase
 #include "sm-platform.h"               // PLATFORM_IS_POSIX
+#include "sm-to-std-string.h"          // toSMStringVector
+#include "string-utils.h"              // splitNonEmpty
+
+#include <cstdlib>                     // std::exit
 
 
 static void oneBwcl(OldSmbaseString expect, char const **argv)
@@ -126,10 +130,6 @@ static void runOne(OldSmbaseString expect, char const **argv)
 }
 
 
-// Value of argv[0].
-static char const *programName;
-
-
 static void testRun()
 {
   cout << "-- testRun --\n";
@@ -164,7 +164,7 @@ static void testAborted()
 {
   cout << "-- testAborted --\n";
   RunProcess rproc;
-  rproc.setCommand(std::vector<OldSmbaseString>{programName, "--abort"});
+  rproc.setCommand(std::vector<OldSmbaseString>{"./call-abort.exe"});
 
   if (PLATFORM_IS_POSIX) {
     rproc.runAndWait();
@@ -188,45 +188,26 @@ static void unit_test()
 }
 
 
-int main(int argc, char **argv)
+// Called from unit-tests.cc.
+void test_run_process()
 {
-  programName = argv[0];
   try {
-    if (argc <= 1) {
-      cout << "usage: " << argv[0] << " program [args...]\n"
-              "  or\n"
-              "       " << argv[0] << " --unit-test\n"
-              "  or\n"
-              "       " << argv[0] << " --abort\n"
-              ;
-      return 2;
-    }
+    if (char const *cmdline = getenv("RUN_PROCESS_TEST_CMDLINE")) {
+      std::vector<OldSmbaseString> command =
+        toSMStringVector(splitNonEmpty(cmdline, ' '));
 
-    std::vector<OldSmbaseString> command;
-    for (int i=1; i < argc; i++) {
-      command.push_back(OldSmbaseString(argv[i]));
+      RunProcess rproc;
+      rproc.setCommand(command);
+      rproc.runAndWait();
+      cout << rproc.exitDescription() << endl;
     }
-
-    if (command[0] == "--unit-test") {
+    else {
       unit_test();
-      return 0;
     }
-
-    // This is used in the tests to check that we can detect when a
-    // callee calls abort().
-    if (command[0] == "--abort") {
-      abort();
-      return 4;    // Not reached.
-    }
-
-    RunProcess rproc;
-    rproc.setCommand(command);
-    rproc.runAndWait();
-    cout << rproc.exitDescription() << endl;
   }
   catch (xBase &x) {
     cout << "exception: " << x.why() << endl;
-    return 4;
+    std::exit(4);
   }
 }
 
