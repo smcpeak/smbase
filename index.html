@@ -166,7 +166,7 @@ ArrayQueue, a template class implementing a queue with an array.
 Supports O(1) enqueue and dequeue.
 
 <li><a href="datablok.h">datablok.h</a>,
-    <a href="datablok.cpp">datablok.cpp</a>:
+    <a href="datablok.cc">datablok.cc</a>:
 DataBlock, an array of characters of a given length.  Useful when the
 data may contain NUL ('\0') bytes.
 
@@ -343,7 +343,7 @@ Strings are sequences of characters.
 <ul>
 
 <li><a href="str.h">str.h</a>,
-    <a href="str.cpp">str.cpp</a>:
+    <a href="str.cc">str.cc</a>:
 The string class itself.  Using the string class instead of
 <tt>char*</tt> makes handling strings as convenent as manipulating
 fundamental types like <tt>int</tt> or <tt>float</tt>.
@@ -354,7 +354,7 @@ See also <a href="string.txt">string.txt</a>.
 StringSet, a set of strings.
 
 <li><a href="strtokp.h">strtokp.h</a>,
-    <a href="strtokp.cpp">strtokp.cpp</a>:
+    <a href="strtokp.cc">strtokp.cc</a>:
 StrtokParse, a class that parses a string similar to how strtok()
 works, but provides a more convenient (and thread-safe) interface.
 Similar to Java's StringTokenizer.
@@ -389,7 +389,7 @@ Report total number of processor cycles since the machine was turned on.
 Uses the RDTSC instruction on x86.
 
 <li><a href="missing.h">missing.h</a>,
-    <a href="missing.cpp">missing.cpp</a>:
+    <a href="missing.cc">missing.cc</a>:
 Implementations of a few C library functions that are not present
 on all platforms.
 
@@ -402,7 +402,7 @@ Open a process, yielding two pipes: one for writing, one for reading.
 Some signal-related utilities.
 
 <li><a href="syserr.h">syserr.h</a>,
-    <a href="syserr.cpp">syserr.cpp</a>:
+    <a href="syserr.cc">syserr.cc</a>:
 Intended to be a portable encapsulation of system-dependent error
 facilities like UNIX's errno and Win32's GetLastError().  It's not
 very complete right now.
@@ -422,7 +422,7 @@ it is running on.
 <ul>
 
 <li><a href="nonport.h">nonport.h</a>,
-    <a href="nonport.cpp">nonport.cpp</a>:
+    <a href="nonport.cc">nonport.cc</a>:
 A library of utility functions whose implementation is system-specific.
 Generally, I try to encapsulate all system depenencies as functions
 defined in nonport.
@@ -458,7 +458,7 @@ These modules define or throw exceptions.
 <ul>
 
 <li><a href="exc.h">exc.h</a>,
-    <a href="exc.cpp">exc.cpp</a>:
+    <a href="exc.cc">exc.cc</a>:
 Various exception classes.  The intent is derive everything from xBase,
 so a program can catch this one exception type in main() and be assured
 no exception will propagate out of the program (or any other unit of
@@ -524,7 +524,7 @@ it can break lines intelligently.  It's used as part of a source-code
 pretty-printer.
 
 <li><a href="warn.h">warn.h</a>,
-    <a href="warn.cpp">warn.cpp</a>:
+    <a href="warn.cc">warn.cc</a>:
 Intended to provide a general interface for user-level warnings; the
 design never really worked well.
 
@@ -535,7 +535,7 @@ design never really worked well.
 <ul>
 
 <li><a href="breaker.h">breaker.h</a>
-    <a href="breaker.cpp">breaker.cpp</a>:
+    <a href="breaker.cc">breaker.cc</a>:
 Function for putting a breakpoint in, to get debugger control just
 before an exception is thrown.
 
@@ -559,7 +559,7 @@ An <tt>operator delete</tt> which overwrites the deallocated memory with
 <ul>
 
 <li><a href="crc.h">crc.h</a>
-    <a href="crc.cpp">crc.cpp</a>:
+    <a href="crc.cc">crc.cc</a>:
 32-bit cyclic redundancy check.
 
 <li><a href="gprintf.h">gprintf.h</a>,

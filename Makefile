@@ -221,15 +221,15 @@ SRCS += binary-stdin.cc
 SRCS += bit2d.cc
 SRCS += bitarray.cc
 SRCS += boxprint.cc
-SRCS += breaker.cpp
+SRCS += breaker.cc
 SRCS += codepoint.cc
-SRCS += crc.cpp
+SRCS += crc.cc
 SRCS += cycles.c
 SRCS += d2vector.c
 SRCS += datablok.cc
 SRCS += datetime.cc
 SRCS += dev-warning.cc
-SRCS += exc.cpp
+SRCS += exc.cc
 SRCS += flatten.cc
 SRCS += functional-set.cc
 SRCS += gcc-options.cc
@@ -241,10 +241,10 @@ SRCS += gprintf.c
 SRCS += growbuf.cc
 SRCS += hashline.cc
 SRCS += hashtbl.cc
-SRCS += missing.cpp
+SRCS += missing.cc
 SRCS += mypopen.c
 SRCS += mysig.cc
-SRCS += nonport.cpp
+SRCS += nonport.cc
 SRCS += objcount.cc
 SRCS += ofstreamts.cc
 SRCS += parsestring.cc
@@ -265,23 +265,22 @@ SRCS += strhash.cc
 SRCS += string-utils.cc
 SRCS += stringset.cc
 SRCS += strtable.cc
-SRCS += strtokp.cpp
+SRCS += strtokp.cc
 SRCS += strutil.cc
 SRCS += svdict.cc
-SRCS += syserr.cpp
+SRCS += syserr.cc
 SRCS += trace.cc
 SRCS += trdelete.cc
 SRCS += tree-print.cc
 SRCS += vdtllist.cc
 SRCS += voidlist.cc
 SRCS += vptrmap.cc
-SRCS += warn.cpp
+SRCS += warn.cc
 
 # Library object files.
 OBJS := $(SRCS)
 OBJS := $(patsubst %.c,%.o,$(OBJS))
 OBJS := $(patsubst %.cc,%.o,$(OBJS))
-OBJS := $(patsubst %.cpp,%.o,$(OBJS))
 
 # Pull in automatic dependencies created by $(GENDEPS_FLAGS).
 -include $(OBJS:.o=.d)
@@ -326,11 +325,11 @@ tests: $(TESTS)
 
 
 # this one is explicitly *not* linked against $(THIS)
-nonport.exe: nonport.cpp nonport.h gprintf.o
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cpp gprintf.o $(SYSLIBS)
+nonport.exe: nonport.cc nonport.h gprintf.o
+	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cc gprintf.o $(SYSLIBS)
 
-crc.exe: crc.cpp
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_CRC $(LDFLAGS) crc.cpp $(SYSLIBS)
+crc.exe: crc.cc
+	$(CXX) -o $@ $(CXXFLAGS) -DTEST_CRC $(LDFLAGS) crc.cc $(SYSLIBS)
 
 srcloc.exe: srcloc.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_SRCLOC $(LDFLAGS) srcloc.cc $(LIBS)
@@ -635,7 +634,7 @@ gendoc/dependencies.dot:
 	perl ./scan-depends.pl -r -Xxassert.h -Xtest.h -Xtyp.h -Xmacros.h -Xstr.h \
 		-Xbreaker.h \
 		growbuf.h objpool.h strhash.h voidlist.h svdict.h str.h \
-		warn.cpp mysig.h srcloc.cc hashline.cc astlist.h taillist.h \
+		warn.cc mysig.h srcloc.cc hashline.cc astlist.h taillist.h \
 		objstack.h ohashtbl.h okhasharr.h okhashtbl.h sobjlist.h \
 		exc.h >$@
 

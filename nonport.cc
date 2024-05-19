@@ -1,4 +1,4 @@
-// nonport.cpp            see license.txt for copyright and terms of use
+// nonport.cc            see license.txt for copyright and terms of use
 // code for nonport.h
 // Scott McPeak and Dan Bonachea, 1998-1999  This file is public domain.
 
@@ -789,11 +789,11 @@ int main(int argc, char **argv)
   // Test getFileModificationTime (crudely).
   {
     int64_t t;
-    if (!getFileModificationTime("nonport.cpp", t /*OUT*/)) {
-      printf("getFileModificationTime(\"nonport.cpp\") failed!\n");
+    if (!getFileModificationTime("nonport.cc", t /*OUT*/)) {
+      printf("getFileModificationTime(\"nonport.cc\") failed!\n");
       return 4;
     }
-    printf("modification time of nonport.cpp: %ld\n",
+    printf("modification time of nonport.cc: %ld\n",
            (long)t);
   }
 
