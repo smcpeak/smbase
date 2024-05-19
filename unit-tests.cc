@@ -94,6 +94,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(owner);
   RUN_TEST(parsestring);
   RUN_TEST(pprint);
+  RUN_TEST(refct_serf);
   RUN_TEST(sm_pp_util);
   RUN_TEST(sm_rc_ptr);
   RUN_TEST(smregexp);

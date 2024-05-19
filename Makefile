@@ -297,7 +297,6 @@ $(THIS): $(OBJS)
 # TODO: I would like to eliminate these stand-alone test programs in
 # favor of testing as much as possible from unit-tests.exe.
 TESTS :=
-TESTS += test-refct-serf.exe
 TESTS += test-run-process.exe
 TESTS += test-sm-file-util.exe
 TESTS += test-stringset.exe
@@ -346,6 +345,7 @@ UNIT_TEST_OBJS += overflow-test.o
 UNIT_TEST_OBJS += owner-test.o
 UNIT_TEST_OBJS += parsestring-test.o
 UNIT_TEST_OBJS += pprint-test.o
+UNIT_TEST_OBJS += refct-serf-test.o
 UNIT_TEST_OBJS += sm-pp-util-test.o
 UNIT_TEST_OBJS += sm-rc-ptr-test.o
 UNIT_TEST_OBJS += smregexp-test.o
@@ -481,7 +481,6 @@ out/unit-tests.exe.ok: unit-tests.exe
 check: out/unit-tests.exe.ok
 
 check: $(TESTS)
-	$(RUN)./test-refct-serf.exe
 	$(RUN)./test-run-process.exe --unit-test
 	$(RUN)./test-sm-file-util.exe
 	$(RUN)./test-stringset.exe

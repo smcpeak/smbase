@@ -1,4 +1,4 @@
-// test-refct-serf.cc
+// refct-serf-test.cc
 // Test code for 'refct-serf' and 'rcserflist' modules.
 
 #include "rcserflist.h"                // module to test
@@ -9,7 +9,10 @@
 #include "objlist.h"                   // ObjList
 #include "owner.h"                     // Owner
 #include "sm-iostream.h"               // cout, etc.
-#include "sm-test.h"                   // USUAL_TEST_MAIN
+#include "sm-test.h"                   // EXPECT_EQ
+
+
+namespace {
 
 
 // Placeholder data class.  This one does not explicitly call any of
@@ -717,7 +720,11 @@ static void testMultipleInheritance(int failure)
 }
 
 
-static void entry()
+} // anonymous namespace
+
+
+// Called from unit-tests.cc.
+void test_refct_serf()
 {
   testOperatorsInteger();
   testOperatorsFloat(false /*failure*/);
@@ -748,8 +755,6 @@ static void entry()
 
   cout << "test-refct-serf ok" << endl;
 }
-
-USUAL_TEST_MAIN
 
 
 // EOF
