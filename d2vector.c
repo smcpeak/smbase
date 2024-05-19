@@ -6,15 +6,11 @@
 //
 // This file is hereby placed in the public domain.
 
-// Get M_PI, a POSIX extension, from math.h.
-#define _USE_MATH_DEFINES
-#undef __STRICT_ANSI__  // Need this too with -std=c99.
-
 #include "d2vector.h"   // this module
 
 #include <assert.h>     // assert
 #include <stdio.h>      // printf
-#include <math.h>       // isnan, isinf, sin, cos, M_PI
+#include <math.h>       // isnan, isinf, sin, cos
 
 double lengthD2Vector(D2Vector const *v)
 {
@@ -206,111 +202,4 @@ void printD2Line(D2Line const *line)
 }
 
 
-// -------------------- test code --------------------
-#ifdef TEST_D2VECTOR
-
-void runIntersect(double px, double py, double vx, double vy,
-                  double qx, double qy, double wx, double wy)
-{
-  D2Line L1, L2;
-  double t;
-
-  printf("computing intersection:\n");
-
-  L1.origin.x = px;
-  L1.origin.y = py;
-  L1.vector.x = vx;
-  L1.vector.y = vy;
-  printf("  L1: "); printD2Line(&L1); printf("\n");
-
-  L2.origin.x = qx;
-  L2.origin.y = qy;
-  L2.vector.x = wx;
-  L2.vector.y = wy;
-  printf("  L2: "); printD2Line(&L2); printf("\n");
-
-  t = intersectD2Lines(&L1, &L2);
-  if (isSpecial(t)) {
-    printf("  these lines are parallel\n");
-  }
-  else {
-    D2Point p;
-
-    printf("  t is %g\n", t);
-
-    // compute it as a point
-    pointOnD2Line(&p, &L2, t);
-    printf("  intersection is (%g,%g)\n", p.x, p.y);
-  }
-}
-
-void rotTest()
-{
-  D2Vector v;
-  int i;
-
-  printf("\nrot test\n");
-
-  v.x = 2;
-  v.y = 1;
-  printD2Point(&v);
-  rotD2Vector90(&v);
-  printD2Point(&v);
-  rotD2Vector180(&v);
-  printD2Point(&v);
-  rotD2Vector270(&v);
-  printD2Point(&v);
-  printf("\n");
-
-  v.x = 1;
-  v.y = 0;
-  printD2Point(&v);
-  for (i=0; i<12; i++) {
-    D2Vector tmp;
-    if (i % 3 == 0) {
-      printf("\n");
-    }
-    rotD2VectorAngle(&tmp, &v, 30.0 * M_PI / 180.0);   // 30 degrees
-    v = tmp;
-    printD2Point(&v);
-  }
-  printf("\n");
-}
-
-int main()
-{
-  // from (1,0) pointing up, intersected with
-  // from (0,1) pointing right
-  runIntersect(1,0, 0,1,  0,1, 1,0);
-  runIntersect(0,1, 1,0,  1,0, 0,1);
-
-  // vertical and diagonal
-  runIntersect(1,0, 0,1,  0,0, 1,1);
-
-  // vertical and diagonal
-  runIntersect(1,0, 0,1,  0,0, 1,2);
-
-  // vertical and diagonal
-  runIntersect(2,0, 0,1,  0,0, 1,2);
-
-  // parallel vertical
-  runIntersect(1,0, 0,1,  0,0, 0,1);
-
-  // parallel horizontal
-  runIntersect(0,1, 1,0,  0,0, 1,0);
-
-  // horizontal and diagonal
-  runIntersect(0,1, 1,0,  0,10, 1,-0.1);
-
-  // both diagonal, not parallel
-  runIntersect(1,0, 1,2,  0,1, 2,1);
-
-  // diagonal and parallel (but the vector isn't identical)
-  runIntersect(1,0, 1,2,  0,1, 2,4);
-
-  rotTest();
-
-  return 0;
-}
-
-#endif // TEST_D2VECTOR
+// EOF

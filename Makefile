@@ -298,7 +298,6 @@ $(THIS): $(OBJS)
 # favor of testing as much as possible from unit-tests.exe.
 TESTS :=
 TESTS += bdffont.exe
-TESTS += d2vector.exe
 TESTS += nonport.exe
 TESTS += tarray2d.exe
 TESTS += test-codepoint.exe
@@ -317,9 +316,6 @@ tests: $(TESTS)
 # this one is explicitly *not* linked against $(THIS)
 nonport.exe: nonport.cc nonport.h gprintf.o
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cc gprintf.o $(SYSLIBS)
-
-d2vector.exe: d2vector.c $(THIS)
-	$(CC) -o $@ $(CFLAGS) -DTEST_D2VECTOR $(LDFLAGS) d2vector.c $(LIBS) $(MATHLIB)
 
 bdffont.exe: bdffont.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_BDFFONT $(LDFLAGS) bdffont.cc $(LIBS)
@@ -343,6 +339,7 @@ UNIT_TEST_OBJS += boxprint-test.o
 UNIT_TEST_OBJS += counting-ostream-test.o
 UNIT_TEST_OBJS += crc-test.o
 UNIT_TEST_OBJS += cycles-test.o
+UNIT_TEST_OBJS += d2vector-test.o
 UNIT_TEST_OBJS += datablok-test.o
 UNIT_TEST_OBJS += dict-test.o
 UNIT_TEST_OBJS += functional-set-test.o
@@ -495,7 +492,6 @@ check: out/unit-tests.exe.ok
 
 check: $(TESTS)
 	$(RUN)./nonport.exe
-	$(RUN)./d2vector.exe
 	$(RUN)./bdffont.exe
 	$(RUN)./tarray2d.exe
 	$(RUN)./test-codepoint.exe

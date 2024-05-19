@@ -11,6 +11,7 @@
 
 extern "C" {
   void test_cycles();                  // cycles-test.c
+  void test_d2vector();                // d2vector-test.c
   void test_gprintf();                 // gprintf-test.c
   void test_mypopen();                 // mypopen-test.c
 }
@@ -49,6 +50,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(counting_ostream);
   RUN_TEST(crc);
   RUN_TEST_NO_DECL(cycles);
+  RUN_TEST_NO_DECL(d2vector);
   RUN_TEST(datablok);
   RUN_TEST(dict);
   RUN_TEST(functional_set);
