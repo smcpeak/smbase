@@ -297,7 +297,6 @@ $(THIS): $(OBJS)
 # TODO: I would like to eliminate these stand-alone test programs in
 # favor of testing as much as possible from unit-tests.exe.
 TESTS :=
-TESTS += bdffont.exe
 TESTS += nonport.exe
 TESTS += tarray2d.exe
 TESTS += test-codepoint.exe
@@ -317,9 +316,6 @@ tests: $(TESTS)
 nonport.exe: nonport.cc nonport.h gprintf.o
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cc gprintf.o $(SYSLIBS)
 
-bdffont.exe: bdffont.cc $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_BDFFONT $(LDFLAGS) bdffont.cc $(LIBS)
-
 tarray2d.exe: tarray2d.cc array2d.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_TARRAY2D $(LDFLAGS) tarray2d.cc $(LIBS)
 
@@ -332,6 +328,7 @@ UNIT_TEST_OBJS += array-test.o
 UNIT_TEST_OBJS += arrayqueue-test.o
 UNIT_TEST_OBJS += astlist-test.o
 UNIT_TEST_OBJS += autofile-test.o
+UNIT_TEST_OBJS += bdffont-test.o
 UNIT_TEST_OBJS += bflatten-test.o
 UNIT_TEST_OBJS += bit2d-test.o
 UNIT_TEST_OBJS += bitarray-test.o
@@ -492,7 +489,6 @@ check: out/unit-tests.exe.ok
 
 check: $(TESTS)
 	$(RUN)./nonport.exe
-	$(RUN)./bdffont.exe
 	$(RUN)./tarray2d.exe
 	$(RUN)./test-codepoint.exe
 	$(RUN)./test-datetime.exe

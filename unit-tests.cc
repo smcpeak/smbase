@@ -43,6 +43,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(arrayqueue);
   RUN_TEST(astlist);
   RUN_TEST(autofile);
+  RUN_TEST(bdffont);
   RUN_TEST(bflatten);
   RUN_TEST(bit2d);
   RUN_TEST(bitarray);
