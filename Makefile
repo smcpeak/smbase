@@ -88,6 +88,7 @@ COVERAGE_CXXFLAGS = --coverage
 COVERAGE_OPTIMIZATION_FLAGS =
 
 # Some other tools.
+RM      = rm -f
 AR      = ar
 RANLIB  = ranlib
 PYTHON3 = python3
@@ -182,7 +183,7 @@ define RUN_M4
 
 $(1): $(2)
 	@# Forcibly remove target, which may be read-only.
-	rm -f $(1)
+	$(RM) $(1)
 	@#
 	@# Generate tmp.h first.  That way, if m4 fails, we will not
 	@# have written an empty or partial target file.
@@ -282,7 +283,7 @@ OBJS := $(patsubst %.cc,%.o,$(OBJS))
 -include $(OBJS:.o=.d)
 
 $(THIS): $(OBJS)
-	rm -f $(THIS)
+	$(RM) $(THIS)
 	$(AR) -r $(THIS) $(OBJS)
 	-$(RANLIB) $(THIS)
 
@@ -618,16 +619,16 @@ check-clean:
 # ------------------------------- clean --------------------------------
 # delete compiling/editing byproducts
 clean: gcov-clean check-clean
-	rm -f *.o *.o.json *~ *.a *.d *.exe gmon.out srcloc.tmp testcout flattest.tmp
-	rm -rf test.dir
+	$(RM) *.o *.o.json *~ *.a *.d *.exe gmon.out srcloc.tmp testcout flattest.tmp
+	$(RM) -r test.dir
 
 distclean: clean
-	rm -f config.mk compile_commands.json
-	rm -rf gendoc
+	$(RM) config.mk compile_commands.json
+	$(RM) -r gendoc
 
 # remove crap that vc makes
 vc-clean:
-	rm -f *.plg *.[ip]db *.pch
+	$(RM) *.plg *.[ip]db *.pch
 
 
 # EOF
