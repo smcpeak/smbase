@@ -6,14 +6,28 @@
 // test_$MOD(), which is declared and called below by the 'RUN_TEST'
 // macro.
 
+#include "nonport.h"                   // getMilliseconds
 #include "sm-test.h"                   // ARGS_TEST_MAIN
 #include "str.h"                       // streq
+
+#include <cstdlib>                     // std::getenv
+
 
 extern "C" {
   void test_cycles();                  // cycles-test.c
   void test_d2vector();                // d2vector-test.c
   void test_gprintf();                 // gprintf-test.c
   void test_mypopen();                 // mypopen-test.c
+}
+
+
+static void printTiming(char const *testName, long elapsed)
+{
+   std::cout <<
+     "TIMING: " <<
+     std::setw(4) << elapsed << " ms  " <<
+     testName <<
+     "\n";
 }
 
 
@@ -26,11 +40,18 @@ static void entry(int argc, char **argv)
 
   bool ranOne = false;
 
+  bool enableTimes = !!std::getenv("UNIT_TESTS_TIMES");
+
   // Run the test if it is enabled without declaring the test function.
   #define RUN_TEST_NO_DECL(name)                       \
     if (testName == NULL || streq(testName, #name)) {  \
       std::cout << "---- " #name " ----" << std::endl; \
+      long start = getMilliseconds();                  \
       test_##name();                                   \
+      long stop = getMilliseconds();                   \
+      if (enableTimes) {                               \
+        printTiming(#name, stop-start);                \
+      }                                                \
       ranOne = true;                                   \
     }
 
