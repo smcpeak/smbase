@@ -516,51 +516,6 @@ rce-tests: out/rce_chdir1.ok
 check: rce-tests
 
 
-# --------------------------- Documentation ----------------------------
-# directory of generated documentation
-gendoc:
-	mkdir gendoc
-
-# main dependencies for the library; some ubiquitous dependencies
-# are omitted to avoid too much clutter; the files listed below are
-# the roots of the dependency exploration; I don't include any of
-# the stand-alone programs since those are just clutter to someone
-# trying to understand the library's structure
-.PHONY: gendoc/dependencies.dot
-gendoc/dependencies.dot:
-	perl ./scan-depends.pl -r -Xxassert.h -Xtest.h -Xtyp.h -Xmacros.h -Xstr.h \
-		-Xbreaker.h \
-		growbuf.h objpool.h strhash.h voidlist.h svdict.h str.h \
-		warn.cc mysig.h srcloc.cc hashline.cc astlist.h taillist.h \
-		objstack.h ohashtbl.h okhasharr.h okhashtbl.h sobjlist.h \
-		exc.h >$@
-
-# check to see if they have dot
-.PHONY: dot
-dot:
-	@if ! which dot >$(DEV_NULL); then \
-	  echo "You don't have the 'dot' tool.  You can get it at:"; \
-	  echo "http://www.research.att.com/sw/tools/graphviz/"; \
-	  exit 2; \
-	fi
-
-# use 'dot' to lay out the graph
-%.ps: %.dot dot
-	dot -Tps <$*.dot >$@
-
-# use 'convert' to make a PNG image with resolution not to exceed
-# 1000 in X or 700 in Y ('convert' will preserve aspect ratio); this
-# also antialiases, so it looks very nice (it's hard to reproduce
-# this using 'gs' alone)
-%.png: %.ps
-	convert -geometry 1000x700 $^ $@
-
-# build auto-generated documentation
-.PHONY: doc
-doc: gendoc gendoc/dependencies.png
-	@echo "built documentation"
-
-
 # ----------------------------- coverage -------------------------------
 # Run gcov to produce .gcov files.  This requires having compiled with
 # COVERAGE=1.
@@ -605,7 +560,6 @@ clean: gcov-clean check-clean
 
 distclean: clean
 	$(RM) compile_commands.json
-	$(RM) -r gendoc
 
 # remove crap that vc makes
 vc-clean:

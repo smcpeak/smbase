@@ -43,11 +43,6 @@ the library as a whole has not.  Consequently, the modules to not
 always orthogonally cover a given design space, and some of the
 modules are now considered obsolete (marked below as such).
 
-<p>
-Some of the links below refer to generated documentation files.  If
-you are reading this from your local filesystem, you may have to
-say <tt>"make gendoc"</tt> (after <tt>"./configure"</tt>) to get them.
-
 <h1>Build Instructions</h1>
 
 <p>
@@ -56,9 +51,15 @@ say <tt>"make gendoc"</tt> (after <tt>"./configure"</tt>) to get them.
   $ make
   $ make check
 </pre>
-<a href="configure.pl"><tt>./configure</tt></a> understands
-<a href="gendoc/configure.txt">these options</a>.  You can also
-look at the <a href="Makefile.in">Makefile</a>.
+
+<p>
+<a href="configure"><tt>./configure</tt></a> does nothing, but exists
+for consistency with other packages.
+
+<p>
+Configuration is done by creating <tt>config.mk</tt> and setting
+variables that are described at the top of
+<a href="Makefile"><tt>Makefile</tt></a>.
 
 <h1>Modules</h1>
 
@@ -625,21 +626,6 @@ some of the main script's global variables.
 
 </ul>
 
-
-<h1>Module Dependencies</h1>
-
-<p>
-The <a href="scan-depends.pl">scan-depends.pl</a> script is capable
-of generating a
-<a href="gendoc/dependencies.dot">module dependency description</a> in the
-<a href="http://www.research.att.com/sw/tools/graphviz/">Dot</a>
-format.  Not all the modules appear; I try to show the most important
-modules, and try to avoid making Dot do weird things.
-Below is its output.
-
-<p>
-<img src="gendoc/dependencies.png" alt="Module Dependencies"><br>
-There's also a <a href="gendoc/dependencies.ps">Postscript version</a>.
 
 <p>
   <a href="http://validator.w3.org/check/referer"><img border="0"
