@@ -64,6 +64,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(map_utils);
   RUN_TEST_NO_DECL(mypopen);
   RUN_TEST(mysig);
+  RUN_TEST(nonport);
   RUN_TEST(objlist);
   RUN_TEST(objpool);
   RUN_TEST(overflow);

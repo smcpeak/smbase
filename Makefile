@@ -297,7 +297,6 @@ $(THIS): $(OBJS)
 # TODO: I would like to eliminate these stand-alone test programs in
 # favor of testing as much as possible from unit-tests.exe.
 TESTS :=
-TESTS += nonport.exe
 TESTS += test-codepoint.exe
 TESTS += test-datetime.exe
 TESTS += test-owner.exe
@@ -310,10 +309,6 @@ TESTS += unit-tests.exe
 
 tests: $(TESTS)
 
-
-# this one is explicitly *not* linked against $(THIS)
-nonport.exe: nonport.cc nonport.h gprintf.o
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cc gprintf.o $(SYSLIBS)
 
 # Component test modules.
 #
@@ -345,6 +340,7 @@ UNIT_TEST_OBJS += hashline-test.o
 UNIT_TEST_OBJS += map-utils-test.o
 UNIT_TEST_OBJS += mypopen-test.o
 UNIT_TEST_OBJS += mysig-test.o
+UNIT_TEST_OBJS += nonport-test.o
 UNIT_TEST_OBJS += objlist-test.o
 UNIT_TEST_OBJS += objpool-test.o
 UNIT_TEST_OBJS += overflow-test.o
@@ -485,7 +481,6 @@ out/unit-tests.exe.ok: unit-tests.exe
 check: out/unit-tests.exe.ok
 
 check: $(TESTS)
-	$(RUN)./nonport.exe
 	$(RUN)./test-codepoint.exe
 	$(RUN)./test-datetime.exe
 	$(RUN)./test-owner.exe
