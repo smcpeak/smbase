@@ -1,10 +1,10 @@
-// test-stringset.cc
+// stringset-test.cc
 // Test code for 'stringset' module.
 
 #include "stringset.h"                 // module to test
 
+#include "exc.h"                       // xbase
 #include "sm-iostream.h"               // cout
-#include "sm-test.h"                   // USUAL_MAIN
 
 
 static void testAddUnique()
@@ -25,15 +25,14 @@ static void testAddUnique()
 }
 
 
-static void entry()
+// Called from unit-tests.cc.
+void test_stringset()
 {
   // This is not thorough at all right now.
   testAddUnique();
 
   cout << "test-stringset passed\n";
 }
-
-USUAL_MAIN
 
 
 // EOF

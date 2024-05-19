@@ -297,7 +297,6 @@ $(THIS): $(OBJS)
 # TODO: I would like to eliminate these stand-alone test programs in
 # favor of testing as much as possible from unit-tests.exe.
 TESTS :=
-TESTS += test-stringset.exe
 TESTS += test-tree-print.exe
 TESTS += unit-tests.exe
 
@@ -355,6 +354,7 @@ UNIT_TEST_OBJS += str-test.o
 UNIT_TEST_OBJS += strdict-test.o
 UNIT_TEST_OBJS += strhash-test.o
 UNIT_TEST_OBJS += string-utils-test.o
+UNIT_TEST_OBJS += stringset-test.o
 UNIT_TEST_OBJS += strutil-test.o
 UNIT_TEST_OBJS += svdict-test.o
 UNIT_TEST_OBJS += taillist-test.o
@@ -486,7 +486,6 @@ out/unit-tests.exe.ok: unit-tests.exe call-abort.exe test.dir/read-only.txt
 check: out/unit-tests.exe.ok
 
 check: $(TESTS)
-	$(RUN)./test-stringset.exe
 ifneq ($(CROSS_COMPILE),1)
 	@echo
 	@echo "make check: all the tests PASSED"
