@@ -299,7 +299,6 @@ $(THIS): $(OBJS)
 TESTS :=
 TESTS += bdffont.exe
 TESTS += bitarray.exe
-TESTS += boxprint.exe
 TESTS += d2vector.exe
 TESTS += nonport.exe
 TESTS += tarray2d.exe
@@ -321,9 +320,6 @@ tests: $(TESTS)
 # this one is explicitly *not* linked against $(THIS)
 nonport.exe: nonport.cc nonport.h gprintf.o
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cc gprintf.o $(SYSLIBS)
-
-boxprint.exe: boxprint.cc $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_BOXPRINT $(LDFLAGS) boxprint.cc $(LIBS)
 
 tarrayqueue.exe: tarrayqueue.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) tarrayqueue.cc $(LIBS)
@@ -353,6 +349,7 @@ UNIT_TEST_OBJS += astlist-test.o
 UNIT_TEST_OBJS += autofile-test.o
 UNIT_TEST_OBJS += bflatten-test.o
 UNIT_TEST_OBJS += bit2d-test.o
+UNIT_TEST_OBJS += boxprint-test.o
 UNIT_TEST_OBJS += counting-ostream-test.o
 UNIT_TEST_OBJS += crc-test.o
 UNIT_TEST_OBJS += cycles-test.o
@@ -437,8 +434,18 @@ out/%.ok: test/%.expect %.exe
 	  ./$*.exe
 	touch $@
 
-check: out/boxprint.ok
 check: out/test-tree-print.ok
+
+# Run one unit test and compare to expected output.
+out/%.unit.ok: test/%.expect unit-tests.exe
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(RUN_COMPARE_EXPECT) \
+	  --actual out/$*.actual \
+	  --expect test/$*.expect \
+	  ./unit-tests.exe $*
+	touch $@
+
+check: out/boxprint.unit.ok
 
 
 # ------------------------- binary-stdin-test --------------------------
