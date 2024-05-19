@@ -25,13 +25,6 @@
 #endif
 
 
-static void die(char const *fn)
-{
-  perror(fn);
-  exit(2);
-}
-
-
 // The entire module only works on non-Windows.
 #ifndef __WIN32__
 
@@ -49,6 +42,13 @@ int mypopenWait(int *status)
 
 
 // -------------------- helpers ----------------------
+static void die(char const *fn)
+{
+  perror(fn);
+  exit(2);
+}
+
+
 void makePipe(int *readEnd, int *writeEnd)
 {
   int pipes[2];
@@ -226,133 +226,4 @@ int popen_execvp(int *parentWritesChild, int *parentReadsChild,
 #endif
 
 
-// ------------------ test code ----------------------
-#ifdef TEST_MYPOPEN
-
-int main()
-{
-  char buf[80];
-  int stat;
-
-  if (!mypopenModuleWorks()) {
-    printf("mypopen module does not work on this platform, skipping test\n");
-    return 0;
-  }
-
-  // try cat
-  {
-    int in, out;
-    char const *argv[] = { "cat", NULL };
-    int pid = popen_execvp(&in, &out, NULL, argv[0], argv);
-    printf("child pid is %d\n", pid);
-
-    if (write(in, "foo\n", 4) != 4) {
-      die("write");
-    }
-    if (read(out, buf, 4) != 4) {
-      die("read");
-    }
-
-    if (0==memcmp(buf, "foo\n", 4)) {
-      printf("cat worked for foo\n");
-    }
-    else {
-      printf("cat FAILED\n");
-      return 2;
-    }
-
-    if (write(in, "bar\n", 4) != 4) {
-      die("write");
-    }
-    if (read(out, buf, 4) != 4) {
-      die("read");
-    }
-
-    if (0==memcmp(buf, "bar\n", 4)) {
-      printf("cat worked for bar\n");
-    }
-    else {
-      printf("cat FAILED\n");
-      return 2;
-    }
-
-    close(in);
-    close(out);
-
-    printf("waiting for cat to exit..\n");
-    if (mypopenWait(&stat) < 1) {
-      perror("wait");
-    }
-    else {
-      printf("cat exited with status %d\n", stat);
-    }
-  }
-
-  // try something which fails
-  {
-    int in, out, err;
-    int len;
-    char const *argv[] = { "does_not_exist", NULL };
-    int pid = popen_execvp(&in, &out, &err, argv[0], argv);
-    printf("child pid is %d\n", pid);
-
-    printf("waiting for error message...\n");
-    len = read(err, buf, 78);
-    if (len < 0) {
-      die("read");
-    }
-    if (buf[len-1] != '\n') {
-      buf[len++] = '\n';
-    }
-    buf[len] = 0;
-    printf("error string: %s", buf);   // should include newline from perror
-
-    close(in);
-    close(out);
-    close(err);
-
-    printf("waiting for child to exit..\n");
-    if (mypopenWait(&stat) < 1) {
-      perror("wait");
-    }
-    else {
-      printf("child exited with status %d\n", stat);
-    }
-  }
-
-  // also fails, but with stdout and stderr going to same pipe
-  {
-    int in, out;
-    int len;
-    char const *argv[] = { "does_not_exist", NULL };
-    int pid = popen_execvp(&in, &out, &out, argv[0], argv);
-    printf("out==err: child pid is %d\n", pid);
-
-    printf("waiting for error message...\n");
-    len = read(out, buf, 78);
-    if (len < 0) {
-      die("read");
-    }
-    if (buf[len-1] != '\n') {
-      buf[len++] = '\n';
-    }
-    buf[len] = 0;
-    printf("error string: %s", buf);   // should include newline from perror
-
-    close(in);
-    close(out);
-
-    printf("waiting for child to exit..\n");
-    if (mypopenWait(&stat) < 1) {
-      perror("wait");
-    }
-    else {
-      printf("child exited with status %d\n", stat);
-    }
-  }
-
-  printf("mypopen worked!\n");
-  return 0;
-}
-
-#endif // TEST_POPEN
+// EOF

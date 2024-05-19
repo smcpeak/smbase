@@ -9,6 +9,8 @@
 #include "sm-test.h"                   // ARGS_TEST_MAIN
 #include "str.h"                       // streq
 
+extern "C" void test_mypopen();        // mypopen-test.c
+
 
 static void entry(int argc, char **argv)
 {
@@ -19,13 +21,18 @@ static void entry(int argc, char **argv)
 
   bool ranOne = false;
 
-  #define RUN_TEST(name)                               \
+  // Run the test if it is enabled without declaring the test function.
+  #define RUN_TEST_NO_DECL(name)                       \
     if (testName == NULL || streq(testName, #name)) {  \
       std::cout << "---- " #name " ----" << std::endl; \
-      extern void test_##name();                       \
       test_##name();                                   \
       ranOne = true;                                   \
     }
+
+  // Run the named test if enabled, also declaring the test function.
+  #define RUN_TEST(name)       \
+    extern void test_##name(); \
+    RUN_TEST_NO_DECL(name)
 
   RUN_TEST(array);
   RUN_TEST(astlist);
@@ -40,6 +47,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(gdvalue);
   RUN_TEST(growbuf);
   RUN_TEST(map_utils);
+  RUN_TEST_NO_DECL(mypopen);
   RUN_TEST(mysig);
   RUN_TEST(objlist);
   RUN_TEST(overflow);

@@ -306,7 +306,6 @@ TESTS += cycles.exe
 TESTS += d2vector.exe
 TESTS += gprintf.exe
 TESTS += hashline.exe
-TESTS += mypopen.exe
 TESTS += nonport.exe
 TESTS += pprint.exe
 TESTS += smregexp.exe
@@ -332,9 +331,6 @@ tests: $(TESTS)
 # this one is explicitly *not* linked against $(THIS)
 nonport.exe: nonport.cpp nonport.h gprintf.o
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cpp gprintf.o $(SYSLIBS)
-
-mypopen.exe: mypopen.c mypopen.h
-	$(CC) -o $@ $(CFLAGS) -DTEST_MYPOPEN $(LDFLAGS) mypopen.c $(SYSLIBS)
 
 tobjpool.exe: tobjpool.cc objpool.h $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) tobjpool.cc $(LIBS)
@@ -402,6 +398,7 @@ UNIT_TEST_OBJS += gcc-options-test.o
 UNIT_TEST_OBJS += gdvalue-test.o
 UNIT_TEST_OBJS += growbuf-test.o
 UNIT_TEST_OBJS += map-utils-test.o
+UNIT_TEST_OBJS += mypopen-test.o
 UNIT_TEST_OBJS += mysig-test.o
 UNIT_TEST_OBJS += objlist-test.o
 UNIT_TEST_OBJS += overflow-test.o
@@ -549,7 +546,6 @@ check: $(TESTS)
 	$(RUN)./test-run-process.exe --unit-test
 	$(RUN)./test-sm-file-util.exe
 	$(RUN)./test-stringset.exe
-	$(RUN)./mypopen.exe
 	$(RUN)./smregexp.exe
 ifneq ($(CROSS_COMPILE),1)
 	@echo
