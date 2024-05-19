@@ -443,7 +443,6 @@ out/binary-stdin-test.ok: binary-stdin-test.exe
 	@# Done.
 	touch $@
 
-.PHONY: check
 check: out/binary-stdin-test.ok
 
 
@@ -605,11 +604,22 @@ compile_commands.json:
 	(echo "["; cat *.o.json; echo "]") > $@
 
 
+# ------------------------------- check --------------------------------
+# The actual tests are all prerequisites of 'check' defined above.
+.PHONY: check
+check:
+	@echo 'check: All tests passed.'
+
+.PHONY: check-clean
+check-clean:
+	$(RM) -r out
+
+
 # ------------------------------- clean --------------------------------
 # delete compiling/editing byproducts
-clean: gcov-clean
+clean: gcov-clean check-clean
 	rm -f *.o *.o.json *~ *.a *.d *.exe gmon.out srcloc.tmp testcout flattest.tmp
-	rm -rf test.dir out
+	rm -rf test.dir
 
 distclean: clean
 	rm -f config.mk compile_commands.json
