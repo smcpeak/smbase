@@ -1,4 +1,4 @@
-// test-sm-file-util.cc
+// sm-file-util-test.cc
 // Tests for 'sm-file-util' module.
 
 // Currently these "tests" are quite bad, mostly just printing things
@@ -11,7 +11,7 @@
 // smbase
 #include "nonport.h"                   // GetMillisecondsAccumulator, getFileModificationTime
 #include "run-process.h"               // RunProcess
-#include "sm-test.h"                   // ARGS_TEST_MAIN, PVAL
+#include "sm-test.h"                   // PVAL
 #include "strutil.h"                   // compareStringPtrs
 #include "syserr.h"                    // xSysError
 
@@ -377,7 +377,7 @@ static void expectRelExists(char const *fname, bool expect)
 
 static void testAbsolutePathExists()
 {
-  expectRelExists("test-sm-file-util.cc", true);
+  expectRelExists("sm-file-util-test.cc", true);
   expectRelExists("something-else-random.cc", false);
 
   // Just print these since the result depends on platform.
@@ -773,13 +773,16 @@ void getDirectoryEntries_scanThenStat(SMFileUtil &sfu,
   ArrayStack<SMFileUtil::DirEntryInfo> /*OUT*/ &entries, OldSmbaseString const &directory);
 
 
-static void entry(int argc, char **argv)
+// Called from unit-tests.cc.
+void test_sm_file_util()
 {
-  bool useScanAndProbe = false;
-  if (argc >= 3 &&
-      (0==strcmp(argv[1], "-probe") ||
-       ((useScanAndProbe=true), (0==strcmp(argv[1], "-scan"))))) {
-    OldSmbaseString directory(argv[2]);
+  bool useProbe = !!std::getenv("SM_FILE_UTIL_TEST_PROBE");
+
+  if (char const *scanDir = std::getenv("SM_FILE_UTIL_TEST_SCAN")) {
+    PVAL(scanDir);
+    PVAL(useProbe);
+
+    OldSmbaseString directory(scanDir);
 
     SMFileUtil sfu;
     ArrayStack<SMFileUtil::DirEntryInfo> entries;
@@ -792,7 +795,7 @@ static void entry(int argc, char **argv)
       // 700ms to do 100 iterations probing smbase.  Most time is spent
       // in 'directoryExists'.
       for (int i=0; i<100; i++) {
-        if (useScanAndProbe) {
+        if (useProbe) {
           getDirectoryEntries_scanThenStat(sfu, entries, directory);
         }
         else {
@@ -829,6 +832,5 @@ static void entry(int argc, char **argv)
   cout << "test-sm-file-util ok" << endl;
 }
 
-ARGS_TEST_MAIN
 
 // EOF

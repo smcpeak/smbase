@@ -297,7 +297,6 @@ $(THIS): $(OBJS)
 # TODO: I would like to eliminate these stand-alone test programs in
 # favor of testing as much as possible from unit-tests.exe.
 TESTS :=
-TESTS += test-sm-file-util.exe
 TESTS += test-stringset.exe
 TESTS += test-tree-print.exe
 TESTS += unit-tests.exe
@@ -346,6 +345,7 @@ UNIT_TEST_OBJS += parsestring-test.o
 UNIT_TEST_OBJS += pprint-test.o
 UNIT_TEST_OBJS += refct-serf-test.o
 UNIT_TEST_OBJS += run-process-test.o
+UNIT_TEST_OBJS += sm-file-util-test.o
 UNIT_TEST_OBJS += sm-pp-util-test.o
 UNIT_TEST_OBJS += sm-rc-ptr-test.o
 UNIT_TEST_OBJS += smregexp-test.o
@@ -390,8 +390,7 @@ test-%.exe: test-%.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $*-test.cc $(LIBS)
 
 
-# Create a read-only file I can try to inspect in test-sm-file-util.cc.
-check: test.dir/read-only.txt
+# Create a read-only file I can try to inspect in sm-file-util-test.cc.
 test.dir/read-only.txt:
 	mkdir -p test.dir
 	echo "this file is read-only" >$@
@@ -479,7 +478,7 @@ endif
 .PHONY: check-full
 check-full: check
 
-out/unit-tests.exe.ok: unit-tests.exe call-abort.exe
+out/unit-tests.exe.ok: unit-tests.exe call-abort.exe test.dir/read-only.txt
 	$(CREATE_OUTPUT_DIRECTORY)
 	./unit-tests.exe
 	touch $@
@@ -487,7 +486,6 @@ out/unit-tests.exe.ok: unit-tests.exe call-abort.exe
 check: out/unit-tests.exe.ok
 
 check: $(TESTS)
-	$(RUN)./test-sm-file-util.exe
 	$(RUN)./test-stringset.exe
 ifneq ($(CROSS_COMPILE),1)
 	@echo
