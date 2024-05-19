@@ -41,6 +41,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(bflatten);
   RUN_TEST(bit2d);
   RUN_TEST(counting_ostream);
+  RUN_TEST(crc);
   RUN_TEST_NO_DECL(cycles);
   RUN_TEST(datablok);
   RUN_TEST(dict);

@@ -290,7 +290,7 @@ void DataBlock::print(char const *label, int bytesPerLine) const
   if (label) {
     printf("---- %s, length = %zu, crc32 = 0x%lX ---- {\n",
            label, getDataLen(),
-           crc32(getDataC(), getDataLen()));
+           (unsigned long)crc32(getDataC(), getDataLen()));
   }
 
   size_t cursor = 0;

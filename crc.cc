@@ -1,6 +1,10 @@
 // crc.cc            see license.txt for copyright and terms of use
 // adapted slightly by Scott McPeak
 
+#include "crc.h"                       // this module
+
+#include <stdint.h>                    // uint32_t
+
 // originally was:
 /* crc32h.c -- package to compute 32-bit CRC one byte at a time using   */
 /*             the high-bit first (Big-Endian) bit ordering convention  */
@@ -38,13 +42,13 @@
 
 #define POLYNOMIAL 0x04c11db7L
 
-static unsigned long crc_table[256];
+static uint32_t crc_table[256];
 
 void gen_crc_table()
  /* generate the table of CRC remainders for all possible bytes */
- { int i, j;  unsigned long crc_accum;
+ { int i, j;  uint32_t crc_accum;
    for ( i = 0;  i < 256;  i++ )
-       { crc_accum = ( (unsigned long) i << 24 );
+       { crc_accum = ( (uint32_t) i << 24 );
          for ( j = 0;  j < 8;  j++ )
               { if ( crc_accum & 0x80000000L )
                    crc_accum =
@@ -55,8 +59,8 @@ void gen_crc_table()
          crc_table[i] = crc_accum; }
    return; }
 
-unsigned long update_crc(unsigned long crc_accum, char const *data_blk_ptr,
-                                                    int data_blk_size)
+uint32_t update_crc(uint32_t crc_accum, char const *data_blk_ptr,
+                                        int data_blk_size)
  /* update the CRC on the data block one byte at a time */
  { int i, j;
    for ( j = 0;  j < data_blk_size;  j++ )
@@ -67,7 +71,7 @@ unsigned long update_crc(unsigned long crc_accum, char const *data_blk_ptr,
 
 // SM: block-level application
 static int made_table = 0;
-unsigned long crc32(unsigned char const *data, int length)
+uint32_t crc32(unsigned char const *data, int length)
 {
   if (!made_table) {
     gen_crc_table();
@@ -78,102 +82,4 @@ unsigned long crc32(unsigned char const *data, int length)
 }
 
 
-// ----------------- test code ------------------------------
-#ifdef TEST_CRC
-
-#include <errno.h>     // errno
-#include <stdio.h>     // printf, FILE, etc.
-#include <stdlib.h>    // malloc
-#include <string.h>    // strerror
-
-
-int errors=0;
-
-void testCrc(unsigned char const *data, int length, unsigned long crc)
-{
-  unsigned long val = crc32(data, length);
-  printf("computed crc is 0x%08lX, expected is 0x%08lX\n",
-         val, ~crc);       // why is 'crc' inverted?
-  if (val != ~crc) {
-    errors++;
-  }
-}
-
-
-int main(int argc, char *argv[])
-{
-  // if there's an argument, crc that
-  if (argc >= 2) {
-    FILE *fp = fopen(argv[1], "r");
-    if (!fp) {
-      printf("error opening %s: %s\n", argv[1], strerror(errno));
-      return 2;
-    }
-
-    // get length
-    fseek(fp, 0, SEEK_END);
-    int len = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
-
-    // read the entire contents
-    unsigned char *buf = (unsigned char*)malloc(len);
-    if (fread(buf, 1, len, fp) != (size_t)len) {
-      printf("read error, or short count..\n");
-      return 2;
-    }
-
-    // crc it
-    long val = crc32(buf, len);
-    printf("crc32: 0x%08lX\n", val);
-
-    return 0;
-  }
-
-  /* 40 Octets filled with "0" */
-  /* CPCS-UU = 0, CPI = 0, Length = 40, CRC-32 = 864d7f99 */
-  unsigned
-  char pkt_data1[48]={0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-                      0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-                      0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-                      0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
-                      0x00,0x00,0x00,0x28,0x86,0x4d,0x7f,0x99};
-
-  /* 40 Octets filled with "1" */
-  /* CPCS-UU = 0, CPI = 0, Length = 40, CRC-32 = c55e457a */
-  unsigned
-  char pkt_data2[48]={0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
-                      0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
-                      0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
-                      0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
-                      0x00,0x00,0x00,0x28,0xc5,0x5e,0x45,0x7a};
-
-  /* 40 Octets counting: 1 to 40 */
-  /* CPCS-UU = 0, CPI = 0, Length = 40, CRC-32 = bf671ed0 */
-  unsigned
-  char pkt_data3[48]={0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,
-                      0x0b,0x0c,0x0d,0x0e,0x0f,0x10,0x11,0x12,0x13,0x14,
-                      0x15,0x16,0x17,0x18,0x19,0x1a,0x1b,0x1c,0x1d,0x1e,
-                      0x1f,0x20,0x21,0x22,0x23,0x24,0x25,0x26,0x27,0x28,
-                      0x00,0x00,0x00,0x28,0xbf,0x67,0x1e,0xd0};
-
-  /* 40 Octets counting: 1 to 40 */
-  /* CPCS-UU = 11, CPI = 22, CRC-32 = acba602a */
-  unsigned
-  char pkt_data4[48]={0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,
-                      0x0b,0x0c,0x0d,0x0e,0x0f,0x10,0x11,0x12,0x13,0x14,
-                      0x15,0x16,0x17,0x18,0x19,0x1a,0x1b,0x1c,0x1d,0x1e,
-                      0x1f,0x20,0x21,0x22,0x23,0x24,0x25,0x26,0x27,0x28,
-                      0x11,0x22,0x00,0x28,0xac,0xba,0x60,0x2a};
-
-  testCrc(pkt_data1, 44, 0x864d7f99);
-  testCrc(pkt_data2, 44, 0xc55e457a);
-  testCrc(pkt_data3, 44, 0xbf671ed0);
-  testCrc(pkt_data4, 44, 0xacba602a);
-
-  return errors;
-}
-
-#endif // TEST_CRC
-
-
-
+// EOF

@@ -300,7 +300,6 @@ TESTS :=
 TESTS += bdffont.exe
 TESTS += bitarray.exe
 TESTS += boxprint.exe
-TESTS += crc.exe
 TESTS += d2vector.exe
 TESTS += gprintf.exe
 TESTS += hashline.exe
@@ -327,9 +326,6 @@ tests: $(TESTS)
 # this one is explicitly *not* linked against $(THIS)
 nonport.exe: nonport.cc nonport.h gprintf.o
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cc gprintf.o $(SYSLIBS)
-
-crc.exe: crc.cc
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_CRC $(LDFLAGS) crc.cc $(SYSLIBS)
 
 srcloc.exe: srcloc.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_SRCLOC $(LDFLAGS) srcloc.cc $(LIBS)
@@ -378,6 +374,7 @@ UNIT_TEST_OBJS += autofile-test.o
 UNIT_TEST_OBJS += bflatten-test.o
 UNIT_TEST_OBJS += bit2d-test.o
 UNIT_TEST_OBJS += counting-ostream-test.o
+UNIT_TEST_OBJS += crc-test.o
 UNIT_TEST_OBJS += cycles-test.o
 UNIT_TEST_OBJS += datablok-test.o
 UNIT_TEST_OBJS += dict-test.o
