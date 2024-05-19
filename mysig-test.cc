@@ -38,7 +38,7 @@ static void runTest()
     }
 
     uintptr_t addr = strtoul(segfaultAddr, NULL /*endp*/, 0 /*radix*/);
-    printf("about to access 0x%lX ...\n", addr);
+    printf("about to access 0x%lX ...\n", (long)addr);
     *((int volatile*)addr) = 0;
     return;     // won't be reached for most values of 'addr'
   }
