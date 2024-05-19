@@ -1,8 +1,15 @@
-// unixutil.h            see license.txt for copyright and terms of use
+// sm-unixutil.h            see license.txt for copyright and terms of use
 // some utilities on top of unix functions
 
-#ifndef UNIXUTIL_H
-#define UNIXUTIL_H
+// 2024-05-19: This module was previously called 'unixutil'.  I renamed
+// it to 'sm-unixutil' in part to avoid potential name clashes with
+// other software, and in part because on Windows its existence
+// interfered with file name completion of "./unit-tests" since the .o
+// and .d files end up having the executable bit set due to Cygwin
+// stuff.
+
+#ifndef SMBASE_SM_UNIXUTIL_H
+#define SMBASE_SM_UNIXUTIL_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,4 +31,4 @@ int canRead(int fd);
 }
 #endif
 
-#endif // UNIXUTIL_H
+#endif // SMBASE_SM_UNIXUTIL_H

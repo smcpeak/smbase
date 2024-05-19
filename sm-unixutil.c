@@ -1,14 +1,14 @@
-// unixutil.c            see license.txt for copyright and terms of use
-// code for unixutil.h
+// sm-unixutil.c            see license.txt for copyright and terms of use
+// code for sm-unixutil.h
 
-#include "unixutil.h"   // this module
+#include "sm-unixutil.h"               // this module
 
-#include <unistd.h>     // write
-#include <assert.h>     // assert
-#include <sys/time.h>   // struct timeval
-#include <sys/types.h>  // select
-#include <unistd.h>     // select
-#include <stdio.h>      // perror
+#include <unistd.h>                    // write
+#include <assert.h>                    // assert
+#include <sys/time.h>                  // struct timeval
+#include <sys/types.h>                 // select
+#include <unistd.h>                    // select
+#include <stdio.h>                     // perror
 
 // 12/13/04: according to rfistman at hotmail, this is required to get
 // FD_ZERO to work on OS X; or should I just #include sys/select.h?
