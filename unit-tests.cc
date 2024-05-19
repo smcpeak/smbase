@@ -9,8 +9,11 @@
 #include "sm-test.h"                   // ARGS_TEST_MAIN
 #include "str.h"                       // streq
 
-extern "C" void test_cycles();         // cycles-test.c
-extern "C" void test_mypopen();        // mypopen-test.c
+extern "C" {
+  void test_cycles();                  // cycles-test.c
+  void test_gprintf();                 // gprintf-test.c
+  void test_mypopen();                 // mypopen-test.c
+}
 
 
 static void entry(int argc, char **argv)
@@ -48,6 +51,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(functional_set);
   RUN_TEST(gcc_options);
   RUN_TEST(gdvalue);
+  RUN_TEST_NO_DECL(gprintf);
   RUN_TEST(growbuf);
   RUN_TEST(hashline);
   RUN_TEST(map_utils);

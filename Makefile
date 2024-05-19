@@ -301,7 +301,6 @@ TESTS += bdffont.exe
 TESTS += bitarray.exe
 TESTS += boxprint.exe
 TESTS += d2vector.exe
-TESTS += gprintf.exe
 TESTS += nonport.exe
 TESTS += pprint.exe
 TESTS += tarray2d.exe
@@ -324,9 +323,6 @@ tests: $(TESTS)
 # this one is explicitly *not* linked against $(THIS)
 nonport.exe: nonport.cc nonport.h gprintf.o
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cc gprintf.o $(SYSLIBS)
-
-gprintf.exe: gprintf.c gprintf.h
-	$(CC) -o $@ $(CFLAGS) -DTEST_GPRINTF $(LDFLAGS) gprintf.c $(SYSLIBS)
 
 vptrmap.exe: vptrmap.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_VPTRMAP $(LDFLAGS) vptrmap.cc $(LIBS)
@@ -373,6 +369,7 @@ UNIT_TEST_OBJS += dict-test.o
 UNIT_TEST_OBJS += functional-set-test.o
 UNIT_TEST_OBJS += gcc-options-test.o
 UNIT_TEST_OBJS += gdvalue-test.o
+UNIT_TEST_OBJS += gprintf-test.o
 UNIT_TEST_OBJS += growbuf-test.o
 UNIT_TEST_OBJS += hashline-test.o
 UNIT_TEST_OBJS += map-utils-test.o
@@ -507,7 +504,6 @@ check: out/unit-tests.exe.ok
 
 check: $(TESTS)
 	$(RUN)./nonport.exe
-	$(RUN)./gprintf.exe
 	$(RUN)./vptrmap.exe
 	$(RUN)./pprint.exe
 	$(RUN)./tarrayqueue.exe
