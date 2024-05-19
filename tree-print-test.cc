@@ -1,9 +1,7 @@
-// test-tree-print.cc
+// tree-print-test.cc
 // Test code for tree-print module.
 
 #include "tree-print.h"                // module under test
-
-#include "sm-test.h"                   // USUAL_MAIN
 
 
 static void debugPrint(TreePrint &tp)
@@ -422,7 +420,8 @@ static void testEmptySequence()
 }
 
 
-void entry()
+// Called by unit-tests.cc.
+void test_tree_print()
 {
   test1();
   test2();
@@ -445,9 +444,6 @@ void entry()
   testLastIsBreak();
   testEmptySequence();
 }
-
-
-USUAL_MAIN
 
 
 // EOF

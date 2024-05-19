@@ -293,7 +293,6 @@ $(THIS): $(OBJS)
 # TODO: I would like to eliminate these stand-alone test programs in
 # favor of testing as much as possible from unit-tests.exe.
 TESTS :=
-TESTS += test-tree-print.exe
 TESTS += unit-tests.exe
 
 tests: $(TESTS)
@@ -355,6 +354,7 @@ UNIT_TEST_OBJS += strutil-test.o
 UNIT_TEST_OBJS += svdict-test.o
 UNIT_TEST_OBJS += taillist-test.o
 UNIT_TEST_OBJS += trdelete-test.o
+UNIT_TEST_OBJS += tree-print-test.o
 UNIT_TEST_OBJS += vdtllist-test.o
 UNIT_TEST_OBJS += vector-utils-test.o
 UNIT_TEST_OBJS += voidlist-test.o
@@ -397,17 +397,6 @@ test.dir/read-only.txt:
 test/%.expect:
 	touch $@
 
-# Run a single test executable and compare to expected output.
-out/%.ok: test/%.expect %.exe
-	@mkdir -p $(dir $@)
-	$(RUN_COMPARE_EXPECT) \
-	  --actual out/$*.actual \
-	  --expect test/$*.expect \
-	  ./$*.exe
-	touch $@
-
-check: out/test-tree-print.ok
-
 # Run one unit test and compare to expected output.
 out/%.unit.ok: test/%.expect unit-tests.exe
 	$(CREATE_OUTPUT_DIRECTORY)
@@ -418,6 +407,7 @@ out/%.unit.ok: test/%.expect unit-tests.exe
 	touch $@
 
 check: out/boxprint.unit.ok
+check: out/tree_print.unit.ok
 
 
 # ------------------------- binary-stdin-test --------------------------
