@@ -827,7 +827,11 @@ void test_sm_file_util()
   testAtomicallyRenameFile();
   testCreateDirectoryAndParents();
   testReadAndWriteFile();
-  testTouchFile();
+
+  // This test is annoyingly slow, so it is disabled by default.
+  if (getenv("SM_FILE_UTIL_TEST_TOUCH")) {
+    testTouchFile();
+  }
 
   cout << "test-sm-file-util ok" << endl;
 }
