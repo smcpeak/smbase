@@ -297,7 +297,6 @@ $(THIS): $(OBJS)
 # TODO: I would like to eliminate these stand-alone test programs in
 # favor of testing as much as possible from unit-tests.exe.
 TESTS :=
-TESTS += test-codepoint.exe
 TESTS += test-datetime.exe
 TESTS += test-owner.exe
 TESTS += test-refct-serf.exe
@@ -325,6 +324,7 @@ UNIT_TEST_OBJS += bflatten-test.o
 UNIT_TEST_OBJS += bit2d-test.o
 UNIT_TEST_OBJS += bitarray-test.o
 UNIT_TEST_OBJS += boxprint-test.o
+UNIT_TEST_OBJS += codepoint-test.o
 UNIT_TEST_OBJS += counting-ostream-test.o
 UNIT_TEST_OBJS += crc-test.o
 UNIT_TEST_OBJS += cycles-test.o
@@ -481,7 +481,6 @@ out/unit-tests.exe.ok: unit-tests.exe
 check: out/unit-tests.exe.ok
 
 check: $(TESTS)
-	$(RUN)./test-codepoint.exe
 	$(RUN)./test-datetime.exe
 	$(RUN)./test-owner.exe
 	$(RUN)./test-refct-serf.exe

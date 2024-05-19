@@ -70,6 +70,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(bit2d);
   RUN_TEST(bitarray);
   RUN_TEST(boxprint);
+  RUN_TEST(codepoint);
   RUN_TEST(counting_ostream);
   RUN_TEST(crc);
   RUN_TEST_NO_DECL(cycles);

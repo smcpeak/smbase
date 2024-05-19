@@ -1,12 +1,15 @@
-// test-codepoint.cc
+// codepoint-test.cc
 // Test code for 'codepoint' module.
 
 #include "codepoint.h"                 // module to test
 
-#include "sm-test.h"                   // USUAL_TEST_MAIN, EXPECT_EQ
+#include "xassert.h"                   // xassert
+
+#include <iostream>                    // std::{cout, endl}
 
 
-static void entry()
+// Called from unit-tests.cc.
+void test_codepoint()
 {
   // This does not test everything yet.
 
@@ -38,10 +41,8 @@ static void entry()
   xassert(isASCIIOctDigit('7'));
   xassert(!isASCIIOctDigit('8'));
 
-  cout << "test-codepoint passed" << endl;
+  std::cout << "test-codepoint passed" << std::endl;
 }
 
-
-USUAL_TEST_MAIN
 
 // EOF
