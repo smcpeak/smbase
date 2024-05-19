@@ -61,6 +61,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(objpool);
   RUN_TEST(overflow);
   RUN_TEST(parsestring);
+  RUN_TEST(pprint);
   RUN_TEST(sm_pp_util);
   RUN_TEST(sm_rc_ptr);
   RUN_TEST(smregexp);

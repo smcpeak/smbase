@@ -302,7 +302,6 @@ TESTS += bitarray.exe
 TESTS += boxprint.exe
 TESTS += d2vector.exe
 TESTS += nonport.exe
-TESTS += pprint.exe
 TESTS += tarray2d.exe
 TESTS += tarrayqueue.exe
 TESTS += test-codepoint.exe
@@ -322,9 +321,6 @@ tests: $(TESTS)
 # this one is explicitly *not* linked against $(THIS)
 nonport.exe: nonport.cc nonport.h gprintf.o
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cc gprintf.o $(SYSLIBS)
-
-pprint.exe: pprint.cc $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_PPRINT $(LDFLAGS) pprint.cc $(LIBS)
 
 boxprint.exe: boxprint.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_BOXPRINT $(LDFLAGS) boxprint.cc $(LIBS)
@@ -375,6 +371,7 @@ UNIT_TEST_OBJS += objlist-test.o
 UNIT_TEST_OBJS += objpool-test.o
 UNIT_TEST_OBJS += overflow-test.o
 UNIT_TEST_OBJS += parsestring-test.o
+UNIT_TEST_OBJS += pprint-test.o
 UNIT_TEST_OBJS += sm-pp-util-test.o
 UNIT_TEST_OBJS += sm-rc-ptr-test.o
 UNIT_TEST_OBJS += smregexp-test.o
@@ -501,7 +498,6 @@ check: out/unit-tests.exe.ok
 
 check: $(TESTS)
 	$(RUN)./nonport.exe
-	$(RUN)./pprint.exe
 	$(RUN)./tarrayqueue.exe
 	$(RUN)./testarray.exe
 	$(RUN)./bitarray.exe
