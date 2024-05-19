@@ -3,8 +3,8 @@
 //   are portable, but the implementations are not)
 // Scott McPeak, Dan Bonachea 1998-1999  This file is public domain.
 
-#ifndef __NONPORT_H
-#define __NONPORT_H
+#ifndef SMBASE_NONPORT_H
+#define SMBASE_NONPORT_H
 
 #include "typ.h"                       // bool
 
@@ -167,5 +167,4 @@ int vnprintf(char const *format, va_list args);
 int nprintf(char const *format, ...);
 
 
-#endif // __NONPORT_H
-
+#endif // SMBASE_NONPORT_H

@@ -2,8 +2,8 @@
 // various types and definitions, some for portability, others for convenience
 // Scott McPeak, 1996-2000  This file is public domain.
 
-#ifndef __TYP_H
-#define __TYP_H
+#ifndef SMBASE_TYP_H
+#define SMBASE_TYP_H
 
 // These days stdint.h should be common enough to rely on.  But for
 // C++98 and C++03, at least on mingw, I need to explicitly request
@@ -154,5 +154,4 @@ inline T div_up(T const &x, T const &y)
 //#define staticAssert(cond) extern int dummyArray[cond? 1 : 0]
 
 
-#endif // __TYP_H
-
+#endif // SMBASE_TYP_H
