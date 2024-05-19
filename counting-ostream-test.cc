@@ -38,8 +38,11 @@ void test_counting_ostream()
 {
   TEST_WITH("Hello, world!\n");
   TEST_WITH("Look a number: " << std::hex << 29 << std::endl);
-  TEST_WITH('\0');
-  TEST_WITH('\377');
+
+  // These work, but printing them to stdout makes tools (grep) think
+  // the output is binary data.
+  //TEST_WITH('\0');
+  //TEST_WITH('\377');
 
   // Larger test to exercise any buffering, resizing, etc.
   {
