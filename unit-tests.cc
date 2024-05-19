@@ -77,6 +77,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(vdtllist);
   RUN_TEST(vector_utils);
   RUN_TEST(voidlist);
+  RUN_TEST(vptrmap);
 
   #undef RUN_TEST
 

@@ -315,7 +315,6 @@ TESTS += test-stringset.exe
 TESTS += test-tree-print.exe
 TESTS += testarray.exe
 TESTS += unit-tests.exe
-TESTS += vptrmap.exe
 
 tests: $(TESTS)
 
@@ -323,9 +322,6 @@ tests: $(TESTS)
 # this one is explicitly *not* linked against $(THIS)
 nonport.exe: nonport.cc nonport.h gprintf.o
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cc gprintf.o $(SYSLIBS)
-
-vptrmap.exe: vptrmap.cc $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_VPTRMAP $(LDFLAGS) vptrmap.cc $(LIBS)
 
 pprint.exe: pprint.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_PPRINT $(LDFLAGS) pprint.cc $(LIBS)
@@ -395,6 +391,7 @@ UNIT_TEST_OBJS += trdelete-test.o
 UNIT_TEST_OBJS += vdtllist-test.o
 UNIT_TEST_OBJS += vector-utils-test.o
 UNIT_TEST_OBJS += voidlist-test.o
+UNIT_TEST_OBJS += vptrmap-test.o
 
 # Master unit test module.
 UNIT_TEST_OBJS += unit-tests.o
@@ -504,7 +501,6 @@ check: out/unit-tests.exe.ok
 
 check: $(TESTS)
 	$(RUN)./nonport.exe
-	$(RUN)./vptrmap.exe
 	$(RUN)./pprint.exe
 	$(RUN)./tarrayqueue.exe
 	$(RUN)./testarray.exe
