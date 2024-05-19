@@ -1,4 +1,4 @@
-// towner.cc            see license.txt for copyright and terms of use
+// owner-test.cc            see license.txt for copyright and terms of use
 // test owner stuff
 
 #include "owner.h"                     // module to test
@@ -7,17 +7,10 @@
 #include "xassert.h"                   // xassert
 
 #include <stdio.h>                     // printf
+#include <stdlib.h>                    // exit
 
-class Foo;
-void someCrap(Foo *f)
-{
-  //delete f;
-  // good -- egcs-1.1.2 doesn't allow this, so I won't accidentally
-  // get destructors missed because of forward decls (like could
-  // happen with Borland)
 
-  PRETEND_USED(f);
-}
+namespace {
 
 
 // a simple class to play with
@@ -133,7 +126,11 @@ void test4()
 }
 
 
-int main()
+} // anonymous namespace
+
+
+// Called from unit-tests.cc.
+void test_owner()
 {
   test1();
   test2();
@@ -141,6 +138,10 @@ int main()
   test4();
 
   printf("%d Foos leaked\n", Foo::count);
-  return Foo::count;
+  if (Foo::count) {
+    exit(2);
+  }
 }
 
+
+// EOF

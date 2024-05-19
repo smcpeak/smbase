@@ -91,6 +91,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(objlist);
   RUN_TEST(objpool);
   RUN_TEST(overflow);
+  RUN_TEST(owner);
   RUN_TEST(parsestring);
   RUN_TEST(pprint);
   RUN_TEST(sm_pp_util);
