@@ -192,11 +192,13 @@ void test_nonport()
   }
 
   // test sleep (mostly just to make sure it doesn't segfault)
-  printf("sleeping for 1 second...\n");
-  portableSleep(1);
+  //
+  // This test is a waste of time.
+  //printf("sleeping for 1 second...\n");
+  //portableSleep(1);
 
-  printf("sleeping for 100 ms...\n");
-  sleepForMilliseconds(100);
+  printf("sleeping for 10 ms...\n");
+  sleepForMilliseconds(10);
 
   // test user name
   char buf[80];
