@@ -5,6 +5,7 @@
 
 #include <stdlib.h>          // exit, perror
 #include <stdio.h>           // printf
+#include <string.h>          // memcmp
 
 // POSIX
 #include <unistd.h>          // read, write
