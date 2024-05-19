@@ -1,4 +1,4 @@
-// tarrayqueue.cc
+// arrayqueue-test.cc
 // test arrayqueue.h module
 
 #include "arrayqueue.h"      // module to test
@@ -8,10 +8,10 @@
 #include <stdlib.h>          // exit
 
 
-int maxLength = 0;
+static int maxLength = 0;
 
 // one round of testing
-void round(int ops)
+static void round(int ops)
 {
   // implementation to test
   ArrayQueue<int> arrayQueue;
@@ -65,14 +65,14 @@ void round(int ops)
 }
 
 
-int main()
+// Called from unit-tests.cc.
+void test_arrayqueue()
 {
   for (int i=0; i<20; i++) {
     round(1000);
   }
 
   printf("arrayqueue appears to work; maxLength=%d\n", maxLength);
-  return 0;
 }
 
 

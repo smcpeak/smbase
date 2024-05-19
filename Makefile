@@ -302,7 +302,6 @@ TESTS += bitarray.exe
 TESTS += d2vector.exe
 TESTS += nonport.exe
 TESTS += tarray2d.exe
-TESTS += tarrayqueue.exe
 TESTS += test-codepoint.exe
 TESTS += test-datetime.exe
 TESTS += test-owner.exe
@@ -320,9 +319,6 @@ tests: $(TESTS)
 # this one is explicitly *not* linked against $(THIS)
 nonport.exe: nonport.cc nonport.h gprintf.o
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cc gprintf.o $(SYSLIBS)
-
-tarrayqueue.exe: tarrayqueue.cc $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) tarrayqueue.cc $(LIBS)
 
 testarray.exe: testarray.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) testarray.cc $(LIBS)
@@ -345,6 +341,7 @@ tarray2d.exe: tarray2d.cc array2d.h $(THIS)
 # file name listing, the test is next to the module it tests.
 UNIT_TEST_OBJS :=
 UNIT_TEST_OBJS += array-test.o
+UNIT_TEST_OBJS += arrayqueue-test.o
 UNIT_TEST_OBJS += astlist-test.o
 UNIT_TEST_OBJS += autofile-test.o
 UNIT_TEST_OBJS += bflatten-test.o
@@ -505,7 +502,6 @@ check: out/unit-tests.exe.ok
 
 check: $(TESTS)
 	$(RUN)./nonport.exe
-	$(RUN)./tarrayqueue.exe
 	$(RUN)./testarray.exe
 	$(RUN)./bitarray.exe
 	$(RUN)./d2vector.exe
