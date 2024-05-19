@@ -310,7 +310,6 @@ TESTS += test-run-process.exe
 TESTS += test-sm-file-util.exe
 TESTS += test-stringset.exe
 TESTS += test-tree-print.exe
-TESTS += testarray.exe
 TESTS += unit-tests.exe
 
 tests: $(TESTS)
@@ -319,9 +318,6 @@ tests: $(TESTS)
 # this one is explicitly *not* linked against $(THIS)
 nonport.exe: nonport.cc nonport.h gprintf.o
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cc gprintf.o $(SYSLIBS)
-
-testarray.exe: testarray.cc $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) testarray.cc $(LIBS)
 
 bitarray.exe: bitarray.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) -DTEST_BITARRAY $(LDFLAGS) bitarray.cc $(LIBS)
@@ -502,7 +498,6 @@ check: out/unit-tests.exe.ok
 
 check: $(TESTS)
 	$(RUN)./nonport.exe
-	$(RUN)./testarray.exe
 	$(RUN)./bitarray.exe
 	$(RUN)./d2vector.exe
 	$(RUN)./bdffont.exe
