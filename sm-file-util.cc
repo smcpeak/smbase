@@ -9,7 +9,7 @@
 #include "codepoint.h"                 // isLetter
 #include "sm-windows.h"                // PLATFORM_IS_WINDOWS
 #include "strtokp.h"                   // StrtokParse
-#include "strutil.h"                   // suffixEquals
+#include "strutil.h"                   // suffixEquals, quoted
 #include "syserr.h"                    // xsyserror
 
 // libc++
@@ -372,6 +372,15 @@ int SMFileUtil::DirEntryInfo::compareTo(DirEntryInfo const &obj) const
   DirEntryInfo const *a, DirEntryInfo const *b)
 {
   return a->compareTo(*b);
+}
+
+
+OldSmbaseString SMFileUtil::DirEntryInfo::asString() const
+{
+  return stringb(
+    "{name:" << quoted(m_name) <<
+    " kind:" << m_kind <<
+    "}");
 }
 
 

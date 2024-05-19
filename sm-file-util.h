@@ -215,6 +215,9 @@ public:      // types
     // strcmp-style result.  Lexicographic comparison, name first.
     int compareTo(DirEntryInfo const &obj) const;
     static int compare(DirEntryInfo const *a, DirEntryInfo const *b);
+
+    // Write as a string for debug purposes.
+    OldSmbaseString asString() const;
   };
 
 public:      // funcs

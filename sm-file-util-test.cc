@@ -281,24 +281,83 @@ static void printSomeStuff()
   PVAL(sfu.absoluteFileExists("d:/wrk/editor"));
   PVAL(sfu.absolutePathExists("d:/wrk/editor/main.h"));
   PVAL(sfu.absoluteFileExists("d:/wrk/editor/main.h"));
+}
 
-  ArrayStack<SMFileUtil::DirEntryInfo> entries;
+
+static void testGetSortedDirectoryEntries()
+{
+  SMFileUtil sfu;
+
+  ArrayStack<SMFileUtil::DirEntryInfo> entries1;
   OldSmbaseString wd = sfu.currentDirectory();
-  sfu.getSortedDirectoryEntries(entries, wd);
-  cout << wd << " has " << entries.length() << " entries:" << endl;
-  for (int i=0; i < entries.length(); i++) {
-    cout << "  " << entries[i].m_name << ": " << entries[i].m_kind << endl;
+  sfu.getSortedDirectoryEntries(entries1, wd);
+  cout << wd << " has " << entries1.length() << " entries" << endl;
+
+  // Disable printing the entries to cut down on the noise.
+  if (false) {
+    for (int i=0; i < entries1.length(); i++) {
+      cout << "  " << entries1[i].asString() << endl;
+    }
   }
 
   // Repeat with a directory separator appended, expect same results.
-  int numEntries = entries.length();
-  entries.clear();
+  {
+    ArrayStack<SMFileUtil::DirEntryInfo> entries2;
 
-  // Add some initial chaff to make sure 'entries' gets cleared.
-  entries.push(SMFileUtil::DirEntryInfo("---", SMFileUtil::FK_NONE));
+    // Add some initial junk to check that 'entries2' gets cleared
+    // by 'getSortedDirectoryEntries'.
+    entries2.push(SMFileUtil::DirEntryInfo("---", SMFileUtil::FK_NONE));
 
-  sfu.getSortedDirectoryEntries(entries, stringb(wd << '/'));
-  xassert(numEntries == entries.length());
+    sfu.getSortedDirectoryEntries(entries2, stringb(wd << '/'));
+
+    // This failed once, seemingly randomly.  I couldn't reproduce it.
+    // So I've added more diagnostics in case it happens again.
+    if (entries1.length() != entries2.length()) {
+      cout << "Listing results changed based on adding '/'!\n";
+      PVAL(entries1.length());
+      PVAL(entries2.length());
+
+      int i1 = 0;
+      int i2 = 0;
+      while (i1 < entries1.length() && i2 < entries2.length()) {
+        SMFileUtil::DirEntryInfo const &e1 = entries1[i1];
+        SMFileUtil::DirEntryInfo const &e2 = entries2[i2];
+
+        int cmp = e1.compareTo(e2);
+        if (cmp < 0) {
+          cout <<   "only in entries1: " << e1.asString() << "\n";
+          ++i1;
+        }
+        else if (cmp > 0) {
+          cout <<   "only in entries2: " << e2.asString() << "\n";
+          ++i2;
+        }
+        else {
+          ++i1;
+          ++i2;
+        }
+      }
+      while (i1 < entries1.length()) {
+        SMFileUtil::DirEntryInfo const &e1 = entries1[i1];
+        cout <<   "only in entries1: " << e1.asString() << "\n";
+        ++i1;
+      }
+      while (i2 < entries2.length()) {
+        SMFileUtil::DirEntryInfo const &e2 = entries2[i2];
+        cout <<   "only in entries2: " << e2.asString() << "\n";
+        ++i2;
+      }
+
+      xfailure("directory lists are not equal");
+    }
+  }
+}
+
+
+static void testGetDirectoryEntries()
+{
+  SMFileUtil sfu;
+  ArrayStack<SMFileUtil::DirEntryInfo> entries;
 
   try {
     cout << "Should throw:" << endl;
@@ -813,6 +872,8 @@ void test_sm_file_util()
 
   testFileName();
   printSomeStuff();
+  testGetSortedDirectoryEntries();
+  testGetDirectoryEntries();
   testJoinFilename();
   testJoinIfRelativeFilename();
   testAbsolutePathExists();
