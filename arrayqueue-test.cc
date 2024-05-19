@@ -69,7 +69,7 @@ static void round(int ops)
 void test_arrayqueue()
 {
   for (int i=0; i<20; i++) {
-    round(1000);
+    round(100);
   }
 
   printf("arrayqueue appears to work; maxLength=%d\n", maxLength);

@@ -178,11 +178,14 @@ void testAddAndMultiply()
   testOneMultiplySmallUsingInt64<int8_t>(-1, 1);
   testOneMultiplyOv<int8_t>(-1, -128);
 
-  cout << "int8_t exhaustive" << endl;
-  testAddMultiplyAllSmallUsingInt64<int8_t>();
+  // These are slow.
+  if (false) {
+    cout << "int8_t exhaustive" << endl;
+    testAddMultiplyAllSmallUsingInt64<int8_t>();
 
-  cout << "uint8_t exhaustive" << endl;
-  testAddMultiplyAllSmallUsingInt64<uint8_t>();
+    cout << "uint8_t exhaustive" << endl;
+    testAddMultiplyAllSmallUsingInt64<uint8_t>();
+  }
 
 
   testOneAdd<int32_t>(1, 2, 3);

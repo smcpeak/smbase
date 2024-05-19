@@ -307,15 +307,19 @@ void test_srcloc()
   testFileString("x");                           // one char
   testFileString("\n");                          // one newline
 
-  // test my source code
-  testFile("srcloc.cc");
-  testFile("srcloc.h");
-
-  // do it again, so at least one won't be the just-added file;
-  // in fact do it many times so I can see results in a profiler
-  for (int i=0; i<1; i++) {
+  // These are somewhat slow, so disable them.  I have sufficient tests
+  // elsewhere given that I'm not modifying this module.
+  if (false) {
+    // test my source code
     testFile("srcloc.cc");
     testFile("srcloc.h");
+
+    // do it again, so at least one won't be the just-added file;
+    // in fact do it many times so I can see results in a profiler
+    for (int i=0; i<1; i++) {
+      testFile("srcloc.cc");
+      testFile("srcloc.h");
+    }
   }
 
   traceProgress() << "end" << endl;

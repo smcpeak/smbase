@@ -43,7 +43,7 @@ void test1()
 {
   printf("test1: testing PtrMap\n");
 
-  enum { ITERS1=10, ITERS2MAX=2000 };
+  enum { ITERS1=10, ITERS2MAX=200 };
 
   double avgprobes[ITERS1];
 

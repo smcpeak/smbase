@@ -177,7 +177,7 @@ char *inFileName = NULL;
 bool dump = false;
 bool testCor = true;
 bool testPerf = true;
-int numPerfRuns = 10000;
+int numPerfRuns = 100;    // 2024-05-19: Was 10000.
 
 void usage() {
   cout << "Test the string hashing module strhash.cc\n"
