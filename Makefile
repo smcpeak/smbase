@@ -604,7 +604,7 @@ clean: gcov-clean check-clean
 	$(RM) -r test.dir
 
 distclean: clean
-	$(RM) config.mk compile_commands.json
+	$(RM) compile_commands.json
 	$(RM) -r gendoc
 
 # remove crap that vc makes
