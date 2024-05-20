@@ -83,8 +83,18 @@ def warn(msg):
 # Regex to recognize the phrase I use in my copyright comments.
 copyrightRE = re.compile(r"copyright and terms of use")
 
-# Regex to match a comment line.
-descriptionCommentRE = re.compile(r"// ?(.*)")
+# Regex to match a comment line:
+#
+#   Starts with one of:
+#
+#     m4_dnl //     An M4 comment followed by a C++ comment.
+#     //            C++ comment.
+#     /*            Start of C multi-line comment
+#      *            Continuation of C multi-line comment
+#
+#   Then an optional space, then the text.
+#
+descriptionCommentRE = re.compile(r"(?:m4_dnl //|//|[/ ]\*) ?(.*)")
 
 
 def getHeaderDescriptionHTML(headerFname):
@@ -108,8 +118,11 @@ def getHeaderDescriptionHTML(headerFname):
   ]
 
   # Get the contiguous comments after that.
-  while m := descriptionCommentRE.search(headerLines[lineNo]):
+  extractedLines = 0
+  while m := descriptionCommentRE.match(headerLines[lineNo]):
     text = m.group(1)
+    extractedLines += 1
+
     textHTML = html.escape(text, quote=False)
     if len(textHTML) > 0:
       textHTML = "  " + textHTML
@@ -119,6 +132,9 @@ def getHeaderDescriptionHTML(headerFname):
 
     descriptionLinesHTML.append(f"  <!-- AUTO -->{textHTML}")
     lineNo += 1
+
+  if extractedLines == 0:
+    die(f"{headerFname}: Did not find any description lines.")
 
   return descriptionLinesHTML
 
