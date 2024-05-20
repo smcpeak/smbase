@@ -1,8 +1,8 @@
 // bit2d.h            see license.txt for copyright and terms of use
-// 2-d array of bits
+// Two-dimensional array of bits.
 
-#ifndef __BIT2D_H
-#define __BIT2D_H
+#ifndef SMBASE_BIT2D_H
+#define SMBASE_BIT2D_H
 
 #include "typ.h"             // byte, bool
 #include "point.h"           // point
@@ -90,4 +90,4 @@ public:      // funcs
 byte byteBitSwapLsbMsb(byte b);
 
 
-#endif // __BIT2D_H
+#endif // SMBASE_BIT2D_H

@@ -1,11 +1,11 @@
 // objmap.h            see license.txt for copyright and terms of use
-// variant of ptrmap.h where the values are owned
+// ObjMap, a PtrMap where the values (but not keys) are owned.
 
 // for const purposes, as the values are owned, in a const table
 // the values cannot be modified
 
-#ifndef OBJMAP_H
-#define OBJMAP_H
+#ifndef SMBASE_OBJMAP_H
+#define SMBASE_OBJMAP_H
 
 #include "ptrmap.h"           // PtrMap
 #include "xassert.h"          // xassert
@@ -121,4 +121,4 @@ ObjMap<KEY,VALUE>& ObjMap<KEY,VALUE>::operator=(ObjMap const &src)
 }
 
 
-#endif // OBJMAP_H
+#endif // SMBASE_OBJMAP_H

@@ -215,17 +215,21 @@ Everything in this section is obsoleted by <code>std::vector</code>.
 Arrays of bits are handled specially, because they are implemented by
 storing multiple bits per byte.
 
-<ul>
+<dl>
 
-<li><a href="bit2d.h">bit2d.h</a>,
-    <a href="bit2d.cc">bit2d.cc</a>:
-Two-dimensional array of bits.
+<!-- begin header: bit2d.h -->
+  <!-- AUTO --><dt><a href="bit2d.h">bit2d.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Two-dimensional array of bits.
+<!-- end header -->
 
-<li><a href="bitarray.h">bitarray.h</a>,
-    <a href="bitarray.cc">bitarray.cc</a>:
-One-dimensional array of bits.
+<!-- begin header: bitarray.h -->
+  <!-- AUTO --><dt><a href="bitarray.h">bitarray.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  One-dimensional array of bits.
+<!-- end header -->
 
-</ul>
+</dl>
 
 
 <h2>Hash Tables and Maps</h2>
@@ -244,20 +248,28 @@ possibly in combination with <code>std::unique_ptr</code>, and perhaps
 Probably the most common map is the PtrMap template, which will map
 from pointers to pointers, for arbitrary pointed-to types.
 
-<ul>
+<dl>
 
-<li><a href="ptrmap.h">ptrmap.h</a>:
-Template class built on top of VoidPtrMap (<a href="vptrmap.h">vptrmap.h</a>).
+<!-- begin header: ptrmap.h -->
+  <!-- AUTO --><dt><a href="ptrmap.h">ptrmap.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  PtrMap, a non-owning template class built on top of VoidPtrMap.
+<!-- end header -->
 
-<li><a href="objmap.h">objmap.h</a>:
-Variant of PtrMap (<a href="ptrmap.h">ptrmap.h</a>) that owns the values.
+<!-- begin header: objmap.h -->
+  <!-- AUTO --><dt><a href="objmap.h">objmap.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  ObjMap, a PtrMap where the values (but not keys) are owned.
+<!-- end header -->
 
-<li><a href="vptrmap.h">vptrmap.h</a>,
-    <a href="vptrmap.cc">vptrmap.cc</a>:
-Hashtable-based map from void* to void*.
-Used by <a href="ptrmap.h">ptrmap.h</a> and <a href="objmap.h">objmap.h</a>.
+<!-- begin header: vptrmap.h -->
+  <!-- AUTO --><dt><a href="vptrmap.h">vptrmap.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Hashtable-based map from void* to void*.
+  <!-- AUTO -->  Used by ptrmap.h and objmap.h.
+<!-- end header -->
 
-</ul>
+</dl>
 
 <p>
 If the key can always be derived from the data (for example, the key
@@ -265,46 +277,63 @@ is stored in the data object), then it is inefficient to store both in
 the table.  The following variants require a function pointer to map
 from data to keys.
 
-<ul>
+<dl>
 
-<li><a href="hashtbl.h">hashtbl.h</a>,
-    <a href="hashtbl.cc">hashtbl.cc</a>:
-HashTable, a hash table.  Maps void* to void*.
+<!-- begin header: hashtbl.h -->
+  <!-- AUTO --><dt><a href="hashtbl.h">hashtbl.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Hash table mapping arbitrary keys to void*, where
+  <!-- AUTO -->  the stored pointers can be used to derive the key,
+  <!-- AUTO -->  and cannot be NULL.
+<!-- end header -->
 
-<li><a href="thashtbl.h">thashtbl.h</a>:
-Template class built on top of HashTable.  Maps KEY* to VALUE*.
+<!-- begin header: thashtbl.h -->
+  <!-- AUTO --><dt><a href="thashtbl.h">thashtbl.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Template class built on top of HashTable.  Maps KEY* to VALUE*.
+<!-- end header -->
 
-<li><a href="ohashtbl.h">ohashtbl.h</a>:
-OwnerHashTable, a hash table that owns the values, built on top
-of HashTable.  Maps void* to T*.
+<!-- begin header: ohashtbl.h -->
+  <!-- AUTO --><dt><a href="ohashtbl.h">ohashtbl.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  OwnerHashTable, a hash table that owns the values.  Maps void* to T*.
+<!-- end header -->
 
-</ul>
+</dl>
 
 <p>
 The above can be used to efficiently implement a set of T*.
 
-<ul>
+<dl>
 
-<li><a href="sobjset.h">sobjset.h</a>:
-SObjSet, a non-owning set of objects implemented on top of HashTable.
+<!-- begin header: sobjset.h -->
+  <!-- AUTO --><dt><a href="sobjset.h">sobjset.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  SObjSet, a non-owning set of objects implemented on top of HashTable.
+<!-- end header -->
 
-</ul>
+</dl>
 
 <p>
 There are two specialized versions that combine O(1) insertion
 and query of a hash table with O(1) enqueue and dequeue of an
 array.
 
-<ul>
+<dl>
 
-<li><a href="okhasharr.h">okhasharr.h</a>:
-OwnerKHashArray, a combination of an owner hash table and an array/stack.
+<!-- begin header: okhasharr.h -->
+  <!-- AUTO --><dt><a href="okhasharr.h">okhasharr.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  OwnerKHashArray, a combination of an owner hash table and an array/stack.
+<!-- end header -->
 
-<li><a href="okhashtbl.h">okhashtbl.h</a>:
-OwnerKHashTable, a version of <a href="okhasharr.h">okhasharr.h</a>
-with type-safe keys ("k" for keys).
+<!-- begin header: okhashtbl.h -->
+  <!-- AUTO --><dt><a href="okhashtbl.h">okhashtbl.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  OwnerKHashTable, a version of okhasharr.h with type-safe keys ("k" for keys).
+<!-- end header -->
 
-</ul>
+</dl>
 
 
 <h2>Maps with Strings as Keys</h2>

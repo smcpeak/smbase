@@ -2,6 +2,7 @@
 # This file should be maintained in "env LANG=C sort" order.
 *.DSW
 *.LIB
+*.bak
 *.csm
 *.d
 *.exe

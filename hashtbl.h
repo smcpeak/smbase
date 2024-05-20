@@ -1,10 +1,10 @@
 // hashtbl.h            see license.txt for copyright and terms of use
-// hash table mapping arbitrary keys to void*, where
+// Hash table mapping arbitrary keys to void*, where
 // the stored pointers can be used to derive the key,
-// and cannot be NULL
+// and cannot be NULL.
 
-#ifndef HASHTBL_H
-#define HASHTBL_H
+#ifndef SMBASE_HASHTBL_H
+#define SMBASE_HASHTBL_H
 
 #include "typ.h"     // STATICDEF
 
@@ -158,4 +158,4 @@ public:       // funcs
 };
 
 
-#endif // HASHTBL_H
+#endif // SMBASE_HASHTBL_H

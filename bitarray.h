@@ -1,8 +1,8 @@
 // bitarray.h            see license.txt for copyright and terms of use
-// one-dimensional array of bits
+// One-dimensional array of bits.
 
-#ifndef BITARRAY_H
-#define BITARRAY_H
+#ifndef SMBASE_BITARRAY_H
+#define SMBASE_BITARRAY_H
 
 #include "xassert.h"      // xassert
 #include "str.h"          // OldSmbaseString
@@ -128,4 +128,4 @@ BitArray stringToBitArray(char const *src);
 OldSmbaseString toString(BitArray const &b);
 
 
-#endif // BITARRAY_H
+#endif // SMBASE_BITARRAY_H

@@ -1,9 +1,8 @@
 // sobjset.h            see license.txt for copyright and terms of use
-// non-owning set of objects (identified by address),
-// implemented with a hashtable
+// SObjSet, a non-owning set of objects implemented on top of HashTable.
 
-#ifndef SOBJSET_H
-#define SOBJSET_H
+#ifndef SMBASE_SOBJSET_H
+#define SMBASE_SOBJSET_H
 
 #include "hashtbl.h"    // HashTable
 
@@ -53,4 +52,4 @@ public:
 };
 
 
-#endif // SOBJSET_H
+#endif // SMBASE_SOBJSET_H

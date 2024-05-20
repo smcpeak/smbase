@@ -1,6 +1,6 @@
 // okhasharr.h            see license.txt for copyright and terms of use
-// combination of an owner hash table and an array/stack
-//
+// OwnerKHashArray, a combination of an owner hash table and an array/stack.
+
 // in its present form, it's ideal for a worklist, but not
 // for a 'finished' list, due to inability to randomly remove
 

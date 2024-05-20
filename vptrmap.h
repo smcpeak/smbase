@@ -1,6 +1,6 @@
 // vptrmap.h
-// map from void* to void*
-// interface based partly on hashtbl.h
+// Hashtable-based map from void* to void*.
+// Used by ptrmap.h and objmap.h.
 
 // Design considerations:
 //
@@ -14,8 +14,8 @@
 // No adversary is present; hash function is fixed in advance.
 
 
-#ifndef VPTRMAP_H
-#define VPTRMAP_H
+#ifndef SMBASE_VPTRMAP_H
+#define SMBASE_VPTRMAP_H
 
 
 class VoidPtrMap {
@@ -116,4 +116,4 @@ public:      // iterators
 };
 
 
-#endif // VPTRMAP_H
+#endif // SMBASE_VPTRMAP_H
