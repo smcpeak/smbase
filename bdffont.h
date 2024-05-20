@@ -1,6 +1,6 @@
 // bdffont.h
-// parse and represent BDF fonts in memory
-//
+// Parse and represent BDF fonts in memory.
+
 // spec:
 // http://partners.adobe.com/public/developer/en/font/5005.BDF_Spec.pdf
 //

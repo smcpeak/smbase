@@ -1,6 +1,6 @@
 // array2d.h
-// non-resizable 2D array with bounds checking
-// needed because new T[i][j] is not legal if 'i' is not a constant
+// Non-resizable 2D array with bounds checking.
+// Meeded because new T[i][j] is not legal if 'i' is not a constant.
 
 #ifndef ARRAY2D_H
 #define ARRAY2D_H

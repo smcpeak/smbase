@@ -1,14 +1,14 @@
 // strtokpc.h
+// String tokenizing class.  Modifies an input string in-place to
+// null-terminate individual tokens, and undoes modifications on
+// destruction.
+
+// It does not allocate or copy strings, so suitable to be used in an
+// inner loop.  It only supports iterating linearly through the tokens
+// (its functionality is similar to strtok_r, but it undoes
+// modifications).
 
 // quarl 2006-05-24 initial version
-
-// String tokenizing class.  Modifies an input string in-place to
-// null-terminate individual tokens, and undoes modifications on destruction.
-// It does not allocate or copy strings, so suitable to be used in an inner
-// loop.
-
-// It only supports iterating linearly through the tokens (its functionality
-// is similar to strtok_r, but it undoes modifications).
 
 #ifndef STRTOKPC_H
 #define STRTOKPC_H

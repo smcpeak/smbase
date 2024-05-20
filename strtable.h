@@ -1,5 +1,6 @@
 // strtable.h            see license.txt for copyright and terms of use
-// implements a collection of immutable strings with unique representatives
+// Implements a collection of immutable strings with unique representatives.
+
 // quarl 2006-06-06 moved from ast; see there for prior version history.
 
 #ifndef STRTABLE_H

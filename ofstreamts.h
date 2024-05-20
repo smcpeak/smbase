@@ -1,4 +1,6 @@
 // ofstreamts.h
+// An ofstream which is timestamp-conscious.  It first writes to a
+// temporary file, and on success renames it to the target destination.
 
 // quarl 2006-05-25 initial version, factored from 2006-05-16 astgen.cc
 

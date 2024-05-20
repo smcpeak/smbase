@@ -1,3 +1,6 @@
+// on-leaving-scope.h
+// Perform some cleanup action when leaving a scope.
+
 /**
  * The contents of this file are based on the article posted at the
  * following location:

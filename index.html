@@ -60,13 +60,24 @@ modules are now considered obsolete (marked below as such).
     <li><a class="toc" href="#maps">Hash Tables and Maps</a>
     <li><a class="toc" href="#maps_of_strings">Maps with Strings as Keys</a>
     <li><a class="toc" href="#strings">Strings</a>
+    <li><a class="toc" href="#std_container_utils">Standard container utilities</a>
     <li><a class="toc" href="#system_utilities">System Utilities</a>
+    <li><a class="toc" href="#streams">Character streams</a>
+    <li><a class="toc" href="#macros">Macros</a>
     <li><a class="toc" href="#portability">Portability</a>
-    <li><a class="toc" href="#allocation">Allocation</a>
+    <li><a class="toc" href="#memory_management">Memory management</a>
     <li><a class="toc" href="#exceptions">Exceptions</a>
     <li><a class="toc" href="#serialization">Serialization</a>
+    <li><a class="toc" href="#numbers">Numbers</a>
+    <li><a class="toc" href="#reference_counting">Reference counting</a>
     <li><a class="toc" href="#translator_support">Compiler/Translator Support</a>
+    <li><a class="toc" href="#fonts">Fonts</a>
+    <li><a class="toc" href="#algorithms">Algorithms</a>
+    <li><a class="toc" href="#comparison">Comparison</a>
+    <li><a class="toc" href="#gdv">General data values</a>
+    <li><a class="toc" href="#leave_scope">Actions upon leaving a scope</a>
     <li><a class="toc" href="#testing">Testing and Debugging</a>
+    <li><a class="toc" href="#header_wrappers">Header wrappers</a>
     <li><a class="toc" href="#misc">Miscellaneous</a>
     <li><a class="toc" href="#utility_scripts">Utility Scripts</a>
   </ul>
@@ -190,8 +201,19 @@ The remainder of this section is obsolete, with
 <p>
 Arrays are sequences of objects with O(1) random access and replacement.
 
+<dl>
+
+<!-- begin header: array2d.h -->
+  <!-- AUTO --><dt><a href="array2d.h">array2d.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Non-resizable 2D array with bounds checking.
+  <!-- AUTO -->  Meeded because new T[i][j] is not legal if 'i' is not a constant.
+<!-- end header -->
+
+</dl>
+
 <p>
-Everything in this section is obsoleted by <code>std::vector</code>.
+Everything else in this section is obsoleted by <code>std::vector</code>.
 
 <dl>
 
@@ -288,6 +310,22 @@ from pointers to pointers, for arbitrary pointed-to types.
   <!-- AUTO --><dt><a href="objmap.h">objmap.h</a>
   <!-- AUTO --><dd>
   <!-- AUTO -->  ObjMap, a PtrMap where the values (but not keys) are owned.
+<!-- end header -->
+
+<!-- begin header: oobjmap.h -->
+  <!-- AUTO --><dt><a href="oobjmap.h">oobjmap.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Owner object map, implemented with a hash table
+  <!-- AUTO -->  maps pointer-to-key-object to pointer-to-value-object, and owns
+  <!-- AUTO -->  all instances of value-object (they are deallocated when the
+  <!-- AUTO -->  map itself goes away).
+<!-- end header -->
+
+<!-- begin header: ptrintmap.h -->
+  <!-- AUTO --><dt><a href="ptrintmap.h">ptrintmap.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Map from KEY* to int for arbitrary type KEY
+  <!-- AUTO -->  (key is not owned by the table).
 <!-- end header -->
 
 <!-- begin header: vptrmap.h -->
@@ -459,11 +497,53 @@ Finally, there is a module to map from strings to strings.
 <p>
 Strings are sequences of characters.
 
+<dl>
+
+<!-- begin header: codepoint.h -->
+  <!-- AUTO --><dt><a href="codepoint.h">codepoint.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Routines related to Unicode code points: tests, conversions, etc.
+<!-- end header -->
+
+<!-- begin header: string-utils.h -->
+  <!-- AUTO --><dt><a href="string-utils.h">string-utils.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Utilities related to std::string.
+<!-- end header -->
+
+<!-- begin header: strcmp-compare.h -->
+  <!-- AUTO --><dt><a href="strcmp-compare.h">strcmp-compare.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Comparison functions based on strcmp.
+<!-- end header -->
+
+<!-- begin header: strtable.h -->
+  <!-- AUTO --><dt><a href="strtable.h">strtable.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Implements a collection of immutable strings with unique representatives.
+<!-- end header -->
+
+<!-- begin header: gprintf.h -->
+  <!-- AUTO --><dt><a href="gprintf.h">gprintf.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Generalized printf interface.
+  <!-- AUTO -->  See http://www.efgh.com/software/gprintf.htm.
+  <!-- AUTO -->  This file is in the public domain. */
+<!-- end header -->
+
+</dl>
+
 <p>
 These two modules still have some utility, although they currently are
 still based on the obsolete <code>str</code> module:
 
 <dl>
+
+<!-- begin header: sm-to-std-string.h -->
+  <!-- AUTO --><dt><a href="sm-to-std-string.h">sm-to-std-string.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Utilities to convert between my 'OldSmbaseString' and 'std::string'.
+<!-- end header -->
 
 <!-- begin header: strtokp.h -->
   <!-- AUTO --><dt><a href="strtokp.h">strtokp.h</a>
@@ -471,6 +551,20 @@ still based on the obsolete <code>str</code> module:
   <!-- AUTO -->  StrtokParse, a class that parses a string similar to how strtok()
   <!-- AUTO -->  works, but provides a more convenient (and thread-safe) interface.
   <!-- AUTO -->  Similar to Java's StringTokenizer.
+<!-- end header -->
+
+<!-- begin header: strtokpc.h -->
+  <!-- AUTO --><dt><a href="strtokpc.h">strtokpc.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  String tokenizing class.  Modifies an input string in-place to
+  <!-- AUTO -->  null-terminate individual tokens, and undoes modifications on
+  <!-- AUTO -->  destruction.
+<!-- end header -->
+
+<!-- begin header: parsestring.h -->
+  <!-- AUTO --><dt><a href="parsestring.h">parsestring.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  ParseString class.
 <!-- end header -->
 
 <!-- begin header: strutil.h -->
@@ -511,6 +605,37 @@ All of these are obsolete:
 </dl>
 
 
+<h2 id="std_container_utils">Standard container utilities</h2>
+
+<dl>
+
+<!-- begin header: container-utils.h -->
+  <!-- AUTO --><dt><a href="container-utils.h">container-utils.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Utilities for C++ containers.
+<!-- end header -->
+
+<!-- begin header: map-utils.h -->
+  <!-- AUTO --><dt><a href="map-utils.h">map-utils.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Utilities related to std::map.
+<!-- end header -->
+
+<!-- begin header: set-utils.h -->
+  <!-- AUTO --><dt><a href="set-utils.h">set-utils.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Utilities related to std::set.
+<!-- end header -->
+
+<!-- begin header: vector-utils.h -->
+  <!-- AUTO --><dt><a href="vector-utils.h">vector-utils.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Utilities for std::vector.
+<!-- end header -->
+
+</dl>
+
+
 <h2 id="system_utilities">System Utilities</h2>
 
 <p>
@@ -519,11 +644,23 @@ low-level system services.
 
 <dl>
 
+<!-- begin header: sm-file-util.h -->
+  <!-- AUTO --><dt><a href="sm-file-util.h">sm-file-util.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  smbase file utilities.
+<!-- end header -->
+
 <!-- begin header: autofile.h -->
   <!-- AUTO --><dt><a href="autofile.h">autofile.h</a>
   <!-- AUTO --><dd>
   <!-- AUTO -->  AutoFILE, a simple wrapper around FILE* to open it or throw
   <!-- AUTO -->  an exception, and automatically close it.
+<!-- end header -->
+
+<!-- begin header: binary-stdin.h -->
+  <!-- AUTO --><dt><a href="binary-stdin.h">binary-stdin.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Set stdin and/or stdout to binary mode.
 <!-- end header -->
 
 <!-- begin header: missing.h -->
@@ -558,8 +695,19 @@ low-level system services.
   <!-- AUTO -->  Some utilities on top of unix functions: writeAll(), readString().
 <!-- end header -->
 
-</dl>
+<!-- begin header: sm-posix.h -->
+  <!-- AUTO --><dt><a href="sm-posix.h">sm-posix.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Wrapper around some POSIX headers.
+<!-- end header -->
 
+<!-- begin header: run-process.h -->
+  <!-- AUTO --><dt><a href="run-process.h">run-process.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Run a process.
+<!-- end header -->
+
+</dl>
 
 <p>
 These are obsolete:
@@ -577,6 +725,57 @@ These are obsolete:
 </dl>
 
 
+<h2 id="streams">Character streams</h2>
+
+<dl>
+
+<!-- begin header: counting-ostream.h -->
+  <!-- AUTO --><dt><a href="counting-ostream.h">counting-ostream.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  ostream that just counts the characters written to it.
+<!-- end header -->
+
+<!-- begin header: ofstreamts.h -->
+  <!-- AUTO --><dt><a href="ofstreamts.h">ofstreamts.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  An ofstream which is timestamp-conscious.  It first writes to a
+  <!-- AUTO -->  temporary file, and on success renames it to the target destination.
+<!-- end header -->
+
+</dl>
+
+
+<h2 id="macros">Macros</h2>
+
+<dl>
+
+<!-- begin header: sm-pp-util.h -->
+  <!-- AUTO --><dt><a href="sm-pp-util.h">sm-pp-util.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Preprocessor utilities.
+<!-- end header -->
+
+<!-- begin header: sm-macros.h -->
+  <!-- AUTO --><dt><a href="sm-macros.h">sm-macros.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  A bunch of useful macros.
+<!-- end header -->
+
+<!-- begin header: sm-override.h -->
+  <!-- AUTO --><dt><a href="sm-override.h">sm-override.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Define OVERRIDE macro.
+<!-- end header -->
+
+<!-- begin header: sm-noexcept.h -->
+  <!-- AUTO --><dt><a href="sm-noexcept.h">sm-noexcept.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Define NOEXCEPT macro.
+<!-- end header -->
+
+</dl>
+
+
 <h2 id="portability">Portability</h2>
 
 <p>
@@ -585,18 +784,18 @@ it is running on.
 
 <dl>
 
+<!-- begin header: sm-platform.h -->
+  <!-- AUTO --><dt><a href="sm-platform.h">sm-platform.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Platform detection.
+<!-- end header -->
+
 <!-- begin header: nonport.h -->
   <!-- AUTO --><dt><a href="nonport.h">nonport.h</a>
   <!-- AUTO --><dd>
   <!-- AUTO -->  A library of utility functions whose implementation is
   <!-- AUTO -->  system-specific.  Generally, I try to encapsulate all system
   <!-- AUTO -->  depenencies as functions defined in nonport.
-<!-- end header -->
-
-<!-- begin header: sm-macros.h -->
-  <!-- AUTO --><dt><a href="sm-macros.h">sm-macros.h</a>
-  <!-- AUTO --><dd>
-  <!-- AUTO -->  A bunch of useful macros.
 <!-- end header -->
 
 <!-- begin header: typ.h -->
@@ -609,12 +808,16 @@ it is running on.
 </dl>
 
 
-<h2 id="allocation">Allocation</h2>
-
-<p>
-These modules provide additional control over the allocator.
+<h2 id="memory_management">Memory management</h2>
 
 <dl>
+
+<!-- begin header: owner.h -->
+  <!-- AUTO --><dt><a href="owner.h">owner.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Owner, a pointer that deallocates its referrent in its destructor.
+  <!-- AUTO -->  Similar to unique_ptr in the C++ Standard.
+<!-- end header -->
 
 <!-- begin header: objpool.h -->
   <!-- AUTO --><dt><a href="objpool.h">objpool.h</a>
@@ -675,6 +878,86 @@ to read and write themselves to files.
   <!-- AUTO -->  Implementation of the Flatten interface for reading/writing binary files.
 <!-- end header -->
 
+<!-- begin header: flatutil.h -->
+  <!-- AUTO --><dt><a href="flatutil.h">flatutil.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  additional utilities layered upon 'flatten' interface
+<!-- end header -->
+
+</dl>
+
+
+<h2 id="numbers">Numbers</h2>
+
+<dl>
+
+<!-- begin header: overflow.h -->
+  <!-- AUTO --><dt><a href="overflow.h">overflow.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Arithmetic with overflow checks.
+<!-- end header -->
+
+<!-- begin header: d2vector.h -->
+  <!-- AUTO --><dt><a href="d2vector.h">d2vector.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Simple 2d points, lines, and vectors using doubles.
+<!-- end header -->
+
+<!-- begin header: rectangle.h -->
+  <!-- AUTO --><dt><a href="rectangle.h">rectangle.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  TRectangle class.
+<!-- end header -->
+
+<!-- begin header: point.h -->
+  <!-- AUTO --><dt><a href="point.h">point.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Point, a pair of numbers.
+<!-- end header -->
+
+<!-- begin header: datetime.h -->
+  <!-- AUTO --><dt><a href="datetime.h">datetime.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Some date/time routines.
+<!-- end header -->
+
+</dl>
+
+
+<h2 id="reference_counting">Reference counting</h2>
+
+<dl>
+
+<!-- begin header: refct-serf.h -->
+  <!-- AUTO --><dt><a href="refct-serf.h">refct-serf.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Reference-counted serf pointer.
+<!-- end header -->
+
+<!-- begin header: rcserflist.h -->
+  <!-- AUTO --><dt><a href="rcserflist.h">rcserflist.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Array-backed sequence of reference-counted pointers.
+<!-- end header -->
+
+<!-- begin header: sm-rc-ptr.h -->
+  <!-- AUTO --><dt><a href="sm-rc-ptr.h">sm-rc-ptr.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  RCPtr template class.
+<!-- end header -->
+
+<!-- begin header: sm-rc-obj.h -->
+  <!-- AUTO --><dt><a href="sm-rc-obj.h">sm-rc-obj.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  RefCountObject class.
+<!-- end header -->
+
+<!-- begin header: objcount.h -->
+  <!-- AUTO --><dt><a href="objcount.h">objcount.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Things related to "object count" idiom.
+<!-- end header -->
+
 </dl>
 
 
@@ -716,11 +999,143 @@ read and/or write source code.
   <!-- AUTO -->  pretty-printer.
 <!-- end header -->
 
-<!-- begin header: warn.h -->
-  <!-- AUTO --><dt><a href="warn.h">warn.h</a>
+<!-- begin header: pprint.h -->
+  <!-- AUTO --><dt><a href="pprint.h">pprint.h</a>
   <!-- AUTO --><dd>
-  <!-- AUTO -->  Intended to provide a general interface for user-level warnings; the
-  <!-- AUTO -->  design never really worked well.
+  <!-- AUTO -->  pretty-print code while emitting it
+<!-- end header -->
+
+<!-- begin header: tree-print.h -->
+  <!-- AUTO --><dt><a href="tree-print.h">tree-print.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  TreePrint class.
+<!-- end header -->
+
+<!-- begin header: gcc-options.h -->
+  <!-- AUTO --><dt><a href="gcc-options.h">gcc-options.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  GCCOptions class.
+<!-- end header -->
+
+</dl>
+
+
+<h2 id="fonts">Fonts</h2>
+
+<dl>
+
+<!-- begin header: bdffont.h -->
+  <!-- AUTO --><dt><a href="bdffont.h">bdffont.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Parse and represent BDF fonts in memory.
+<!-- end header -->
+
+</dl>
+
+
+<h2 id="algorithms">Algorithms</h2>
+
+<dl>
+
+<!-- begin header: binary-lookup.h -->
+  <!-- AUTO --><dt><a href="binary-lookup.h">binary-lookup.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  binary_lookup function.
+<!-- end header -->
+
+<!-- begin header: sm-swap.h -->
+  <!-- AUTO --><dt><a href="sm-swap.h">sm-swap.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Define 'swap' template.
+<!-- end header -->
+
+</dl>
+
+
+<h2 id="comparison">Comparison</h2>
+
+<dl>
+
+<!-- begin header: compare-util.h -->
+  <!-- AUTO --><dt><a href="compare-util.h">compare-util.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Utilities for implementing three-way compare.
+<!-- end header -->
+
+<!-- begin header: sm-compare.h -->
+  <!-- AUTO --><dt><a href="sm-compare.h">sm-compare.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  StrongOrdering enum, similar to standard &lt;compare&gt;, but without
+  <!-- AUTO -->  requiring C++20.
+<!-- end header -->
+
+<!-- begin header: strictly-sorted.h -->
+  <!-- AUTO --><dt><a href="strictly-sorted.h">strictly-sorted.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  is_strictly_sorted function.
+<!-- end header -->
+
+</dl>
+
+
+<h2 id="gdv">General data values</h2>
+
+<dl>
+
+<!-- begin header: gdvalue.h -->
+  <!-- AUTO --><dt><a href="gdvalue.h">gdvalue.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  General Data Value: integer, sequence, map, etc.
+<!-- end header -->
+
+<!-- begin header: gdvsymbol.h -->
+  <!-- AUTO --><dt><a href="gdvsymbol.h">gdvsymbol.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  GDVSymbol class.
+<!-- end header -->
+
+<!-- begin header: gdvalue-write-options.h -->
+  <!-- AUTO --><dt><a href="gdvalue-write-options.h">gdvalue-write-options.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  GDValueWriteOptions class.
+<!-- end header -->
+
+<!-- begin header: gdvalue-writer.h -->
+  <!-- AUTO --><dt><a href="gdvalue-writer.h">gdvalue-writer.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  GDValueWriter class.
+<!-- end header -->
+
+</dl>
+
+<p>
+This isn't part of GDV, but is a conceptual precursor:
+
+<dl>
+
+<!-- begin header: functional-set.h -->
+  <!-- AUTO --><dt><a href="functional-set.h">functional-set.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  FunctionalSet, FSElement, and FunctionalSetManager.
+<!-- end header -->
+
+</dl>
+
+
+<h2 id="leave_scope">Actions upon leaving a scope</h2>
+
+<dl>
+
+<!-- begin header: on-leaving-scope.h -->
+  <!-- AUTO --><dt><a href="on-leaving-scope.h">on-leaving-scope.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Perform some cleanup action when leaving a scope.
+<!-- end header -->
+
+<!-- begin header: save-restore.h -->
+  <!-- AUTO --><dt><a href="save-restore.h">save-restore.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Facility for saving a value and restoring it upon return.
 <!-- end header -->
 
 </dl>
@@ -752,11 +1167,76 @@ read and/or write source code.
 
 See <a href="trace.html">trace.html</a>.
 
+<!-- begin header: dev-warning.h -->
+  <!-- AUTO --><dt><a href="dev-warning.h">dev-warning.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  "Developer warning" mechanism.
+<!-- end header -->
+
+<!-- begin header: warn.h -->
+  <!-- AUTO --><dt><a href="warn.h">warn.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Intended to provide a general interface for user-level warnings; the
+  <!-- AUTO -->  design never really worked well.
+<!-- end header -->
+
 <!-- begin header: trdelete.h -->
   <!-- AUTO --><dt><a href="trdelete.h">trdelete.h</a>
   <!-- AUTO --><dd>
   <!-- AUTO -->  An 'operator delete' which overwrites the deallocated memory with
   <!-- AUTO -->  0xAA before deallocating it.
+<!-- end header -->
+
+</dl>
+
+
+<h2 id="header_wrappers">Header wrappers</h2>
+
+<p>
+These wrap some third-party header.
+
+<dl>
+
+<!-- begin header: sm-windows.h -->
+  <!-- AUTO --><dt><a href="sm-windows.h">sm-windows.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Wrapper around windows.h.
+<!-- end header -->
+
+<!-- begin header: sm_strstream.h -->
+  <!-- AUTO --><dt><a href="sm_strstream.h">sm_strstream.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  portable header for c++ strstream
+<!-- end header -->
+
+<!-- begin header: sm-ostream.h -->
+  <!-- AUTO --><dt><a href="sm-ostream.h">sm-ostream.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  similar to old ostream.h
+<!-- end header -->
+
+<!-- begin header: sm-stdint.h -->
+  <!-- AUTO --><dt><a href="sm-stdint.h">sm-stdint.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  wrapper around stdint.h
+<!-- end header -->
+
+<!-- begin header: sm-fstream.h -->
+  <!-- AUTO --><dt><a href="sm-fstream.h">sm-fstream.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  similar to old fstream.h
+<!-- end header -->
+
+<!-- begin header: sm-iostream.h -->
+  <!-- AUTO --><dt><a href="sm-iostream.h">sm-iostream.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  similar to old iostream.h
+<!-- end header -->
+
+<!-- begin header: sm-new.h -->
+  <!-- AUTO --><dt><a href="sm-new.h">sm-new.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  like old new.h
 <!-- end header -->
 
 </dl>
@@ -772,25 +1252,10 @@ See <a href="trace.html">trace.html</a>.
   <!-- AUTO -->  32-bit cyclic redundancy check.
 <!-- end header -->
 
-<!-- begin header: gprintf.h -->
-  <!-- AUTO --><dt><a href="gprintf.h">gprintf.h</a>
+<!-- begin header: pair.h -->
+  <!-- AUTO --><dt><a href="pair.h">pair.h</a>
   <!-- AUTO --><dd>
-  <!-- AUTO -->  Generalized printf interface.
-  <!-- AUTO -->  See http://www.efgh.com/software/gprintf.htm.
-  <!-- AUTO -->  This file is in the public domain. */
-<!-- end header -->
-
-<!-- begin header: owner.h -->
-  <!-- AUTO --><dt><a href="owner.h">owner.h</a>
-  <!-- AUTO --><dd>
-  <!-- AUTO -->  Owner, a pointer that deallocates its referrent in its destructor.
-  <!-- AUTO -->  Similar to unique_ptr in the C++ Standard.
-<!-- end header -->
-
-<!-- begin header: point.h -->
-  <!-- AUTO --><dt><a href="point.h">point.h</a>
-  <!-- AUTO --><dd>
-  <!-- AUTO -->  Point, a pair of numbers.
+  <!-- AUTO -->  approximately standard-conforming (20.2.2) definition of pair&lt;&gt;
 <!-- end header -->
 
 </dl>
@@ -804,68 +1269,6 @@ See <a href="trace.html">trace.html</a>.
 <dd>Perl script to run flex and massage its output for portability.
 
 </dl>
-
-
-<!-- TODO: Headers that need to be added: -->
-  <!-- ignored header: array2d.h -->
-  <!-- ignored header: bdffont.h -->
-  <!-- ignored header: binary-lookup.h -->
-  <!-- ignored header: binary-stdin.h -->
-  <!-- ignored header: codepoint.h -->
-  <!-- ignored header: compare-util.h -->
-  <!-- ignored header: container-utils.h -->
-  <!-- ignored header: counting-ostream.h -->
-  <!-- ignored header: d2vector.h -->
-  <!-- ignored header: datetime.h -->
-  <!-- ignored header: dev-warning.h -->
-  <!-- ignored header: flatutil.h -->
-  <!-- ignored header: functional-set.h -->
-  <!-- ignored header: gcc-options.h -->
-  <!-- ignored header: gdvalue-write-options.h -->
-  <!-- ignored header: gdvalue-writer.h -->
-  <!-- ignored header: gdvalue.h -->
-  <!-- ignored header: gdvsymbol.h -->
-  <!-- ignored header: map-utils.h -->
-  <!-- ignored header: objcount.h -->
-  <!-- ignored header: ofstreamts.h -->
-  <!-- ignored header: on-leaving-scope.h -->
-  <!-- ignored header: oobjmap.h -->
-  <!-- ignored header: overflow.h -->
-  <!-- ignored header: pair.h -->
-  <!-- ignored header: parsestring.h -->
-  <!-- ignored header: pprint.h -->
-  <!-- ignored header: ptrintmap.h -->
-  <!-- ignored header: rcserflist.h -->
-  <!-- ignored header: rectangle.h -->
-  <!-- ignored header: refct-serf.h -->
-  <!-- ignored header: run-process.h -->
-  <!-- ignored header: save-restore.h -->
-  <!-- ignored header: set-utils.h -->
-  <!-- ignored header: sm-compare.h -->
-  <!-- ignored header: sm-file-util.h -->
-  <!-- ignored header: sm-fstream.h -->
-  <!-- ignored header: sm-iostream.h -->
-  <!-- ignored header: sm-new.h -->
-  <!-- ignored header: sm-noexcept.h -->
-  <!-- ignored header: sm-ostream.h -->
-  <!-- ignored header: sm-override.h -->
-  <!-- ignored header: sm-platform.h -->
-  <!-- ignored header: sm-posix.h -->
-  <!-- ignored header: sm-pp-util.h -->
-  <!-- ignored header: sm-rc-obj.h -->
-  <!-- ignored header: sm-rc-ptr.h -->
-  <!-- ignored header: sm-stdint.h -->
-  <!-- ignored header: sm-swap.h -->
-  <!-- ignored header: sm-to-std-string.h -->
-  <!-- ignored header: sm-windows.h -->
-  <!-- ignored header: sm_strstream.h -->
-  <!-- ignored header: strcmp-compare.h -->
-  <!-- ignored header: strictly-sorted.h -->
-  <!-- ignored header: string-utils.h -->
-  <!-- ignored header: strtable.h -->
-  <!-- ignored header: strtokpc.h -->
-  <!-- ignored header: tree-print.h -->
-  <!-- ignored header: vector-utils.h -->
 
 
 </body>

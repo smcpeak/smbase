@@ -1,6 +1,6 @@
 // ptrintmap.h            see license.txt for copyright and terms of use
-// map from KEY* to int for arbitrary type KEY
-// (key is not owned by the table)
+// Map from KEY* to int for arbitrary type KEY
+// (key is not owned by the table).
 
 // dsw: modified from ptrmap.h by replacing 'VALUE*' with 'DATAVALUE'.
 // this is an abuse of VoidPtrMap as it only works with types

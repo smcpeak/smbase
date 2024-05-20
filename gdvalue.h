@@ -1,5 +1,5 @@
 // gdvalue.h
-// General Data Value.
+// General Data Value: integer, sequence, map, etc.
 
 /* The basic idea is to represent general-purpose data, made up of a
    few common primitives and containers, for the purpose of interchange

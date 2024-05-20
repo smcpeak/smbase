@@ -1,5 +1,6 @@
 // d2vector.h
-// simple 2d points, lines, and vectors using doubles
+// Simple 2d points, lines, and vectors using doubles.
+
 // author: Scott McPeak, July 2001
 // This file is hereby placed in the public domain.
 
