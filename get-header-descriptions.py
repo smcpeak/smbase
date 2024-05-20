@@ -153,6 +153,8 @@ newSectionsRE = re.compile(r"<!-- new headers: (.*) -->")
 def main():
   # Parse command line.
   parser = argparse.ArgumentParser()
+  parser.add_argument("--check", action="store_true",
+    help="Check if the descriptions are up to date; do not change anything.")
   opts = parser.parse_args()
 
   # Read the document we will modify.
@@ -212,6 +214,15 @@ def main():
 
   if scanningForEnd:
     die(f"index.html: Did not find end of '{headerFname}'.")
+
+  if opts.check:
+    if oldLines == newLines:
+      print("index.html is up to date.")
+      exit(0)
+    else:
+      print("index.html needs to be regenerated.")
+      print(f"Run {sys.argv[0]} to update it.")
+      exit(2)
 
   # Make a backup of index.html.
   writeLines("index.html.bak", oldLines)

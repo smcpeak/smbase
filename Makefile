@@ -541,6 +541,14 @@ compile_commands.json:
 	(echo "["; cat *.o.json; echo "]") > $@
 
 
+# ---------------------------- index.html ------------------------------
+out/index.html.ok: index.html get-header-descriptions.py $(wildcard *.h)
+	$(PYTHON3) ./get-header-descriptions.py --check
+	touch $@
+
+check: out/index.html.ok
+
+
 # ------------------------------- check --------------------------------
 # The actual tests are all prerequisites of 'check' defined above.
 .PHONY: check
