@@ -124,6 +124,10 @@ def getHeaderDescriptionHTML(headerFname):
     text = m.group(1)
     extractedLines += 1
 
+    # Recognize " */" at the end of a string, which should be stripped.
+    if text.endswith(" */"):
+      text = text[:-3]
+
     textHTML = html.escape(text, quote=False)
     if len(textHTML) > 0:
       textHTML = "  " + textHTML
