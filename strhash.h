@@ -1,7 +1,7 @@
 // strhash.h            see license.txt for copyright and terms of use
-// hash table mapping strings to arbitrary pointers, where
+// Hash table mapping strings to arbitrary pointers, where
 // the stored pointers can be used to derive the key, and
-// cannot be NULL
+// cannot be NULL.
 
 // This module uses 'char const *' instead of 'rostring', because
 // it is at the core of some performance-critical modules (such

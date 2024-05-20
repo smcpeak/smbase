@@ -1,6 +1,7 @@
 // strtokp.h            see license.txt for copyright and terms of use
-// using strtok to parse an entire string at once
-// Scott McPeak, 1997  This file is public domain.
+// StrtokParse, a class that parses a string similar to how strtok()
+// works, but provides a more convenient (and thread-safe) interface.
+// Similar to Java's StringTokenizer.
 
 // NOTE: This class should not be used for any high-performance
 // parsing tasks; i.e., it should not find itself in the inner loop of

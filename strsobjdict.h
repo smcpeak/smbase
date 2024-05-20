@@ -1,11 +1,8 @@
 // strsobjdict.h            see license.txt for copyright and terms of use
-// dictionary of *serf* pointers to objects, indexed by string (case-sensitive)
-// (c) Scott McPeak, 2000
-// NOTE: automatically generated from xstrobjdict.h -- do not edit directly
+// StringSObjDict, a case-sensitive map from strings to object pointers.
+// The dictionary does *not* own the referred-to objects.
 
-// quarl 2006-06-08
-//    created xstrobjdict.h to generate strobjdict.h, strsobjdict.h, and new
-//    file strintdict.h
+// NOTE: automatically generated from xstrobjdict.h -- do not edit directly
 
 #ifndef STRSOBJLIST_H
 #define STRSOBJLIST_H

@@ -1,5 +1,5 @@
 // smregexp.h
-// regular expression matching, etc.
+// Regular expression matching.
 
 // the "sm" prefix in the name is to avoid a name conflict with something
 // in my version of glibc..

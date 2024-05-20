@@ -1,6 +1,6 @@
 // strutil.h            see license.txt for copyright and terms of use
-// various string utilities built upon the 'str' module
-// Scott McPeak, July 2000
+// A set of generic string utilities, including replace(), translate(),
+// trimWhitespace(), encodeWithEscapes(), etc.
 
 #ifndef STRUTIL_H
 #define STRUTIL_H

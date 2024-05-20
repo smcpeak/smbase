@@ -84,7 +84,7 @@ def warn(msg):
 copyrightRE = re.compile(r"copyright and terms of use")
 
 # Regex to match a comment line.
-descriptionCommentRE = re.compile(r"// (.*)")
+descriptionCommentRE = re.compile(r"// ?(.*)")
 
 
 def getHeaderDescriptionHTML(headerFname):
@@ -111,7 +111,13 @@ def getHeaderDescriptionHTML(headerFname):
   while m := descriptionCommentRE.search(headerLines[lineNo]):
     text = m.group(1)
     textHTML = html.escape(text, quote=False)
-    descriptionLinesHTML.append(f"  <!-- AUTO -->  {textHTML}")
+    if len(textHTML) > 0:
+      textHTML = "  " + textHTML
+    else:
+      # Treat a comment with no text as a paragraph boundary.
+      textHTML = "<br><br>"
+
+    descriptionLinesHTML.append(f"  <!-- AUTO -->{textHTML}")
     lineNo += 1
 
   return descriptionLinesHTML

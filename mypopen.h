@@ -1,5 +1,5 @@
 // mypopen.h            see license.txt for copyright and terms of use
-// open a process and yield pipes to its stdin/stdout/stderr
+// Open a process and yield pipes to its stdin/stdout/stderr.
 
 #ifndef SMBASE_MYPOPEN_H
 #define SMBASE_MYPOPEN_H

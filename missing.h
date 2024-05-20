@@ -1,6 +1,6 @@
 // missing.h            see license.txt for copyright and terms of use
-// routines that I implemented because they aren't available on all platforms
-// Scott McPeak, 1998  This file is public domain.
+// Implementations of a few C library functions that are not present
+// on all platforms.
 
 #ifndef __MISSING_H
 #define __MISSING_H

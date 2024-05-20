@@ -1,5 +1,5 @@
 // mysig.h            see license.txt for copyright and terms of use
-// some simple Unix signal-handling stuff
+// Some signal-related utilities.
 
 #ifndef SMBASE_MYSIG_H
 #define SMBASE_MYSIG_H

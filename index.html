@@ -13,7 +13,7 @@
       text-align: center;
     }
     dl {
-      text-indent: 1em;
+      padding-left: 1.5em;
     }
   </style>
 </HEAD>
@@ -352,48 +352,78 @@ If you have a function that can map from data to (string) key,
 then StringHash and TStringHash (the template version) are the
 most efficient:
 
-<ul>
-<li><a href="strhash.h">strhash.h</a>,
-    <a href="strhash.cc">strhash.cc</a>:
-StringHash, a case-sensitive map from strings to void* pointers.
-Built on top of HashTable.
-</ul>
+<dl>
+
+<!-- begin header: strhash.h -->
+  <!-- AUTO --><dt><a href="strhash.h">strhash.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Hash table mapping strings to arbitrary pointers, where
+  <!-- AUTO -->  the stored pointers can be used to derive the key, and
+  <!-- AUTO -->  cannot be NULL.
+<!-- end header -->
+
+</dl>
 
 <p>
 The StringVoidDict and templates wrapped around it are more general.
 They do not require a function to map from data to key, support
 query-then-modify-result, and alphabetic iteration.
 
-<ul>
+<dl>
 
-<li><a href="strobjdict.h">strobjdict.h</a>:
-StringObjDict, a case-sensitive map from strings to object pointers.
-The dictionary owns the referred-to objects.
+<!-- begin header: strobjdict.h -->
+  <!-- AUTO --><dt><a href="strobjdict.h">strobjdict.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  StringObjDict, a case-sensitive map from strings to object pointers.
+  <!-- AUTO -->  The dictionary owns the referred-to objects.
+<!-- end header -->
 
-<li><a href="strsobjdict.h">strsobjdict.h</a>:
-StringSObjDict, a case-sensitive map from strings to object pointers.
-The dictionary does <em>not</em> own the referred-to objects.
+<!-- begin header: strsobjdict.h -->
+  <!-- AUTO --><dt><a href="strsobjdict.h">strsobjdict.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  StringSObjDict, a case-sensitive map from strings to object pointers.
+  <!-- AUTO -->  The dictionary does *not* own the referred-to objects.
+<!-- end header -->
 
-<li><a href="svdict.h">svdict.h</a>,
-    <a href="svdict.cc">svdict.cc</a>:
-StringVoidDict, a case-sensitive map from strings to void* pointers.
-Built on top of StringHash.
+<!-- begin header: strintdict.h -->
+  <!-- AUTO --><dt><a href="strintdict.h">strintdict.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Dictionary of intptr_t (integers that fit into void*), indexed by string
+  <!-- AUTO -->  (case-sensitive).
+<!-- end header -->
 
-</ul>
+<!-- begin header: xstrobjdict.h -->
+  <!-- AUTO --><dt><a href="xstrobjdict.h">xstrobjdict.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Template file to be processed with m4 to generate one
+  <!-- AUTO -->  of the wrappers around StringVoidDict.
+<!-- end header -->
+
+<!-- begin header: svdict.h -->
+  <!-- AUTO --><dt><a href="svdict.h">svdict.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  StringVoidDict, a case-sensitive map from strings to void* pointers.
+  <!-- AUTO -->  Built on top of StringHash.
+<!-- end header -->
+
+</dl>
 
 <p>
 Finally, there is a module to map from strings to strings.
 
-<ul>
-<li><a href="strdict.h">strdict.h</a>,
-    <a href="strdict.cc">strdict.cc</a>:
-StringDict, a case-sensitive map from strings to strings.
-Currently, this is implemented with a linked list and consequently
-not efficient.  But it will work when efficiency does not matter,
-and could be reimplemented (preserving the interface) with something
-better.
+<dl>
 
-</ul>
+<!-- begin header: strdict.h -->
+  <!-- AUTO --><dt><a href="strdict.h">strdict.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  StringDict, a case-sensitive map from strings to strings.
+  <!-- AUTO -->  Currently, this is implemented with a linked list and consequently
+  <!-- AUTO -->  not efficient.  But it will work when efficiency does not matter,
+  <!-- AUTO -->  and could be reimplemented (preserving the interface) with something
+  <!-- AUTO -->  better.
+<!-- end header -->
+
+</dl>
 
 
 <h2>Strings</h2>
@@ -405,45 +435,52 @@ Strings are sequences of characters.
 These two modules still have some utility, although they currently are
 still based on the obsolete <code>str</code> module:
 
-<ul>
+<dl>
 
-<li><a href="strtokp.h">strtokp.h</a>,
-    <a href="strtokp.cc">strtokp.cc</a>:
-StrtokParse, a class that parses a string similar to how strtok()
-works, but provides a more convenient (and thread-safe) interface.
-Similar to Java's StringTokenizer.
+<!-- begin header: strtokp.h -->
+  <!-- AUTO --><dt><a href="strtokp.h">strtokp.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  StrtokParse, a class that parses a string similar to how strtok()
+  <!-- AUTO -->  works, but provides a more convenient (and thread-safe) interface.
+  <!-- AUTO -->  Similar to Java's StringTokenizer.
+<!-- end header -->
 
-<li><a href="strutil.h">strutil.h</a>,
-    <a href="strutil.cc">strutil.cc</a>:
-A set of generic string utilities, including replace(), translate(),
-trimWhitespace(), encodeWithEscapes(), etc.
+<!-- begin header: strutil.h -->
+  <!-- AUTO --><dt><a href="strutil.h">strutil.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  A set of generic string utilities, including replace(), translate(),
+  <!-- AUTO -->  trimWhitespace(), encodeWithEscapes(), etc.
+<!-- end header -->
 
-</ul>
+</dl>
 
 All of these are obsolete:
 
-<ul>
+<dl>
 
-<li><a href="str.h">str.h</a>,
-    <a href="str.cc">str.cc</a>:
-The string class itself.  Using the string class instead of
-<code>char*</code> makes handling strings as convenent as manipulating
-fundamental types like <code>int</code> or <code>float</code>.
-See also <a href="string.txt">string.txt</a>.
+<!-- begin header: str.h -->
+  <!-- AUTO --><dt><a href="str.h">str.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  A string class.
+  <!-- AUTO --><br><br>
+  <!-- AUTO -->  2024-05-18: I renamed 'string' to 'OldSmbaseString'.  The transition
+  <!-- AUTO -->  plan now, simply, is to replace occurrences of 'OldSmbaseString' with
+  <!-- AUTO -->  'std::string' incrementally.
+<!-- end header -->
 
-2024-05-19: The class is now called <code>OldSmbaseString</code> to
-emphasize its deprecated status and avoid clashes with
-<code>std::string</code>.
+<!-- begin header: stringset.h -->
+  <!-- AUTO --><dt><a href="stringset.h">stringset.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  StringSet, a set of strings.
+<!-- end header -->
 
-<li><a href="stringset.h">stringset.h</a>,
-    <a href="stringset.cc">stringset.cc</a>:
-StringSet, a set of strings.
+<!-- begin header: smregexp.h -->
+  <!-- AUTO --><dt><a href="smregexp.h">smregexp.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Regular expression matching.
+<!-- end header -->
 
-<li><a href="smregexp.h">smregexp.h</a>,
-    <a href="smregexp.cc">smregexp.cc</a>:
-Regular expression matching.
-
-</ul>
+</dl>
 
 
 <h2>System Utilities</h2>
@@ -452,37 +489,48 @@ Regular expression matching.
 The following modules provide access to or wrappers around various
 low-level system services.
 
-<ul>
+<dl>
 
-<li><a href="autofile.h">autofile.h</a>,
-    <a href="autofile.cc">autofile.cc</a>:
-AutoFILE, a simple wrapper around FILE* to open it or throw
-an exception, and automatically close it.
+<!-- begin header: autofile.h -->
+  <!-- AUTO --><dt><a href="autofile.h">autofile.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  AutoFILE, a simple wrapper around FILE* to open it or throw
+  <!-- AUTO -->  an exception, and automatically close it.
+<!-- end header -->
 
-<li><a href="missing.h">missing.h</a>,
-    <a href="missing.cc">missing.cc</a>:
-Implementations of a few C library functions that are not present
-on all platforms.
+<!-- begin header: missing.h -->
+  <!-- AUTO --><dt><a href="missing.h">missing.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Implementations of a few C library functions that are not present
+  <!-- AUTO -->  on all platforms.
+<!-- end header -->
 
-<li><a href="mypopen.h">mypopen.h</a>,
-    <a href="mypopen.c">mypopen.c</a>:
-Open a process, yielding two pipes: one for writing, one for reading.
+<!-- begin header: mypopen.h -->
+  <!-- AUTO --><dt><a href="mypopen.h">mypopen.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Open a process and yield pipes to its stdin/stdout/stderr.
+<!-- end header -->
 
-<li><a href="mysig.h">mysig.h</a>,
-    <a href="mysig.cc">mysig.cc</a>:
-Some signal-related utilities.
+<!-- begin header: mysig.h -->
+  <!-- AUTO --><dt><a href="mysig.h">mysig.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Some signal-related utilities.
+<!-- end header -->
 
-<li><a href="syserr.h">syserr.h</a>,
-    <a href="syserr.cc">syserr.cc</a>:
-Intended to be a portable encapsulation of system-dependent error
-facilities like UNIX's errno and Win32's GetLastError().  It's not
-very complete right now.
+<!-- begin header: syserr.h -->
+  <!-- AUTO --><dt><a href="syserr.h">syserr.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Portable encapsulation of system-dependent error facilities like
+  <!-- AUTO -->  UNIX's errno and Win32's GetLastError().
+<!-- end header -->
 
-<li><a href="sm-unixutil.h">sm-unixutil.h</a>,
-    <a href="sm-unixutil.c">sm-unixutil.c</a>:
-Some utilities on top of unix functions: writeAll(), readString().
+<!-- begin header: sm-unixutil.h -->
+  <!-- AUTO --><dt><a href="sm-unixutil.h">sm-unixutil.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Some utilities on top of unix functions: writeAll(), readString().
+<!-- end header -->
 
-</ul>
+</dl>
 
 
 <p>

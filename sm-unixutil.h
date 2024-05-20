@@ -1,5 +1,5 @@
 // sm-unixutil.h            see license.txt for copyright and terms of use
-// some utilities on top of unix functions
+// Some utilities on top of unix functions: writeAll(), readString().
 
 // 2024-05-19: This module was previously called 'unixutil'.  I renamed
 // it to 'sm-unixutil' in part to avoid potential name clashes with

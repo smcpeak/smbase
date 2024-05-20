@@ -1,5 +1,5 @@
 // stringset.h            see license.txt for copyright and terms of use
-// set of character strings
+// StringSet, a set of strings.
 
 #ifndef STRINGSET_H
 #define STRINGSET_H

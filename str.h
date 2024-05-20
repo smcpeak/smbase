@@ -1,18 +1,15 @@
 // str.h            see license.txt for copyright and terms of use
-// a string class
-// the representation uses just one char*, so that a smart compiler
-//   can pass the entire object as a single word
-// Scott McPeak, 1995-2000  This file is public domain.
+// A string class.
+//
+// 2024-05-18: I renamed 'string' to 'OldSmbaseString'.  The transition
+// plan now, simply, is to replace occurrences of 'OldSmbaseString' with
+// 'std::string' incrementally.
 
 // 2005-03-01: See string.txt.  The plan is to evolve the class
 // towards compatibility with std::string, such that eventually
 // they will be interchangeable.  So far I have converted only
 // the most problematic constructs, those involving construction,
 // conversion, and internal pointers.
-
-// 2024-05-18: I renamed 'string' to 'OldSmbaseString'.  The transition
-// plan now, simply, is to replace occurrences of 'OldSmbaseString' with
-// 'std::string' incrementally.
 
 #ifndef SMBASE_STR_H
 #define SMBASE_STR_H

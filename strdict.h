@@ -1,8 +1,9 @@
 // strdict.h            see license.txt for copyright and terms of use
-// string dictionary
-// (c) Scott McPeak, 2000
-
-// entire module is case sensitive
+// StringDict, a case-sensitive map from strings to strings.
+// Currently, this is implemented with a linked list and consequently
+// not efficient.  But it will work when efficiency does not matter,
+// and could be reimplemented (preserving the interface) with something
+// better.
 
 #ifndef SMBASE_STRDICT_H
 #define SMBASE_STRDICT_H

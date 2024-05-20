@@ -1,5 +1,6 @@
 // autofile.h            see license.txt for copyright and terms of use
-// little wrapper around FILE*
+// AutoFILE, a simple wrapper around FILE* to open it or throw
+// an exception, and automatically close it.
 
 // I have chosen to use 'char const *' here instead of 'rostring'
 // to reduce dependencies on other modules ...

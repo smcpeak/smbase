@@ -1,6 +1,6 @@
 // svdict.h            see license.txt for copyright and terms of use
-// dictionary of void*, indexed by string (case-sensitive)
-// (c) Scott McPeak, 2000
+// StringVoidDict, a case-sensitive map from strings to void* pointers.
+// Built on top of StringHash.
 
 // created by modifying strdict; at some point strdict should
 // be rewritten to use this module
