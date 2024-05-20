@@ -281,6 +281,10 @@ public:
   operator char const * () const { return c_str(); }
 #endif
 
+  // Allow implicit conversion to 'string' so perhaps I can keep
+  // 'stringc' working after all.
+  operator std::string () const { return str(); }
+
   stringBuilder& setlength(int newlen);    // change length, forget current data
 
   // make sure we can store 'someLength' non-null chars; grow if necessary
@@ -344,7 +348,7 @@ public:
   stringBuilder &myself() { return *this; }
 
   // compatibility with ostringstream
-  OldSmbaseString str() const { return OldSmbaseString(*this); }
+  std::string str() const;
 
   // stream readers
   friend istream& operator>> (istream &is, stringBuilder &sb)
@@ -380,14 +384,13 @@ public:
 #define stringbc(expr) (stringb(expr).c_str())
 #endif // 0
 
-// The 'stringc' interface is not workable with ostringstream, so
-// remove it entirely.  'stringb' should be used instead.
-#if 0
-// experimenting with dropping the () in favor of <<
-// (the "c" can be interpreted as "constructor", or maybe just
-// the successor to "b" above)
+// This macro allows strings to be constructed like:
+//
+//   stringc << 123 << " hi " << "there"
+//
+// but is not compatible with an ostringstream-based implementation so
+// 'stringb' should be preferred.
 #define stringc (stringBuilder().myself())
-#endif // 0
 
 
 // experimenting with using toString as a general method for datatypes

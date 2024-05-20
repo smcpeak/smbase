@@ -32,6 +32,8 @@ void test_str()
 
   cout << "ptr: " << stringb((void*)&test_str) << endl;
 
+  cout << "stringc: " << (stringc << "hi " << 3) << endl;
+
   cout << "tests passed\n";
 }
 

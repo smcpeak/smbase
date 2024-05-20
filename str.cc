@@ -448,6 +448,12 @@ stringBuilder& stringBuilder::operator<< (Manipulator manip)
 }
 
 
+string stringBuilder::str() const
+{
+  return OldSmbaseString::operator std::string ();
+}
+
+
 // slow but reliable
 void stringBuilder::readdelim(istream &is, char const *delim)
 {
