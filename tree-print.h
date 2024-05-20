@@ -1,5 +1,6 @@
 // tree-print.h
-// TreePrint class.
+// TreePrint class, which holds a tree to print while it is being built.
+// It then prints that tree to an ostream in the 'print()' method.
 
 // This is yet another attempt at pretty-printing that is adequate for
 // printing C++ source in a readable manner.  BoxPrint is not working

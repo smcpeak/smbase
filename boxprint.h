@@ -1,7 +1,7 @@
 // boxprint.h
-// BoxPrint functions as an output stream (sort of like <code>cout</code>)
-// with operations to indicate structure within the emitted text, so that
-// it can break lines intelligently.  It's used as part of a source-code
+// BoxPrint functions as an output stream (sort of like cout) with
+// operations to indicate structure within the emitted text, so that it
+// can break lines intelligently.  It's used as part of a source-code
 // pretty-printer.
 
 // It is partly based the box model described at

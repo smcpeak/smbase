@@ -57,8 +57,8 @@ modules are now considered obsolete (marked below as such).
     <li><a class="toc" href="#linked_lists">Linked Lists</a>
     <li><a class="toc" href="#arrays">Arrays</a>
     <li><a class="toc" href="#arrays_of_bits">Arrays of Bits</a>
-    <li><a class="toc" href="#maps">Hash Tables and Maps</a>
-    <li><a class="toc" href="#maps_of_strings">Maps with Strings as Keys</a>
+    <li><a class="toc" href="#maps">Hash Tables and Maps (obsolete)</a>
+    <li><a class="toc" href="#maps_of_strings">Maps with Strings as Keys (obsolete)</a>
     <li><a class="toc" href="#std_container_utils">Standard container utilities</a>
     <li><a class="toc" href="#gdv">General data values</a>
   </ul>
@@ -87,6 +87,7 @@ modules are now considered obsolete (marked below as such).
   <li><a class="toc" href="#application_domains">Application domains</a>
   <ul>
     <li><a class="toc" href="#language_processing">Programming language processing support</a>
+    <li><a class="toc" href="#pretty_printing">Pretty printing</a>
     <li><a class="toc" href="#fonts">Fonts</a>
   </ul>
   <li><a class="toc" href="#uncategorized">Uncategorized</a>
@@ -300,7 +301,7 @@ storing multiple bits per byte.
 </dl>
 
 
-<h2 id="maps">Hash Tables and Maps</h2>
+<h2 id="maps">Hash Tables and Maps (obsolete)</h2>
 
 <p>
 Maps support mapping from arbitrary domains to arbitrary ranges.  Mappings
@@ -420,7 +421,7 @@ array.
 </dl>
 
 
-<h2 id="maps_of_strings">Maps with Strings as Keys</h2>
+<h2 id="maps_of_strings">Maps with Strings as Keys (obsolete)</h2>
 
 <p>
 Mapping from strings is a nontrivial extension of the above maps
@@ -949,7 +950,7 @@ low-level system services.
 </dl>
 
 <p>
-These are obsolete:
+This is obsolete:
 
 <dl>
 
@@ -1046,12 +1047,29 @@ process programming languages.
   <!-- AUTO -->  appropriate index structures.
 <!-- end header -->
 
+<!-- begin header: gcc-options.h -->
+  <!-- AUTO --><dt><a href="gcc-options.h">gcc-options.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  GCCOptions class.
+<!-- end header -->
+
+</dl>
+
+
+<h2 id="pretty_printing">Pretty printing</h2>
+
+<p>
+Pretty printing is surprisingly difficult.  Perhaps that explains why I
+have three different modules to do it?
+
+<dl>
+
 <!-- begin header: boxprint.h -->
   <!-- AUTO --><dt><a href="boxprint.h">boxprint.h</a>
   <!-- AUTO --><dd>
-  <!-- AUTO -->  BoxPrint functions as an output stream (sort of like &lt;code&gt;cout&lt;/code&gt;)
-  <!-- AUTO -->  with operations to indicate structure within the emitted text, so that
-  <!-- AUTO -->  it can break lines intelligently.  It's used as part of a source-code
+  <!-- AUTO -->  BoxPrint functions as an output stream (sort of like cout) with
+  <!-- AUTO -->  operations to indicate structure within the emitted text, so that it
+  <!-- AUTO -->  can break lines intelligently.  It's used as part of a source-code
   <!-- AUTO -->  pretty-printer.
 <!-- end header -->
 
@@ -1064,13 +1082,8 @@ process programming languages.
 <!-- begin header: tree-print.h -->
   <!-- AUTO --><dt><a href="tree-print.h">tree-print.h</a>
   <!-- AUTO --><dd>
-  <!-- AUTO -->  TreePrint class.
-<!-- end header -->
-
-<!-- begin header: gcc-options.h -->
-  <!-- AUTO --><dt><a href="gcc-options.h">gcc-options.h</a>
-  <!-- AUTO --><dd>
-  <!-- AUTO -->  GCCOptions class.
+  <!-- AUTO -->  TreePrint class, which holds a tree to print while it is being built.
+  <!-- AUTO -->  It then prints that tree to an ostream in the 'print()' method.
 <!-- end header -->
 
 </dl>
@@ -1225,7 +1238,7 @@ See <a href="trace.html">trace.html</a>.
 <h2 id="header_wrappers">Header wrappers</h2>
 
 <p>
-These wrap some third-party header.
+These wrap some third-party headers.
 
 <dl>
 
