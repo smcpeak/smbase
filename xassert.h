@@ -1,19 +1,18 @@
 // xassert.h            see license.txt for copyright and terms of use
-// replacement for assert that throws an exception on failure
-// (x_assert_fail is defined in exc.cpp)
-// Scott McPeak, 1997-1998  This file is public domain.
+// xassert is an assert()-like macro that throws an exception when it
+// fails, instead of calling abort().
 
 #ifndef XASSERT_H
 #define XASSERT_H
 
 #include "sm-macros.h"  // NORETURN
 
-// linkdepend: exc.cpp
-
 // this functions accepts raw 'char const *' instead of 'rostring'
 // because I do not want this interface to depend on str.h, and also
 // because I do not want the many call sites to have the overhead
 // of constructing and destructing temporary objects
+//
+// This is defined in exc.cc.
 void x_assert_fail(char const *cond, char const *file, int line) NORETURN;
 
 // Ordinary 'xassert' *can* be turned off, but the nominal intent

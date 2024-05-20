@@ -1,8 +1,8 @@
 // sm-macros.h            see license.txt for copyright and terms of use
-// grab-bag of useful macros, stashed here to avoid mucking up
-//   other modules with more focus; there's no clear rhyme or
-//   reason for why some stuff is here and some in typ.h
-// (no configuration stuff here!)
+// A bunch of useful macros.
+
+// There's no clear rhyme or reason for why some stuff is here and some
+// in typ.h.  (No configuration stuff should go here!)
 
 #ifndef SMBASE_SM_MACROS_H
 #define SMBASE_SM_MACROS_H

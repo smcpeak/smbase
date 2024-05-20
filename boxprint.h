@@ -1,6 +1,11 @@
 // boxprint.h
-// another pretty-printing module, this one based on the box model
-// described at http://caml.inria.fr/FAQ/format-eng.html
+// BoxPrint functions as an output stream (sort of like <code>cout</code>)
+// with operations to indicate structure within the emitted text, so that
+// it can break lines intelligently.  It's used as part of a source-code
+// pretty-printer.
+
+// It is partly based the box model described at
+// http://caml.inria.fr/FAQ/format-eng.html
 
 #ifndef BOXPRINT_H
 #define BOXPRINT_H

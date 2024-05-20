@@ -536,15 +536,17 @@ low-level system services.
 <p>
 These are obsolete:
 
-<ul>
+<dl>
 
-<li><a href="cycles.h">cycles.h</a>
-    <a href="cycles.c">cycles.c</a>:
-Report total number of processor cycles since the machine was turned on.
-Uses the RDTSC instruction on x86.  This hasn't been updated to work
-with x86-64 and RDTSC is not very useful anyway.
+<!-- begin header: cycles.h -->
+  <!-- AUTO --><dt><a href="cycles.h">cycles.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Report total number of processor cycles since the machine was turned
+  <!-- AUTO -->  on.  Uses the RDTSC instruction on x86.  This hasn't been updated to
+  <!-- AUTO -->  work with x86-64 and RDTSC is not very useful anyway.
+<!-- end header -->
 
-</ul>
+</dl>
 
 
 <h2>Portability</h2>
@@ -553,23 +555,30 @@ with x86-64 and RDTSC is not very useful anyway.
 These modules help insulate client code from the details of the system
 it is running on.
 
-<ul>
+<dl>
 
-<li><a href="nonport.h">nonport.h</a>,
-    <a href="nonport.cc">nonport.cc</a>:
-A library of utility functions whose implementation is system-specific.
-Generally, I try to encapsulate all system depenencies as functions
-defined in nonport.
+<!-- begin header: nonport.h -->
+  <!-- AUTO --><dt><a href="nonport.h">nonport.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  A library of utility functions whose implementation is
+  <!-- AUTO -->  system-specific.  Generally, I try to encapsulate all system
+  <!-- AUTO -->  depenencies as functions defined in nonport.
+<!-- end header -->
 
-<li><a href="sm-macros.h">sm-macros.h</a>:
-A bunch of useful macros.
+<!-- begin header: sm-macros.h -->
+  <!-- AUTO --><dt><a href="sm-macros.h">sm-macros.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  A bunch of useful macros.
+<!-- end header -->
 
-<li><a href="typ.h">typ.h</a>:
-Some type definitions like <code>byte</code> and <code>bool</code>, plus a few
-utility macros.  Not clearly distinguished from <a href="sm-macros.h">sm-macros.h</a>
-in purpose.
+<!-- begin header: typ.h -->
+  <!-- AUTO --><dt><a href="typ.h">typ.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Some type definitions like byte and bool, plus a few utility macros.
+  <!-- AUTO -->  Not clearly distinguished from sm-macros.h in purpose.
+<!-- end header -->
 
-</ul>
+</dl>
 
 
 <h2>Allocation</h2>
@@ -577,13 +586,17 @@ in purpose.
 <p>
 These modules provide additional control over the allocator.
 
-<ul>
+<dl>
 
-<li><a href="objpool.h">objpool.h</a>:
-ObjPool, a custom allocator for fixed-size objects with embedded
-'next' links.
+<!-- begin header: objpool.h -->
+  <!-- AUTO --><dt><a href="objpool.h">objpool.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  ObjPool, a custom allocator for fixed-size objects with embedded
+  <!-- AUTO -->  'next' links.  This is for objects meant to be re-used frequently,
+  <!-- AUTO -->  with high locality
+<!-- end header -->
 
-</ul>
+</dl>
 
 
 <h2>Exceptions</h2>
@@ -591,20 +604,25 @@ ObjPool, a custom allocator for fixed-size objects with embedded
 <p>
 These modules define or throw exceptions.
 
-<ul>
+<dl>
 
-<li><a href="exc.h">exc.h</a>,
-    <a href="exc.cc">exc.cc</a>:
-Various exception classes.  The intent is derive everything from xBase,
-so a program can catch this one exception type in main() and be assured
-no exception will propagate out of the program (or any other unit of
-granularity you want).
+<!-- begin header: exc.h -->
+  <!-- AUTO --><dt><a href="exc.h">exc.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Various exception classes.  The intent is derive everything from
+  <!-- AUTO -->  xBase, so a program can catch this one exception type in main() and
+  <!-- AUTO -->  be assured no exception will propagate out of the program (or any
+  <!-- AUTO -->  other unit of granularity you want).
+<!-- end header -->
 
-<li><a href="xassert.h">xassert.h</a>:
-xassert is an assert()-like macro that throws an exception when it
-fails, instead of calling abort().
+<!-- begin header: xassert.h -->
+  <!-- AUTO --><dt><a href="xassert.h">xassert.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  xassert is an assert()-like macro that throws an exception when it
+  <!-- AUTO -->  fails, instead of calling abort().
+<!-- end header -->
 
-</ul>
+</dl>
 
 
 <h2>Serialization</h2>
@@ -613,20 +631,23 @@ fails, instead of calling abort().
 The "flatten" serialization scheme is intended to allow sets of objects
 to read and write themselves to files.
 
-<ul>
+<dl>
 
-<li><a href="bflatten.h">bflatten.h</a>,
-    <a href="bflatten.cc">bflatten.cc</a>:
-Implementation of the Flatten interface (<a href="flatten.h">flatten.h</a>)
-for reading/writing binary files.
+<!-- begin header: flatten.h -->
+  <!-- AUTO --><dt><a href="flatten.h">flatten.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Generic interface for serializing in-memory data structures to files.
+  <!-- AUTO -->  Similar to Java's Serializable, but independently conceived, and has
+  <!-- AUTO -->  superior version control facilities.
+<!-- end header -->
 
-<li><a href="flatten.h">flatten.h</a>,
-    <a href="flatten.cc">flatten.cc</a>:
-Generic interface for serializing in-memory data structures to files.
-Similar to Java's Serializable, but independently conceived, and has
-superior version control facilities.
+<!-- begin header: bflatten.h -->
+  <!-- AUTO --><dt><a href="bflatten.h">bflatten.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Implementation of the Flatten interface for reading/writing binary files.
+<!-- end header -->
 
-</ul>
+</dl>
 
 
 <h2>Compiler/Translator Support</h2>
@@ -635,96 +656,126 @@ superior version control facilities.
 smbase has a number of modules that are of use to programs that
 read and/or write source code.
 
-<ul>
+<dl>
 
-<li><a href="hashline.h">hashline.h</a>,
-    <a href="hashline.cc">hashline.cc</a>:
-HashLineMap, a mechanism for keeping track of #line directives in C
-source files.  Provides efficient queries with respect to a set of
-such directives.
+<!-- begin header: hashline.h -->
+  <!-- AUTO --><dt><a href="hashline.h">hashline.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  HashLineMap, a mechanism for keeping track of #line directives in C
+  <!-- AUTO -->  source files.  Provides efficient queries with respect to a set of
+  <!-- AUTO -->  such directives.
+<!-- end header -->
 
-<li><a href="srcloc.h">srcloc.h</a>,
-    <a href="srcloc.cc">srcloc.cc</a>:
-This module maintains a one-word data type called SourceLoc.
-SourceLoc is a location within some file, e.g. line/col or character
-offset information.  SourceLoc also encodes <em>which</em> file it
-refers to.  This type is very useful for language processors (like
-compilers) because it efficiently encodes location formation.
-Decoding this into human-readable form is slower than incrementally
-updating it, but decoding is made somewhat efficient with some
-appropriate index structures.
+<!-- begin header: srcloc.h -->
+  <!-- AUTO --><dt><a href="srcloc.h">srcloc.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  This module maintains a one-word data type called SourceLoc.
+  <!-- AUTO -->  SourceLoc is a location within some file, e.g. line/col or character
+  <!-- AUTO -->  offset information.  SourceLoc also encodes *which* file it
+  <!-- AUTO -->  refers to.  This type is very useful for language processors (like
+  <!-- AUTO -->  compilers) because it efficiently encodes location formation.
+  <!-- AUTO -->  Decoding this into human-readable form is slower than incrementally
+  <!-- AUTO -->  updating it, but decoding is made somewhat efficient with some
+  <!-- AUTO -->  appropriate index structures.
+<!-- end header -->
 
-<li><a href="boxprint.h">boxprint.h</a>
-    <a href="boxprint.cc">boxprint.cc</a>:
-BoxPrint functions as an output stream (sort of like <code>cout</code>)
-with operations to indicate structure within the emitted text, so that
-it can break lines intelligently.  It's used as part of a source-code
-pretty-printer.
+<!-- begin header: boxprint.h -->
+  <!-- AUTO --><dt><a href="boxprint.h">boxprint.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  BoxPrint functions as an output stream (sort of like &lt;code&gt;cout&lt;/code&gt;)
+  <!-- AUTO -->  with operations to indicate structure within the emitted text, so that
+  <!-- AUTO -->  it can break lines intelligently.  It's used as part of a source-code
+  <!-- AUTO -->  pretty-printer.
+<!-- end header -->
 
-<li><a href="warn.h">warn.h</a>,
-    <a href="warn.cc">warn.cc</a>:
-Intended to provide a general interface for user-level warnings; the
-design never really worked well.
+<!-- begin header: warn.h -->
+  <!-- AUTO --><dt><a href="warn.h">warn.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Intended to provide a general interface for user-level warnings; the
+  <!-- AUTO -->  design never really worked well.
+<!-- end header -->
 
-</ul>
+</dl>
 
 
 <h2>Testing and Debugging</h2>
 
-<ul>
+<dl>
 
-<li><a href="breaker.h">breaker.h</a>
-    <a href="breaker.cc">breaker.cc</a>:
-Function for putting a breakpoint in, to get debugger control just
-before an exception is thrown.
+<!-- begin header: breaker.h -->
+  <!-- AUTO --><dt><a href="breaker.h">breaker.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Function for putting a breakpoint in, to get debugger control just
+  <!-- AUTO -->  before an exception is thrown.
+<!-- end header -->
 
-<li><a href="test.h">test.h</a>:
-A few test-harness macros.
+<!-- begin header: sm-test.h -->
+  <!-- AUTO --><dt><a href="sm-test.h">sm-test.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  A few test-harness macros.
+<!-- end header -->
 
-<li><a href="trace.h">trace.h</a>,
-    <a href="trace.cc">trace.cc</a>:
-Module for recording and querying a set of debug tracing flags.
-It is documented in <a href="trace.html">trace.html</a>.
+<!-- begin header: trace.h -->
+  <!-- AUTO --><dt><a href="trace.h">trace.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Module for recording and querying a set of debug tracing flags.
+  <!-- AUTO -->  It is documented in trace.html.
+<!-- end header -->
 
-<li><a href="trdelete.h">trdelete.h</a>,
-    <a href="trdelete.cc">trdelete.cc</a>:
-An <code>operator delete</code> which overwrites the deallocated memory with
-0xAA before deallocating it.
+See <a href="trace.html">trace.html</a>.
 
-</ul>
+<!-- begin header: trdelete.h -->
+  <!-- AUTO --><dt><a href="trdelete.h">trdelete.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  An 'operator delete' which overwrites the deallocated memory with
+  <!-- AUTO -->  0xAA before deallocating it.
+<!-- end header -->
+
+</dl>
 
 
 <h2>Miscellaneous</h2>
 
-<ul>
+<dl>
 
-<li><a href="crc.h">crc.h</a>
-    <a href="crc.cc">crc.cc</a>:
-32-bit cyclic redundancy check.
+<!-- begin header: crc.h -->
+  <!-- AUTO --><dt><a href="crc.h">crc.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  32-bit cyclic redundancy check.
+<!-- end header -->
 
-<li><a href="gprintf.h">gprintf.h</a>,
-    <a href="gprintf.c">gprintf.c</a>:
-General printf; calls a function to emit each piece.
+<!-- begin header: gprintf.h -->
+  <!-- AUTO --><dt><a href="gprintf.h">gprintf.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Generalized printf interface.
+  <!-- AUTO -->  See http://www.efgh.com/software/gprintf.htm.
+  <!-- AUTO -->  This file is in the public domain. */
+<!-- end header -->
 
-<li><a href="owner.h">owner.h</a>:
-Owner, a pointer that deallocates its referrent in its destructor.
-Similar to auto_ptr in the C++ Standard.
+<!-- begin header: owner.h -->
+  <!-- AUTO --><dt><a href="owner.h">owner.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Owner, a pointer that deallocates its referrent in its destructor.
+  <!-- AUTO -->  Similar to unique_ptr in the C++ Standard.
+<!-- end header -->
 
-<li><a href="point.h">point.h</a>,
-    <a href="point.cc">point.cc</a>:
-Point, a pair of integers.
+<!-- begin header: point.h -->
+  <!-- AUTO --><dt><a href="point.h">point.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Point, a pair of numbers.
+<!-- end header -->
 
-</ul>
+</dl>
 
 
 <h2>Utility Scripts</h2>
 
-<ul>
+<dl>
 
-<li><a href="run-flex.pl">run-flex.pl</a>:
-Perl script to run flex and massage its output for portability.
+<dt><a href="run-flex.pl">run-flex.pl</a>
+<dd>Perl script to run flex and massage its output for portability.
 
-</ul>
+</dl>
 
 
 </body>

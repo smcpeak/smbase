@@ -1,6 +1,6 @@
 // typ.h            see license.txt for copyright and terms of use
-// various types and definitions, some for portability, others for convenience
-// Scott McPeak, 1996-2000  This file is public domain.
+// Some type definitions like byte and bool, plus a few utility macros.
+// Not clearly distinguished from sm-macros.h in purpose.
 
 #ifndef SMBASE_TYP_H
 #define SMBASE_TYP_H

@@ -1,5 +1,5 @@
 // bflatten.h            see license.txt for copyright and terms of use
-// binary file flatten implementation
+// Implementation of the Flatten interface for reading/writing binary files.
 
 #ifndef BFLATTEN_H
 #define BFLATTEN_H

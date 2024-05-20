@@ -1,5 +1,5 @@
 // crc.h            see license.txt for copyright and terms of use
-// simple crc function
+// 32-bit cyclic redundancy check.
 
 #ifndef SMBASE_CRC_H
 #define SMBASE_CRC_H

@@ -1,6 +1,7 @@
 // objpool.h            see license.txt for copyright and terms of use
-// custom allocator: array of objects meant to be
-// re-used frequently, with high locality
+// ObjPool, a custom allocator for fixed-size objects with embedded
+// 'next' links.  This is for objects meant to be re-used frequently,
+// with high locality
 
 #ifndef OBJPOOL_H
 #define OBJPOOL_H

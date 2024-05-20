@@ -1,7 +1,7 @@
 // flatten.h            see license.txt for copyright and terms of use
-// interface to automate process of flattening structures made of objects with
-//   arbitrary types, and possibly circular references
-// this is a trimmed-down version of the one in 'proot'
+// Generic interface for serializing in-memory data structures to files.
+// Similar to Java's Serializable, but independently conceived, and has
+// superior version control facilities.
 
 // Has a number of similarities with boost::serialize,
 //   http://www.boost.org/libs/serialization/doc/index.html

@@ -1,7 +1,6 @@
 // breaker.h            see license.txt for copyright and terms of use
-// function stub through which critical event code flow is directed
-//   for easy breakpoints
-// Scott McPeak, 1997,1998  This file is public domain.
+// Function for putting a breakpoint in, to get debugger control just
+// before an exception is thrown.
 
 #ifndef __BREAKER_H
 #define __BREAKER_H

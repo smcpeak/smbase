@@ -1,6 +1,6 @@
 // warn.h            see license.txt for copyright and terms of use
-// module to facilitate providing operational warnings to the user
-// Scott McPeak, 1999  This file is public domain.
+// Intended to provide a general interface for user-level warnings; the
+// design never really worked well.
 
 #ifndef __WARN_H
 #define __WARN_H

@@ -1,6 +1,8 @@
 // exc.h            see license.txt for copyright and terms of use
-// exception classes for SafeTP project
-// Scott McPeak, 1996-1998  This file is public domain.
+// Various exception classes.  The intent is derive everything from
+// xBase, so a program can catch this one exception type in main() and
+// be assured no exception will propagate out of the program (or any
+// other unit of granularity you want).
 
 // I apologize for the inconsistent naming in this module.  It is
 // the product of an extended period of experimenting with naming

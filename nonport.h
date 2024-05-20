@@ -1,6 +1,8 @@
 // nonport.h            see license.txt for copyright and terms of use
-// collection of nonportable routines (the interfaces
-//   are portable, but the implementations are not)
+// A library of utility functions whose implementation is
+// system-specific.  Generally, I try to encapsulate all system
+// depenencies as functions defined in nonport.
+
 // Scott McPeak, Dan Bonachea 1998-1999  This file is public domain.
 
 #ifndef SMBASE_NONPORT_H

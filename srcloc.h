@@ -1,5 +1,12 @@
 // srcloc.h            see license.txt for copyright and terms of use
-// source location information, efficiently represented as one word
+// This module maintains a one-word data type called SourceLoc.
+// SourceLoc is a location within some file, e.g. line/col or character
+// offset information.  SourceLoc also encodes *which* file it
+// refers to.  This type is very useful for language processors (like
+// compilers) because it efficiently encodes location formation.
+// Decoding this into human-readable form is slower than incrementally
+// updating it, but decoding is made somewhat efficient with some
+// appropriate index structures.
 
 // The fundamental assumption in this module is that source location
 // information is frequently created, stored and passed around, but

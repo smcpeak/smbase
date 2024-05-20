@@ -1,6 +1,5 @@
 // sm-test.h            see license.txt for copyright and terms of use
-// utilities for test code
-// Scott McPeak, 1999  This file is public domain.
+// A few test-harness macros.
 
 #ifndef SMBASE_SM_TEST_H
 #define SMBASE_SM_TEST_H
