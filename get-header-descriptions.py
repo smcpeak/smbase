@@ -3,6 +3,7 @@
 
 import argparse              # argparse
 import difflib               # difflib.unified_diff
+import glob                  # glob.glob
 import html                  # html.escape
 import os                    # os.getenv
 import re                    # re.compile
@@ -139,6 +140,57 @@ def getHeaderDescriptionHTML(headerFname):
   return descriptionLinesHTML
 
 
+def checkMentionedHeaders(mentionedHeaders):
+  """Check that the set of mentioned headers matches what is in the
+  current directory."""
+
+  # Get what is in the current directory.
+  curDirHeaders = glob.glob("*.h")
+
+  # Number of issues found.
+  numIssues = 0
+
+  # Regex for file names that generally should not be documented
+  # independently.
+  ignoredRE = re.compile(r"-fwd\.h")
+
+  # Sort both lists.
+  mentionedHeaders = sorted(mentionedHeaders)
+  curDirHeaders = sorted(curDirHeaders)
+
+  # Avoid having a special case at the end.
+  mentionedHeaders.append("sentinel")
+  curDirHeaders.append("sentinel")
+
+  # Simultaneously walk both lists.
+  mIndex = 0
+  cIndex = 0
+  while (mIndex < len(mentionedHeaders) and
+         cIndex < len(curDirHeaders)):
+    mh = mentionedHeaders[mIndex]
+    ch = curDirHeaders[cIndex]
+
+    if mh < ch:
+      print(f"Mentioned header {mh} is not in current directory.")
+      mIndex += 1
+      numIssues += 1
+
+    elif mh > ch:
+      if not ignoredRE.search(ch):
+        print(f"Current directory contains {ch} but index.html does "+
+              "not mention it.")
+        numIssues += 1
+      cIndex += 1
+
+    else:
+      mIndex += 1
+      cIndex += 1
+
+  if numIssues > 0:
+    die(f"There were {numIssues} discrepancies between what was found "+
+        "in the current directory and what is mentioned in index.html.")
+
+
 # Match a line that is above a section to insert.
 beginHeaderRE = re.compile(r"<!-- begin header: (.*) -->")
 
@@ -148,6 +200,10 @@ endHeaderRE = re.compile(r"<!-- end header -->")
 # As a minor convenience, I insert this for a set of completely new
 # headers, and it turns into begin/end pairs.
 newSectionsRE = re.compile(r"<!-- new headers: (.*) -->")
+
+# Line that mentions a header but ignores it.  This is for headers that
+# should not be documented independently.
+ignoreHeaderRE = re.compile(r"<!-- ignored header: (.*) -->")
 
 
 def main():
@@ -162,6 +218,9 @@ def main():
 
   # Modified document.
   newLines = []
+
+  # Set (as a list) of header files we've seen mentioned.
+  mentionedHeaders = []
 
   # True if we are scanning to the end of an insertion section.
   scanningForEnd = False
@@ -188,6 +247,8 @@ def main():
         headerFnames = m.group(1)
 
         for headerFname in headerFnames.split():
+          mentionedHeaders.append(headerFname)
+
           newLines.append(f"<!-- begin header: {headerFname} -->")
           newLines += getHeaderDescriptionHTML(headerFname)
           newLines.append(f"<!-- end header -->")
@@ -203,17 +264,25 @@ def main():
       # Start of a scanning section?
       if m := beginHeaderRE.search(oldLine):
         headerFname = m.group(1)
+        mentionedHeaders.append(headerFname)
 
         # Copy the extracted description.
         newLines += getHeaderDescriptionHTML(headerFname)
 
         scanningForEnd = True
 
+      # Ignore header?
+      if m := ignoreHeaderRE.search(oldLine):
+        headerFname = m.group(1)
+        mentionedHeaders.append(headerFname)
+
     except BaseException as e:
       die(f"index.html:{oldLineNo}: {exceptionMessage(e)}")
 
   if scanningForEnd:
     die(f"index.html: Did not find end of '{headerFname}'.")
+
+  checkMentionedHeaders(mentionedHeaders)
 
   if opts.check:
     if oldLines == newLines:
