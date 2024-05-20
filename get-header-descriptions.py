@@ -157,38 +157,42 @@ def main():
   for oldLine in oldLines:
     oldLineNo += 1
 
-    # End of the scanning section?
-    if scanningForEnd:
-      if endHeaderRE.search(oldLine):
-        # Reset scan status.
-        scanningForEnd = False
-        headerFname = None
+    try:
+      # End of the scanning section?
+      if scanningForEnd:
+        if endHeaderRE.search(oldLine):
+          # Reset scan status.
+          scanningForEnd = False
+          headerFname = None
 
-    # Indicator to insert completely new sections?
-    if m := newSectionsRE.search(oldLine):
-      headerFnames = m.group(1)
+      # Indicator to insert completely new sections?
+      if m := newSectionsRE.search(oldLine):
+        headerFnames = m.group(1)
 
-      for headerFname in headerFnames.split():
-        newLines.append(f"<!-- begin header: {headerFname} -->")
+        for headerFname in headerFnames.split():
+          newLines.append(f"<!-- begin header: {headerFname} -->")
+          newLines += getHeaderDescriptionHTML(headerFname)
+          newLines.append(f"<!-- end header -->")
+          newLines.append("")
+
+        # Do not copy the new section directive.
+        continue
+
+      # Copy lines from old to new.
+      if not scanningForEnd:
+        newLines.append(oldLine)
+
+      # Start of a scanning section?
+      if m := beginHeaderRE.search(oldLine):
+        headerFname = m.group(1)
+
+        # Copy the extracted description.
         newLines += getHeaderDescriptionHTML(headerFname)
-        newLines.append(f"<!-- end header -->")
-        newLines.append("")
 
-      # Do not copy the new section directive.
-      continue
+        scanningForEnd = True
 
-    # Copy lines from old to new.
-    if not scanningForEnd:
-      newLines.append(oldLine)
-
-    # Start of a scanning section?
-    if m := beginHeaderRE.search(oldLine):
-      headerFname = m.group(1)
-
-      # Copy the extracted description.
-      newLines += getHeaderDescriptionHTML(headerFname)
-
-      scanningForEnd = True
+    except BaseException as e:
+      die(f"index.html:{oldLineNo}: {exceptionMessage(e)}")
 
   if scanningForEnd:
     die(f"index.html: Did not find end of '{headerFname}'.")
