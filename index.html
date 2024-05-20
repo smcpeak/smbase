@@ -12,6 +12,9 @@
       font-size: 175%;
       text-align: center;
     }
+    dl {
+      text-indent: 1em;
+    }
   </style>
 </HEAD>
 
@@ -79,55 +82,79 @@ traversing and modifying.
 <p>
 There are a couple of variants that support O(1) appending:
 
-<ul>
-<li><a href="vdtllist.h">vdtllist.h</a>,
-    <a href="vdtllist.cc">vdtllist.cc</a>:
-VoidTailList, the core of a linked list implementation which maintains
-a pointer to the last node for O(1) appends.
-Used by <a href="astlist.h">astlist.h</a> and <a href="taillist.h">taillist.h</a>.
+<dl>
 
-<li><a href="taillist.h">taillist.h</a>:
-Template class built on top of VoidTailList (<a href="vdtllist.h">vdtllist.h</a>).
+<!-- begin header: vdtllist.h -->
+  <!-- AUTO --><dt><a href="vdtllist.h">vdtllist.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  List of void*, with a pointer maintained to the last (tail)
+  <!-- AUTO -->  element, for constant-time append.  Used by ASTList and VoidTailList.
+<!-- end header -->
 
-<li><a href="astlist.h">astlist.h</a>:
-ASTList, a list class for use in abstract syntax trees.
+<!-- begin header: taillist.h -->
+  <!-- AUTO --><dt><a href="taillist.h">taillist.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  List wrapper around VoidTailList, like ASTList, but it doesn't own
+  <!-- AUTO -->  the elements.
+<!-- end header -->
 
-</ul>
+<!-- begin header: astlist.h -->
+  <!-- AUTO --><dt><a href="astlist.h">astlist.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  ASTList, a list class for use in abstract syntax trees.
+  <!-- AUTO -->  Owner list wrapper around VoidTailList.
+  <!-- AUTO -->  The name 'AST' is because the first application is in ASTs.
+<!-- end header -->
+
+</dl>
 
 <p>
 The remainder of this section is obsolete, with
 <code>std::list</code>, possibly in combination with
 <code>std::unique_ptr</code>, replacing it.
 
-<ul>
+<dl>
 
-<li><a href="objlist.h">objlist.h</a>:
-ObjList, a general linked list of objects.  ObjList considers itself
-to "own" (be responsible for deallocating) the things on its list.
-See also <a href="sobjlist.h">sobjlist.h</a>.
+<!-- begin header: objlist.h -->
+  <!-- AUTO --><dt><a href="objlist.h">objlist.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Owner list of arbitrary dynamically-allocated objects.
+  <!-- AUTO -->  NOTE: automatically generated from xobjlist.h -- do not edit directly
+<!-- end header -->
 
-<li><a href="sobjlist.h">sobjlist.h</a>:
-SObjList, a general linked list of objects.  SObjList does <em>not</em>
-consider itself the owner of the list elements.  The "s" in the
-name stands for "serf", which I use to mean the opposite of "owner".
-See also <a href="objlist.h">objlist.h</a>.
+<!-- begin header: sobjlist.h -->
+  <!-- AUTO --><dt><a href="sobjlist.h">sobjlist.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Serf (non-owning) list of arbitrary objects.
+  <!-- AUTO -->  NOTE: automatically generated from xobjlist.h -- do not edit directly
+<!-- end header -->
 
-<li><a href="xobjlist.h">xobjlist.h</a>:
-This file is processed by <a href="http://www.gnu.org/software/m4/">M4</a>
-to make <a href="objlist.h">objlist.h</a> and <a href="sobjlist.h">sobjlist.h</a>.
+<!-- begin header: xobjlist.h -->
+  <!-- AUTO --><dt><a href="xobjlist.h">xobjlist.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Template file to be processed with m4 to generate one
+  <!-- AUTO -->  of the wrappers around VoidList.
+<!-- end header -->
 
-<li><a href="voidlist.h">voidlist.h</a>,
-    <a href="voidlist.cc">voidlist.cc</a>:
-The core of the linked list implementation used by
-<a href="objlist.h">objlist.h</a> and <a href="sobjlist.h">sobjlist.h</a>.
+<!-- begin header: voidlist.h -->
+  <!-- AUTO --><dt><a href="voidlist.h">voidlist.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  List of void*.  This is used by ObjList and SObjList.
+<!-- end header -->
 
-<li><a href="objstack.h">objstack.h</a>:
-ObjStack, a stack of owned objects.  Built with a linked list.
+<!-- begin header: objstack.h -->
+  <!-- AUTO --><dt><a href="objstack.h">objstack.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  ObjStack, a stack of owned objects.  Built with a linked list.
+<!-- end header -->
 
-<li><a href="sobjstack.h">sobjstack.h</a>:
-SObjStack, a stack of non-owned objects.  Built with a linked list.
+<!-- begin header: sobjstack.h -->
+  <!-- AUTO --><dt><a href="sobjstack.h">sobjstack.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  SObjStack, a stack of non-owned objects.  Built with a linked list.
+<!-- end header -->
 
-</ul>
+</dl>
 
 
 <h2>Arrays</h2>
@@ -138,32 +165,48 @@ Arrays are sequences of objects with O(1) random access and replacement.
 <p>
 Everything in this section is obsoleted by <code>std::vector</code>.
 
-<ul>
+<dl>
 
-<li><a href="array.h">array.h</a>:
-Several array-like template classes, including growable arrays.
+<!-- begin header: array.h -->
+  <!-- AUTO --><dt><a href="array.h">array.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Several array-like template classes, including growable arrays.
+<!-- end header -->
 
-<li><a href="bitwise_array.h">bitwise_array.h</a>:
-Similar classes which use bitwise copying semantics when growing.
+<!-- begin header: bitwise_array.h -->
+  <!-- AUTO --><dt><a href="bitwise_array.h">bitwise_array.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Some array classes that use bitwise copying when expanding.
+<!-- end header -->
 
-<li><a href="arrayqueue.h">arrayqueue.h</a>:
-ArrayQueue, a template class implementing a queue with an array.
-Supports O(1) enqueue and dequeue.
+<!-- begin header: arrayqueue.h -->
+  <!-- AUTO --><dt><a href="arrayqueue.h">arrayqueue.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  ArrayQueue, a template class implementing a queue with an array.
+  <!-- AUTO -->  Supports O(1) enqueue and dequeue.
+<!-- end header -->
 
-<li><a href="datablok.h">datablok.h</a>,
-    <a href="datablok.cc">datablok.cc</a>:
-DataBlock, an array of characters of a given length.  Useful when the
-data may contain NUL ('\0') bytes.
+<!-- begin header: datablok.h -->
+  <!-- AUTO --><dt><a href="datablok.h">datablok.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  DataBlock, an array of characters of a given length.  Useful when the
+  <!-- AUTO -->  data may contain NUL ('\0') bytes.
+<!-- end header -->
 
-<li><a href="growbuf.h">growbuf.h</a>,
-    <a href="growbuf.cc">growbuf.cc</a>:
-Extension of DataBlock (<a href="datablok.h">datablok.h</a>) that
-provides an append() function.
+<!-- begin header: growbuf.h -->
+  <!-- AUTO --><dt><a href="growbuf.h">growbuf.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Extension of DataBlock that provides an append() function.
+<!-- end header -->
 
-<li><a href="arraymap.h">arraymap.h</a>:
-ArrayMap, a map from integers to object pointers. Obsolete.
+<!-- begin header: arraymap.h -->
+  <!-- AUTO --><dt><a href="arraymap.h">arraymap.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  ArrayMap, a map from integers to owner object pointers. Obsolete.
+<!-- end header -->
 
-</ul>
+
+</dl>
 
 
 <h2>Arrays of Bits</h2>

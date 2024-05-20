@@ -1,5 +1,5 @@
 // array.h            see license.txt for copyright and terms of use
-// some array classes
+// Several array-like template classes, including growable arrays.
 
 // These classes predate the wide availability of the C++ standard
 // library.  Except for ArrayStackEmbed, none of these should be used in

@@ -1,5 +1,6 @@
 // taillist.h; see license.txt for copyright and terms of use
-// list wrapper around VoidTailList in the spirit of ASTList, but doesn't own
+// List wrapper around VoidTailList, like ASTList, but it doesn't own
+// the elements.
 
 // taken almost verbatim from asttlist.h in smbase
 

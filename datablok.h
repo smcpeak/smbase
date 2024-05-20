@@ -1,9 +1,9 @@
 // datablok.h            see license.txt for copyright and terms of use
-// arbitrary block of data
-// Scott McPeak, 1998-2000  This file is public domain.
+// DataBlock, an array of characters of a given length.  Useful when the
+// data may contain NUL ('\0') bytes.
 
-#ifndef DATABLOK_H
-#define DATABLOK_H
+#ifndef SMBASE_DATABLOK_H
+#define SMBASE_DATABLOK_H
 
 #include <stddef.h>                    // NULL, size_t, ptrdiff_t
 
@@ -174,4 +174,4 @@ public:       // funcs
 void test_datablok();
 
 
-#endif // DATABLOK_H
+#endif // SMBASE_DATABLOK_H

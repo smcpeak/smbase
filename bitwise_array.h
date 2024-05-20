@@ -1,5 +1,5 @@
 // bitwise_array.h            see license.txt for copyright and terms of use
-// some array classes that use bitwise copying when expanding
+// Some array classes that use bitwise copying when expanding.
 
 #ifndef BITWISE_ARRAY_H
 #define BITWISE_ARRAY_H
