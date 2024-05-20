@@ -182,6 +182,9 @@ void stringXfer(Flatten &flat, std::string &str);
 bool stringEquals(std::string const &a, char const *b);
 bool stringEquals(std::string const &a, std::string const &b);
 
+// Note: The equivalent of OldSmbaseString::substring is just
+// std::string::substr.
+
 
 // ------------------------ rostring ----------------------
 // My plan is to use this in places I currently use 'char const *'.
