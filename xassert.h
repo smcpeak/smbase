@@ -38,6 +38,24 @@ void x_assert_fail(char const *cond, char const *file, int line) NORETURN;
 #define xfailure(why) x_assert_fail(why, __FILE__, __LINE__)
 
 
+// This requires 'stringbc', which is declared in 'stringb.h'.  I
+// created this macro to make it easier to convert code that was using
+// 'stringc' since it allows:
+//
+//   xfailure(stringc << various << things)
+//
+// to become:
+//
+//   xfailure_stringbc(various << things)
+//
+// which can be accmplished simply by replacing "xfailure(stringc << "
+// with "xfailure_stringbc(".  In particular, that does not require any
+// balancing of parentheses, which is hard when doing regex-based
+// replacement.
+//
+#define xfailure_stringbc(stuff) xfailure(stringbc(stuff))
+
+
 // 'xassert_once' is an assertion that is only checked the first time it
 // is executed.
 #if defined(NDEBUG_NO_ASSERTIONS)
