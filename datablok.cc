@@ -173,13 +173,25 @@ bool DataBlock::dataEqual(DataBlock const &obj) const
 }
 
 
-string DataBlock::toString() const
+string DataBlock::toFullString() const
 {
   // My 'string' class uses 'int' for its length.  That should be fixed,
   // but until then, I'll verify the conversion is safe.
   xassert(getDataLen() <= INT_MAX);
 
   return string((char*)getDataC(), getDataLen());
+}
+
+
+string DataBlock::toNTString() const
+{
+  // Calculate the effective length.
+  size_t i=0;
+  while (i < getDataLen() && data[i] != 0) {
+    ++i;
+  }
+
+  return string((char*)getDataC(), i);
 }
 
 

@@ -104,7 +104,19 @@ public:       // funcs
 
   // Return a string containing 'dataLen' characters, some of which
   // might be NUL.
-  string toString() const;
+  string toFullString() const;
+
+  // Return a string containing all of the data until the first NUL
+  // character, or the end of the block, whichever comes first.  "NT"
+  // means "NUL terminated", i.e., if there is a NUL terminator then we
+  // are taking the string up to that point.
+  //
+  // This is effectively how 'toString' behaved in the past because
+  // OldSmbaseString implicitly truncated its data at NULs.
+  string toNTString() const;
+
+  // Preserve compatibility by calling the arguably broken version.
+  string toString() const { return toNTString(); }
 
   // ---- mutators ----
   unsigned char *getData() { return data; }

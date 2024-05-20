@@ -52,7 +52,15 @@ void test_datablok()
 
     DataBlock block("yadda smacker");
     xassert(block.getDataLen() == 14);
-    xassert(block.toString() == string("yadda smacker", 14));
+
+    // Full: Includes NUL.
+    xassert(block.toFullString() == string("yadda smacker", 14));
+
+    // Null-term: Does not.
+    xassert(block.toNTString() == string("yadda smacker"));
+
+    // Legacy compatibility: Does not.
+    xassert(block.toString() == string("yadda smacker"));
 
     DataBlock block2((unsigned char*)"yadda smacker", 13, 14);
     block2.addNull();
