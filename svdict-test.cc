@@ -17,21 +17,21 @@ char randChar()
   return (char)(myrandom(127-32+1)+32);
 }
 
-OldSmbaseString randString(int len)
+string randString(int len)
 {
   stringBuilder str;
   loopj(len) {
     str << randChar();
   }
-  return str;
+  return str.str();
 }
 
-OldSmbaseString randStringRandLen(int maxlen)
+string randStringRandLen(int maxlen)
 {
   return randString(myrandom(maxlen)+1);
 }
 
-OldSmbaseString randKey(StringVoidDict const &dict)
+string randKey(StringVoidDict const &dict)
 {
   int size = dict.size();
   xassert(size > 0);
@@ -63,7 +63,7 @@ void test_svdict()
     switch (myrandom(6)) {
       case 0: {
         // insert a random element
-        OldSmbaseString key = randStringRandLen(10);
+        string key = randStringRandLen(10);
         void *value = randVoidPtr();
 
         if (!dict.isMapped(key.c_str())) {
@@ -82,7 +82,7 @@ void test_svdict()
           break;
         }
 
-        OldSmbaseString key = randKey(dict);
+        string key = randKey(dict);
         dict.remove(key.c_str());
         size--;
         break;
@@ -90,7 +90,7 @@ void test_svdict()
 
       case 2: {
         // check a random element that should not be there
-        OldSmbaseString key = randStringRandLen(10);
+        string key = randStringRandLen(10);
         if (dict.isMapped(key.c_str())) {
           collisions++;
         }
@@ -111,7 +111,7 @@ void test_svdict()
 
         // modify it, then verify inequality
         if (!dict2.isEmpty()) {
-          OldSmbaseString key = randKey(dict2);
+          string key = randKey(dict2);
           void *value = dict2.queryf(key.c_str());
 
           if (myrandom(2) == 0) {
@@ -129,7 +129,7 @@ void test_svdict()
       case 5: {
         // random modification
         if (!dict.isEmpty()) {
-          OldSmbaseString key = randKey(dict);
+          string key = randKey(dict);
           dict.modify(key.c_str(), randVoidPtr());
         }
         break;

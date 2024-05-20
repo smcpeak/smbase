@@ -18,8 +18,8 @@ template <class T>
 class StringObjDict {
 public:     // types
   // 'foreach' iterator functions
-  typedef bool (*ForeachCFn)(OldSmbaseString const &key, T const * value, void *extra);
-  typedef bool (*ForeachFn)(OldSmbaseString const &key, T * /*serf*/ value, void *extra);
+  typedef bool (*ForeachCFn)(string const &key, T const * value, void *extra);
+  typedef bool (*ForeachFn)(string const &key, T * /*serf*/ value, void *extra);
 
   // external iterator
   class Iter {
@@ -34,7 +34,7 @@ public:     // types
     bool isDone() const { return iter.isDone(); }
     Iter& next() { iter.next(); return *this; }
 
-    OldSmbaseString const &key() const { return iter.key(); }
+    string key() const { return iter.key(); }
     T const * &value() const { return (T const * &)iter.value(); }
 
     int private_getCurrent() const { return iter.private_getCurrent(); }
@@ -71,6 +71,9 @@ public:     // types
       // delegate to the other Iter class
       for(IterC iter(map); !iter.isDone(); iter.next()) {
 //          xassert(i<numEntries);
+        xfailure("is this called?");
+
+        // BUG: This is obviously wrong.  WTH?
         sortedKeys[i++] = iter.key().c_str();
       }
       xassert(numEntries == i);

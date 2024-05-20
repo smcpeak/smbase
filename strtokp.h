@@ -14,7 +14,7 @@
 #ifndef SMBASE_STRTOKP_H
 #define SMBASE_STRTOKP_H
 
-#include "str.h"       // OldSmbaseString
+#include "str.h"       // string
 #include "array.h"     // Array
 #include <string.h>    // strlen
 
@@ -43,13 +43,13 @@ public:
   char const* operator[] (int which) const { return tokv(which); }
     // access to tokens; must make local copies to modify
 
-  OldSmbaseString reassemble(int firstTok, int lastTok, rostring originalString) const;
+  string reassemble(int firstTok, int lastTok, rostring originalString) const;
     // return the substring of the original string spanned by the
     // given range of tokens; if firstTok==lastTok, only that token is
     // returned (without any separators); must be that firstTok <=
     // lastTok
 
-  OldSmbaseString join(int firstTok, int lastTok, rostring separator) const;
+  string join(int firstTok, int lastTok, rostring separator) const;
     // return a string created by concatenating the given range of tokens
     // together with 'separator' in between them
 

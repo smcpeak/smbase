@@ -7,7 +7,7 @@
 #include "crc.h"         // crc32
 #include "nonport.h"     // getMilliseconds
 #include "sm-iostream.h" // cout
-#include "str.h"         // OldSmbaseString
+#include "str.h"         // string
 #include "trace.h"       // traceProgress
 #include "xassert.h"     // xassert
 

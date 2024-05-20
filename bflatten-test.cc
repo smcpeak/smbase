@@ -27,8 +27,8 @@ class SomeData {
 public:      // data
   int x;
   int y;
-  OldSmbaseString s;
-  OldSmbaseString s2;
+  string s;
+  string s2;
   int *px;
   int *py;
   uint64_t u64;
@@ -75,8 +75,8 @@ void SomeData::xfer(Flatten &flat)
 {
   flat.xferInt32(x);
   flat.noteOwner(&x);
-  s.xfer(flat);
-  s2.xfer(flat);
+  stringXfer(flat, s);
+  stringXfer(flat, s2);
   flat.xferSerf((void*&)px);
   flat.xferInt32(y);
   flat.noteOwner(&y);

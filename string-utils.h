@@ -1,8 +1,12 @@
 // string-utils.h
 // Utilities related to std::string.
 
-// This is intended to eventually replace strutil.h, which uses the
-// old smbase 'string' class.
+// This was intended to eventually replace strutil.h, which was based on
+// the old smbase 'string' class.  However, I have now changed str.h to
+// declare 'string' as an alias for 'std::string', so both modules now
+// use 'std::string', making them somewhat redundant.
+//
+// TODO: Combine them.
 
 #ifndef STRING_UTILS_H
 #define STRING_UTILS_H
@@ -60,5 +64,8 @@ bool stringInSortedArray(char const *str, char const * const *arr,
 
 // True if 'str' begins with 'prefix'.
 bool beginsWith(std::string const &str, std::string const &prefix);
+
+// True if 'str' contains 'c'.
+bool contains(std::string const &str, char c);
 
 #endif // STRING_UTILS_H

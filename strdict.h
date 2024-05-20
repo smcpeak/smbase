@@ -10,7 +10,7 @@
 
 #include "sm-iostream.h"// ostream
 #include "sm-macros.h"  // DMEMB
-#include "str.h"        // OldSmbaseString
+#include "str.h"        // string
 #include "typ.h"        // MUTABLE
 #include "xassert.h"    // xassert
 
@@ -19,7 +19,7 @@ private:    // types
   class Node {
   public:
     Node *next;
-    OldSmbaseString key, value;
+    string key, value;
 
   public:
     Node(char const *k, char const *v, Node *n = NULL)
@@ -45,8 +45,8 @@ public:     // types
     Iter& next() { xassert(current); current = current->next; return *this; }
       // 'next' returns a value primarily to allow use in for-loop comma exprs
 
-    OldSmbaseString& key() const { return current->key; }
-    OldSmbaseString& value() const { return current->value; }
+    string& key() const { return current->key; }
+    string& value() const { return current->value; }
   };
   friend class Iter;
 
@@ -63,8 +63,8 @@ public:     // types
     using Iter::next;
 
     // others must be const-ified
-    OldSmbaseString const &key() const { return Iter::key(); }
-    OldSmbaseString const &value() const { return Iter::value(); }
+    string const &key() const { return Iter::key(); }
+    string const &value() const { return Iter::value(); }
   };
 
 private:    // data
@@ -101,11 +101,11 @@ public:
   bool isNotEmpty() const
     { return !isEmpty(); }
 
-  bool query(char const *key, OldSmbaseString &value) const;
+  bool query(char const *key, string &value) const;
     // if 'key' is mapped to a value, put it into 'value' and return true;
     // otherwise, return false
 
-  OldSmbaseString queryf(char const *key) const;
+  string queryf(char const *key) const;
     // return the value corresponding to 'key', or throw an exception of it's
     // not mapped
 
@@ -143,7 +143,7 @@ public:
 
   // ------------ misc --------------
   INSERT_OSTREAM(StringDict)
-  OldSmbaseString toString() const;
+  string toString() const;
 };
 
 #endif // SMBASE_STRDICT_H

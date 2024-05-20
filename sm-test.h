@@ -8,7 +8,7 @@
 #include "exc.h"           // xBase
 #include "nonport.h"       // getMilliseconds
 #include "sm-iostream.h"   // cout
-#include "str.h"           // stringb, OldSmbaseString
+#include "str.h"           // stringb, string
 
 #include <iomanip>         // std::hex, std::dec
 
@@ -115,7 +115,7 @@ void expectEq(char const *label, T const &actual, T const &expect)
     cout << "mismatched " << label << ':' << endl;
     cout << "  actual: " << actual << endl;
     cout << "  expect: " << expect << endl;
-    xfailure(stringb("mismatched " << label));
+    xfailure(stringbc("mismatched " << label));
   }
 }
 
@@ -124,9 +124,9 @@ void expectEq(char const *label, T const &actual, T const &expect)
 
 
 // Special case for 'expect' being a string literal.
-inline void expectEq(char const *label, OldSmbaseString const &actual, char const *expect)
+inline void expectEq(char const *label, string const &actual, char const *expect)
 {
-  expectEq(label, actual, OldSmbaseString(expect));
+  expectEq(label, actual, string(expect));
 }
 
 

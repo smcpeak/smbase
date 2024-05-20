@@ -5,7 +5,7 @@
 #define SMBASE_BITARRAY_H
 
 #include "xassert.h"      // xassert
-#include "str.h"          // OldSmbaseString
+#include "str.h"          // string
 
 class Flatten;            // flatten.h
 
@@ -125,7 +125,7 @@ public:     // types
 
 
 BitArray stringToBitArray(char const *src);
-OldSmbaseString toString(BitArray const &b);
+string toString(BitArray const &b);
 
 
 #endif // SMBASE_BITARRAY_H

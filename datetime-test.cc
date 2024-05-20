@@ -30,8 +30,8 @@ static void testFromUnixTime()
 
     DateTimeSeconds d;
     d.fromUnixTime(utInput, 0 /*tzOffset*/);
-    OldSmbaseString expect = stringb(unixTimeTestcases[i].iso << " +00:00");
-    OldSmbaseString actual = d.toString();
+    string expect = stringb(unixTimeTestcases[i].iso << " +00:00");
+    string actual = d.toString();
     if (!( actual == expect )) {
       PVAL(utInput);
       PVAL(expect);

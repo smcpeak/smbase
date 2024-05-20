@@ -11,17 +11,17 @@
 // smbase
 #include "sm-macros.h"                 // NO_OBJECT_COPIES
 #include "sm-swap.h"                   // swap
-#include "str.h"                       // OldSmbaseString
+#include "str.h"                       // string
 #include "xassert.h"                   // xassert
 
 // libc++
+#include <algorithm>                   // std::sort
 #include <iterator>                    // std::random_access_iterator_tag
 #include <utility>                     // std::swap
 #include <vector>                      // std::vector
 
 // libc
 #include <stddef.h>                    // size_t, ptrdiff_t
-#include <stdlib.h>                    // qsort
 
 
 // -------------------- Array ----------------------
@@ -354,8 +354,16 @@ public:      // funcs
   }
 
   void sort(int (*compare)(T const *t1, T const *t2)) {
-    qsort(GrowArray<T>::getArrayNC(), len, sizeof(T),
-          (int (*)(void const*, void const*))compare );
+    T *start = GrowArray<T>::getArrayNC();
+    std::sort(start, start+len,
+              [=](T const &a, T const &b) {
+                return compare(&a, &b) < 0;
+              });
+
+    // This is unsafe since 'T' might not be bitwise copyable!  This
+    // specifically is an issue when it is or contains std::string.
+    //qsort(GrowArray<T>::getArrayNC(), len, sizeof(T),
+    //      (int (*)(void const*, void const*))compare );
   }
 
   // Move the item at 'oldIndex' so it occupies 'newIndex' instead,
@@ -446,15 +454,15 @@ bool operator!= (ArrayStack<T> const &a1, ArrayStack<T> const &a2)
 }
 
 
-inline OldSmbaseString toString(ArrayStack<char> const &arr)
+inline string toString(ArrayStack<char> const &arr)
 {
-  return OldSmbaseString(arr.getArray(), arr.length());
+  return string(arr.getArray(), arr.length());
 }
 
 
-inline OldSmbaseString toString(ArrayStack<unsigned char> const &arr)
+inline string toString(ArrayStack<unsigned char> const &arr)
 {
-  return OldSmbaseString((char const *)arr.getArray(), arr.length());
+  return string((char const *)arr.getArray(), arr.length());
 }
 
 

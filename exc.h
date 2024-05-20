@@ -9,13 +9,14 @@
 // conventions for exception-related concepts.  The names near the
 // end of the file reflect my current preferences.
 
-#ifndef EXC_H
-#define EXC_H
+#ifndef SMBASE_EXC_H
+#define SMBASE_EXC_H
 
 #include "breaker.h"     // breaker
 #include "typ.h"         // bool
 #include "xassert.h"     // xassert, for convenience for #includers
-#include "str.h"         // OldSmbaseString
+#include "str.h"         // string
+#include "stringb.h"     // stringb
 #include "sm-iostream.h" // ostream
 
 
@@ -48,7 +49,7 @@
 class xBase {
 protected:
   // the human-readable description of the exception
-  OldSmbaseString msg;
+  string msg;
 
 public:
   // Initially false.  When true, we write a record of the thrown
@@ -125,7 +126,7 @@ void printUnhandled(xBase const &x);
   class SubclassName : public xBase {                                \
   public:                                                            \
     SubclassName(char const *p) : xBase(p) {}                        \
-    SubclassName(OldSmbaseString const &s) : xBase(s) {}             \
+    SubclassName(string const &s) : xBase(s) {}             \
     SubclassName(SubclassName const &obj) : xBase(obj) {}            \
   } /* user ; */
 
@@ -134,8 +135,8 @@ void printUnhandled(xBase const &x);
 // thrown by _xassert_fail, declared in xassert.h
 // throwing this corresponds to detecting a bug in the program
 class x_assert : public xBase {
-  OldSmbaseString condition; // text of the failed condition
-  OldSmbaseString filename;  // name of the source file
+  string condition; // text of the failed condition
+  string filename;  // name of the source file
   int lineno;                // line number
 
 public:
@@ -154,7 +155,7 @@ public:
 // in some input data; the program cannot process it, but it
 // is not a bug in the program
 class xFormat : public xBase {
-  OldSmbaseString condition; // what is wrong with the input
+  string condition; // what is wrong with the input
 
 public:
   xFormat(rostring cond);
@@ -213,8 +214,8 @@ public:
 };
 
 void throw_XFatal(rostring msg) NORETURN;
-#define xfatal(msg) throw_XFatal(stringc << msg)
+#define xfatal(msg) throw_XFatal(stringb(msg))
 
 
-#endif // EXC_H
+#endif // SMBASE_EXC_H
 

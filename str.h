@@ -1,59 +1,36 @@
 // str.h            see license.txt for copyright and terms of use
-// A string class.
-//
-// 2024-05-18: I renamed 'string' to 'OldSmbaseString'.  The transition
-// plan now, simply, is to replace occurrences of 'OldSmbaseString' with
-// 'std::string' incrementally.
-
-// 2005-03-01: See string.txt.  The plan is to evolve the class
-// towards compatibility with std::string, such that eventually
-// they will be interchangeable.  So far I have converted only
-// the most problematic constructs, those involving construction,
-// conversion, and internal pointers.
+// 2024-05-20: This is a compatibility header.  It declares 'string' as
+// an alias for 'std::string', and has some other stuff related to
+// legacy usage.  New code should avoid it.
 
 #ifndef SMBASE_STR_H
 #define SMBASE_STR_H
 
-#include "typ.h"         // bool
+#include "flatten-fwd.h" // Flatten
 #include "sm-iostream.h" // istream, ostream
+#include "stringb.h"     // stringb
+#include "typ.h"         // bool
+
+#include <string>        // std::string
+
 #include <stdarg.h>      // va_list
 #include <string.h>      // strcmp, etc.
 
-// I'm beginning the process of finally transitioning away from my
-// custom 'string' class.  But first I need some adapters, so I need
-// to see std::string here.
-#include <string>        // std::string
-
-class Flatten;           // flatten.h
-
-// certain unfortunate implementation decisions by some compilers
-// necessitate avoiding the name 'string'
-//
-// 9/19/04: I originally made this definition to work around a problem
-// with Borland C++ 4.5.  It causes a problem when using the new
-// standard library, since the name clashes with std::string.  A
-// simple solution is to remove the #definition and let namespaces do
-// their job.  Since Intel's headers are the only ones that provoke
-// the problem I'll confine it to that case for now.  Eventually I
-// will do the same for gcc.
-//
-// 2005-02-28: Let's try getting rid of this.
-//
-// 2005-03-15: There were some problems on Redhat due to flex-2.5.4a-29.
-//             I have solved them differently, but it is worth noting
-//             that re-enabling this #define also fixed the problem.
-#if 0   //!defined(__INTEL_COMPILER)
-  #define string mystring
-#endif
-
 
 // ------------------------- string ---------------------
+// 2024-05-19: Let's throw the switch and commit to std::string.
+using std::string;
+
+
 // This is used when I want to call a function in smbase::string
 // that does not exist or has different semantics in std::string.
 // That way for now I can keep using the function, but it is
 // marked as incompatible.
 enum SmbaseStringFunc { SMBASE_STRING_FUNC };
 
+// This class should only be used in the rare places I really need a
+// string with the old semantics.  The vast majority of code should use
+// 'string', which is now 'std::string'.
 class OldSmbaseString {
 public:
   typedef int size_type;
@@ -193,9 +170,22 @@ public:	       // funcs
     // fail an assertion if there is a problem
 };
 
+
+// -------------------------- compatibility ----------------------------
+// These functions correspond to methods of OldSmbaseString that do not
+// exist on std::string.
+
+// Equivalent of OldSmbaseString::xfer(Flatten&) for std::string.
+void stringXfer(Flatten &flat, std::string &str);
+
+// Equivalent of OldSmbaseString::equals() for std::string.
+bool stringEquals(std::string const &a, char const *b);
+bool stringEquals(std::string const &a, std::string const &b);
+
+
 // ------------------------ rostring ----------------------
 // My plan is to use this in places I currently use 'char const *'.
-typedef OldSmbaseString const &rostring;
+typedef string const &rostring;
 
 // I have the modest hope that the transition to 'rostring' might be
 // reversible, so this function converts to 'char const *' but with a
@@ -213,7 +203,8 @@ inline size_t strlen(rostring s) { return s.length(); }
 // Overload strlen for unsigned char* to avoid annoying casts.
 inline size_t strlen(unsigned char const *s) { return strlen((char const*)s); }
 
-inline istream &getline(istream &in, OldSmbaseString &line) { line.readline(in); return in; }
+// This appears to be unused.
+//inline istream &getline(istream &in, OldSmbaseString &line) { line.readline(in); return in; }
 
 int strcmp(rostring s1, rostring s2);
 int strcmp(rostring s1, char const *s2);
@@ -230,19 +221,23 @@ inline bool streq(char const *s1, char const *s2) {return strcmp(s1, s2) == 0;}
 
 char const *strstr(rostring haystack, char const *needle);
 
-// there is no wrapper for 'strchr'; use OldSmbaseString::contains
+// There is no wrapper for 'strchr'; use the 'contains' function
+// declared in string-utils.h.
 
 int atoi(rostring s);
 
 // construct a string out of characters from 'p' up to 'p+n-1',
 // inclusive; resulting string length is 'n'
-OldSmbaseString substring(char const *p, int n);
-inline OldSmbaseString substring(rostring p, int n)
+string substring(char const *p, int n);
+inline string substring(rostring p, int n)
   { return substring(p.c_str(), n); }
 
 
 // --------------------- stringBuilder --------------------
-// this class is specifically for appending lots of things
+// This class is specifically for appending lots of things.
+//
+// It is one of the few classes that really needs 'OldSmbaseString' to
+// work.  New code should use 'std::ostringstream', not this class.
 class stringBuilder : public OldSmbaseString {
 protected:
   enum { EXTRA_SPACE = 30 };    // extra space allocated in some situations
@@ -270,12 +265,17 @@ public:
   int length() const { return end-s; }
   bool isempty() const { return length()==0; }
 
+  // This is a problem when I construct a string from a stringBuilder.
+  // That's not too common, but neither is using this (somewhat
+  // dangerous) method, so I'll try disabling it.
+#if 0
   // unlike 'OldSmbaseString' above, I will allow stringBuilder to convert to
   // char const * so I can continue to use 'stringc' to build strings
   // for functions that accept char const *; this should not conflict
   // with std::string, since I am explicitly using a different class
   // (namely stringBuilder) when I use this functionality
   operator char const * () const { return c_str(); }
+#endif
 
   stringBuilder& setlength(int newlen);    // change length, forget current data
 
@@ -330,9 +330,6 @@ public:
     stringBuilder& operator << (bool b) { return operator<<((long)b); }
   #endif // LACKS_BOOL
 
-  stringBuilder& operator << (std::string const &text)
-    { return operator+=(text.c_str()); }
-
   // useful in places where long << expressions make it hard to
   // know when arguments will be evaluated, but order does matter
   typedef stringBuilder& (*Manipulator)(stringBuilder &sb);
@@ -368,6 +365,8 @@ public:
 
 
 // ---------------------- misc utils ------------------------
+// 'stringb' and 'stringbc' are now defined in stringb.h.
+#if 0
 // the real strength of this entire module: construct strings in-place
 // using the same syntax as C++ iostreams.  e.g.:
 //   puts(stringb("x=" << x << ", y=" << y));
@@ -375,27 +374,32 @@ public:
 
 // explicit c_str() is annoying
 #define stringbc(expr) (stringb(expr).c_str())
+#endif // 0
 
+// The 'stringc' interface is not workable with ostringstream, so
+// remove it entirely.  'stringb' should be used instead.
+#if 0
 // experimenting with dropping the () in favor of <<
 // (the "c" can be interpreted as "constructor", or maybe just
 // the successor to "b" above)
 #define stringc (stringBuilder().myself())
+#endif // 0
 
 
 // experimenting with using toString as a general method for datatypes
-OldSmbaseString toString(int i);
-OldSmbaseString toString(unsigned i);
-OldSmbaseString toString(char c);
-OldSmbaseString toString(long i);
-OldSmbaseString toString(char const *str);
-OldSmbaseString toString(float f);
+string toString(int i);
+string toString(unsigned i);
+string toString(char c);
+string toString(long i);
+string toString(char const *str);
+string toString(float f);
 
 
 // printf-like construction of a string; often very convenient, since
 // you can use any of the formatting characters (like %X) that your
 // libc's sprintf knows about
-OldSmbaseString stringf(char const *format, ...);
-OldSmbaseString vstringf(char const *format, va_list args);
+string stringf(char const *format, ...);
+string vstringf(char const *format, va_list args);
 
 
 #endif // SMBASE_STR_H

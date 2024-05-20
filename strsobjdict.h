@@ -19,7 +19,7 @@ template <class T>
 class StringSObjDict {
 public:     // types
   // 'foreach' iterator functions
-  typedef bool (*ForeachFn)(OldSmbaseString const &key, T * value, void *extra);
+  typedef bool (*ForeachFn)(string const &key, T * value, void *extra);
 
   // external iterator
   class Iter {
@@ -34,7 +34,7 @@ public:     // types
     bool isDone() const { return iter.isDone(); }
     Iter& next() { iter.next(); return *this; }
 
-    OldSmbaseString const &key() const { return iter.key(); }
+    string key() const { return iter.key(); }
     T * &value() const { return (T * &)iter.value(); }
 
     int private_getCurrent() const { return iter.private_getCurrent(); }
@@ -53,7 +53,7 @@ public:     // types
     bool isDone() const { return iter.isDone(); }
     IterC& next() { iter.next(); return *this; }
 
-    OldSmbaseString const &key() const { return iter.key(); }
+    string key() const { return iter.key(); }
     T * value() const { return (T *)iter.value(); }
 
     int private_getCurrent() const { return iter.private_getCurrent(); }
@@ -89,6 +89,9 @@ public:     // types
       // delegate to the other Iter class
       for(IterC iter(map); !iter.isDone(); iter.next()) {
 //          xassert(i<numEntries);
+        xfailure("is this called?");
+
+        // BUG: This is obviously wrong.  WTH?
         sortedKeys[i++] = iter.key().c_str();
       }
       xassert(numEntries == i);

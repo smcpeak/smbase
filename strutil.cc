@@ -7,7 +7,9 @@
 #include "array.h"                     // Array
 #include "autofile.h"                  // AutoFILE
 #include "codepoint.h"                 // isPrintableASCII, isShellMetacharacter
+#include "compare-util.h"              // compare
 #include "exc.h"                       // xformat
+#include "nonport.h"                   // vnprintf
 
 // libc
 #include <ctype.h>                     // isspace
@@ -15,10 +17,11 @@
 #include <stdlib.h>                    // strtoul, qsort
 #include <string.h>                    // strstr, memcmp
 #include <time.h>                      // time, asctime, localtime
+#include <unistd.h>                    // write
 
 
 // replace all instances of oldstr in src with newstr, return result
-OldSmbaseString replace(rostring origSrc, rostring oldstr, rostring newstr)
+string replace(rostring origSrc, rostring oldstr, rostring newstr)
 {
   stringBuilder ret;
   char const *src = toCStr(origSrc);
@@ -40,11 +43,11 @@ OldSmbaseString replace(rostring origSrc, rostring oldstr, rostring newstr)
     src += (next-src) + strlen(oldstr);
   }
 
-  return ret;
+  return ret.str();
 }
 
 
-OldSmbaseString expandRanges(char const *chars_)
+string expandRanges(char const *chars_)
 {
   stringBuilder ret;
 
@@ -74,19 +77,19 @@ OldSmbaseString expandRanges(char const *chars_)
     }
   }
 
-  return ret;
+  return ret.str();
 }
 
 
-OldSmbaseString translate(rostring origSrc, rostring srcchars, rostring destchars)
+string translate(rostring origSrc, rostring srcchars, rostring destchars)
 {
   // first, expand range notation in the specification sequences
-  OldSmbaseString srcSpec = expandRanges(toCStr(srcchars));
-  OldSmbaseString destSpec = expandRanges(toCStr(destchars));
+  string srcSpec = expandRanges(toCStr(srcchars));
+  string destSpec = expandRanges(toCStr(destchars));
 
   // build a translation map
   char map[256];
-  OldSmbaseString::size_type i;
+  string::size_type i;
   for (i=0; i<256; i++) {
     map[i] = i;
   }
@@ -107,22 +110,22 @@ OldSmbaseString translate(rostring origSrc, rostring srcchars, rostring destchar
   }
   *dest = 0;    // final nul terminator
 
-  return OldSmbaseString(ret.ptrC());
+  return string(ret.ptrC());
 }
 
 
-OldSmbaseString stringToupper(rostring src)
+string stringToupper(rostring src)
 {
   return translate(src, "a-z", "A-Z");
 }
 
-OldSmbaseString stringTolower(rostring src)
+string stringTolower(rostring src)
 {
   return translate(src, "A-Z", "a-z");
 }
 
 
-OldSmbaseString trimWhitespace(rostring origStr)
+string trimWhitespace(rostring origStr)
 {
   char const *str = toCStr(origStr);
 
@@ -143,7 +146,7 @@ OldSmbaseString trimWhitespace(rostring origStr)
 }
 
 
-OldSmbaseString firstAlphanumToken(rostring origStr)
+string firstAlphanumToken(rostring origStr)
 {
   char const *str = toCStr(origStr);
 
@@ -183,7 +186,7 @@ static struct Escape {
 };
 
 
-OldSmbaseString encodeWithEscapes(char const *p, int len)
+string encodeWithEscapes(char const *p, int len)
 {
   stringBuilder sb;
 
@@ -212,21 +215,19 @@ OldSmbaseString encodeWithEscapes(char const *p, int len)
     sb << tmp;
   }
 
-  return sb;
+  return sb.str();
 }
 
 
-OldSmbaseString encodeWithEscapes(rostring p)
+string encodeWithEscapes(rostring p)
 {
   return encodeWithEscapes(toCStr(p), strlen(p));
 }
 
 
-OldSmbaseString quoted(rostring src)
+string quoted(rostring src)
 {
-  return stringc << "\""
-                 << encodeWithEscapes(src)
-                 << "\"";
+  return stringb("\"" << encodeWithEscapes(src) << "\"");
 }
 
 
@@ -240,7 +241,7 @@ void decodeEscapes(ArrayStack<char> &dest, rostring origSrc,
       xformat("unescaped newline (unterminated string)");
     }
     if (*src == delim) {
-      xformat(stringc << "unescaped delimiter (" << delim << ")");
+      xformat(stringb("unescaped delimiter (" << delim << ")"));
     }
 
     if (*src != '\\') {
@@ -324,15 +325,15 @@ void decodeEscapes(ArrayStack<char> &dest, rostring origSrc,
 }
 
 
-OldSmbaseString parseQuotedString(rostring text)
+string parseQuotedString(rostring text)
 {
   if (!( text[0] == '"' &&
          text[strlen(text)-1] == '"' )) {
-    xformat(stringc << "quoted string is missing quotes: " << text);
+    xformat(stringb("quoted string is missing quotes: " << text));
   }
 
   // strip the quotes
-  OldSmbaseString noQuotes = substring(toCStr(text)+1, strlen(text)-2);
+  string noQuotes = substring(toCStr(text)+1, strlen(text)-2);
 
   // decode escapes
   ArrayStack<char> buf;
@@ -342,11 +343,11 @@ OldSmbaseString parseQuotedString(rostring text)
   // return string contents up to first NUL, which isn't necessarily
   // the same as the one just pushed; by invoking this function, the
   // caller is accepting responsibility for this condition
-  return OldSmbaseString(buf.getArray());
+  return string(buf.getArray());
 }
 
 
-OldSmbaseString quoteCharacter(int c)
+string quoteCharacter(int c)
 {
   if (isASCIIPrintable(c)) {
     if (c == '\'') {
@@ -375,7 +376,7 @@ OldSmbaseString quoteCharacter(int c)
 }
 
 
-static bool hasShellMetaOrNonprint(OldSmbaseString const &s)
+static bool hasShellMetaOrNonprint(string const &s)
 {
   int len = s.length();
   for (int i=0; i<len; i++) {
@@ -392,7 +393,7 @@ static bool hasShellMetaOrNonprint(OldSmbaseString const &s)
 
 // Reference on shell double-quote syntax in the POSIX shell:
 // http://pubs.opengroup.org/onlinepubs/009695399/utilities/xcu_chap02.html#tag_02_02_03
-OldSmbaseString shellDoubleQuote(OldSmbaseString const &s)
+string shellDoubleQuote(string const &s)
 {
   if (s.empty() || hasShellMetaOrNonprint(s)) {
     stringBuilder sb;
@@ -418,7 +419,7 @@ OldSmbaseString shellDoubleQuote(OldSmbaseString const &s)
     }
 
     sb << '"';
-    return sb;
+    return sb.str();
   }
   else {
     return s;
@@ -426,7 +427,7 @@ OldSmbaseString shellDoubleQuote(OldSmbaseString const &s)
 }
 
 
-OldSmbaseString sm_basename(rostring origSrc)
+string sm_basename(rostring origSrc)
 {
   char const *src = toCStr(origSrc);
 
@@ -438,21 +439,21 @@ OldSmbaseString sm_basename(rostring origSrc)
   }
 
   if (sl) {
-    return OldSmbaseString(sl+1);     // everything after the slash
+    return string(sl+1);     // everything after the slash
   }
   else {
-    return OldSmbaseString(src);      // entire string if no slashes
+    return string(src);      // entire string if no slashes
   }
 }
 
-OldSmbaseString dirname(rostring origSrc)
+string dirname(rostring origSrc)
 {
   char const *src = toCStr(origSrc);
 
   char const *sl = strrchr(src, '/');   // locate last slash
   if (sl == src) {
     // last slash is leading slash
-    return OldSmbaseString("/");
+    return string("/");
   }
 
   if (sl && sl[1] == 0) {
@@ -465,37 +466,37 @@ OldSmbaseString dirname(rostring origSrc)
     return substring(src, sl-src);     // everything before slash
   }
   else {
-    return OldSmbaseString(".");
+    return string(".");
   }
 }
 
 
 // I will expand this definition to use more knowledge about English
 // irregularities as I need it
-OldSmbaseString plural(int n, rostring prefix)
+string plural(int n, rostring prefix)
 {
   if (n==1) {
     return prefix;
   }
 
   if (0==strcmp(prefix, "was")) {
-    return OldSmbaseString("were");
+    return string("were");
   }
   if (prefix[strlen(prefix)-1] == 'y') {
-    return stringc << substring(prefix, strlen(prefix)-1) << "ies";
+    return stringb(substring(prefix, prefix.length()-1) << "ies");
   }
   else {
-    return stringc << prefix << "s";
+    return stringb(prefix << "s");
   }
 }
 
-OldSmbaseString pluraln(int n, rostring prefix)
+string pluraln(int n, rostring prefix)
 {
-  return stringc << n << " " << plural(n, prefix);
+  return stringb(n << " " << plural(n, prefix));
 }
 
 
-OldSmbaseString a_or_an(rostring noun)
+string a_or_an(rostring noun)
 {
   bool use_an = false;
 
@@ -509,10 +510,10 @@ OldSmbaseString a_or_an(rostring noun)
   }
 
   if (use_an) {
-    return stringc << "an " << noun;
+    return stringb("an " << noun);
   }
   else {
-    return stringc << "a " << noun;
+    return stringb("a " << noun);
   }
 }
 
@@ -548,12 +549,12 @@ bool suffixEquals(rostring str, rostring suffix)
 }
 
 
-bool hasSubstring(OldSmbaseString const &haystack, OldSmbaseString const &needle)
+bool hasSubstring(string const &haystack, string const &needle)
 {
   return indexOfSubstring(haystack, needle) >= 0;
 }
 
-int indexOfSubstring(OldSmbaseString const &haystack, OldSmbaseString const &needle)
+int indexOfSubstring(string const &haystack, string const &needle)
 {
   char const *h = haystack.c_str();
   char const *occ = strstr(h, needle.c_str());
@@ -576,7 +577,7 @@ void writeStringToFile(rostring str, rostring fname)
 }
 
 
-OldSmbaseString readStringFromFile(rostring fname)
+string readStringFromFile(rostring fname)
 {
   AutoFILE fp(toCStr(fname), "r");
 
@@ -595,16 +596,16 @@ OldSmbaseString readStringFromFile(rostring fname)
     sb.append(buf, len);
   }
 
-  return sb;
+  return sb.str();
 }
 
 
-void readLinesFromFile(ArrayStack<OldSmbaseString> /*INOUT*/ &dest,
+void readLinesFromFile(ArrayStack<string> /*INOUT*/ &dest,
                        rostring fname,
                        bool doChomp)
 {
   AutoFILE fp(toCStr(fname), "r");
-  OldSmbaseString line;
+  string line;
   while (readLine(line, fp)) {
     if (doChomp) {
       line = chomp(line);
@@ -614,7 +615,7 @@ void readLinesFromFile(ArrayStack<OldSmbaseString> /*INOUT*/ &dest,
 }
 
 
-bool readLine(OldSmbaseString &dest, FILE *fp)
+bool readLine(string &dest, FILE *fp)
 {
   char buf[80];
 
@@ -640,12 +641,12 @@ bool readLine(OldSmbaseString &dest, FILE *fp)
     sb << buf;
   }
 
-  dest = sb;
+  dest = sb.str();
   return true;
 }
 
 
-OldSmbaseString chomp(rostring src)
+string chomp(rostring src)
 {
   if (!src.empty() && src[strlen(src)-1] == '\n') {
     return substring(src, strlen(src)-1);
@@ -678,9 +679,9 @@ void qsortStringArray(char const **strings, int size) {
 }
 
 
-int compareStringPtrs(OldSmbaseString const *a, OldSmbaseString const *b)
+int compareStringPtrs(string const *a, string const *b)
 {
-  return a->compareTo(*b);
+  return compare(*a, *b);
 }
 
 

@@ -5,7 +5,7 @@
 #define PARSESTRING_H
 
 #include "exc.h"                       // xFormat
-#include "str.h"                       // OldSmbaseString
+#include "str.h"                       // string
 
 
 // Thrown by ParseString when the string being parsed deviates from the
@@ -13,17 +13,17 @@
 class XParseString : public xFormat {
 public:      // data
   // String we were trying to parse.
-  OldSmbaseString m_str;
+  string m_str;
 
   // Byte offset within that string where the error happened.
   int m_offset;
 
   // Description of how the string at that location differed from the
   // expectations of the parser.
-  OldSmbaseString m_conflict;
+  string m_conflict;
 
 public:      // funcs
-  XParseString(OldSmbaseString const &str, int offset, OldSmbaseString const &conflict);
+  XParseString(string const &str, int offset, string const &conflict);
   XParseString(XParseString const &obj);
   ~XParseString();
 };
@@ -35,7 +35,7 @@ public:      // funcs
 class ParseString {
 private:     // data
   // String we are parsing.
-  OldSmbaseString m_str;
+  string m_str;
 
   // Length of the string.
   int m_len;
@@ -45,11 +45,11 @@ private:     // data
 
 public:      // funcs
   // This makes its own copy of the string.
-  explicit ParseString(OldSmbaseString const &str);
+  explicit ParseString(string const &str);
   ~ParseString();
 
   // Throw XParseString for the current offset.
-  void throwErr(OldSmbaseString const &conflict);
+  void throwErr(string const &conflict);
 
   // True if we are at (or beyond) the end of the string.
   bool eos() const { return m_cur >= m_len; }
@@ -58,7 +58,7 @@ public:      // funcs
   int cur() const;
 
   // Character at m_cur, quoted.
-  OldSmbaseString quoteCur() const;
+  string quoteCur() const;
 
   // Move to the next character.  Requires '!eos()'.
   void adv();
@@ -86,17 +86,17 @@ public:      // funcs
   // Parse the next sequence of characters as a single C token.
   //
   // This currently only handles literals and identifiers.
-  OldSmbaseString parseCToken();
+  string parseCToken();
 
   // Parse a C delimited literal, i.e., string or character, delimited
   // by 'c'.
-  OldSmbaseString parseCDelimLiteral(int c);
+  string parseCDelimLiteral(int c);
 
   // Parse a C number literal.  Currently only handles integers.
-  OldSmbaseString parseCNumberLiteral();
+  string parseCNumberLiteral();
 
   // Parse a C identifier.
-  OldSmbaseString parseCIdentifier();
+  string parseCIdentifier();
 };
 
 

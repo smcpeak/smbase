@@ -34,7 +34,7 @@ public:
 
   // text to begin every line with; not counted towards column
   // counts; defaults to ""
-  OldSmbaseString lineStartText;
+  string lineStartText;
 
 public:
   BPRender();
@@ -55,8 +55,8 @@ public:
 
   // take the string out of the rendering engine, replacing it
   // with the empty string
-  OldSmbaseString takeString() {
-    OldSmbaseString ret(sb);
+  string takeString() {
+    string ret(sb.str());
     reset();
     return ret;
   }
@@ -67,7 +67,7 @@ public:
 
   // take the tree out of a boxprint builder, convert it to a string,
   // and delete the tree
-  OldSmbaseString takeAndRender(BoxPrint &bld);
+  string takeAndRender(BoxPrint &bld);
 };
 
 
@@ -104,7 +104,7 @@ public:
 // leaf in the tree: text to print
 class BPText : public BPElement {
 public:
-  OldSmbaseString text;
+  string text;
 
 public:
   BPText(rostring t);

@@ -1,10 +1,12 @@
 // point.h            see license.txt for copyright and terms of use
 // Point, a pair of numbers.
 
-#ifndef __POINT_H
-#define __POINT_H
+#ifndef SMBASE_POINT_H
+#define SMBASE_POINT_H
 
-#include "typ.h"          // bool, min, max
+#include "typ.h"             // bool, min, max
+
+#include <iosfwd>            // std::ostream
 
 // point defined over arbitrary underlying types
 template <class num>
@@ -92,6 +94,9 @@ class stringBuilder;
 stringBuilder& operator<< (stringBuilder &sb, point const &pt);
 stringBuilder& operator<< (stringBuilder &sb, fpoint const &pt);
 
+std::ostream& operator<< (std::ostream &sb, point const &pt);
+std::ostream& operator<< (std::ostream &sb, fpoint const &pt);
+
 
 // iterate: 0,0    1,0    2,0    ... x-1,0    and then
 //          0,1    1,1    2,1    ... x-1,1    and then
@@ -106,5 +111,4 @@ stringBuilder& operator<< (stringBuilder &sb, fpoint const &pt);
     for(point var(0,0); var.y < (size).y; ++var.x == (size).x && (var.x=0,var.y++))
 
 
-#endif // ___POINT_H
-
+#endif // SMBASE_POINT_H

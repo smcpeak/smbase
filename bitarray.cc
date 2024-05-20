@@ -153,7 +153,7 @@ BitArray stringToBitArray(char const *src)
   return ret;
 }
 
-OldSmbaseString toString(BitArray const &b)
+string toString(BitArray const &b)
 {
   int len = b.length();
   stringBuilder ret(len);

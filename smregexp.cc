@@ -2,7 +2,7 @@
 // code for smregexp.h
 
 #include "smregexp.h"     // this module
-#include "str.h"          // OldSmbaseString
+#include "str.h"          // string
 #include "exc.h"          // xbase
 #include "array.h"        // Array
 
@@ -33,7 +33,7 @@ bool smregexpModuleWorks()
 
 
 // get an error string
-static OldSmbaseString regexpErrorString(regex_t const *pat, int code)
+static string regexpErrorString(regex_t const *pat, int code)
 {
   // find out how long the error string is; this size
   // includes the final NUL byte
@@ -44,7 +44,7 @@ static OldSmbaseString regexpErrorString(regex_t const *pat, int code)
   regerror(code, pat, buf.ptr(), size);
   buf[size] = 0;     // paranoia
 
-  return OldSmbaseString(buf.ptrC());
+  return string(buf.ptrC());
 }
 
 // throw an exception
@@ -82,7 +82,7 @@ Regexp::Regexp(rostring exp, CFlags flags)
   int code = regcomp(PAT, toCStr(exp), f);
   if (code) {
     // deallocate the pattern buffer before throwing the exception
-    OldSmbaseString msg = regexpErrorString(PAT, code);
+    string msg = regexpErrorString(PAT, code);
     delete PAT;
     xbase(msg);
   }

@@ -173,13 +173,13 @@ bool DataBlock::dataEqual(DataBlock const &obj) const
 }
 
 
-OldSmbaseString DataBlock::toString() const
+string DataBlock::toString() const
 {
-  // My 'OldSmbaseString' class uses 'int' for its length.  That should be fixed,
+  // My 'string' class uses 'int' for its length.  That should be fixed,
   // but until then, I'll verify the conversion is safe.
   xassert(getDataLen() <= INT_MAX);
 
-  return OldSmbaseString((char*)getDataC(), getDataLen());
+  return string((char*)getDataC(), getDataLen());
 }
 
 

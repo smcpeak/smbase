@@ -6,6 +6,7 @@
 #include "autofile.h"                  // AutoFILE
 #include "exc.h"                       // xbase
 #include "strtokp.h"                   // StrtokParse
+#include "strutil.h"                   // substring
 #include "trace.h"                     // traceProgress
 
 #include <stdlib.h>                    // rand, exit, system, getenv
@@ -159,9 +160,9 @@ void expect(SourceLoc loc, char const *expFname, int expLine, int expCol)
 
 
 // should this be exported?
-OldSmbaseString locString(char const *fname, int line, int col)
+string locString(char const *fname, int line, int col)
 {
-  return stringc << fname << ":" << line << ":" << col;
+  return stringb(fname << ":" << line << ":" << col);
 }
 
 
@@ -196,7 +197,7 @@ void buildHashMap(SourceLocManager::File *pp, char const *fname, int &expanderLi
 
     int origLine = atoi(tok[1]);
     char const *tok2 = tok[2];
-    OldSmbaseString origFname = substring(tok2+1, strlen(tok2)-2);  // remove quotes
+    string origFname = substring(tok2+1, strlen(tok2)-2);  // remove quotes
     pp->addHashLine(ppLine, origLine, origFname.c_str());
   }
   pp->doneAdding();

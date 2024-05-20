@@ -103,7 +103,7 @@ int StringDict::size() const
 }
 
 
-bool StringDict::query(char const *key, OldSmbaseString &value) const
+bool StringDict::query(char const *key, string &value) const
 {
   FOREACH_ITERC(*this, entry) {
     if (0==strcmp(entry.key(), key)) {
@@ -116,9 +116,9 @@ bool StringDict::query(char const *key, OldSmbaseString &value) const
 }
 
 
-OldSmbaseString StringDict::queryf(char const *key) const
+string StringDict::queryf(char const *key) const
 {
-  OldSmbaseString ret;
+  string ret;
   bool ok = query(key, ret);
   xassert(ok);
   return ret;
@@ -127,7 +127,7 @@ OldSmbaseString StringDict::queryf(char const *key) const
 
 bool StringDict::isMapped(char const *key) const
 {
-  OldSmbaseString dummy;
+  string dummy;
   return query(key, dummy);
 }
 
@@ -326,7 +326,7 @@ void StringDict::insertOstream(ostream &os) const
 }
 
 
-OldSmbaseString StringDict::toString() const
+string StringDict::toString() const
 {
   stringBuilder sb;
   sb << "{";

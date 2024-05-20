@@ -104,7 +104,7 @@ public:       // funcs
 
   // Return a string containing 'dataLen' characters, some of which
   // might be NUL.
-  OldSmbaseString toString() const;
+  string toString() const;
 
   // ---- mutators ----
   unsigned char *getData() { return data; }

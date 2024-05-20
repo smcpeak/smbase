@@ -30,7 +30,7 @@ bool filesIdentical(const char *f1, const char *f2)
 
   ifstream i2(f2);
   if (!i2) {
-    xfatal(stringc << "I thought I just wrote " << f2 << ", but it doesn't exist");
+    xfatal(stringb("I thought I just wrote " << f2 << ", but it doesn't exist"));
     return false;
   }
 
@@ -60,7 +60,7 @@ bool filesIdentical(const char *f1, const char *f2)
   }
 }
 
-const char *ofstreamTS::init_fname(OldSmbaseString const &destFname0)
+const char *ofstreamTS::init_fname(string const &destFname0)
 {
   destFname = destFname0;
   tmpFname = destFname0 + ".tmp";

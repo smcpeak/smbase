@@ -21,7 +21,7 @@ static void checkFNObject(SMFileName const &fn, SMFileName::Syntax syntax)
 {
   // Round trip through string should produce an equal object.
   {
-    OldSmbaseString path = fn.toString(syntax);
+    string path = fn.toString(syntax);
     SMFileName fn2(path, syntax);
     xassert(fn == fn2);
   }
@@ -29,7 +29,7 @@ static void checkFNObject(SMFileName const &fn, SMFileName::Syntax syntax)
   // Make variants with different components to test operator==.
   xassert(fn.withFileSystem(stringb(fn.getFileSystem() << 'x')) != fn);
   xassert(fn.withIsAbsolute(!fn.isAbsolute()) != fn);
-  ArrayStack<OldSmbaseString> comps2;
+  ArrayStack<string> comps2;
   fn.getPathComponents(comps2);
   comps2.push("x");
   xassert(fn.withPathComponents(comps2) != fn);
@@ -45,7 +45,7 @@ static void checkFNObject(SMFileName const &fn, SMFileName::Syntax syntax)
 // Check that 'sfu' reports the same properties as 'fn' on 'input'.
 static void checkAgainstSFU(
   SMFileUtil &sfu,
-  OldSmbaseString const &input,
+  string const &input,
   SMFileName const &fn)
 {
   EXPECT_EQ(sfu.isAbsolutePath(input), fn.isAbsolute());
@@ -56,9 +56,9 @@ static void checkAgainstSFU(
 
 // Test file name parsing with S_POSIX.
 static void expectFNp(
-  OldSmbaseString const &input,
+  string const &input,
   bool expectIsAbsolute,
-  OldSmbaseString const &expectPathComponents,
+  string const &expectPathComponents,
   bool expectTrailingSlash)
 {
   SMFileName fn(input, SMFileName::S_POSIX);
@@ -78,10 +78,10 @@ static void expectFNp(
 
 // Test file name parsing with S_WINDOWS.
 static void expectFNw(
-  OldSmbaseString const &input,
-  OldSmbaseString const &expectFileSystem,
+  string const &input,
+  string const &expectFileSystem,
   bool expectIsAbsolute,
-  OldSmbaseString const &expectPathComponents,
+  string const &expectPathComponents,
   bool expectTrailingSlash)
 {
   SMFileName fn(input, SMFileName::S_WINDOWS);
@@ -101,10 +101,10 @@ static void expectFNw(
 
 // Test file name parsing with S_NATIVE.
 static void expectFNn(
-  OldSmbaseString const &input,
-  OldSmbaseString const &expectFileSystem,
+  string const &input,
+  string const &expectFileSystem,
   bool expectIsAbsolute,
-  OldSmbaseString const &expectPathComponents,
+  string const &expectPathComponents,
   bool expectTrailingSlash)
 {
   SMFileName fn(input);     // means S_NATIVE
@@ -123,9 +123,9 @@ static void expectFNn(
 
 // Test with both, expecting the same result.
 static void expectFNsame(
-  OldSmbaseString const &input,
+  string const &input,
   bool expectIsAbsolute,
-  OldSmbaseString const &expectPathComponents,
+  string const &expectPathComponents,
   bool expectTrailingSlash)
 {
   expectFNp(input, expectIsAbsolute, expectPathComponents, expectTrailingSlash);
@@ -135,13 +135,13 @@ static void expectFNsame(
 
 // Test with both, expecting different results.
 static void expectFNpw(
-  OldSmbaseString const &input,
+  string const &input,
   bool expectPosixIsAbsolute,
-  OldSmbaseString const &expectPosixPathComponents,
+  string const &expectPosixPathComponents,
   bool expectPosixTrailingSlash,
-  OldSmbaseString const &expectWindowsFileSystem,
+  string const &expectWindowsFileSystem,
   bool expectWindowsIsAbsolute,
-  OldSmbaseString const &expectWindowsPathComponents,
+  string const &expectWindowsPathComponents,
   bool expectWindowsTrailingSlash)
 {
   expectFNp(input, expectPosixIsAbsolute, expectPosixPathComponents,
@@ -289,7 +289,7 @@ static void testGetSortedDirectoryEntries()
   SMFileUtil sfu;
 
   ArrayStack<SMFileUtil::DirEntryInfo> entries1;
-  OldSmbaseString wd = sfu.currentDirectory();
+  string wd = sfu.currentDirectory();
   sfu.getSortedDirectoryEntries(entries1, wd);
   cout << wd << " has " << entries1.length() << " entries" << endl;
 
@@ -373,7 +373,7 @@ static void testGetDirectoryEntries()
 static void expectJoin(char const *a, char const *b, char const *expect)
 {
   SMFileUtil sfu;
-  EXPECT_EQ(sfu.joinFilename(a, b), OldSmbaseString(expect));
+  EXPECT_EQ(sfu.joinFilename(a, b), string(expect));
 }
 
 
@@ -401,7 +401,7 @@ static void testJoinFilename()
 static void expectJoinIRF(char const *a, char const *b, char const *expect)
 {
   SMFileUtil sfu;
-  EXPECT_EQ(sfu.joinIfRelativeFilename(a, b), OldSmbaseString(expect));
+  EXPECT_EQ(sfu.joinIfRelativeFilename(a, b), string(expect));
 }
 
 
@@ -429,7 +429,7 @@ static void testJoinIfRelativeFilename()
 static void expectRelExists(char const *fname, bool expect)
 {
   SMFileUtil sfu;
-  OldSmbaseString wd = sfu.currentDirectory();
+  string wd = sfu.currentDirectory();
   EXPECT_EQ(sfu.absolutePathExists(sfu.joinFilename(wd, fname)), expect);
 }
 
@@ -470,16 +470,16 @@ static void expectSplit(SMFileUtil &sfu,
   PVAL(inputPath);
 
   // Make sure 'splitPath' changes these.
-  OldSmbaseString actualDir = "---";
-  OldSmbaseString actualBase = "---";
+  string actualDir = "---";
+  string actualBase = "---";
 
   sfu.splitPath(actualDir, actualBase, inputPath);
 
-  EXPECT_EQ(actualDir, OldSmbaseString(expectDir));
-  EXPECT_EQ(actualBase, OldSmbaseString(expectBase));
+  EXPECT_EQ(actualDir, string(expectDir));
+  EXPECT_EQ(actualBase, string(expectBase));
 
-  EXPECT_EQ(sfu.splitPathDir(inputPath), OldSmbaseString(expectDir));
-  EXPECT_EQ(sfu.splitPathBase(inputPath), OldSmbaseString(expectBase));
+  EXPECT_EQ(sfu.splitPathDir(inputPath), string(expectDir));
+  EXPECT_EQ(sfu.splitPathBase(inputPath), string(expectBase));
 }
 
 
@@ -501,8 +501,8 @@ static void testSplitPath()
 
 static void expectEEWDS(SMFileUtil &sfu, char const *dir, char const *expect)
 {
-  OldSmbaseString actual = sfu.ensureEndsWithDirectorySeparator(dir);
-  EXPECT_EQ(actual, OldSmbaseString(expect));
+  string actual = sfu.ensureEndsWithDirectorySeparator(dir);
+  EXPECT_EQ(actual, string(expect));
 }
 
 static void testEnsureEndsWith()
@@ -534,8 +534,8 @@ static void testEnsureEndsWith()
 
 static void expectSTDS(SMFileUtil &sfu, char const *dir, char const *expect)
 {
-  OldSmbaseString actual = sfu.stripTrailingDirectorySeparator(dir);
-  EXPECT_EQ(actual, OldSmbaseString(expect));
+  string actual = sfu.stripTrailingDirectorySeparator(dir);
+  EXPECT_EQ(actual, string(expect));
 }
 
 static void testStripTrailing()
@@ -567,7 +567,7 @@ static void testStripTrailing()
 }
 
 
-static void expectDE(SMFileUtil &sfu, OldSmbaseString const &path, bool expect)
+static void expectDE(SMFileUtil &sfu, string const &path, bool expect)
 {
   PVAL(path);
   bool actual = sfu.directoryExists(path);
@@ -607,9 +607,9 @@ static void testIsReadOnly()
 }
 
 
-static void expectCD(SMFileUtil &sfu, OldSmbaseString const &input, OldSmbaseString const &expect)
+static void expectCD(SMFileUtil &sfu, string const &input, string const &expect)
 {
-  OldSmbaseString actual = sfu.collapseDots(input);
+  string actual = sfu.collapseDots(input);
   EXPECT_EQ(actual, expect);
 }
 
@@ -650,7 +650,7 @@ static void testCollapseDots()
 
 
 static void expectGFK(SMFileUtil &sfu,
-                      OldSmbaseString fname, SMFileUtil::FileKind expect)
+                      string fname, SMFileUtil::FileKind expect)
 {
   cout << "expectGFK: " << fname << endl;
   SMFileUtil::FileKind actual = sfu.getFileKind(fname);
@@ -682,9 +682,9 @@ static void testGetFileKind()
 
 static void testAtomicallyRenameFile()
 {
-  OldSmbaseString content("test content\n");
-  OldSmbaseString srcFname("tarf.src.tmp");
-  OldSmbaseString destFname("tarf.dest.tmp");
+  string content("test content\n");
+  string srcFname("tarf.src.tmp");
+  string destFname("tarf.dest.tmp");
 
   writeStringToFile(content, srcFname);
   writeStringToFile("other content\n", destFname);
@@ -694,7 +694,7 @@ static void testAtomicallyRenameFile()
   sfu.atomicallyRenameFile(srcFname, destFname);
 
   // Check that the new content arrived.
-  OldSmbaseString actual = readStringFromFile(destFname);
+  string actual = readStringFromFile(destFname);
   EXPECT_EQ(actual, content);
 
   // Clean up 'destFname'.
@@ -720,7 +720,7 @@ static void testAtomicallyRenameFile()
 // Run 'rm -rf path'.
 static void rm_rf(char const *path)
 {
-  RunProcess::check_run(std::vector<OldSmbaseString>{"rm", "-rf", path});
+  RunProcess::check_run(std::vector<string>{"rm", "-rf", path});
 }
 
 
@@ -748,7 +748,7 @@ static void testCreateDirectoryAndParents()
   rm_rf("tmpdir/a/b");
 
   // Make 'b' as a regular file.
-  RunProcess::check_run(std::vector<OldSmbaseString>{"touch", "tmpdir/a/b"});
+  RunProcess::check_run(std::vector<string>{"touch", "tmpdir/a/b"});
 
   // Now try to create.
   try {
@@ -773,7 +773,7 @@ static void testReadAndWriteFile()
   }
 
   SMFileUtil sfu;
-  OldSmbaseString fname = "test.dir/allbytes.bin";
+  string fname = "test.dir/allbytes.bin";
   sfu.writeFile(fname, bytes);
 
   std::vector<unsigned char> bytes2(sfu.readFile(fname));
@@ -786,7 +786,7 @@ static void testTouchFile()
 {
   SMFileUtil sfu;
 
-  OldSmbaseString fname = "test.dir/tmp";
+  string fname = "test.dir/tmp";
 
   // Make sure the file is initially absent.
   if (sfu.pathExists(fname)) {
@@ -829,7 +829,22 @@ static void testTouchFile()
 
 // Defined in sm-file-util.cc.
 void getDirectoryEntries_scanThenStat(SMFileUtil &sfu,
-  ArrayStack<SMFileUtil::DirEntryInfo> /*OUT*/ &entries, OldSmbaseString const &directory);
+  ArrayStack<SMFileUtil::DirEntryInfo> /*OUT*/ &entries, string const &directory);
+
+
+// Check that we can manipulate arrays of DirEntryInfo properly.  This
+// previously caused a crash due to a bug in ArrayStack::sort.
+static void testArrayOfDirEntry()
+{
+  for (int j=0; j < 10; ++j) {
+    ArrayStack<SMFileUtil::DirEntryInfo> entries;
+    for (int i=0; i < 1000; ++i) {
+      entries.push(SMFileUtil::DirEntryInfo(stringb(i), SMFileUtil::FK_REGULAR));
+    }
+
+    entries.sort(&SMFileUtil::DirEntryInfo::compare);
+  }
+}
 
 
 // Called from unit-tests.cc.
@@ -841,7 +856,7 @@ void test_sm_file_util()
     PVAL(scanDir);
     PVAL(useProbe);
 
-    OldSmbaseString directory(scanDir);
+    string directory(scanDir);
 
     SMFileUtil sfu;
     ArrayStack<SMFileUtil::DirEntryInfo> entries;
@@ -888,6 +903,7 @@ void test_sm_file_util()
   testAtomicallyRenameFile();
   testCreateDirectoryAndParents();
   testReadAndWriteFile();
+  testArrayOfDirEntry();
 
   // This test is annoyingly slow, so it is disabled by default.
   if (getenv("SM_FILE_UTIL_TEST_TOUCH")) {

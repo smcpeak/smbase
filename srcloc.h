@@ -36,9 +36,11 @@
 
 #include <limits.h>   // UCHAR_MAX
 
-#include "str.h"      // OldSmbaseString
+#include "str.h"      // string
 #include "objlist.h"  // ObjList
 #include "array.h"    // ArrayStack, ObjArrayStack
+
+#include <iostream>   // std::ostream
 
 class HashLineMap;    // hashline.h
 
@@ -111,7 +113,7 @@ public:      // types
   // rather than SLM reading contents off of the file system.
   class FileData {
   public:
-    OldSmbaseString name;
+    string name;
     int numChars;
     int numLines;
     ArrayStack<unsigned char> *lineLengths;
@@ -139,7 +141,7 @@ public:      // types
     // file name; we consider two files to be the same if and only
     // if their names are equal, i.e. there is no checking done to
     // see if their names happen to be aliases in the filesystem
-    OldSmbaseString name;
+    string name;
 
     // start offset in the SourceLoc space
     SourceLoc startLoc;
@@ -253,7 +255,7 @@ public:      // types
   // information stored, and incremental update is impossible
   class StaticLoc {
   public:
-    OldSmbaseString name;    // file name
+    string name;    // file name
     int offset;              // char offset
     int line, col;           // line,col
 
@@ -404,7 +406,7 @@ public:      // funcs
     { return getFile(fname); }
 
   // render as string in "file:line:col" format
-  OldSmbaseString getString(SourceLoc loc);
+  string getString(SourceLoc loc);
 
   // versions of the decode routine that either use or do not use the
   // hashline map (when available) depending on an explicit flag,
@@ -415,12 +417,12 @@ public:      // funcs
   void decodeLineCol_explicitHL(SourceLoc loc, char const *&filename, int &line, int &col, bool localUseHashLines);
   void decodeLineCol_nohashline(SourceLoc loc, char const *&filename, int &line, int &col)
     { decodeLineCol_explicitHL(loc, filename, line, col, false); }
-  OldSmbaseString getString_explicitHL(SourceLoc loc, bool localUseHashLines);
-  OldSmbaseString getString_nohashline(SourceLoc loc)
+  string getString_explicitHL(SourceLoc loc, bool localUseHashLines);
+  string getString_nohashline(SourceLoc loc)
     { return getString_explicitHL(loc, false); }
 
   // "line:col" format
-  OldSmbaseString getLCString(SourceLoc loc);
+  string getLCString(SourceLoc loc);
 
   // dsw: the xml serialization code needs access to this field; the
   // idea is that the method name suggests that people not use it
@@ -443,15 +445,15 @@ extern SourceLocManager *sourceLocManager;
 // dsw: So that gdb can find it please DO NOT inline this; also the
 // unique public name is intentional: I don't want gdb doing
 // overloading and sometimes getting it wrong, which it does
-OldSmbaseString locToStr(SourceLoc sl);
+string locToStr(SourceLoc sl);
 
-inline OldSmbaseString toString(SourceLoc sl)
+inline string toString(SourceLoc sl)
   { return locToStr(sl); }
 
-inline stringBuilder& operator<< (stringBuilder &sb, SourceLoc sl)
+inline std::ostream& operator<< (std::ostream &sb, SourceLoc sl)
   { return sb << toString(sl); }
 
-inline OldSmbaseString toLCString(SourceLoc sl)
+inline string toLCString(SourceLoc sl)
   { return sourceLocManager->getLCString(sl); }
 
 
@@ -471,8 +473,8 @@ inline SourceLoc advLine(SourceLoc base)
 inline SourceLoc advText(SourceLoc base, char const *text, int textLen)
   { return SourceLocManager::advText(base, text, textLen); }
 
-//  OldSmbaseString toXml(SourceLoc index);
-//  void fromXml(SourceLoc &out, OldSmbaseString str);
+//  string toXml(SourceLoc index);
+//  void fromXml(SourceLoc &out, string str);
 
 
 #endif // SRCLOC_H

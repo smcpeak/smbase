@@ -165,7 +165,7 @@ void StringVoidDict::add(char const *key, void *value)
 // reference-counting implementation of 'string' then this is more efficient.
 // (The strdup inside this Node construction happens to be the bottleneck in
 // XML deserialization.)
-void StringVoidDict::add(OldSmbaseString const &key, void *value)
+void StringVoidDict::add(string const &key, void *value)
 {
   xassert(!isMapped(key.c_str()));
 
@@ -385,7 +385,7 @@ void StringVoidDict::insertOstream(ostream &os) const
 }
 
 
-OldSmbaseString StringVoidDict::toString() const
+string StringVoidDict::toString() const
 {
   stringBuilder sb;
   sb << "{";
@@ -397,7 +397,7 @@ OldSmbaseString StringVoidDict::toString() const
     sb << " " << entry.key() << "=\"" << entry.value() << "\"";
   }
   sb << " }";
-  return sb;
+  return sb.str();
 }
 
 

@@ -67,13 +67,13 @@ void xbase(rostring msg)
 void xBase::addContext(rostring context)
 {
   // for now, fairly simple
-  msg = stringc << "while " << context << ",\n" << msg;
+  msg = stringb("while " << context << ",\n" << msg);
 }
 
 
 void xBase::addContextLeft(rostring context)
 {
-  msg = stringc << context << msg;
+  msg = stringb(context << msg);
 }
 
 
@@ -135,16 +135,16 @@ void xformat(rostring condition)
 
 void formatAssert_fail(char const *cond, char const *file, int line)
 {
-  xFormat x(stringc << "format assertion failed, "
+  xFormat x(stringb("format assertion failed, "
                     << file << ":" << line << ": "
-                    << cond);
+                    << cond));
   THROW(x);
 }
 
 
 // -------------------- XUnimp -------------------
 XUnimp::XUnimp(rostring msg)
-  : xBase(stringc << "unimplemented: " << msg)
+  : xBase(stringb("unimplemented: " << msg))
 {}
 
 XUnimp::XUnimp(XUnimp const &obj)
@@ -164,7 +164,7 @@ void throw_XUnimp(rostring msg)
 
 void throw_XUnimp(char const *msg, char const *file, int line)
 {
-  throw_XUnimp(stringc << file << ":" << line << ": " << msg);
+  throw_XUnimp(stringb(file << ":" << line << ": " << msg));
 }
 
 
@@ -174,7 +174,7 @@ void throw_XUnimp(char const *msg, char const *file, int line)
 // fatal-ness is sufficiently expressed by the fact that an exception
 // is thrown, as opposed to simply printing the message and continuing.
 XFatal::XFatal(rostring msg)
-  : xBase(stringc << "error: " << msg)
+  : xBase(stringb("error: " << msg))
 {}
 
 XFatal::XFatal(XFatal const &obj)

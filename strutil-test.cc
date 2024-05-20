@@ -17,15 +17,15 @@ namespace {
 void expRangeVector(char const *in, char const *out)
 {
   printf("expRangeVector(%s, %s)\n", in, out);
-  OldSmbaseString result = expandRanges(in);
-  xassert(result.equals(out));
+  string result = expandRanges(in);
+  xassert(result == out);
 }
 
 void trVector(char const *in, char const *srcSpec, char const *destSpec, char const *out)
 {
   printf("trVector(%s, %s, %s, %s)\n", in, srcSpec, destSpec, out);
-  OldSmbaseString result = translate(in, srcSpec, destSpec);
-  xassert(result.equals(out));
+  string result = translate(in, srcSpec, destSpec);
+  xassert(result == out);
 }
 
 void decodeVector(char const *in, char const *out, int outLen)
@@ -40,22 +40,22 @@ void decodeVector(char const *in, char const *out, int outLen)
 void basenameVector(char const *in, char const *out)
 {
   printf("basenameVector(%s, %s)\n", in, out);
-  OldSmbaseString result = sm_basename(in);
-  xassert(result.equals(out));
+  string result = sm_basename(in);
+  xassert(result == out);
 }
 
 void dirnameVector(char const *in, char const *out)
 {
   printf("dirnameVector(%s, %s)\n", in, out);
-  OldSmbaseString result = dirname(in);
-  xassert(result.equals(out));
+  string result = dirname(in);
+  xassert(result == out);
 }
 
 void pluralVector(int n, char const *in, char const *out)
 {
   printf("pluralVector(%d, %s, %s)\n", n, in, out);
-  OldSmbaseString result = plural(n, in);
-  xassert(result.equals(out));
+  string result = plural(n, in);
+  xassert(result == out);
 }
 
 
@@ -89,9 +89,9 @@ void translateAscii()
 }
 
 
-static void expectSDQ(OldSmbaseString const &s, OldSmbaseString const &expect)
+static void expectSDQ(string const &s, string const &expect)
 {
-  OldSmbaseString actual = shellDoubleQuote(s);
+  string actual = shellDoubleQuote(s);
 #if 0
   cout << "shellDoubleQuote:\n"
        << "  s     : " << s << "\n"
@@ -119,8 +119,8 @@ static void testShellDoubleQuote()
 }
 
 
-static void expectIndexOfSubstring(OldSmbaseString const &haystack,
-  OldSmbaseString const &needle, int expect)
+static void expectIndexOfSubstring(string const &haystack,
+  string const &needle, int expect)
 {
   int actual = indexOfSubstring(haystack, needle);
   EXPECT_EQ(actual, expect);
@@ -146,9 +146,9 @@ static void testIndexOfSubstring()
 }
 
 
-static void expectQuoteCharacter(int c, OldSmbaseString const &expect)
+static void expectQuoteCharacter(int c, string const &expect)
 {
-  OldSmbaseString actual = quoteCharacter(c);
+  string actual = quoteCharacter(c);
   EXPECT_EQ(actual, expect);
 }
 
@@ -182,7 +182,7 @@ static void testQuoteCharacter()
 
 static void testReadLinesFromFile()
 {
-  ArrayStack<OldSmbaseString> lines;
+  ArrayStack<string> lines;
   readLinesFromFile(lines, "test/trlff.txt");
   EXPECT_EQ(lines.length(), 4);
   EXPECT_EQ(lines[0], "This is test input for strutil.cc, testReadLinesFromFile().");
@@ -249,8 +249,8 @@ void test_strutil()
   translateAscii();
 
   {
-    OldSmbaseString x("x");
-    OldSmbaseString y("y");
+    string x("x");
+    string y("y");
     xassert(compareStringPtrs(&x, &y) < 0);
     xassert(compareStringPtrs(&y, &y) == 0);
     xassert(compareStringPtrs(&y, &x) > 0);

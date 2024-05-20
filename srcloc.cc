@@ -571,12 +571,12 @@ void SourceLocManager::makeFirstStatics()
 // find it, or return NULL
 SourceLocManager::File *SourceLocManager::findFile(char const *name)
 {
-  if (recent && recent->name.equals(name)) {
+  if (recent && recent->name == name) {
     return recent;
   }
 
   FOREACH_OBJARRAYSTACK_NC(File, files, iter) {
-    if (iter.data()->name.equals(name)) {
+    if (iter.data()->name == name) {
       return recent = iter.data();
     }
   }
@@ -618,11 +618,11 @@ void SourceLocManager::loadFile(FileData const *fileData)
 //      FOREACH_ARRAYSTACK_NC(HashLineMap::HashLine, fileData->hashLines->directives, iter) {
 //        HashLineMap::HashLine *line = iter.data();
 //        char const * const origFname = line->origFname;
-//        StringObjDict<OldSmbaseString> &filenames = fileData->hashLines->serializationOnly_get_filenames();
+//        StringObjDict<string> &filenames = fileData->hashLines->serializationOnly_get_filenames();
 //        // load the 'filenames' dictionary with the origFnames of the FileDatas.
-//        OldSmbaseString *canon = filenames.queryif(origFname);
+//        string *canon = filenames.queryif(origFname);
 //        if (!canon) {
-//          canon = new OldSmbaseString(origFname);
+//          canon = new string(origFname);
 //          filenames.add(origFname, canon);
 //        }
 //        line->origFname = canon->c_str();
@@ -891,31 +891,31 @@ int SourceLocManager::getCol(SourceLoc loc)
 }
 
 
-OldSmbaseString SourceLocManager::getString(SourceLoc loc)
+string SourceLocManager::getString(SourceLoc loc)
 {
   return getString_explicitHL(loc, this->useHashLines);
 }
 
-OldSmbaseString SourceLocManager::getString_explicitHL(SourceLoc loc, bool localUseHashLines)
+string SourceLocManager::getString_explicitHL(SourceLoc loc, bool localUseHashLines)
 {
   char const *name;
   int line, col;
   decodeLineCol_explicitHL(loc, name, line, col, localUseHashLines);
 
-  return stringc << name << ":" << line << ":" << col;
+  return stringb(name << ":" << line << ":" << col);
 }
 
-OldSmbaseString SourceLocManager::getLCString(SourceLoc loc)
+string SourceLocManager::getLCString(SourceLoc loc)
 {
   char const *name;
   int line, col;
   decodeLineCol(loc, name, line, col);
 
-  return stringc << line << ":" << col;
+  return stringb(line << ":" << col);
 }
 
 
-OldSmbaseString locToStr(SourceLoc sl)
+string locToStr(SourceLoc sl)
 {
   return sourceLocManager->getString(sl);
 }

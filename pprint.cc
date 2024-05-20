@@ -250,7 +250,7 @@ void PPrint::Setter::flush()
   if (pprint.startText) {
     pprint.out.write(pprint.startText);
   }
-  pprint.out.write(curLine);
+  pprint.out.write(curLine.c_str());
   curLine.clear();
 }
 

@@ -45,11 +45,11 @@ void BPRender::breakLine(int ind)
 }
 
 
-OldSmbaseString BPRender::takeAndRender(BoxPrint &bld)
+string BPRender::takeAndRender(BoxPrint &bld)
 {
   BPBox* /*owner*/ tree = bld.takeTree();
   tree->render(*this);
-  OldSmbaseString ret(sb);
+  string ret(sb);
   sb.clear();
   delete tree;
   return ret;
@@ -352,12 +352,12 @@ BoxPrint& BoxPrint::operator<< (char const *s)
 
 BoxPrint& BoxPrint::operator<< (int i)
 {
-  return operator<< (stringc << i);
+  return operator<< (stringb(i));
 }
 
 BoxPrint& BoxPrint::operator<< (char c)
 {
-  return operator<< (stringc << c);
+  return operator<< (stringb(c));
 }
 
 

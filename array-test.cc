@@ -4,6 +4,7 @@
 #include "array.h"                     // module under test
 
 // this dir
+#include "compare-util.h"              // compare
 #include "objlist.h"                   // ObjList
 #include "sm-macros.h"                 // TABLESIZE
 #include "sm-test.h"                   // PVAL
@@ -386,6 +387,33 @@ static void testApplyFilter()
 }
 
 
+static void testSort()
+{
+  for (int j=0; j < 10; ++j) {
+    ArrayStack<string> names;
+
+    // These are added in numeric order but not string order, so the
+    // 'sort' call has something non-trivial to do.
+    for (int i=0; i < 1000; ++i) {
+      names.push(stringb(i));
+    }
+
+    // Partly this tests whether 'sort' puts the objects into the right
+    // order.  But it also tests that it does not do anything it
+    // shouldn't in terms of how objects get copied.  For example, the
+    // old qsort-based implementation breaks with std::string, and this
+    // test can detect that.
+    names.sort([](string const *a, string const *b) {
+                 return compare(*a, *b);
+               });
+
+    for (int i=1; i < 1000; ++i) {
+      xassert(names[i-1] < names[i]);
+    }
+  }
+}
+
+
 // Called by unit-tests.cc.
 void test_array()
 {
@@ -405,6 +433,7 @@ void test_array()
   testAsVector();
   testArrayNegativeLength();
   testApplyFilter();
+  testSort();
 
   printf("arrayStack appears to work; maxLength=%d\n", maxLength);
 }

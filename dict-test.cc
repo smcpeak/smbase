@@ -12,7 +12,7 @@
 #include "sm-iostream.h"               // cout
 
 
-static bool printIntKV(OldSmbaseString const &key, intptr_t value, void *)
+static bool printIntKV(string const &key, intptr_t value, void *)
 {
   cout << "key=" << key << " value=" << value << endl;
   return false;
@@ -43,7 +43,7 @@ static void testStringIntDict()
 }
 
 
-static bool printObjKV(OldSmbaseString const &key, int *value, void *)
+static bool printObjKV(string const &key, int *value, void *)
 {
   cout << "key=" << key << " value=" << *value << endl;
   return false;

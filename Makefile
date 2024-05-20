@@ -252,7 +252,6 @@ SRCS += run-process.cc
 SRCS += sm-compare.cc
 SRCS += sm-file-util.cc
 SRCS += sm-rc-obj.cc
-SRCS += sm-to-std-string.cc
 SRCS += sm-unixutil.c
 SRCS += smregexp.cc
 SRCS += srcloc.cc

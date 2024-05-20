@@ -19,9 +19,8 @@
 
 
 // ----------------------- OldSmbaseString ---------------------
-
 // put the empty string itself in read-only memory
-char const nul_byte = 0;
+static char const nul_byte = 0;
 
 // deliberately cast away the constness; I cannot declare
 // 'emptyString' to be const because it gets assigned to 's', but it
@@ -172,6 +171,44 @@ void OldSmbaseString::selfCheck() const
 {}
 
 
+// -------------------------- compatibility ----------------------------
+void stringXfer(Flatten &flat, std::string &str)
+{
+  // For serialization compatibility with OldSmbaseString::xfer,
+  // read and write using 'xferCharString', even though that causes an
+  // extra allocation when reading.
+
+  if (flat.reading()) {
+    char *p = nullptr;
+    flat.xferCharString(p);
+
+    // This causes an extra allocation.
+    str = p;
+  }
+
+  else {
+    char const *p = str.c_str();
+
+    // 'xferCharString' will not modifiy the contents of the string in
+    // reading mode.
+    char *q = const_cast<char*>(p);
+
+    flat.xferCharString(q);
+  }
+}
+
+
+bool stringEquals(std::string const &a, char const *b)
+{
+  return a == b;
+}
+
+bool stringEquals(std::string const &a, std::string const &b)
+{
+  return a == b;
+}
+
+
 // ----------------------- rostring ---------------------
 int strcmp(rostring s1, rostring s2)
   { return strcmp(s1.c_str(), s2.c_str()); }
@@ -192,9 +229,9 @@ int atoi(rostring s)
   return atoi(toCStr(s));
 }
 
-OldSmbaseString substring(char const *p, int n)
+string substring(char const *p, int n)
 {
-  return OldSmbaseString(p, n, SMBASE_STRING_FUNC);
+  return string(p, n);
 }
 
 
@@ -425,10 +462,10 @@ void stringBuilder::readdelim(istream &is, char const *delim)
 
 
 // ---------------------- toString ---------------------
-#define TOSTRING(type)               \
-  OldSmbaseString toString(type val) \
-  {                                  \
-    return stringc << val;           \
+#define TOSTRING(type)      \
+  string toString(type val) \
+  {                         \
+    return stringb(val);    \
   }
 
 TOSTRING(int)
@@ -441,23 +478,23 @@ TOSTRING(float)
 
 // this one is more liberal than 'stringc << null' because it gets
 // used by the PRINT_GENERIC macro in my astgen tool
-OldSmbaseString toString(char const *str)
+string toString(char const *str)
 {
   if (!str) {
-    return OldSmbaseString("(null)");
+    return string("(null)");
   }
   else {
-    return OldSmbaseString(str);
+    return string(str);
   }
 }
 
 
 // ------------------- stringf -----------------
-OldSmbaseString stringf(char const *format, ...)
+string stringf(char const *format, ...)
 {
   va_list args;
   va_start(args, format);
-  OldSmbaseString ret = vstringf(format, args);
+  string ret = vstringf(format, args);
   va_end(args);
   return ret;
 }
@@ -473,7 +510,7 @@ OldSmbaseString stringf(char const *format, ...)
 #endif
 
 
-OldSmbaseString vstringf(char const *format, va_list args)
+string vstringf(char const *format, va_list args)
 {
   // estimate string length
   va_list args2;
@@ -504,7 +541,7 @@ OldSmbaseString vstringf(char const *format, va_list args)
   }
 
   // happy
-  return OldSmbaseString(buf.ptrC());
+  return string(buf.ptrC());
 }
 
 

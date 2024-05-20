@@ -6,9 +6,12 @@
 #include "sm-iostream.h"               // cout, cerr
 #include "sm-posix.h"                  // fork, exec, etc.
 #include "sm-windows.h"                // Windows API
+#include "string-utils.h"              // contains
 #include "syserr.h"                    // xsyserror
 #include "vector-utils.h"              // accumulateWith
 #include "xassert.h"                   // xassert
+
+#include <iomanip>                     // std::hex
 
 #include <errno.h>                     // errno
 #include <string.h>                    // strerror
@@ -26,7 +29,7 @@ RunProcess::~RunProcess()
 {}
 
 
-void RunProcess::setCommand(std::vector<OldSmbaseString> const &command)
+void RunProcess::setCommand(std::vector<string> const &command)
 {
   xassert(!command.empty());
   m_command = command;
@@ -265,16 +268,16 @@ bool RunProcess::aborted() const
 }
 
 
-OldSmbaseString RunProcess::exitDescription() const
+string RunProcess::exitDescription() const
 {
   if (exitedNormally()) {
     return stringb("Exit " << getExitCode());
   }
   else if (interrupted()) {
-    return OldSmbaseString("Interrupted");
+    return string("Interrupted");
   }
   else if (aborted()) {
-    return OldSmbaseString("Aborted");
+    return string("Aborted");
   }
   else {
     unsigned sig = getSignal();
@@ -282,7 +285,7 @@ OldSmbaseString RunProcess::exitDescription() const
       // As a heuristic, if the value is large (such as Windows
       // exception codes), assume it's most sensible to read it as
       // hexadecimal.
-      return stringb("Signal " << SBHex(getSignal()));
+      return stringb("Signal " << std::hex << getSignal());
     }
     else {
       return stringb("Signal " << getSignal());
@@ -291,13 +294,13 @@ OldSmbaseString RunProcess::exitDescription() const
 }
 
 
-/*static*/ void RunProcess::check_run(std::vector<OldSmbaseString> const &command)
+/*static*/ void RunProcess::check_run(std::vector<string> const &command)
 {
   RunProcess rproc;
   rproc.setCommand(command);
   rproc.runAndWait();
   if (!rproc.exitedWith0()) {
-    xfatal("Command \"" << accumulateWith(command, OldSmbaseString(" ")) <<
+    xfatal("Command \"" << accumulateWith(command, string(" ")) <<
            "\" failed: " << rproc.exitDescription());
   }
 }
@@ -312,13 +315,13 @@ OldSmbaseString RunProcess::exitDescription() const
 // are evidently what we're forced to use.
 //
 /*static*/ void RunProcess::buildWindowsCommandLine(
-  std::vector<char> &commandLine, std::vector<OldSmbaseString> const &command)
+  std::vector<char> &commandLine, std::vector<string> const &command)
 {
   xassert(!command.empty());
 
   // Add the program name.
   auto it = command.begin();
-  if ((*it).contains('"')) {
+  if (contains(*it, '"')) {
     // The rules for escaping double-quotes are not active when
     // decoding argv[0], so there is no way to include them.
     xformatsb(

@@ -61,7 +61,7 @@ xSysError::xSysError(xSysError::Reason r, int sysCode, rostring sysReason,
 {}
 
 
-STATICDEF OldSmbaseString xSysError::
+STATICDEF string xSysError::
   constructWhyString(xSysError::Reason r, rostring sysReason,
                      rostring syscall, rostring ctx)
 {
@@ -89,7 +89,7 @@ STATICDEF OldSmbaseString xSysError::
     sb << getReasonString(r);
   }
 
-  return sb;
+  return sb.str();
 }
 
 
@@ -115,7 +115,7 @@ STATICDEF void xSysError::
   int code = getSystemErrorCode();
 
   // translate it into one of ours
-  OldSmbaseString sysMsg;
+  string sysMsg;
   Reason r = portablize(code, sysMsg);
 
   // construct an object to throw
@@ -127,7 +127,7 @@ STATICDEF void xSysError::
 
 void xsyserror(char const *syscallName)
 {
-  xSysError::xsyserror(syscallName, OldSmbaseString(""));
+  xSysError::xsyserror(syscallName, string(""));
 }
 
 void xsyserror(rostring syscallName, rostring context)
@@ -136,18 +136,18 @@ void xsyserror(rostring syscallName, rostring context)
 }
 
 
-OldSmbaseString sysErrorCodeString(int systemErrorCode,
+string sysErrorCodeString(int systemErrorCode,
                                    rostring syscallName,
                                    rostring context)
 {
-  OldSmbaseString sysMsg;
+  string sysMsg;
   xSysError::Reason r = xSysError::portablize(systemErrorCode, sysMsg);
   return xSysError::constructWhyString(
            r, sysMsg,
            syscallName, context);
 }
 
-OldSmbaseString sysErrorString(char const *syscallName,
+string sysErrorString(char const *syscallName,
                                char const *context)
 {
   return sysErrorCodeString(xSysError::getSystemErrorCode(),
@@ -205,7 +205,7 @@ STATICDEF int xSysError::getSystemErrorCode()
 
 
 STATICDEF xSysError::Reason xSysError::portablize(
-  int sysErrorCode, OldSmbaseString &sysMsg)
+  int sysErrorCode, string &sysMsg)
 {
   // I'd like to put this into a static class member, but then
   // the table would have to prepend R_ constants with xSysError::,
@@ -304,7 +304,7 @@ STATICDEF int xSysError::getSystemErrorCode()
 
 
 STATICDEF xSysError::Reason xSysError::portablize(
-  int sysErrorCode, OldSmbaseString &sysMsg)
+  int sysErrorCode, string &sysMsg)
 {
   sysMsg = strerror(sysErrorCode);
     // operator= copies to local storage

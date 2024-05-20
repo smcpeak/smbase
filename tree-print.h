@@ -20,7 +20,7 @@
 // smbase
 #include "astlist.h"                   // ASTList
 #include "sm-macros.h"                 // NO_OBJECT_COPIES
-#include "str.h"                       // OldSmbaseString
+#include "str.h"                       // string
 
 // libc++
 #include <iostream>                    // std::ostream
@@ -104,10 +104,10 @@ private:     // types
   class TPString : public TPNode {
   public:
     // The string.
-    OldSmbaseString m_string;
+    string m_string;
 
   public:
-    TPString(OldSmbaseString const &s);
+    TPString(string const &s);
     ~TPString();
 
     virtual void scan() override;
@@ -224,7 +224,7 @@ public:      // methods
   TreePrint& operator<< (char const *str);
   TreePrint& operator<< (int i);
   TreePrint& operator<< (char c);
-  TreePrint& operator<< (OldSmbaseString const &str);
+  TreePrint& operator<< (string const &str);
 
   // Add a break.
   TreePrint& operator<< (BreakKind breakKind);

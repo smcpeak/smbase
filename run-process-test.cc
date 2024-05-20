@@ -5,22 +5,21 @@
 
 #include "exc.h"                       // xBase
 #include "sm-platform.h"               // PLATFORM_IS_POSIX
-#include "sm-to-std-string.h"          // toSMStringVector
 #include "string-utils.h"              // splitNonEmpty
 
 #include <cstdlib>                     // std::exit
 
 
-static void oneBwcl(OldSmbaseString expect, char const **argv)
+static void oneBwcl(string expect, char const **argv)
 {
-  std::vector<OldSmbaseString> command;
+  std::vector<string> command;
   for (; *argv; argv++) {
-    command.push_back(OldSmbaseString(*argv));
+    command.push_back(string(*argv));
   }
 
   std::vector<char> actualVec;
   RunProcess::buildWindowsCommandLine(actualVec, command);
-  OldSmbaseString actual(actualVec.data(), actualVec.size());
+  string actual(actualVec.data(), actualVec.size() - 1);
 
   if (actual != expect) {
     cout << "actual: " << actual << endl;
@@ -32,7 +31,7 @@ static void oneBwcl(OldSmbaseString expect, char const **argv)
   // The results have to be manually inspected.
   char const *validate = getenv("VALIDATE");
   if (validate) {
-    command[0] = OldSmbaseString(validate);
+    command[0] = string(validate);
 
     cout << "Passing arguments:\n";
     for (size_t i=0; i < command.size(); i++) {
@@ -106,13 +105,13 @@ static void testBuildWindowsCommandLine()
 }
 
 
-static void runOne(OldSmbaseString expect, char const **argv)
+static void runOne(string expect, char const **argv)
 {
   cout << "command:";
-  std::vector<OldSmbaseString> command;
+  std::vector<string> command;
   for (; *argv; argv++) {
     cout << " " << *argv;
-    command.push_back(OldSmbaseString(*argv));
+    command.push_back(string(*argv));
   }
   cout << endl;
 
@@ -120,7 +119,7 @@ static void runOne(OldSmbaseString expect, char const **argv)
   rproc.setCommand(command);
   rproc.runAndWait();
 
-  OldSmbaseString actual = rproc.exitDescription();
+  string actual = rproc.exitDescription();
   cout << "actual: " << actual << endl;
 
   if (actual != expect) {
@@ -149,9 +148,9 @@ static void testRun()
     RUN_ONE("Signal 15", "sh", "-c", "echo hi; kill $$");
   }
 
-  RunProcess::check_run(std::vector<OldSmbaseString>{"true"});
+  RunProcess::check_run(std::vector<string>{"true"});
   try {
-    RunProcess::check_run(std::vector<OldSmbaseString>{"false"});
+    RunProcess::check_run(std::vector<string>{"false"});
     xfailure("should have failed");
   }
   catch (XFatal &x) {
@@ -164,7 +163,7 @@ static void testAborted()
 {
   cout << "-- testAborted --\n";
   RunProcess rproc;
-  rproc.setCommand(std::vector<OldSmbaseString>{"./call-abort.exe"});
+  rproc.setCommand(std::vector<string>{"./call-abort.exe"});
 
   if (PLATFORM_IS_POSIX) {
     rproc.runAndWait();
@@ -193,8 +192,7 @@ void test_run_process()
 {
   try {
     if (char const *cmdline = getenv("RUN_PROCESS_TEST_CMDLINE")) {
-      std::vector<OldSmbaseString> command =
-        toSMStringVector(splitNonEmpty(cmdline, ' '));
+      std::vector<string> command = splitNonEmpty(cmdline, ' ');
 
       RunProcess rproc;
       rproc.setCommand(command);

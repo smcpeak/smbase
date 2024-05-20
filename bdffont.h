@@ -43,7 +43,7 @@
 #include "objlist.h"         // ObjList
 #include "point.h"           // point
 #include "sm-macros.h"       // NO_OBJECT_COPIES
-#include "str.h"             // OldSmbaseString
+#include "str.h"             // string
 
 class Bit2d;                 // bit2d.h
 
@@ -61,19 +61,19 @@ public:      // types
   // This type is used to store values identified in the spec as
   // having type "number".  I would like to use a general 'rational'
   // type, but I haven't made one yet.  I do not want to use 'float'
-  // because it loses information for most decimal values.  'OldSmbaseString'
+  // because it loses information for most decimal values.  'string'
   // will do for now since I have no intent to do anything with these
   // values beside store them.
   //
   // All initial values for fields of type Number are "".
-  typedef OldSmbaseString Number;
+  typedef string Number;
 
   // A single "property", which consists of a name and a value, where
   // the value is either an integer or a string.
   class Property {
   public:    // data
     // Property name.
-    OldSmbaseString name;
+    string name;
 
     // True if the value is an integer, false if it is a string.
     bool isInteger;
@@ -82,11 +82,11 @@ public:      // types
     int intValue;
 
     // The string value, if 'isInteger' is false.
-    OldSmbaseString stringValue;
+    string stringValue;
 
   public:    // funcs
     Property(rostring name, int intValue);
-    Property(rostring name, OldSmbaseString stringValue);
+    Property(rostring name, string stringValue);
     ~Property();
   };
 
@@ -156,7 +156,7 @@ public:      // types
     // The value following STARTCHAR.  In some cases I take it this
     // may be a number rendered in decimal, and in such cases, that
     // number is to be used as the glyph index.
-    OldSmbaseString name;
+    string name;
 
     // The first value following ENCODING.  Initially -1, which means
     // that the 'nonstdEncoding' value is to be used.
@@ -198,13 +198,13 @@ public:      // data
   // Sequence of COMMENT strings encountered in the file.  The order
   // of COMMENT lines relative to non-COMMENT lines is not retained.
   // Initially empty.
-  ArrayStack<OldSmbaseString> comments;
+  ArrayStack<string> comments;
 
   // The integer specified for CONTENTVERSION, or 0 if absent.
   int contentVersion;
 
   // Font name following FONT keyword.
-  OldSmbaseString fontName;
+  string fontName;
 
   // First value after SIZE keyword.  Unfortunately the spec does not
   // say whether this is a "number" or an "integer", so I am inferring

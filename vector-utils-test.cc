@@ -4,7 +4,7 @@
 #include "vector-utils.h"              // module under test
 
 #include "sm-test.h"                   // EXPECT_EQ
-#include "str.h"                       // OldSmbaseString
+#include "str.h"                       // string
 #include "strutil.h"                   // quoted
 
 #include <string>                      // std::string
@@ -12,14 +12,14 @@
 
 static void testAccumulateWith()
 {
-  std::vector<OldSmbaseString> v;
-  EXPECT_EQ(accumulateWith(v, OldSmbaseString("-")), "");
+  std::vector<string> v;
+  EXPECT_EQ(accumulateWith(v, string("-")), "");
 
   v.push_back("a");
-  EXPECT_EQ(accumulateWith(v, OldSmbaseString("-")), "a");
+  EXPECT_EQ(accumulateWith(v, string("-")), "a");
 
   v.push_back("b");
-  EXPECT_EQ(accumulateWith(v, OldSmbaseString("-")), "a-b");
+  EXPECT_EQ(accumulateWith(v, string("-")), "a-b");
 }
 
 
@@ -56,23 +56,23 @@ static void testVecErase()
 
 static void testMapElements()
 {
-  std::vector<OldSmbaseString> src {"a", "b"};
-  std::vector<OldSmbaseString> dest(mapElements<OldSmbaseString>(src,
-    [](OldSmbaseString const &s) { return quoted(s); }));
-  EXPECT_EQ(dest, (std::vector<OldSmbaseString>{"\"a\"", "\"b\""}));
+  std::vector<string> src {"a", "b"};
+  std::vector<string> dest(mapElements<string>(src,
+    [](string const &s) { return quoted(s); }));
+  EXPECT_EQ(dest, (std::vector<string>{"\"a\"", "\"b\""}));
 
-  // I do not like that I have to specify '<OldSmbaseString>' here, but I do not
+  // I do not like that I have to specify '<string>' here, but I do not
   // know how to avoid it.
-  dest = mapElements<OldSmbaseString>(src, quoted);
-  EXPECT_EQ(dest, (std::vector<OldSmbaseString>{"\"a\"", "\"b\""}));
+  dest = mapElements<string>(src, quoted);
+  EXPECT_EQ(dest, (std::vector<string>{"\"a\"", "\"b\""}));
 }
 
 
 static void testConvertElements()
 {
-  std::vector<OldSmbaseString> src {"a", "b", "c"};
+  std::vector<string> src {"a", "b", "c"};
 
-  // Convert smbase 'OldSmbaseString' to 'std::string'.
+  // Convert smbase 'string' to 'std::string'.
   std::vector<std::string> dest(convertElements<std::string>(src));
   EXPECT_EQ(dest, (std::vector<std::string>{"a", "b", "c"}));
 }

@@ -609,6 +609,22 @@ operations treat them as a unit.
   <!-- AUTO -->  Utilities related to std::string.
 <!-- end header -->
 
+<!-- begin header: strutil.h -->
+  <!-- AUTO --><dt><a href="strutil.h">strutil.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  A set of generic string utilities, including replace(), translate(),
+  <!-- AUTO -->  trimWhitespace(), encodeWithEscapes(), etc.
+  <!-- AUTO --><br><br>
+  <!-- AUTO -->  TODO: This module should be combined with string-utils.h.
+<!-- end header -->
+
+<!-- begin header: stringb.h -->
+  <!-- AUTO --><dt><a href="stringb.h">stringb.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Define the 'stringb' macro that allows in-place string construction
+  <!-- AUTO -->  using 'operator&lt;&lt;'.
+<!-- end header -->
+
 <!-- begin header: strcmp-compare.h -->
   <!-- AUTO --><dt><a href="strcmp-compare.h">strcmp-compare.h</a>
   <!-- AUTO --><dd>
@@ -626,21 +642,7 @@ operations treat them as a unit.
   <!-- AUTO --><dd>
   <!-- AUTO -->  Generalized printf interface.
   <!-- AUTO -->  See http://www.efgh.com/software/gprintf.htm.
-  <!-- AUTO -->  This file is in the public domain. */
-<!-- end header -->
-
-</dl>
-
-<p>
-These two modules still have some utility, although they currently are
-still based on the obsolete <code>str</code> module:
-
-<dl>
-
-<!-- begin header: sm-to-std-string.h -->
-  <!-- AUTO --><dt><a href="sm-to-std-string.h">sm-to-std-string.h</a>
-  <!-- AUTO --><dd>
-  <!-- AUTO -->  Utilities to convert between my 'OldSmbaseString' and 'std::string'.
+  <!-- AUTO -->  This file is in the public domain.
 <!-- end header -->
 
 <!-- begin header: strtokp.h -->
@@ -665,13 +667,6 @@ still based on the obsolete <code>str</code> module:
   <!-- AUTO -->  ParseString class.
 <!-- end header -->
 
-<!-- begin header: strutil.h -->
-  <!-- AUTO --><dt><a href="strutil.h">strutil.h</a>
-  <!-- AUTO --><dd>
-  <!-- AUTO -->  A set of generic string utilities, including replace(), translate(),
-  <!-- AUTO -->  trimWhitespace(), encodeWithEscapes(), etc.
-<!-- end header -->
-
 </dl>
 
 All of these are obsolete:
@@ -681,11 +676,9 @@ All of these are obsolete:
 <!-- begin header: str.h -->
   <!-- AUTO --><dt><a href="str.h">str.h</a>
   <!-- AUTO --><dd>
-  <!-- AUTO -->  A string class.
-  <!-- AUTO --><br><br>
-  <!-- AUTO -->  2024-05-18: I renamed 'string' to 'OldSmbaseString'.  The transition
-  <!-- AUTO -->  plan now, simply, is to replace occurrences of 'OldSmbaseString' with
-  <!-- AUTO -->  'std::string' incrementally.
+  <!-- AUTO -->  2024-05-20: This is a compatibility header.  It declares 'string' as
+  <!-- AUTO -->  an alias for 'std::string', and has some other stuff related to
+  <!-- AUTO -->  legacy usage.  New code should avoid it.
 <!-- end header -->
 
 <!-- begin header: stringset.h -->

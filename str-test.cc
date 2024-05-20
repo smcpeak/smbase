@@ -4,13 +4,16 @@
 #include "str.h"                       // module under test
 
 #include "sm-iostream.h"               // cout
+#include "strutil.h"                   // stringf
+
+#include <iomanip>                     // std::hex
 
 
 static void test(unsigned long val)
 {
   //cout << stringb(val << " in hex: 0x" << stringBuilder::Hex(val)) << endl;
 
-  cout << stringb(val << " in hex: " << SBHex(val)) << endl;
+  cout << stringb(val << " in hex: " << std::hex << val) << endl;
 }
 
 

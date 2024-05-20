@@ -9,7 +9,7 @@
 namespace {
 
 
-OldSmbaseString toStringViaIter(BitArray const &b)
+string toStringViaIter(BitArray const &b)
 {
   stringBuilder sb;
   int index = 0;
@@ -37,10 +37,10 @@ void testIter(char const *str)
   BitArray b = stringToBitArray(str);
   b.selfCheck();
 
-  OldSmbaseString s1 = toString(b);
-  OldSmbaseString s2 = toStringViaIter(b);
+  string s1 = toString(b);
+  string s2 = toStringViaIter(b);
   if (s1 != s2 ||
-      !s1.equals(str)) {
+      !stringEquals(s1, str)) {
     cout << "str: " << str << endl;
     cout << " s1: " << s1 << endl;
     cout << " s2: " << s2 << endl;
@@ -57,7 +57,7 @@ void testIter(char const *str)
     inv << (str[i]=='0'? '1' : '0');
   }
 
-  OldSmbaseString cStr = toString(c);
+  string cStr = toString(c);
   if (!inv.equals(cStr)) {
     cout << " inv: " << inv << endl;
     cout << "cStr: " << cStr << endl;
@@ -83,10 +83,10 @@ void testUnionIntersection(char const *s1, char const *s2)
   BitArray u = b1 | b2;
   BitArray i = b1 & b2;
 
-  OldSmbaseString uStr = toString(u);
-  OldSmbaseString iStr = toString(i);
+  string uStr = toString(u);
+  string iStr = toString(i);
 
-  if (!uStr.equals(expectUnion)) {
+  if (!stringEquals(uStr, expectUnion)) {
     cout << "         s1: " << s1 << endl;
     cout << "         s2: " << s2 << endl;
     cout << "       uStr: " << uStr << endl;
@@ -94,7 +94,7 @@ void testUnionIntersection(char const *s1, char const *s2)
     xbase("test union failed");
   }
 
-  if (!iStr.equals(expectIntersection)) {
+  if (!stringEquals(iStr, expectIntersection)) {
     cout << "                s1: " << s1 << endl;
     cout << "                s2: " << s2 << endl;
     cout << "              iStr: " << iStr << endl;

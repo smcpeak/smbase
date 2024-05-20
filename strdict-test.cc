@@ -15,21 +15,21 @@ char randChar()
   return (char)(myrandom(127-32+1)+32);
 }
 
-OldSmbaseString randString(int len)
+string randString(int len)
 {
   stringBuilder str;
   loopj(len) {
     str << randChar();
   }
-  return str;
+  return str.str();
 }
 
-OldSmbaseString randStringRandLen(int maxlen)
+string randStringRandLen(int maxlen)
 {
   return randString(myrandom(maxlen)+1);
 }
 
-OldSmbaseString randKey(StringDict const &dict)
+string randKey(StringDict const &dict)
 {
   int size = dict.size();
   xassert(size > 0);
@@ -56,8 +56,8 @@ void test_strdict()
     switch (myrandom(6)) {
       case 0: {
         // insert a random element
-        OldSmbaseString key = randStringRandLen(10);
-        OldSmbaseString value = randStringRandLen(30);
+        string key = randStringRandLen(10);
+        string value = randStringRandLen(30);
 
         if (!dict.isMapped(key.c_str())) {
           dict.add(key.c_str(), value.c_str());
@@ -75,7 +75,7 @@ void test_strdict()
           break;
         }
 
-        OldSmbaseString key = randKey(dict);
+        string key = randKey(dict);
         dict.remove(key.c_str());
         size--;
         break;
@@ -83,7 +83,7 @@ void test_strdict()
 
       case 2: {
         // check a random element that should not be there
-        OldSmbaseString key = randStringRandLen(10);
+        string key = randStringRandLen(10);
         if (dict.isMapped(key.c_str())) {
           collisions++;
         }
@@ -104,14 +104,14 @@ void test_strdict()
 
         // modify it, then verify inequality
         if (!dict2.isEmpty()) {
-          OldSmbaseString key = randKey(dict2);
-          OldSmbaseString value = dict2.queryf(key.c_str());
+          string key = randKey(dict2);
+          string value = dict2.queryf(key.c_str());
 
           if (myrandom(2) == 0) {
             dict2.remove(key.c_str());
           }
           else {
-            dict2.modify(key.c_str(), stringc << value << "x");
+            dict2.modify(key.c_str(), stringbc(value << "x"));
           }
           xassert(dict2 != dict);
         }
@@ -122,7 +122,7 @@ void test_strdict()
       case 5: {
         // random modification
         if (!dict.isEmpty()) {
-          OldSmbaseString key = randKey(dict);
+          string key = randKey(dict);
           dict.modify(key.c_str(), randStringRandLen(30).c_str());
         }
         break;

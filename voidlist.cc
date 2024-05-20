@@ -3,7 +3,7 @@
 
 #include "voidlist.h"   // this module
 #include "breaker.h"    // breaker
-#include "str.h"        // stringc
+#include "str.h"        // stringb
 
 #include <stdio.h>      // printf()
 
@@ -43,9 +43,9 @@ void *&VoidList::nthRef(int which)
     p = p->next;
   }
   if (p == NULL) {
-    xfailure(stringc << "asked for list element "
-                     << (count()+which) << " (0-based) but list only has "
-                     << count() << " elements");
+    xfailure(stringbc("asked for list element "
+                      << (count()+which) << " (0-based) but list only has "
+                      << count() << " elements"));
   }
   return p->data;
 }

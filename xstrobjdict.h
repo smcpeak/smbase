@@ -75,10 +75,10 @@ public:     // types
 m4_dnl  typedef outputCondTemplate([[[XSTROBJDICT<T>]]], [[[XSTROBJDICT]]]) [[[XSTROBJDICT_type]]];
   // 'foreach' iterator functions
 outputCond([[[m4_dnl
-  typedef bool (*ForeachFn)(OldSmbaseString const &key, TPTR value, void *extra);
+  typedef bool (*ForeachFn)(string const &key, TPTR value, void *extra);
 ]]],[[[m4_dnl
-  typedef bool (*ForeachCFn)(OldSmbaseString const &key, TCPTR value, void *extra);
-  typedef bool (*ForeachFn)(OldSmbaseString const &key, TPTR /*serf*/ value, void *extra);
+  typedef bool (*ForeachCFn)(string const &key, TCPTR value, void *extra);
+  typedef bool (*ForeachFn)(string const &key, TPTR /*serf*/ value, void *extra);
 ]]])m4_dnl
 
 outputCond([[[m4_dnl
@@ -95,7 +95,7 @@ outputCond([[[m4_dnl
     bool isDone() const { return iter.isDone(); }
     Iter& next() { iter.next(); return *this; }
 
-    OldSmbaseString const &key() const { return iter.key(); }
+    string key() const { return iter.key(); }
     TPTR &value() const { return (TPTR &)iter.value(); }
 
     int private_getCurrent() const { return iter.private_getCurrent(); }
@@ -114,7 +114,7 @@ outputCond([[[m4_dnl
     bool isDone() const { return iter.isDone(); }
     IterC& next() { iter.next(); return *this; }
 
-    OldSmbaseString const &key() const { return iter.key(); }
+    string key() const { return iter.key(); }
     TPTR value() const { return (TPTR)iter.value(); }
 
     int private_getCurrent() const { return iter.private_getCurrent(); }
@@ -134,7 +134,7 @@ outputCond([[[m4_dnl
     bool isDone() const { return iter.isDone(); }
     Iter& next() { iter.next(); return *this; }
 
-    OldSmbaseString const &key() const { return iter.key(); }
+    string key() const { return iter.key(); }
     TCPTR &value() const { return (TCPTR &)iter.value(); }
 
     int private_getCurrent() const { return iter.private_getCurrent(); }
@@ -172,6 +172,9 @@ outputCond([[[m4_dnl
       // delegate to the other Iter class
       for(IterC iter(map); !iter.isDone(); iter.next()) {
 //          xassert(i<numEntries);
+        xfailure("is this called?");
+
+        // BUG: This is obviously wrong.  WTH?
         sortedKeys[i++] = iter.key().c_str();
       }
       xassert(numEntries == i);

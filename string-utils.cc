@@ -243,4 +243,10 @@ bool beginsWith(std::string const &str, std::string const &prefix)
 }
 
 
+bool contains(std::string const &str, char c)
+{
+  return str.find(c) != std::string::npos;
+}
+
+
 // EOF
