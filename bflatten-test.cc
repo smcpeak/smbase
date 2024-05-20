@@ -75,8 +75,8 @@ void SomeData::xfer(Flatten &flat)
 {
   flat.xferInt32(x);
   flat.noteOwner(&x);
-  stringXfer(flat, s);
-  stringXfer(flat, s2);
+  stringXfer(s, flat);
+  stringXfer(s2, flat);
   flat.xferSerf((void*&)px);
   flat.xferInt32(y);
   flat.noteOwner(&y);

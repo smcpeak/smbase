@@ -172,7 +172,7 @@ void OldSmbaseString::selfCheck() const
 
 
 // -------------------------- compatibility ----------------------------
-void stringXfer(Flatten &flat, std::string &str)
+void stringXfer(std::string &str, Flatten &flat)
 {
   // For serialization compatibility with OldSmbaseString::xfer,
   // read and write using 'xferCharString', even though that causes an

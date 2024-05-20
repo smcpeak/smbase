@@ -176,14 +176,15 @@ public:	       // funcs
 // exist on std::string.
 
 // Equivalent of OldSmbaseString::xfer(Flatten&) for std::string.
-void stringXfer(Flatten &flat, std::string &str);
+void stringXfer(std::string &str, Flatten &flat);
 
 // Equivalent of OldSmbaseString::equals() for std::string.
 bool stringEquals(std::string const &a, char const *b);
 bool stringEquals(std::string const &a, std::string const &b);
 
 // Note: The equivalent of OldSmbaseString::substring is just
-// std::string::substr.
+// std::string::substr, so rather than create 'stringSubstring', I just
+// change call sites to use 'substr'.
 
 
 // ------------------------ rostring ----------------------
