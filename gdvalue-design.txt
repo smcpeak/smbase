@@ -42,6 +42,86 @@ Goals
 * Serialize and deserialze to a compact binary form.
 
 
+Sets versus maps
+================
+
+In mathmatics, a map (or "function") is usually defined as a set of
+tuples where every first element is unique.  This provides some economy
+of reasoning since maps are not a distinct primitive and many of the
+theorems that apply to sets also apply to maps.
+
+It's therefore tempting to try to do the same for GDValue.  In
+particular, the idea would be to say that a map is simply a set that
+conforms to the requirement of all elements being two-element vectors
+(as I do not have a distinct "pair" or even "tuple" notion) whose first
+elements are all unique within the map.
+
+However, having pursued it a certain distance, there are several
+problems:
+
+  * It is fairly awkward to enforce the constraint.  Where exactly does
+    the check go?  On every access that treats it as a map?  Upon some
+    action that "imbues" it with map-like qualities?  And how does
+    enforcement interact with modification?
+
+  * If there is a notion of "imbuing" a set with map-like qualities,
+    which seems like it might be needed to deal with the above, that
+    will presumably be lost as soon as the map is serialized and
+    deserialized.
+
+  * That is, unless the serialization format also preserves that aspect,
+    but then the text representation is different for maps and sets,
+    which already undermines one of the presumptive advantages of the
+    scheme to begin with.
+
+  * The operations on the two are in fact fairly different.
+
+Expanding on the last point, despite their constitutive structural
+similarity, the way in which programs interact with sets and maps is
+fairly different:
+
+  Set                         Map
+  --------------------        ------------
+  insert E                    map K to V; deal with collision of K
+
+  check if E is present       check if K (not (K,V)) is present
+
+  remove E                    remove mapping for K (not (K,V))
+
+                              get the V for a given K
+
+  iterate over the Es;        iterate over (K,V); can change Vs
+  cannot change any
+
+This table lines up the major operations in rows of approximate
+correspondence.  The semantically closest operation is insertion,
+but even there maps have an issue with key collisions: they can
+either (1) remove the old value or (2) ignore the insertion.  In
+case 1, an entry that was previously present is now gone, while in
+case 2, the entry the client inserted is *not* present after the
+insertion.  Neither of those are possible with set insertion, where
+everything that was already there remains, and the inserted element
+is also assured to be there after the insertion.
+
+The other operations have greater semantic differences, and sets do not
+really have a counterpart to the map lookup operation.
+
+Finally, iteration, while superficially similar, is arguably the
+greatest and most problematic divergence.  When iterating over a set,
+the client receives complete elements, but (typically, and for my
+intended design) cannot modify the elements because doing so would
+jeopardize the ordering invariant of the underlying data structure.  But
+when iterating over a map, it is often (for example with C++ std::map)
+allowed to modify the value.  Furthermore, the client interface
+structurally ensures that it receives exactly (K,V) pairs, whereas when
+iterating over a map as if it were a set, the client would receive
+arbitrary values and have to check that they are two-element vectors,
+doing something (what exactly?) when they are not.
+
+Consequently, in this design, I simply treat sets and maps as entirely
+different, unrelated containers.
+
+
 Text representation
 ===================
 
@@ -76,19 +156,130 @@ Octet sequences are, perhaps, like in Python.
 
 Sequence: (1 2 3)
 
-  Note that there is no punctuation between values.
+  Note that there is no punctuation between values.  Separators are not
+  needed for parsing disambiguation, can contribute visual clutter
+  (although sometimes they help with that too, it varies), and are
+  annoying to deal with if not allowed at the end, while being somewhat
+  ugly when they are.
 
-Set: {1 2 3}
+Set: {{1 2 3}}
 
-Map: {(a 1) (b 2) (c 3)}
+  There is no significance to the order in which elements appear.  The
+  notations "{{1 2}}" and "{{2 1}}" are equivalent, just like the
+  notations "{{1 2}}" and "{{1  2}}" (with an extra space) are
+  equivalent.  Implementations should *not* preserve the serialization
+  order among set elements unless they are also preserving (say)
+  whitespace and comments, which is to say, they are implementing a
+  fundamentally different data model than what GDValue specifies.
 
-  A map is a set that satisfies some additional constraints.
+  Duplicate elements are *ignored*.  The notation "{{1 1}}" is
+  equivalent to the notation "{{1}}".  (Rationale: This conforms to the
+  usual mathematical notion for sets, rejecting a set denoted with
+  duplicate elements is unlikely to reveal latent bugs, and it could be
+  useful in some streaming data scenarios.)
 
+  The doubled braces are used to in order to distinguish sets from maps.
 
+  It's with some reluctance that I do not write sets using single
+  braces, since that would match the usual mathematical notation, but
+  the reality is that while sets are very useful, maps are far more
+  important and common in practical programming situations, so I give
+  maps the more compact and natural notation.
 
+Map: {a:1 b:2 c:3}
 
+  After the opening brace, the format allows a value, which must be
+  followed by a colon, possibly preceded by whitespace.  The end of a
+  value is always unambiguous given one character of lookahead, and the
+  parser will know it is parsing a map entry from the start, so the
+  separating colon does not present parsing difficulties.
 
+  This choice of compact notation is motivated by the observation of the
+  paramount role that maps play in data interchange.  This is what
+  people will mostly be looking at, so is the case to optimize, even at
+  the expense of slight irregularity (by which I mean choosing to use
+  "a:1" instead of "(a 1)", which would otherwise be the notation for a
+  pair in the GDV system).
 
+  There is no significance to the order in which map entries appear.
+
+  It is an *error* for a map to have two identical keys, even if their
+  values are also identical.  (Rationale: Remember, sets and maps are
+  different.  A duplicated map key *is* likely to indicate a problem in
+  the upstream production of the data, silently dropping one of two
+  different values (which one?) would be quite surprising and constitute
+  potential data loss, and that policy is extended to the case of
+  identical values for uniformity.)
+
+    {a:1 a:1}     # syntax error
+
+  Note: Map keys (and values) are arbitrary values, including strings,
+  symbols that have denote special values, and other maps, for example:
+
+    {a:1 "b":2 {m:three}:3 {{s four}}:4 (v five):5
+     null:6 true:7 123:8 -456:9 {x:y z:w}:{d:e f:g}}
+
+  Typically, a map that represents an "object", i.e., a heterogeneous
+  tuple with elements that have named, pre-assigned roles, would use
+  symbols as keys, while a map that represents a true map from the end
+  user's perspective would use other sorts of values (especially
+  strings) as keys, but the data model and format do not impose any
+  constraint in that regard.
+
+  There is a parsing non-determinism when there are two consecutive open
+  braces.  This is resolved by saying each consecutive pair of braces,
+  after all previous braces have been accounted for, is the start of a
+  *set*, not a map:
+
+    {{A}}                # set containing A
+    {{{{1 2}}}}          # set containing set containing 1 and 2
+    { {1:2}:3}           # map from {1:2} to 3
+    {{1:2}:3}            # syntax error: colon after set element 1
+    {{{1:2}}}            # set containing map from 1 to 2
+    {{}}                 # empty set
+    {}                   # empty map
+    {{{{{1:2}}}}}        # set containing set containing map from 1 to 2
+
+  As a consequence of this disambiguation rule, when the first key (in a
+  given serialization) of a map is another map, it is necessary to
+  insert at least one space after the outer map's opening brace (as
+  shown above in the third example).
+
+  However, it's perhaps worth noting that there is no true grammatical
+  ambiguity here.  Proof:
+
+    Working from innermost paired braces to outermost:
+
+      * "{}" can either be an empty map or part of an empty set.
+
+        * If it is not surrounded by any braces, it must be a map.
+
+        * If it is immediately surrounded by braces, as "{{}}", the only
+          possibility is a set, since the outer braces cannot be a map
+          due not being empty and not having a colon inside.
+
+        * If it is surrounded by braces in any other configuration, it
+          cannot be part of the empty set notation, so must be a map.
+
+      * A brace pair that is not empty but has no colon inside of it
+        must be part of a set and the braces must be doubled.
+
+      * A brace pair that has a colon inside of it must be a map.
+
+      * Given a value V with identified kind (from having applied the
+        above rules to its contained braces) that has braces around it
+        like "{...V...}":
+
+        * If the braces have at least one colon inside them (without being
+          further enclosed by braces), it must be a map.
+
+        * If the braces have no colon, it must be a set, in which case
+          the brace pair must be doubled: "{{...V...}}".
+
+  Despite the lack of global ambiguity, I think it's unreasonable to
+  expect implementations to perform a global disambiguation for the sake
+  of saving one space in an obscure combination, thus we have the rule
+  to "maximally munch" the opening braces.
 
 
 EOF
