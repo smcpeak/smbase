@@ -388,6 +388,7 @@ out/%.unit.ok: test/%.expect unit-tests.exe
 	touch $@
 
 check: out/boxprint.unit.ok
+check: out/gdvalue.unit.ok
 check: out/tree_print.unit.ok
 
 

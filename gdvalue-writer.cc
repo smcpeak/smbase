@@ -35,6 +35,24 @@ namespace gdv {
 INIT_TRACE("gdvalue-writer");
 
 
+// True if 't' is a GDVPair whose first element is a GDVMap.
+//
+// In the general case, no.
+template <class T>
+static bool isPairWithMapAsFirstElement(T const & /*t*/)
+{
+  return false;
+}
+
+
+// Specialize for map entries.
+template <>
+bool isPairWithMapAsFirstElement(GDVMapEntry const &entry)
+{
+  return entry.first.isMap();
+}
+
+
 template <class CONTAINER>
 bool GDValueWriter::writeContainer(
   CONTAINER const &container,
@@ -72,6 +90,13 @@ bool GDValueWriter::writeContainer(
       startNewIndentedLine();
     }
     else if (curIndex > 0) {
+      os() << ' ';
+    }
+    else if (isPairWithMapAsFirstElement(val)) {
+      // We are writing the first entry of a map, and the first key is
+      // also a map.  We need to emit a space in order to separate the
+      // opening braces of the two maps, since otherwise they will be
+      // treated as the start of a set.
       os() << ' ';
     }
 
