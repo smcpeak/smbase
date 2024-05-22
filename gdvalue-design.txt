@@ -122,15 +122,16 @@ Consequently, in this design, I simply treat sets and maps as entirely
 different, unrelated containers.
 
 
-Text representation
-===================
+GDVN: Text representation
+=========================
 
-The text form is a sequence of Unicode characters represented as UTF-8.
+The text form, called GDVN for General Data Value Notation, is intended
+to be superset of JSON (as described in RFC 8259), but is nevertheless
+independently specified here.
 
-A value begins and ends with non-whitespace, and must be followed by a
-punctuation character or whitespace.  This way, a streaming reader
-always knows when it has read a complete value without having to look
-ahead even a single character.
+GDVN is a textual format, regarded as a sequence of Unicode code points.
+In principle any encoding can be used, but in practice UTF-8 encoding is
+strongly preferred.
 
 The absent value is 'null'.  Syntactically, 'null' is a symbol, but it
 has special meaning.
@@ -139,22 +140,61 @@ Booleans are 'true' and 'false'.
 
 Integers use the regex: (0|-?([1-9][0-9]+))
 
+TODO: Specify a form for floating-point numbers.
+
 Symbols use the regex: [a-zA-Z_][a-zA-Z0-9_]
 
-  Ideally I would extend this to any unicode sequence that has similar
-  starting and continuation conditions.
+  TODO: Ideally I would extend this to any unicode sequence that has
+  similar starting and continuation conditions.
 
-Strings are similar to those in C++, with a double-quoted form and a
-"raw" form.
+A double-quoted string is as in JSON:
 
-  Or maybe use Python syntax instead?
+  * It begins and ends with '"'.
 
-  Perhaps strings can be continued by following the last character with
-  '+'?
+  * In the string, all unicode code points are allowed, and represent
+    themselves, except:
+    * DoubleQuote: "
+    * Backslash: \
+    * Code points less than decimal 32 (space)
 
-Octet sequences are, perhaps, like in Python.
+  * One of the recognized two-character escape sequences:
+    * \"     DoubleQuote
+    * \\     Backslash aka Reverse Solidus
+    * \/     Slash aka Solidus
+    * \b     Backspace (dec 8)
+    * \f     FormFeed (dec 12)
+    * \n     LineFeed (dec 10)
+    * \r     CarriageReturn (dec 13)
+    * \t     Tab (dec 9)
 
-Sequence: (1 2 3)
+  * \uNNNN where N are hex to denote UTF-16 code unit in [0,0xFFFF].
+    If the code unit is a surrogate element, it must be part of a
+    well-formed surrogate pair.  Otherwise it directly denotes a code
+    point.
+
+  * Any other character following backlash is an *error* and must be
+    rejected by the GDVN parser.
+
+Some code points have multiple representations, for example backslash
+can be written as "\\" or as "\u005c".  These two forms are semantically
+equivalent.
+
+  TODO: I'd like to allow string continuation with "+".
+
+TODO: Octet sequences are, perhaps, like in Python.
+
+Whitespace: All of the following are treated as whitespace:
+
+  * Space
+  * Tab
+  * LineFeed
+  * CarriageReturn
+  * Comma ','       see Rationale section.
+
+Whitespace separates values within a container and optionally separates
+the container delimiters from values inside them.
+
+Vector: [1 2 3]
 
   Note that there is no punctuation between values.  Separators are not
   needed for parsing disambiguation, can contribute visual clutter
@@ -173,18 +213,7 @@ Set: {{1 2 3}}
   fundamentally different data model than what GDValue specifies.
 
   Duplicate elements are *ignored*.  The notation "{{1 1}}" is
-  equivalent to the notation "{{1}}".  (Rationale: This conforms to the
-  usual mathematical notion for sets, rejecting a set denoted with
-  duplicate elements is unlikely to reveal latent bugs, and it could be
-  useful in some streaming data scenarios.)
-
-  The doubled braces are used to in order to distinguish sets from maps.
-
-  It's with some reluctance that I do not write sets using single
-  braces, since that would match the usual mathematical notation, but
-  the reality is that while sets are very useful, maps are far more
-  important and common in practical programming situations, so I give
-  maps the more compact and natural notation.
+  equivalent to the notation "{{1}}".
 
 Map: {a:1 b:2 c:3}
 
@@ -194,22 +223,10 @@ Map: {a:1 b:2 c:3}
   parser will know it is parsing a map entry from the start, so the
   separating colon does not present parsing difficulties.
 
-  This choice of compact notation is motivated by the observation of the
-  paramount role that maps play in data interchange.  This is what
-  people will mostly be looking at, so is the case to optimize, even at
-  the expense of slight irregularity (by which I mean choosing to use
-  "a:1" instead of "(a 1)", which would otherwise be the notation for a
-  pair in the GDV system).
-
   There is no significance to the order in which map entries appear.
 
   It is an *error* for a map to have two identical keys, even if their
-  values are also identical.  (Rationale: Remember, sets and maps are
-  different.  A duplicated map key *is* likely to indicate a problem in
-  the upstream production of the data, silently dropping one of two
-  different values (which one?) would be quite surprising and constitute
-  potential data loss, and that policy is extended to the case of
-  identical values for uniformity.)
+  values are also identical.
 
     {a:1 a:1}     # syntax error
 
@@ -245,41 +262,116 @@ Map: {a:1 b:2 c:3}
   insert at least one space after the outer map's opening brace (as
   shown above in the third example).
 
-  However, it's perhaps worth noting that there is no true grammatical
-  ambiguity here.  Proof:
 
-    Working from innermost paired braces to outermost:
+GDVN Rationale
+==============
 
-      * "{}" can either be an empty map or part of an empty set.
+The biggest choice is to be a superset of JSON.  The rationale is fairly
+simple: lots of software can produce and consume JSON already, so this
+faciliates interoperability.  It also makes it easier for people to
+learn since the foundation is well known.  JSON brings some baggage,
+such as tolerating UTF-16 surrogate code pairs in strings, but this is a
+small price to pay.
 
-        * If it is not surrounded by any braces, it must be a map.
+An unusual choice is to regard the comma character as "whitespace" since
+it obviously isn't "white" (graphically invisible).  Commas are a
+persistent thorn in the side of JSON, being annoying to produce when not
+allowed in the trailing position and often ugly regardless.  They are
+not necessary for parsing, so originally GDVN did not have them at all.
+I then decided that allowing but ignoring them would let GDVN be a JSON
+superset, which is valuable.  But "canonical" GDVN does not use them.
 
-        * If it is immediately surrounded by braces, as "{{}}", the only
-          possibility is a set, since the outer braces cannot be a map
-          due not being empty and not having a colon inside.
+Within strings, unknown baskslash codes are disallowed in order to
+reserve them for possible future use.  If instead, say, "\c" just meant
+"c", then there would be no room to expand without breaking backward
+compatibility.
 
-        * If it is surrounded by braces in any other configuration, it
-          cannot be part of the empty set notation, so must be a map.
+Using doubled braces for sets is imperfect, but using single braces is
+bad because then an empty set could not be distinguished from an empty
+map, and no other choice seemed acceptable.  The single braces are
+reserved for maps because they are more common and important in
+practice, and that is what JSON uses.
 
-      * A brace pair that is not empty but has no colon inside of it
-        must be part of a set and the braces must be doubled.
+Duplicated elements in sets are ignored because this conforms to the
+usual mathematical notion for sets.  Furthermore, rejecting a set
+denoted with duplicate elements is unlikely to reveal latent bugs, nor
+would it preserve a useful syntax extension point for the future, and it
+could be useful in some streaming data scenarios.
 
-      * A brace pair that has a colon inside of it must be a map.
+For maps, the choice of compact notation is motivated (beyond JSON
+compatibility) by the observation of the paramount role that maps play
+in data interchange.  This is what people will mostly be looking at, so
+is the case to optimize, even at the expense of slight irregularity (by
+which I mean choosing to use "a:1" instead of "[a 1]", which would
+otherwise be the notation for a pair in the GDV system).
 
-      * Given a value V with identified kind (from having applied the
-        above rules to its contained braces) that has braces around it
-        like "{...V...}":
+Duplicated map keys are rejected because a duplicated map key *is*
+likely to indicate a problem in the upstream production of the data,
+silently dropping one of two different values (which one?) would be
+quite surprising and constitute potential data loss, and that policy is
+extended to the case of identical values for uniformity.
 
-        * If the braces have at least one colon inside them (without being
-          further enclosed by braces), it must be a map.
 
-        * If the braces have no colon, it must be a set, in which case
-          the brace pair must be doubled: "{{...V...}}".
+The double-brace conflict
+=========================
 
-  Despite the lack of global ambiguity, I think it's unreasonable to
-  expect implementations to perform a global disambiguation for the sake
-  of saving one space in an obscure combination, thus we have the rule
-  to "maximally munch" the opening braces.
+Although this specification currently resolves the double-brace conflict
+by requiring a map whose first key is a map to be written with
+separating whitespace, this is not strictly necessary.  That is, there
+is not a true grammatical ambiguity.  In particular, the following
+parsing strategy would work:
+
+1. When consecutive left braces are seen uninterrupted by whitespace,
+   count them.  Let N be the current number of unresolved consecutive
+   left-braces.
+
+     Example: After "{{{{{", N is 5.
+
+2. After consecutive left braces, if what follows is a single
+   right-brace, that must be the closing delimiter of an empty map, so
+   reduce N by one and regard the empty map as a value in step 3.
+
+     Example: "{{{{{} " -> "{{{{<emptymap>", N is 4.
+
+3. After consecutive left braces, if what follows is a value:
+
+   3a. If the value is followed by a colon, that must be a map key.
+       Finish parsing the map to its closing delimiter, reduce N by one,
+       and treat the map as the value for step 3.
+
+         Example: "{{{{{3:" -> parse map -> "{{{{<map>", N is 4.
+
+   3b. If the value is followed by another value or a close-brace, then
+       it must be a set element.  Finish parsing the set to its
+       double-brace closing delimiter, reduce N by 2, and treat the set
+       as a value for step 3.  It is a syntax error if N is only 1 at
+       this point.
+
+         Example: "{{{{{3 4" -> parse set -> "{{{<set>", N is 3.
+         Example: "{{{{{3}"  -> eat "}"   -> "{{{<set>", N is 3.
+
+4. After consecutive left braces, if what follows is at least two
+   right-braces, they must be the closing delimiter of an empty set, so
+   reduce N by 2 and regard the empty set as the value in step 3.  It
+   is a syntax error if N is only 1.
+
+     Example: "{{{{{}}" -> "{{{<set>", N is 3.
+
+Despite the existence of this parsing strategy, I have chosen to require
+that the left-braces of a map not be consecutive to ease the
+implementation of a parser, as the cost in irregularity is minimal.
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 EOF
