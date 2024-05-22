@@ -11,56 +11,56 @@ string iterable const iteration: str1
 string begin/end non-const iteration: tus2
 again: "tus2"
 string iterable non-const iteration: str1
-empty vec: ()
-three-element vec: (1 "b" 3)
-(-1 (1 "b" 3) null null 5)
+empty vec: []
+three-element vec: [1 "b" 3]
+[-1 [1 "b" 3] null null 5]
 empty set: {{}}
-{{10 "x" (2 3 4)}}
+{{10 "x" [2 3 4]}}
 empty map: {}
 {"one":1}
-{2:3 "a":1 (10 11):ten_eleven}
+{2:3 "a":1 [10 11]:ten_eleven}
 pretty print target width: 0
-(
+[
   1
   2
   3
-)
+]
 {
   a:
-    (
+    [
       1
       2
       3
-    )
-  (
+    ]
+  [
     1
     2
     3
-  ):
-    (
+  ]:
+    [
       1
       2
       3
-    )
+    ]
 }
-(
+[
   1
   "hello"
-  (
+  [
     2
     3
     4
-  )
+  ]
   {{
     10
     "x"
-    (
+    [
       2
       3
       4
-    )
+    ]
   }}
-)
+]
 {
   8:
     9
@@ -79,24 +79,24 @@ pretty print target width: 0
       "zwei"
     }}
   v:
-    (
+    [
       1
       "hello"
-      (
+      [
         2
         3
         4
-      )
+      ]
       {{
         10
         "x"
-        (
+        [
           2
           3
           4
-        )
+        ]
       }}
-    )
+    ]
   "four":
     4
   "x":
@@ -144,21 +144,21 @@ pretty print target width: 0
 }
 pretty print target width: 19
 |-----------------|
-(1 2 3)
+[1 2 3]
 {
-  a:(1 2 3)
-  (1 2 3):(1 2 3)
+  a:[1 2 3]
+  [1 2 3]:[1 2 3]
 }
-(
+[
   1
   "hello"
-  (2 3 4)
+  [2 3 4]
   {{
     10
     "x"
-    (2 3 4)
+    [2 3 4]
   }}
-)
+]
 {
   8:9
   10:11
@@ -171,16 +171,16 @@ pretty print target width: 19
     "eins"
     "zwei"
   }}
-  v:(
+  v:[
     1
     "hello"
-    (2 3 4)
+    [2 3 4]
     {{
       10
       "x"
-      (2 3 4)
+      [2 3 4]
     }}
-  )
+  ]
   "four":4
   "x":{
     8:9
@@ -211,17 +211,17 @@ pretty print target width: 19
 |-----------------|
 pretty print target width: 20
 |------------------|
-(1 2 3)
+[1 2 3]
 {
-  a:(1 2 3)
-  (1 2 3):(1 2 3)
+  a:[1 2 3]
+  [1 2 3]:[1 2 3]
 }
-(
+[
   1
   "hello"
-  (2 3 4)
-  {{10 "x" (2 3 4)}}
-)
+  [2 3 4]
+  {{10 "x" [2 3 4]}}
+]
 {
   8:9
   10:11
@@ -234,16 +234,16 @@ pretty print target width: 20
     "eins"
     "zwei"
   }}
-  v:(
+  v:[
     1
     "hello"
-    (2 3 4)
+    [2 3 4]
     {{
       10
       "x"
-      (2 3 4)
+      [2 3 4]
     }}
-  )
+  ]
   "four":4
   "x":{
     8:9
@@ -274,23 +274,23 @@ pretty print target width: 20
 |------------------|
 pretty print target width: 37
 |-----------------------------------|
-(1 2 3)
-{a:(1 2 3) (1 2 3):(1 2 3)}
-(
+[1 2 3]
+{a:[1 2 3] [1 2 3]:[1 2 3]}
+[
   1
   "hello"
-  (2 3 4)
-  {{10 "x" (2 3 4)}}
-)
+  [2 3 4]
+  {{10 "x" [2 3 4]}}
+]
 {8:9 10:11 12:13 14:15}
 {
   counting:{{"drei" "eins" "zwei"}}
-  v:(
+  v:[
     1
     "hello"
-    (2 3 4)
-    {{10 "x" (2 3 4)}}
-  )
+    [2 3 4]
+    {{10 "x" [2 3 4]}}
+  ]
   "four":4
   "x":{8:9 10:11 12:13 14:15}
   {8:9 10:11 12:13 14:15}:
@@ -300,18 +300,18 @@ pretty print target width: 37
 |-----------------------------------|
 pretty print target width: 38
 |------------------------------------|
-(1 2 3)
-{a:(1 2 3) (1 2 3):(1 2 3)}
-(1 "hello" (2 3 4) {{10 "x" (2 3 4)}})
+[1 2 3]
+{a:[1 2 3] [1 2 3]:[1 2 3]}
+[1 "hello" [2 3 4] {{10 "x" [2 3 4]}}]
 {8:9 10:11 12:13 14:15}
 {
   counting:{{"drei" "eins" "zwei"}}
-  v:(
+  v:[
     1
     "hello"
-    (2 3 4)
-    {{10 "x" (2 3 4)}}
-  )
+    [2 3 4]
+    {{10 "x" [2 3 4]}}
+  ]
   "four":4
   "x":{8:9 10:11 12:13 14:15}
   {8:9 10:11 12:13 14:15}:

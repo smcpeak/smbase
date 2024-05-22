@@ -254,7 +254,7 @@ GDValue GDValueReader::readNextVector()
   while (true) {
     std::optional<GDValue> next = readNextValue();
     if (!next) {
-      readExpectChar(')', "looking for ')' at end of vector");
+      readExpectChar(']', "looking for ']' at end of vector");
       return ret;
     }
 
@@ -515,12 +515,12 @@ std::optional<GDValue> GDValueReader::readNextValue()
     }
 
     switch (c) {
-      case ')':
+      case ']':
       case '}':
         putback(c);
         return std::nullopt;
 
-      case '(':
+      case '[':
         return std::make_optional(readNextVector());
 
       case '{': {

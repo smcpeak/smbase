@@ -283,7 +283,7 @@ static void testVector()
 {
   GDValue v1(GDVK_VECTOR);
   cout << "empty vec: " << v1 << "\n";
-  assert(v1.asString() == "()");
+  assert(v1.asString() == "[]");
   assert(v1.size() == 0);
   assert(v1.empty());
   assert(v1.getKind() == GDVK_VECTOR);
@@ -298,7 +298,7 @@ static void testVector()
   GDVVector vec1b3{GDValue(1), GDValue("b"), GDValue(3)};
   GDValue v3(vec1b3);
   cout << "three-element vec: " << v3 << "\n";
-  assert(v3.asString() == "(1 \"b\" 3)");
+  assert(v3.asString() == "[1 \"b\" 3]");
   assert(v3.size() == 3);
   assert(!v3.empty());
   assert(v3.getKind() == GDVK_VECTOR);
@@ -307,24 +307,24 @@ static void testVector()
   testSerializeRoundtrip(v3);
 
   v1.vectorAppend(GDValue(-1));
-  assert(v1.asString() == "(-1)");
+  assert(v1.asString() == "[-1]");
   assert(v1 < v3);
 
   v3.vectorAppend(GDValue("four"));
-  assert(v3.asString() == R"((1 "b" 3 "four"))");
+  assert(v3.asString() == R"([1 "b" 3 "four"])");
 
   v1.vectorResize(3);
-  assert(v1.asString() == "(-1 null null)");
+  assert(v1.asString() == "[-1 null null]");
 
   v3.vectorResize(3);
-  assert(v3.asString() == R"((1 "b" 3))");
+  assert(v3.asString() == R"([1 "b" 3])");
 
   v1.vectorSetValueAt(1, v3);
-  assert(v1.asString() == R"((-1 (1 "b" 3) null))");
+  assert(v1.asString() == R"([-1 [1 "b" 3] null])");
 
   v1.vectorSetValueAt(4, GDValue(5));
   cout << v1 << "\n";
-  assert(v1.asString() == R"((-1 (1 "b" 3) null null 5))");
+  assert(v1.asString() == R"([-1 [1 "b" 3] null null 5])");
   testSerializeRoundtrip(v1);
 
   assert(v1.vectorGetValueAt(1) == v3);
@@ -342,7 +342,7 @@ static void testVector()
       value.integerSet(value.integerGet() + 1);
     }
   }
-  assert(v1.asString() == R"((0 (1 "b" 3) null null 6))");
+  assert(v1.asString() == R"([0 [1 "b" 3] null null 6])");
 
   v1.vectorClear();
   assert(v1 == v2);
@@ -393,7 +393,7 @@ static void testSet()
          }),
        });
   cout << v2 << "\n";
-  assert(v2.asString() == R"({{10 "x" (2 3 4)}})");
+  assert(v2.asString() == R"({{10 "x" [2 3 4]}})");
   testSerializeRoundtrip(v2);
 }
 
@@ -453,7 +453,7 @@ static void testMap()
          )
        });
   cout << v2 << "\n";
-  assert(v2.asString() == "{2:3 \"a\":1 (10 11):ten_eleven}");
+  assert(v2.asString() == "{2:3 \"a\":1 [10 11]:ten_eleven}");
   testSerializeRoundtrip(v2);
 
   assert(v2.mapGetValueAt(

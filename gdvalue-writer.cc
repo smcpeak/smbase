@@ -231,8 +231,8 @@ bool GDValueWriter::tryWrite(GDValue const &value,
     case GDVK_VECTOR:
       return writeContainer(
         value.vectorGet(),
-        "(",
-        ")");
+        "[",
+        "]");
 
     case GDVK_SET:
       // TODO: Explain the choice of syntax in the design doc.
