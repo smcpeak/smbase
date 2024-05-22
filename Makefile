@@ -44,9 +44,14 @@ WARNING_FLAGS =
 # $(WARINING_FLAGS) for C++ compilation.
 CXX_WARNING_FLAGS =
 
-# Flags for C or C++ standard to use.
+# Flags for C standard to use.
 C_STD_FLAGS   = -std=c99
-CXX_STD_FLAGS = -std=c++11
+
+# Flags for C++ standard to use.
+#
+# I've decided to start trying to use std::optional, which means I need
+# C++17.
+CXX_STD_FLAGS = -std=c++17
 
 # -D flags to pass to preprocessor.
 DEFINES =
@@ -227,9 +232,12 @@ SRCS += datablok.cc
 SRCS += datetime.cc
 SRCS += dev-warning.cc
 SRCS += exc.cc
+SRCS += file-line-col.cc
 SRCS += flatten.cc
 SRCS += functional-set.cc
 SRCS += gcc-options.cc
+SRCS += gdvalue-reader-exception.cc
+SRCS += gdvalue-reader.cc
 SRCS += gdvalue-write-options.cc
 SRCS += gdvalue-writer.cc
 SRCS += gdvalue.cc

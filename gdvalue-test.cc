@@ -1,18 +1,59 @@
 // gdvalue-test.cc
 // Tests for gdvalue.
 
-#include "gdvalue.h"                   // this module
+#include "gdvalue.h"                   // module under test
 
 // this dir
 #include "gdvsymbol.h"                 // gdv::GDVSymbol
+#include "gdvalue-reader-exception.h"  // GDValueReaderException
 
 // libc++
 #include <cassert>                     // assert
-#include <cstdlib>                     // std::atoi
+#include <cstdlib>                     // std::{atoi, exit}
 #include <iostream>                    // std::cout
 
 using std::cout;
 using namespace gdv;
+
+
+// Check that 'ser' deserializes to 'expect'.
+static void checkParse(GDValue const &expect, std::string const &ser)
+{
+  try {
+    GDValue actual(GDValue::readFromString(ser));
+
+    if (actual != expect) {
+      cout << "During checkParse, found mismatch:\n"
+           << "---- expect ----\n"
+           << expect.asLinesString()
+           << "---- ser ----\n"
+           << ser << "\n"
+           << "---- actual ----\n"
+           << actual.asLinesString();
+      std::exit(2);
+    }
+  }
+  catch (GDValueReaderException const &e) {
+    cout << "During checkParse, caught exception:\n"
+         << "---- expect ----\n"
+         << expect.asLinesString()
+         << "---- ser ----\n"
+         << ser << "\n";
+    throw e;
+  }
+}
+
+
+// Serialize and deserialize 'value', a couple ways, expecting
+// equivalence.
+static void testSerializeRoundtrip(GDValue const &value)
+{
+  // Compact form.
+  checkParse(value, value.asString());
+
+  // Indented form.
+  checkParse(value, value.asLinesString());
+}
 
 
 static void testNull()
@@ -42,6 +83,8 @@ static void testNull()
 
   GDValue v3(GDVK_NULL);
   assert(v == v3);
+
+  testSerializeRoundtrip(v);
 }
 
 
@@ -74,6 +117,9 @@ static void testBool()
 
   assert(dTrue > dNull);
   assert(dFalse > dNull);
+
+  testSerializeRoundtrip(dTrue);
+  testSerializeRoundtrip(dFalse);
 }
 
 
@@ -97,6 +143,12 @@ static void testInteger()
 
   assert(d0 < d1);
   assert(GDValue() < d0);
+
+  testSerializeRoundtrip(d0);
+  testSerializeRoundtrip(d1);
+
+  testSerializeRoundtrip(GDValue(1234567890));
+  testSerializeRoundtrip(GDValue(-1234567890));
 }
 
 
@@ -110,6 +162,7 @@ static void testSymbol()
   assert(dSym1.getKind() == GDVK_SYMBOL);
   assert(dSym1.isSymbol());
   assert(dSym1.symbolGet() == GDVSymbol("sym1"));
+  testSerializeRoundtrip(dSym1);
 
   GDValue dSym2(GDVSymbol("sym2"));
   assert(dSym2.asString() == "sym2");
@@ -117,6 +170,7 @@ static void testSymbol()
   assert(!dSym2.empty());
   assert(dSym2.getKind() == GDVK_SYMBOL);
   assert(dSym2.symbolGet() == GDVSymbol("sym2"));
+  testSerializeRoundtrip(dSym2);
 
   assert(dSym1 < dSym2);
   assert(GDValue() < dSym1);
@@ -124,6 +178,8 @@ static void testSymbol()
   dSym2.clear();
   assert(dSym2.isNull());
   assert(dSym2.getKind() == GDVK_NULL);
+
+  testSerializeRoundtrip(dSym2);
 }
 
 
@@ -209,6 +265,17 @@ static void testString()
   }
 
   #undef CHECK_COUNTS
+
+  testSerializeRoundtrip(dStr1);
+  testSerializeRoundtrip(GDVString(""));
+
+  {
+    std::ostringstream oss;
+    for (int i=0; i < 256; ++i) {
+      oss << (char)i;
+    }
+    testSerializeRoundtrip(GDVString(oss.str()));
+  }
 }
 
 
@@ -222,6 +289,7 @@ static void testVector()
   assert(v1.getKind() == GDVK_VECTOR);
   assert(v1.isVector());
   assert(v1.vectorGet() == GDVVector());
+  testSerializeRoundtrip(v1);
 
   GDValue v2((GDVVector()));
 
@@ -236,6 +304,7 @@ static void testVector()
   assert(v3.getKind() == GDVK_VECTOR);
   assert(v3.vectorGet() == vec1b3);
   assert(v1 < v3);
+  testSerializeRoundtrip(v3);
 
   v1.vectorAppend(GDValue(-1));
   assert(v1.asString() == "(-1)");
@@ -256,6 +325,7 @@ static void testVector()
   v1.vectorSetValueAt(4, GDValue(5));
   cout << v1 << "\n";
   assert(v1.asString() == R"((-1 (1 "b" 3) null null 5))");
+  testSerializeRoundtrip(v1);
 
   assert(v1.vectorGetValueAt(1) == v3);
 
@@ -277,6 +347,7 @@ static void testVector()
   v1.vectorClear();
   assert(v1 == v2);
   assert(v1.empty());
+  testSerializeRoundtrip(v1);
 }
 
 
@@ -290,6 +361,7 @@ static void testSet()
   assert(v1.getKind() == GDVK_SET);
   assert(v1.isSet());
   assert(v1.setGet() == GDVSet());
+  testSerializeRoundtrip(v1);
 
   GDValue v2(v1);
   assert(v1 == v2);
@@ -301,6 +373,7 @@ static void testSet()
 
   v2.setInsert(GDValue(2));
   assert(v2.asString() == "{{1 2}}");
+  testSerializeRoundtrip(v2);
 
   v2.setRemove(GDValue(1));
   assert(v2.asString() == "{{2}}");
@@ -308,6 +381,7 @@ static void testSet()
   v2.setClear();
   assert(v2.asString() == "{{}}");
   assert(v1 == v2);
+  testSerializeRoundtrip(v2);
 
   v2 = GDValue(GDVSet{
          GDValue("x"),
@@ -320,6 +394,7 @@ static void testSet()
        });
   cout << v2 << "\n";
   assert(v2.asString() == R"({{10 "x" (2 3 4)}})");
+  testSerializeRoundtrip(v2);
 }
 
 
@@ -333,6 +408,7 @@ static void testMap()
   assert(v1.getKind() == GDVK_MAP);
   assert(v1.isMap());
   assert(v1.mapGet() == GDVMap());
+  testSerializeRoundtrip(v1);
 
   GDValue v2(v1);
   assert(v1 == v2);
@@ -344,21 +420,26 @@ static void testMap()
   assert(v2.asString() == R"({"one":1})");
   assert(v2.mapContains(GDValue("one")));
   assert(v2 > v1);
+  testSerializeRoundtrip(v2);
 
   v2.mapSetValueAt(GDValue("one"), GDValue(2));
   assert(v2.asString() == R"({"one":2})");
   assert(v2.mapContains(GDValue("one")));
+  testSerializeRoundtrip(v2);
 
   v2.mapSetValueAt(GDValue("two"), GDValue(2));
   assert(v2.asString() == R"({"one":2 "two":2})");
   assert(v2.size() == 2);
+  testSerializeRoundtrip(v2);
 
   v2.mapRemoveKey(GDValue("one"));
   assert(v2.asString() == R"({"two":2})");
   assert(!v2.mapContains(GDValue("one")));
+  testSerializeRoundtrip(v2);
 
   v2.mapClear();
   assert(v1 == v2);
+  testSerializeRoundtrip(v2);
 
   v2 = GDValue(GDVMap{
          GDVMapEntry(GDValue("a"), GDValue(1)),
@@ -373,6 +454,7 @@ static void testMap()
        });
   cout << v2 << "\n";
   assert(v2.asString() == "{2:3 \"a\":1 (10 11):ten_eleven}");
+  testSerializeRoundtrip(v2);
 
   assert(v2.mapGetValueAt(
            GDValue(GDVVector({GDValue(10), GDValue(11)}))) ==
@@ -545,6 +627,12 @@ static void testPrettyExpect()
 }
 
 
+static void testSyntaxErrors()
+{
+  // TODO: Write tests that exercise syntax errors.
+}
+
+
 // Called from unit-tests.cc.
 void test_gdvalue()
 {
@@ -564,6 +652,7 @@ void test_gdvalue()
     testVector();
     testSet();
     testMap();
+    testSyntaxErrors();
 
     // Some interesting values for the particular data used.
     testPrettyPrint(0);

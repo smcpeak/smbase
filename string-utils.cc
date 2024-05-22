@@ -249,4 +249,21 @@ bool contains(std::string const &str, char c)
 }
 
 
+std::string possiblyTruncatedWithEllipsis(
+  std::string const &str, std::size_t maxLen)
+{
+  if (str.length() > maxLen) {
+    if (maxLen <= 3) {
+      return std::string(maxLen, '.');
+    }
+    else {
+      return str.substr(0, maxLen-3) + "...";
+    }
+  }
+  else {
+    return str;
+  }
+}
+
+
 // EOF

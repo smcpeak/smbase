@@ -249,6 +249,38 @@ public:      // methods
   std::string asLinesString(
     GDValueWriteOptions options = GDValueWriteOptions()) const;
 
+  // Write the value to 'fileName', terminated by a final newline.
+  // Throw an exception if the file cannot be written.
+  void writeToFile(std::string const &fileName,
+                   GDValueWriteOptions options = GDValueWriteOptions()) const;
+
+
+  // ---- Read as text ----
+  // Read the next value from 'is'.  It must read enough to determine
+  // that the value is complete, and will block if it is not.  It will
+  // leave the input stream at the character after the last in the
+  // value, typically using istream::putback to do that.
+  //
+  // If there is no value before EOF, this returns nullopt.
+  //
+  // If a syntax error is encountered, throws 'GDValueReaderException'
+  // (declared in gdvalue-reader-exception.h).
+  //
+  static std::optional<GDValue> readNextValue(std::istream &is);
+
+  // Read a single serialized value from 'is', throwing an exception if
+  // there is not exactly one value before EOF or it is malformed.
+  static GDValue readFromStream(std::istream &is);
+
+  // Read the single serialized value in 'str', throwing an exception if
+  // there is not exactly one value orit is malformed.
+  static GDValue readFromString(std::string const &str);
+
+  // Read the single value stored in 'fileName', throwing an exception
+  // if it cannot be opened, there is not exactly one value, or is
+  // malformed.
+  static GDValue readFromFile(std::string const &fileName);
+
 
   // ---- Boolean ----
   // A constructor that just accepts 'bool' creates too many ambiguities

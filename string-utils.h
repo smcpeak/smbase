@@ -54,18 +54,25 @@ std::string stripExtension(std::string const &fname);
 // True if 'arr' is strictly sorted in ascending order per 'strcmp',
 // which is equivalent to "LANG=C sort" order.
 bool isStrictlySortedStringArray(char const * const *arr,
-                                 size_t arrLength);
+                                 std::size_t arrLength);
 
 // Return true if 'str' compares equal to any of the strings in 'arr',
 // whose length is 'arrLength'.  The array must satisfy
 // 'isStrictlySortedStringArray'.
 bool stringInSortedArray(char const *str, char const * const *arr,
-                         size_t arrLength);
+                         std::size_t arrLength);
 
 // True if 'str' begins with 'prefix'.
 bool beginsWith(std::string const &str, std::string const &prefix);
 
 // True if 'str' contains 'c'.
 bool contains(std::string const &str, char c);
+
+// If 'str' is longer than 'maxLen', truncate it to 'maxLen', with the
+// last three characters replaced with "...".  If 'maxLen' is less than
+// or equal to 3, and truncation is necessary, the result is 'maxLen'
+// dots.
+std::string possiblyTruncatedWithEllipsis(
+  std::string const &str, std::size_t maxLen);
 
 #endif // STRING_UTILS_H

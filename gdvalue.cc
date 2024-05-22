@@ -5,11 +5,14 @@
 
 // this dir
 #include "compare-util.h"              // compare, RET_IF_COMPARE
+#include "gdvalue-reader.h"            // gdv::GDValueReader
 #include "gdvalue-writer.h"            // gdv::GDValueWriter
 #include "gdvsymbol.h"                 // gdv::GDVSymbol
+#include "syserr.h"                    // xsyserror
 
 // libc++
 #include <cassert>                     // assert
+#include <fstream>                     // std::{ifstream, ofstream}
 #include <sstream>                     // std::ostringstream
 #include <utility>                     // std::move, std::swap, std::make_pair
 
@@ -488,6 +491,56 @@ std::string GDValue::asLinesString(GDValueWriteOptions options) const
   std::ostringstream oss;
   writeLines(oss, options);
   return oss.str();
+}
+
+
+void GDValue::writeToFile(
+  std::string const &fileName,
+  GDValueWriteOptions options) const
+{
+  // TODO: I should wrap this behavior in a class.
+  std::ofstream outFile(fileName.c_str(), std::ios_base::binary);
+  if (!outFile) {
+    xsyserror("open (for writing)", fileName);
+  }
+
+  write(outFile, options);
+  outFile << '\n';
+}
+
+
+// --------------------------- Read as text ----------------------------
+/*static*/ std::optional<GDValue> GDValue::readNextValue(std::istream &is)
+{
+  GDValueReader reader(is, std::nullopt);
+  return reader.readNextValue();
+}
+
+
+/*static*/ GDValue GDValue::readFromStream(std::istream &is)
+{
+  GDValueReader reader(is, std::nullopt);
+  return reader.readExactlyOneValue();
+}
+
+
+/*static*/ GDValue GDValue::readFromString(std::string const &str)
+{
+  std::istringstream iss(str);
+  return readFromStream(iss);
+}
+
+
+/*static*/ GDValue GDValue::readFromFile(std::string const &fileName)
+{
+  // TODO: I should wrap this behavior in a class.
+  std::ifstream inFile(fileName.c_str(), std::ios_base::binary);
+  if (!inFile) {
+    xsyserror("open (for reading)", fileName);
+  }
+
+  GDValueReader reader(inFile, fileName);
+  return reader.readExactlyOneValue();
 }
 
 
