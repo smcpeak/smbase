@@ -443,6 +443,40 @@ call-abort.exe: call-abort.cc
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $<
 
 
+# ------------------------------- gdvn ---------------------------------
+# Program to read and write GDVN.
+gdvn.exe: gdvn.cc $(THIS)
+	$(CXX) -o $@ $(CXXFLAGS) $(LFDLAGS) $< $(LIBS)
+
+all: gdvn.exe
+
+
+# Create an empty expected-output file if necessary.
+test/gdvn/%-expect: test/gdvn/%
+	touch $@
+
+# Run a file through gdvn.exe.
+out/gdvn/%-ok: test/gdvn/% test/gdvn/%-expect gdvn.exe
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(RUN_COMPARE_EXPECT) \
+	  --actual out/gdvn/$*-actual \
+	  --expect test/gdvn/$*-expect \
+	  ./gdvn.exe $<
+	touch $@
+
+# Files with which to test gdvn.
+GDVN_INPUTS :=
+GDVN_INPUTS += $(wildcard test/gdvn/bad/*.gdvn)
+
+# .ok files resulting from running the tests.
+GDVN_OKFILES := $(patsubst test/gdvn/%,out/gdvn/%-ok,$(GDVN_INPUTS))
+
+.PHONY: check-gdvn
+check-gdvn: $(GDVN_OKFILES)
+
+check: check-gdvn
+
+
 # -------------------------- run unit tests ----------------------------
 out/unit-tests.exe.ok: unit-tests.exe call-abort.exe test.dir/read-only.txt
 	$(CREATE_OUTPUT_DIRECTORY)

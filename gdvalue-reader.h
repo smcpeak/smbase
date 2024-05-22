@@ -37,6 +37,11 @@ protected:   // methods
   // encountered.
   void errUnexpectedChar(int c, char const *lookingFor) const;
 
+  // Read the next character from 'm_is', then immediately put it back
+  // (unless it is EOF) and leave 'm_location' unaffected.  Return the
+  // character found.
+  int peekChar();
+
   // Read a single character from 'm_is', updating 'm_location' so it
   // refers to the *next* character.  (Thus, when we report an error, we
   // must use the immediately prior location.)  Returns 'eofCode()' on

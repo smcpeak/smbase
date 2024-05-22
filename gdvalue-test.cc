@@ -6,6 +6,9 @@
 // this dir
 #include "gdvsymbol.h"                 // gdv::GDVSymbol
 #include "gdvalue-reader-exception.h"  // GDValueReaderException
+#include "sm-test.h"                   // EXPECT_EQ, EXPECT_MATCHES_REGEX
+#include "strutil.h"                   // hasSubstring
+#include "string-utils.h"              // doubleQuote
 
 // libc++
 #include <cassert>                     // assert
@@ -627,9 +630,124 @@ static void testPrettyExpect()
 }
 
 
+static void testOneErrorSubstrOrRegex(
+  char const *input,
+  int expectLine,
+  int expectColumn,
+  char const * NULLABLE expectErrorSubstring,
+  char const * NULLABLE expectErrorRegex)
+{
+  try {
+    try {
+      GDValue::readFromString(input);
+      xfailure("should have failed");
+    }
+    catch (GDValueReaderException &e) {
+      EXPECT_EQ(e.m_location.m_line, expectLine);
+      EXPECT_EQ(e.m_location.m_column, expectColumn);
+      if (expectErrorSubstring) {
+        EXPECT_HAS_SUBSTRING(e.m_syntaxError, expectErrorSubstring);
+      }
+      else {
+        EXPECT_MATCHES_REGEX(e.m_syntaxError, expectErrorRegex);
+      }
+    }
+  }
+  catch (xBase &x) {
+    x.prependContext(stringb("input=" << doubleQuote(input)));
+    throw;
+  }
+}
+
+
+static void testOneErrorSubstr(
+  char const *input,
+  int expectLine,
+  int expectColumn,
+  char const *expectErrorSubstring)
+{
+  testOneErrorSubstrOrRegex(
+    input,
+    expectLine,
+    expectColumn,
+    expectErrorSubstring,
+    nullptr /*regex*/);
+}
+
+
+static void testOneErrorRegex(
+  char const *input,
+  int expectLine,
+  int expectColumn,
+  char const *expectErrorRegex)
+{
+  testOneErrorSubstrOrRegex(
+    input,
+    expectLine,
+    expectColumn,
+    nullptr /*substr*/,
+    expectErrorRegex);
+}
+
+
 static void testSyntaxErrors()
 {
-  // TODO: Write tests that exercise syntax errors.
+  // This test is meant to correspond to gdvalue-reader.cc, exercising
+  // each of the error paths evident in each function.  Basically, I
+  // search for "err" and then target each occurrence.
+
+  // errUnexpectedChar
+  testOneErrorSubstr("", 1, 1, "end of file");
+  testOneErrorSubstr(";", 1, 1, "';'");
+  testOneErrorSubstr("\001", 1, 1, "(0x01)");
+
+  // processExpectChar: TODO: Look for call sites.
+
+  // readCharNotEOF: TODO: Callers.
+
+  // readExpectEOF
+  testOneErrorSubstr("1 2", 1, 3, "only have one value");
+
+  // skipWhitespaceAndComments
+  testOneErrorRegex(" /", 1, 3, "end of file.*after '/'");
+  testOneErrorRegex("/-", 1, 2, "'-'.*after '/'");
+
+  // Uncategorized.
+  testOneErrorSubstr("/*/1", 1, 5,
+    R"(inside "/*" comment, looking for corresponding "*/")");
+
+  // TODO: More
+}
+
+
+// Check that deserializing 'input' succeeds and yields 'expect'.
+static void testOneDeserialize(
+  char const *input,
+  GDValue expect)
+{
+  try {
+    GDValue actual = GDValue::readFromString(input);
+    EXPECT_EQ(actual, expect);
+  }
+  catch (xBase &x) {
+    x.prependContext(stringb("input=" << doubleQuote(input)));
+    throw;
+  }
+}
+
+
+static void testDeserialize()
+{
+  // Comma is whitespace.
+  testOneDeserialize(",1", 1);
+
+  // Check handling of whitespace and comments after the value.
+  testOneDeserialize("1 ", 1);
+  testOneDeserialize("1 \n\n", 1);
+  testOneDeserialize("1 //", 1);
+  testOneDeserialize("1 //\n//\n", 1);
+  testOneDeserialize("1 /**/", 1);
+  testOneDeserialize("1 /**/ ", 1);
 }
 
 
@@ -653,6 +771,7 @@ void test_gdvalue()
     testSet();
     testMap();
     testSyntaxErrors();
+    testDeserialize();
 
     // Some interesting values for the particular data used.
     testPrettyPrint(0);

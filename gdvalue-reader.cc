@@ -60,11 +60,25 @@ void GDValueReader::errUnexpectedChar(int c, char const *lookingFor) const
   }
   else {
     err(stringb("Unexpected unprintable character code " <<
-                (unsigned)c << " (0x" << std::hex <<
-                (unsigned)c << ") while " << lookingFor << "."));
+                (unsigned)c << " (0x" << std::hex << std::setw(2) <<
+                std::setfill('0') << (unsigned)c <<
+                ") while " << lookingFor << "."));
   }
 
   // Not reached.
+}
+
+
+int GDValueReader::peekChar()
+{
+  int c = m_is.get();
+  if (c != eofCode()) {
+    m_is.putback(c);
+  }
+
+  // Do not updae the location.
+
+  return c;
 }
 
 
@@ -142,7 +156,7 @@ int GDValueReader::skipWhitespaceAndComments()
       case '\t':
       case '\n':
       case '\r':
-      case '\v':
+      case ',':
         break;
 
       case '/':
@@ -574,7 +588,7 @@ GDValue GDValueReader::readExactlyOneValue()
   std::optional<GDValue> ret(readNextValue());
   if (!ret) {
     // Either EOF or a closing delimiter.
-    errUnexpectedChar(readChar(), "looking for the start of the value");
+    errUnexpectedChar(peekChar(), "looking for the start of the value");
   }
 
   // Consume text after the value.
