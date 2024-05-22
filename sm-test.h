@@ -112,10 +112,10 @@ template <class T>
 void expectEq(char const *label, T const &actual, T const &expect)
 {
   if (expect != actual) {
-    cout << "mismatched " << label << ':' << endl;
-    cout << "  actual: " << actual << endl;
-    cout << "  expect: " << expect << endl;
-    xfailure(stringbc("mismatched " << label));
+    xfailure(stringbc(
+      "While checking " << label << ":\n"
+      "  actual: " << actual << "\n"
+      "  expect: " << expect));
   }
 }
 
@@ -128,6 +128,16 @@ inline void expectEq(char const *label, string const &actual, char const *expect
 {
   expectEq(label, actual, string(expect));
 }
+
+
+// Check that 'hasSubstring(actual, expectSubstring)'.
+void expectHasSubstring(
+  char const *label,
+  string const &actual,
+  char const *expectSubstring);
+
+#define EXPECT_HAS_SUBSTRING(actual, expect) \
+  expectHasSubstring(#actual, actual, expect) /* user ; */
 
 
 #endif // SMBASE_SM_TEST_H
