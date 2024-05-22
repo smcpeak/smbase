@@ -11,6 +11,9 @@
 #include "str.h"                       // streq
 
 #include <cstdlib>                     // std::getenv
+#include <iostream>                    // std::{cout, cerr}
+
+#include <stdio.h>                     // fflush, stdout, stderr
 
 
 extern "C" {
@@ -43,16 +46,24 @@ static void entry(int argc, char **argv)
   bool enableTimes = !!std::getenv("UNIT_TESTS_TIMES");
 
   // Run the test if it is enabled without declaring the test function.
-  #define RUN_TEST_NO_DECL(name)                       \
-    if (testName == NULL || streq(testName, #name)) {  \
-      std::cout << "---- " #name " ----" << std::endl; \
-      long start = getMilliseconds();                  \
-      test_##name();                                   \
-      long stop = getMilliseconds();                   \
-      if (enableTimes) {                               \
-        printTiming(#name, stop-start);                \
-      }                                                \
-      ranOne = true;                                   \
+  #define RUN_TEST_NO_DECL(name)                        \
+    if (testName == NULL || streq(testName, #name)) {   \
+      std::cout << "---- " #name " ----" << std::endl;  \
+      long start = getMilliseconds();                   \
+      test_##name();                                    \
+      long stop = getMilliseconds();                    \
+      if (enableTimes) {                                \
+        printTiming(#name, stop-start);                 \
+      }                                                 \
+      /* Flush all output streams so that the output */ \
+      /* from different tests cannot get mixed up. */   \
+      /* Note that some tests are written in C, so */   \
+      /* the C streams require flushing too. */         \
+      fflush(stdout);                                   \
+      std::cout.flush();                                \
+      fflush(stderr);                                   \
+      std::cerr.flush();                                \
+      ranOne = true;                                    \
     }
 
   // Run the named test if enabled, also declaring the test function.
