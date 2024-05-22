@@ -36,11 +36,18 @@ GDValueReader::~GDValueReader()
 
 void GDValueReader::err(string const &syntaxError) const
 {
+  errAt(m_location, syntaxError);
+}
+
+
+void GDValueReader::errAt(FileLineCol const &loc,
+                          string const &syntaxError) const
+{
   // Generally, we read a character, advancing the location in the
   // process, then check for an error.  Consequently, when we report an
   // error the location is one past the place the erroneous character
   // was.  So, back the location spot up.
-  FileLineCol prev(m_location);
+  FileLineCol prev(loc);
   prev.decrementColumn();
 
   breaker();
@@ -66,19 +73,6 @@ void GDValueReader::errUnexpectedChar(int c, char const *lookingFor) const
   }
 
   // Not reached.
-}
-
-
-int GDValueReader::peekChar()
-{
-  int c = m_is.get();
-  if (c != eofCode()) {
-    m_is.putback(c);
-  }
-
-  // Do not updae the location.
-
-  return c;
 }
 
 
@@ -134,11 +128,16 @@ void GDValueReader::putback(int c)
   if (c == eofCode()) {
     // It is convenient to allow this to make the parsing code more
     // uniform in its treatment of EOF versus other terminators in
-    // some places.
-    return;
+    // some places.  But we do not actually put anything back into the
+    // stream.
+  }
+  else {
+    m_is.putback(c);
   }
 
-  m_is.putback(c);
+  // Either way, however, the location must be decremented because it
+  // was incremented when when we did the corresponding 'readChar', even
+  // if it returned EOF.
   m_location.decrementForChar(c);
 }
 
@@ -299,6 +298,16 @@ GDValue GDValueReader::readNextMap()
   GDValue ret(GDVK_MAP);
 
   while (true) {
+    // Skip leading whitespace.
+    int firstKeyChar = skipWhitespaceAndComments();
+
+    // Save this location as the key location in case we need to report
+    // a duplicate key error below.
+    LineCol keyLC = m_location.getLineCol();
+
+    // Put the first key character back so 'readNextValue' will see it.
+    putback(firstKeyChar);
+
     // Read the key.
     std::optional<GDValue> key = readNextValue();
     if (!key) {
@@ -313,15 +322,20 @@ GDValue GDValueReader::readNextMap()
     // Read the value.
     std::optional<GDValue> value = readNextValue();
     if (!value) {
-      errUnexpectedChar(eofCode(), "looking for value after ':' in map entry");
+      errUnexpectedChar(readChar(), "looking for value after ':' in map entry");
     }
 
     if (ret.mapContains(*key)) {
+      // Get the key as GDVN.
       std::string keyAsString =
         possiblyTruncatedWithEllipsis(
           key->asString(), 60);
 
-      err(stringb("Duplicate map key: " << doubleQuote(keyAsString)));
+      // Use the location we saved before.
+      FileLineCol loc(m_location);
+      loc.setLineCol(keyLC);
+
+      errAt(loc, stringb("Duplicate map key: " << keyAsString));
     }
 
     ret.mapSetValueAt(std::move(*key), std::move(*value));
@@ -525,6 +539,8 @@ std::optional<GDValue> GDValueReader::readNextValue()
   while (true) {
     int c = skipWhitespaceAndComments();
     if (c == eofCode()) {
+      // Restore 'm_location' to that of the EOF.
+      putback(c);
       return std::nullopt;
     }
 
@@ -573,7 +589,7 @@ std::optional<GDValue> GDValueReader::readNextValue()
           return std::make_optional(readNextSymbolOrSpecial(c));
         }
         else {
-          errUnexpectedChar(c, "looking for the start of the value");
+          errUnexpectedChar(c, "looking for the start of a value");
         }
         return std::nullopt;      // Not reached.
     }
@@ -587,8 +603,9 @@ GDValue GDValueReader::readExactlyOneValue()
 {
   std::optional<GDValue> ret(readNextValue());
   if (!ret) {
-    // Either EOF or a closing delimiter.
-    errUnexpectedChar(peekChar(), "looking for the start of the value");
+    // Either EOF or a closing delimiter.  We need to re-read the
+    // character to determine which.
+    errUnexpectedChar(readChar(), "looking for the start of a value");
   }
 
   // Consume text after the value.

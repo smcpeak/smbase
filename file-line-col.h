@@ -11,16 +11,9 @@
 #include <string>                      // std::string
 
 
-// A location in a file or stream that may or may not have a name.
-class FileLineCol {
+// A line and column number.
+class LineCol {
 public:      // data
-  // If the location is in a file with a known name, this is its name.
-  //
-  // Typically, this should either be an absolute path or a path
-  // relative to the current directory, but the precise interpretation
-  // is somewhat dependent on the user of this class.
-  std::optional<std::string> m_fileName;
-
   // 1-based line number of the location where the error occurred.
   int m_line;
 
@@ -32,12 +25,10 @@ public:      // data
   int m_column;
 
 public:      // methods
-  // This is not marked 'explicit' because the conversion from optional
-  // string to FileLineCol preserves the information.
-  FileLineCol(std::optional<std::string> fileName = std::nullopt,
-              int line = 1,
-              int column = 1) noexcept;
-  ~FileLineCol();
+  LineCol(int line, int column) noexcept;
+
+  LineCol(LineCol const &obj) = default;
+  LineCol& operator=(LineCol const &obj) = default;
 
   // If 'c' is '\n' then increment the line and reset the column to 1.
   // Otherwise, increment the column.
@@ -50,6 +41,40 @@ public:      // methods
   // Try to undo the effect of 'incrementForChar(c)'.  This would be
   // used along with something like 'std::istream::putback(c)'.
   void decrementForChar(int c);
+};
+
+
+// A location in a file or stream that may or may not have a name.
+class FileLineCol {
+public:      // data
+  // If the location is in a file with a known name, this is its name.
+  //
+  // Typically, this should either be an absolute path or a path
+  // relative to the current directory, but the precise interpretation
+  // is somewhat dependent on the user of this class.
+  std::optional<std::string> m_fileName;
+
+  // Line and column.
+  LineCol m_lc;
+
+public:      // methods
+  // This is not marked 'explicit' because the conversion from optional
+  // string to FileLineCol preserves the information.
+  FileLineCol(std::optional<std::string> fileName = std::nullopt,
+              int line = 1,
+              int column = 1) noexcept;
+  ~FileLineCol();
+
+  // Manipulate the line/col.
+  void incrementForChar(int c)         { m_lc.incrementForChar(c); }
+  void decrementColumn()               { m_lc.decrementColumn(); }
+  void decrementForChar(int c)         { m_lc.decrementForChar(c); }
+
+  // Extract the line/col.
+  LineCol const &getLineCol() const { return m_lc; }
+
+  // Set the line/col.
+  void setLineCol(LineCol const &lc) { m_lc = lc; }
 };
 
 

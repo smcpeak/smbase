@@ -4,20 +4,15 @@
 #include "file-line-col.h"             // this module
 
 
-FileLineCol::FileLineCol(std::optional<std::string> fileName,
-                         int line,
-                         int column) noexcept
-  : m_fileName(fileName),
-    m_line(line),
+
+// ------------------------------ LineCol ------------------------------
+LineCol::LineCol(int line, int column) noexcept
+  : m_line(line),
     m_column(column)
 {}
 
 
-FileLineCol::~FileLineCol()
-{}
-
-
-void FileLineCol::incrementForChar(int c)
+void LineCol::incrementForChar(int c)
 {
   if (c == '\n') {
     ++m_line;
@@ -29,7 +24,7 @@ void FileLineCol::incrementForChar(int c)
 }
 
 
-void FileLineCol::decrementColumn()
+void LineCol::decrementColumn()
 {
   if (m_column > 0) {
     --m_column;
@@ -37,7 +32,7 @@ void FileLineCol::decrementColumn()
 }
 
 
-void FileLineCol::decrementForChar(int c)
+void LineCol::decrementForChar(int c)
 {
   if (c == '\n') {
     // We should never be putting back a newline, and we cannot recover
@@ -48,6 +43,19 @@ void FileLineCol::decrementForChar(int c)
     decrementColumn();
   }
 }
+
+
+// ---------------------------- FileLineCol ----------------------------
+FileLineCol::FileLineCol(std::optional<std::string> fileName,
+                         int line,
+                         int column) noexcept
+  : m_fileName(fileName),
+    m_lc(line, column)
+{}
+
+
+FileLineCol::~FileLineCol()
+{}
 
 
 // EOF

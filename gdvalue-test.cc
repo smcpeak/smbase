@@ -643,8 +643,8 @@ static void testOneErrorSubstrOrRegex(
       xfailure("should have failed");
     }
     catch (GDValueReaderException &e) {
-      EXPECT_EQ(e.m_location.m_line, expectLine);
-      EXPECT_EQ(e.m_location.m_column, expectColumn);
+      EXPECT_EQ(e.m_location.m_lc.m_line, expectLine);
+      EXPECT_EQ(e.m_location.m_lc.m_column, expectColumn);
       if (expectErrorSubstring) {
         EXPECT_HAS_SUBSTRING(e.m_syntaxError, expectErrorSubstring);
       }
@@ -712,9 +712,59 @@ static void testSyntaxErrors()
   testOneErrorRegex(" /", 1, 3, "end of file.*after '/'");
   testOneErrorRegex("/-", 1, 2, "'-'.*after '/'");
 
-  // Uncategorized.
+  // skipCStyleComment
   testOneErrorSubstr("/*/1", 1, 5,
     R"(inside "/*" comment, looking for corresponding "*/")");
+  testOneErrorSubstr("/*/*", 1, 5,
+    R"(inside "/*" comment, nested inside 1 other comments of the same kind, looking for corresponding "*/")");
+  testOneErrorSubstr("/*/**/", 1, 7,
+    R"(inside "/*" comment, which contains 1 child comments, looking for corresponding "*/")");
+  testOneErrorSubstr("/*/**//**/", 1, 11,
+    R"(inside "/*" comment, which contains 2 child comments, looking for corresponding "*/")");
+  testOneErrorSubstr("/*/*/**//**/", 1, 13,
+    R"(inside "/*" comment, nested inside 1 other comments of the same kind, which contains 2 child comments, looking for corresponding "*/")");
+
+  // readNextMap: looking for '}'.
+  testOneErrorRegex("{]", 1, 2,
+    "']'.*looking for '}'");
+  testOneErrorSubstr("{", 1, 2,
+    "Unexpected end of file after '{'");
+  testOneErrorRegex("{1:2", 1, 5,
+    "end of file.*looking for '}'");
+  testOneErrorRegex("{1:2]", 1, 5,
+    "']'.*looking for '}'");
+
+  // readNextMap: looking for ':'.
+  testOneErrorRegex("{1", 1, 3,
+    "end of file.*looking for ':'");
+  testOneErrorRegex("{1}", 1, 3,
+    "'}'.*looking for ':'");
+  testOneErrorRegex("{1]", 1, 3,
+    "']'.*looking for ':'");
+  testOneErrorRegex("{1-", 1, 3,
+    "'-'.*looking for ':'");
+  testOneErrorRegex("{1 2", 1, 4,
+    "'2'.*looking for ':'");
+
+  // readNextMap: looking for value after ':'.
+  testOneErrorRegex("{1:", 1, 4,
+    "end of file.*after ':'");
+  testOneErrorRegex("{1 : ", 1, 6,
+    "end of file.*after ':'");
+  testOneErrorRegex("{1:]", 1, 4,
+    "']'.*after ':'");
+  testOneErrorRegex("{1:}", 1, 4,
+    "'}'.*after ':'");
+  testOneErrorRegex("{1::", 1, 4,
+    "':'.*start of a value");
+  testOneErrorRegex("{1: }", 1, 5,
+    "'}'.*after ':'");
+
+  // readNextMap: Duplicate map key.
+  testOneErrorSubstr("{1:2 1:2}", 1, 6,
+    "Duplicate map key: 1");
+  // TODO: More, specifically here.
+
 
   // TODO: More
 }

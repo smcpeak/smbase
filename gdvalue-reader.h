@@ -31,16 +31,15 @@ protected:   // methods
   // Throw GDValueReaderException with 'm_location'-1 and 'syntaxError'.
   void err(std::string const &syntaxError) const;
 
+  // Throw with 'loc-1' and 'syntaxError'.
+  void errAt(FileLineCol const &loc,
+             std::string const &syntaxError) const;
+
   // Report error: 'c' is unexpected.  'c' can be 'eofCode()', and the
   // message will be tailored accordingly.  'lookingFor' is a phrase
   // describing what the parser was looking for when 'c' was
   // encountered.
   void errUnexpectedChar(int c, char const *lookingFor) const;
-
-  // Read the next character from 'm_is', then immediately put it back
-  // (unless it is EOF) and leave 'm_location' unaffected.  Return the
-  // character found.
-  int peekChar();
 
   // Read a single character from 'm_is', updating 'm_location' so it
   // refers to the *next* character.  (Thus, when we report an error, we

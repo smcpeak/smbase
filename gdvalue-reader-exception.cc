@@ -15,7 +15,7 @@ static std::string makeExceptionMessage(
   if (location.m_fileName) {
     oss << *location.m_fileName << ":";
   }
-  oss << location.m_line << ":" << location.m_column << ": "
+  oss << location.m_lc.m_line << ":" << location.m_lc.m_column << ": "
       << "GDV syntax error: " << syntaxError;
   return oss.str();
 }
