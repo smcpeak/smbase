@@ -5,6 +5,7 @@
 
 #include "sm-test.h"                   // EXPECT_EQ
 
+#include <exception>                   // std::exception
 #include <iostream>                    // std::ostream
 
 
@@ -273,6 +274,38 @@ static void testBeginsWith()
 }
 
 
+static void testOneMatchesRegex(
+  char const *str,
+  char const *re,
+  bool expect)
+{
+  try {
+    bool actual = matchesRegex(str, re);
+    EXPECT_EQ(actual, expect);
+  }
+  catch (std::exception &e) {
+    xfailure(stringbc(
+      "testOneMatchesRegex failed:\n"
+      "  str: " << doubleQuote(str) << "\n"
+      "  re : " << doubleQuote(re) << "\n"
+      "  e  : " << e.what()));
+  }
+  catch (xBase &e) {
+    xfailure(stringbc(
+      "testOneMatchesRegex failed:\n"
+      "  str: " << doubleQuote(str) << "\n"
+      "  re : " << doubleQuote(re) << "\n"
+      "  e  : " << e.why()));
+  }
+}
+
+
+static void testMatchesRegex()
+{
+  testOneMatchesRegex("hello", "el", true);
+}
+
+
 void test_string_utils()
 {
   testSplitNonEmpty();
@@ -285,6 +318,7 @@ void test_string_utils()
   testIsStrictlySortedArray();
   testStringInSortedArray();
   testBeginsWith();
+  testMatchesRegex();
 }
 
 

@@ -10,6 +10,7 @@
 #include <algorithm>                   // std::binary_search
 #include <cstring>                     // std::strrchr
 #include <sstream>                     // std::ostringstream
+#include <regex>                       // std::regex
 
 
 // Based on one of the answers at
@@ -263,6 +264,13 @@ std::string possiblyTruncatedWithEllipsis(
   else {
     return str;
   }
+}
+
+
+bool matchesRegex(std::string const &str, std::string const &regex)
+{
+  std::regex re(regex);
+  return std::regex_search(str, re);
 }
 
 

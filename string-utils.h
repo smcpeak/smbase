@@ -75,4 +75,14 @@ bool contains(std::string const &str, char c);
 std::string possiblyTruncatedWithEllipsis(
   std::string const &str, std::size_t maxLen);
 
+// True if 'str' matches 'regex'.
+//
+// The regex match is performed by compiling it with the defaults for
+// 'std::regex' and then calling 'std::regex_search'.
+//
+// This is not very efficient because it compiles the regex from scratch
+// every time.
+//
+bool matchesRegex(std::string const &str, std::string const &regex);
+
 #endif // STRING_UTILS_H
