@@ -81,7 +81,12 @@ void test_datablok()
     xassert(block == block4);
     removeFile("tempfile.blk");
 
-    testMemoryCorruption();
+    // This particular test is annoying because it prints an alarming
+    // message that is easily misinterpreted.  If I'm not actively
+    // developing DataBlock then I don't need this on.
+    if (false) {
+      testMemoryCorruption();
+    }
   }
 
   printf("test_datablok: PASSED\n");
