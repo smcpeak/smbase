@@ -39,7 +39,7 @@ void GDValueReader::err(string const &syntaxError) const
   // Generally, we read a character, advancing the location in the
   // process, then check for an error.  Consequently, when we report an
   // error the location is one past the place the erroneous character
-  // was.  So, back the location up spot.
+  // was.  So, back the location spot up.
   FileLineCol prev(m_location);
   prev.decrementColumn();
 
