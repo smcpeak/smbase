@@ -136,8 +136,18 @@ void expectHasSubstring(
   string const &actual,
   char const *expectSubstring);
 
-#define EXPECT_HAS_SUBSTRING(actual, expect) \
-  expectHasSubstring(#actual, actual, expect) /* user ; */
+#define EXPECT_HAS_SUBSTRING(actual, expectSubstring) \
+  expectHasSubstring(#actual, actual, expectSubstring) /* user ; */
+
+
+// Check that 'matchesRegex(actual, expectRegex)'.
+void expectMatchesRegex(
+  char const *label,
+  string const &actual,
+  char const *expectRegex);
+
+#define EXPECT_MATCHES_REGEX(actual, expectRegex) \
+  expectMatchesRegex(#actual, actual, expectRegex) /* user ; */
 
 
 #endif // SMBASE_SM_TEST_H
