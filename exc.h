@@ -4,6 +4,8 @@
 // be assured no exception will propagate out of the program (or any
 // other unit of granularity you want).
 
+// TODO: 'xBase' should inherit 'std::exception'.
+
 // I apologize for the inconsistent naming in this module.  It is
 // the product of an extended period of experimenting with naming
 // conventions for exception-related concepts.  The names near the
