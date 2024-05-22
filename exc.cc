@@ -86,9 +86,7 @@ void xBase::prependContext(rostring context)
 // ------------------- x_assert -----------------
 x_assert::x_assert(rostring cond, rostring fname, int line)
   : xBase(stringb(
-      "Assertion failed: " << cond <<
-      ", file " << fname <<
-      " line " << line)),
+      fname << ":" << line << ": assertion failed: " << cond)),
     condition(cond),
     filename(fname),
     lineno(line)
