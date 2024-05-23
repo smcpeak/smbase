@@ -57,6 +57,12 @@ int compare(GDVSymbol const &a, GDVSymbol const &b)
 }
 
 
+/*static*/ char const *GDVSymbol::lookupSymbolName(char const *name)
+{
+  return getStringTable()->add(name);
+}
+
+
 /*static*/ char const *GDVSymbol::getEmptySymbolName()
 {
   getStringTable();

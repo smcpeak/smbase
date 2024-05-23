@@ -38,9 +38,6 @@ using GDVSize = std::size_t;
 // Index for vectors.
 using GDVIndex = std::size_t;
 
-// The type that a GDValue(GDVK_BOOL) holds.
-using GDVBool = bool;
-
 // GDValue(GDVK_INTEGER) holds this.  It should eventually be an
 // arbitrary-precision integer.
 using GDVInteger = std::int64_t;
@@ -68,9 +65,6 @@ using GDVMapEntry = std::pair<GDValue const, GDValue>;
 enum GDValueKind : int {
   // The "null" value, the only inhabitant of the "null" type.
   GDVK_NULL,
-
-  // bool: True or false.
-  GDVK_BOOL,
 
   // integer: int64_t for now, but arbitrary precision in the future
   GDVK_INTEGER,
@@ -102,6 +96,12 @@ char const *toString(GDValueKind gdvk);
 // A General Data Value is a disjoint union of several different types
 // of data, enumerated as 'GDValueKind'.
 class GDValue {
+private:     // class data
+  // Names of symbols with special semantics.
+  //static char const *s_symbolName_null;
+  static char const *s_symbolName_false;
+  static char const *s_symbolName_true;
+
 public:      // class data
   // Expose some method counts for testing purposes.
   static unsigned s_ct_ctorDefault;
@@ -137,7 +137,6 @@ private:     // instance data
 
   // Representation of the value.
   union GDValueUnion {
-    GDVBool      m_bool;
     GDVInteger   m_int64;
 
     // Non-owning pointer to a NUL-terminated string stored in
@@ -182,7 +181,6 @@ public:      // methods
 
   GDValueKind getKind() const { return m_kind; }
   bool isNull()     const { return getKind() == GDVK_NULL;     }
-  bool isBool()     const { return getKind() == GDVK_BOOL;     }
   bool isInteger()  const { return getKind() == GDVK_INTEGER;  }
   bool isSymbol()   const { return getKind() == GDVK_SYMBOL;   }
   bool isString()   const { return getKind() == GDVK_STRING;   }
@@ -274,6 +272,9 @@ public:      // methods
 
 
   // ---- Boolean ----
+  // A boolean is a symbol that is either `false` or `true`.
+  bool isBool() const;
+
   // A constructor that just accepts 'bool' creates too many ambiguities
   // so we use a discriminator tag.
   enum BoolTagType { BoolTag };

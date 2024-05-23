@@ -565,12 +565,6 @@ GDValue GDValueReader::readNextSymbolOrSpecial(int firstChar)
   if (symName == "null") {
     return GDValue();
   }
-  else if (symName == "true") {
-    return GDValue(GDValue::BoolTag, true);
-  }
-  else if (symName == "false") {
-    return GDValue(GDValue::BoolTag, false);
-  }
   else {
     return GDValue(GDVSymbol(symName));
   }

@@ -89,8 +89,14 @@ public:      // methods
   // symbol name.
   char const *getSymbolName() const { return m_symbolName; }
 
-  // Get the empty symbol name, again performing initialization if
-  // needed.
+  // Pass 'name' through the symbol table to get the unique
+  // representative for the string it points to.  This is safe to call
+  // in a global variable initializer because it takes care of
+  // initializing prerequisites when necessary.
+  static char const *lookupSymbolName(char const *name);
+
+  // Get the empty symbol name.  This is equivalent to
+  // `lookupSymbolName("")` but may be faster.
   static char const *getEmptySymbolName();
 
   // Exchange names with 'obj'.

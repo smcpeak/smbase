@@ -28,7 +28,6 @@ char const *toString(GDValueKind gdvk)
   switch (gdvk) {
     #define CASE(kind) case kind: return #kind;
     CASE(GDVK_NULL)
-    CASE(GDVK_BOOL)
     CASE(GDVK_INTEGER)
     CASE(GDVK_SYMBOL)
     CASE(GDVK_STRING)
@@ -44,6 +43,10 @@ char const *toString(GDValueKind gdvk)
 
 
 // ------------------------ GDValue static data ------------------------
+//char const *GDValue::s_symbolName_null  = GDVSymbol::lookupSymbolName("null");
+char const *GDValue::s_symbolName_false = GDVSymbol::lookupSymbolName("false");
+char const *GDValue::s_symbolName_true  = GDVSymbol::lookupSymbolName("true");
+
 unsigned GDValue::s_ct_ctorDefault = 0;
 unsigned GDValue::s_ct_dtor = 0;
 unsigned GDValue::s_ct_ctorCopy = 0;
@@ -94,10 +97,6 @@ void GDValue::clearSelfAndSwapWith(GDValue &obj) noexcept
       assert(!"invalid kind");
 
     case GDVK_NULL:
-      break;
-
-    case GDVK_BOOL:
-      SWAP_MEMBER(m_bool);
       break;
 
     case GDVK_INTEGER:
@@ -161,10 +160,6 @@ GDValue::GDValue(GDValue const &obj)
       assert(!"invalid kind");
 
     case GDVK_NULL:
-      break;
-
-    case GDVK_BOOL:
-      boolSet(obj.boolGet());
       break;
 
     case GDVK_INTEGER:
@@ -239,10 +234,6 @@ GDValue::GDValue(GDValueKind kind)
       assert(!"invalid kind");
 
     case GDVK_NULL:
-      break;
-
-    case GDVK_BOOL:
-      m_value.m_bool = false;
       break;
 
     case GDVK_INTEGER:
@@ -339,9 +330,6 @@ int compare(GDValue const &a, GDValue const &b)
     case GDVK_NULL:
       return 0;
 
-    case GDVK_BOOL:
-      return COMPARE_MEMBERS(m_value.m_bool);
-
     case GDVK_INTEGER:
       return COMPARE_MEMBERS(m_value.m_int64);
 
@@ -395,7 +383,6 @@ GDVSize GDValue::size() const
     case GDVK_NULL:
       return 0;
 
-    case GDVK_BOOL:
     case GDVK_INTEGER:
     case GDVK_SYMBOL:
     case GDVK_STRING:
@@ -426,7 +413,6 @@ void GDValue::clear()
       assert(!"invalid kind");
 
     case GDVK_NULL:
-    case GDVK_BOOL:
     case GDVK_INTEGER:
       break;
 
@@ -549,6 +535,16 @@ void GDValue::writeToFile(
 
 
 // ------------------------------ Boolean ------------------------------
+bool GDValue::isBool() const
+{
+  if (m_kind == GDVK_SYMBOL) {
+    return m_value.m_symbolName == s_symbolName_true ||
+           m_value.m_symbolName == s_symbolName_false;
+  }
+  return false;
+}
+
+
 GDValue::GDValue(BoolTagType, bool b)
   : INIT_AS_NULL()
 {
@@ -561,15 +557,26 @@ GDValue::GDValue(BoolTagType, bool b)
 void GDValue::boolSet(bool b)
 {
   clear();
-  m_kind = GDVK_BOOL;
-  m_value.m_bool = b;
+  m_kind = GDVK_SYMBOL;
+  m_value.m_symbolName =
+    b? s_symbolName_true : s_symbolName_false;
+  assert(m_value.m_symbolName);
 }
 
 
 bool GDValue::boolGet() const
 {
-  assert(m_kind == GDVK_BOOL);
-  return m_value.m_bool;
+  assert(m_kind == GDVK_SYMBOL);
+  if (m_value.m_symbolName == s_symbolName_true) {
+    return true;
+  }
+  else if (m_value.m_symbolName == s_symbolName_false) {
+    return false;
+  }
+  else {
+    xfailure("not one of the boolean symbols");
+    return false;  // Not reached.
+  }
 }
 
 

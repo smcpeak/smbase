@@ -99,7 +99,7 @@ static void testBool()
   assert(dTrue.asString() == "true");
   assert(dTrue.size() == 1);
   assert(!dTrue.empty());
-  assert(dTrue.getKind() == GDVK_BOOL);
+  assert(dTrue.getKind() == GDVK_SYMBOL);
   assert(dTrue.isBool());
   assert(dTrue.boolGet() == true);
 
@@ -108,7 +108,8 @@ static void testBool()
   assert(dFalse.asString() == "false");
   assert(dFalse.size() == 1);
   assert(!dFalse.empty());
-  assert(dFalse.getKind() == GDVK_BOOL);
+  assert(dFalse.getKind() == GDVK_SYMBOL);
+  assert(dFalse.isBool());
   assert(dFalse.boolGet() == false);
 
   assert(dTrue != dFalse);

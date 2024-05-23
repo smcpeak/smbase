@@ -212,10 +212,6 @@ bool GDValueWriter::tryWrite(GDValue const &value,
       os() << "null";
       break;
 
-    case GDVK_BOOL:
-      os() << (value.boolGet()? "true" : "false");
-      break;
-
     case GDVK_INTEGER:
       os() << value.integerGet();
       break;
