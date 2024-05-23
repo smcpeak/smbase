@@ -68,24 +68,26 @@ static void testNull()
   assert(v.size() == 0);
   assert(v.empty());
   assert(v.isNull());
-  assert(v.getKind() == GDVK_NULL);
+  assert(v.getKind() == GDVK_SYMBOL);
 
   GDValue v2;
   assert(v == v2);
   assert(v2.asString() == "null");
-  assert(v2.getKind() == GDVK_NULL);
+  assert(v.isNull());
+  assert(v2.getKind() == GDVK_SYMBOL);
 
   v2.clear();
   assert(v == v2);
-  assert(v2.getKind() == GDVK_NULL);
+  assert(v.isNull());
+  assert(v2.getKind() == GDVK_SYMBOL);
 
-  v2 = GDValue(GDVK_NULL);
+  v2 = GDValue(GDVK_SYMBOL);
   assert(v == v2);
 
   v2 = GDValue();
   assert(v == v2);
 
-  GDValue v3(GDVK_NULL);
+  GDValue v3(GDVK_SYMBOL);
   assert(v == v3);
 
   testSerializeRoundtrip(v);
@@ -121,7 +123,7 @@ static void testBool()
   assert(dFalse != dNull);
 
   assert(dTrue > dNull);
-  assert(dFalse > dNull);
+  assert(dFalse < dNull);
 
   testSerializeRoundtrip(dTrue);
   testSerializeRoundtrip(dFalse);
@@ -147,7 +149,7 @@ static void testInteger()
   assert(d1.integerGet() == 1);
 
   assert(d0 < d1);
-  assert(GDValue() < d0);
+  assert(GDValue() > d0);    // TODO: Change order so symbols are first.
 
   testSerializeRoundtrip(d0);
   testSerializeRoundtrip(d1);
@@ -182,7 +184,7 @@ static void testSymbol()
 
   dSym2.clear();
   assert(dSym2.isNull());
-  assert(dSym2.getKind() == GDVK_NULL);
+  assert(dSym2.getKind() == GDVK_SYMBOL);
 
   testSerializeRoundtrip(dSym2);
 }
@@ -226,7 +228,7 @@ static void testString()
 
   dStr2.clear();
   assert(dStr2.isNull());
-  assert(dStr2.getKind() == GDVK_NULL);
+  assert(dStr2.getKind() == GDVK_SYMBOL);
 
   GDVString str1("str1");
   dStr2.stringSet(str1);     // 'set' without 'ctor'

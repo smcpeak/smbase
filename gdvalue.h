@@ -63,14 +63,12 @@ using GDVMapEntry = std::pair<GDValue const, GDValue>;
 
 // Possible kinds of GDValues.
 enum GDValueKind : int {
-  // The "null" value, the only inhabitant of the "null" type.
-  GDVK_NULL,
-
   // integer: int64_t for now, but arbitrary precision in the future
   GDVK_INTEGER,
 
   // symbol: An identifier-like string that acts as a name of something
-  // defined elsewhere.
+  // defined elsewhere.  This includes the special symbols `null`,
+  // `false`, and `true`.
   GDVK_SYMBOL,
 
   // string: Sequence of Unicode characters encoded as UTF-8.
@@ -88,7 +86,7 @@ enum GDValueKind : int {
   NUM_GDVALUE_KINDS
 };
 
-// Return a string like "GDVK_NULL", or "GDVK_invalid" if 'gdvk' is
+// Return a string like "GDVK_SYMBOL", or "GDVK_invalid" if 'gdvk' is
 // invalid.
 char const *toString(GDValueKind gdvk);
 
@@ -98,7 +96,7 @@ char const *toString(GDValueKind gdvk);
 class GDValue {
 private:     // class data
   // Names of symbols with special semantics.
-  //static char const *s_symbolName_null;
+  static char const *s_symbolName_null;
   static char const *s_symbolName_false;
   static char const *s_symbolName_true;
 
@@ -149,15 +147,15 @@ private:     // instance data
     GDVSet      *m_set;
     GDVMap      *m_map;
 
-    GDValueUnion() : m_int64(0) {}
+    // Constructors.
+    //GDValueUnion() : m_int64(0) {}
+
+    explicit GDValueUnion(char const *symbolName)
+      : m_symbolName(symbolName)
+    {}
   } m_value;
 
 private:     // methods
-  // Reset the object to 'null' without deallocating anything that
-  // 'm_value' might point at.  This is done as part of certain
-  // low-level transfers.
-  void resetWithoutDeallocating() noexcept;
-
   // Clear this object, then take the data in 'obj', leaving 'obj' as
   // the null value.
   void clearSelfAndSwapWith(GDValue &obj) noexcept;
@@ -175,12 +173,15 @@ public:      // methods
   GDValue &operator=(GDValue      &&obj);
 
 
-  // Make an empty/zero value of 'kind'.
+  // Make an empty/zero value of 'kind':
+  //   integer: 0
+  //   symbol: null  (Note: This is not the empty symbol, ``.)
+  //   string: ""
+  //   container: empty
   explicit GDValue(GDValueKind kind);
 
 
   GDValueKind getKind() const { return m_kind; }
-  bool isNull()     const { return getKind() == GDVK_NULL;     }
   bool isInteger()  const { return getKind() == GDVK_INTEGER;  }
   bool isSymbol()   const { return getKind() == GDVK_SYMBOL;   }
   bool isString()   const { return getKind() == GDVK_STRING;   }
@@ -189,7 +190,34 @@ public:      // methods
   bool isMap()      const { return getKind() == GDVK_MAP;      }
 
 
-  // Return <0 if a<b, 0 if a==b, and >0 otherwise.
+  /* Return <0 if a<b, 0 if a==b, and >0 otherwise.
+
+     Comparison is first by value kind, in order of GDValueKind.  Then
+     within each kind:
+
+       integer: Ordered numerically.
+
+       symbol, string: Ordered lexicographically by code point.  A
+       prefix (e.g., "a") is less than any string it is a prefix of
+       (e.g., "aa").
+
+       sequence: Lexicographic by element order.
+
+       set: A<B iff there exists an element E such that:
+              for all D less than E:
+                D is in A and B or D is missing from A and B
+              E is in B but not A
+
+       map: A<B iff there exists a key K such that:
+              for all J less than K:
+                J is missing from both A and B or A[J] == B[J]
+              K is in B but not A, or A[K] < B[K]
+
+     Note: Since `null`, `false`, and `true` are treated as symbols,
+     their relative order is:
+
+       false < null < true
+  */
   friend int compare(GDValue const &a, GDValue const &b);
 
   // Define operator==, etc.
@@ -200,8 +228,9 @@ public:      // methods
 
 
   // Number of contained values.  Result depends on kind of value:
-  //   - null: 0
-  //   - bool, int, symbol, string: 1
+  //   - symbol that is null: 0
+  //   - symbol that is not null: 1
+  //   - string: 1
   //   - sequence, set: number of elements
   //   - map: number of entries
   GDVSize size() const;
@@ -269,6 +298,11 @@ public:      // methods
   // if it cannot be opened, there is not exactly one value, or is
   // malformed.
   static GDValue readFromFile(std::string const &fileName);
+
+
+  // ---- Null ----
+  // Null is the symbol `null`.
+  bool isNull() const;
 
 
   // ---- Boolean ----

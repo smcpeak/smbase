@@ -208,10 +208,6 @@ bool GDValueWriter::tryWrite(GDValue const &value,
     default:
       assert(!"invalid kind");
 
-    case GDVK_NULL:
-      os() << "null";
-      break;
-
     case GDVK_INTEGER:
       os() << value.integerGet();
       break;

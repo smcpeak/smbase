@@ -27,7 +27,6 @@ char const *toString(GDValueKind gdvk)
 {
   switch (gdvk) {
     #define CASE(kind) case kind: return #kind;
-    CASE(GDVK_NULL)
     CASE(GDVK_INTEGER)
     CASE(GDVK_SYMBOL)
     CASE(GDVK_STRING)
@@ -43,7 +42,7 @@ char const *toString(GDValueKind gdvk)
 
 
 // ------------------------ GDValue static data ------------------------
-//char const *GDValue::s_symbolName_null  = GDVSymbol::lookupSymbolName("null");
+char const *GDValue::s_symbolName_null  = GDVSymbol::lookupSymbolName("null");
 char const *GDValue::s_symbolName_false = GDVSymbol::lookupSymbolName("false");
 char const *GDValue::s_symbolName_true  = GDVSymbol::lookupSymbolName("true");
 
@@ -76,13 +75,6 @@ unsigned GDValue::s_ct_mapSetMove = 0;
 
 
 // ---------------------- GDValue private helpers ----------------------
-void GDValue::resetWithoutDeallocating() noexcept
-{
-  m_kind = GDVK_NULL;
-  m_value.m_int64 = 0;
-}
-
-
 void GDValue::clearSelfAndSwapWith(GDValue &obj) noexcept
 {
   clear();
@@ -95,9 +87,6 @@ void GDValue::clearSelfAndSwapWith(GDValue &obj) noexcept
   switch (obj.m_kind) {
     default:
       assert(!"invalid kind");
-
-    case GDVK_NULL:
-      break;
 
     case GDVK_INTEGER:
       SWAP_MEMBER(m_int64);
@@ -133,8 +122,8 @@ void GDValue::clearSelfAndSwapWith(GDValue &obj) noexcept
 // --------------------- GDValue ctor/dtor/assign ----------------------
 // In a ctor, initialize fields for the null value.
 #define INIT_AS_NULL() \
-    m_kind(GDVK_NULL), \
-    m_value()
+    m_kind(GDVK_SYMBOL), \
+    m_value(s_symbolName_null)
 
 
 GDValue::GDValue() noexcept
@@ -158,9 +147,6 @@ GDValue::GDValue(GDValue const &obj)
   switch (obj.m_kind) {
     default:
       assert(!"invalid kind");
-
-    case GDVK_NULL:
-      break;
 
     case GDVK_INTEGER:
       integerSet(obj.integerGet());
@@ -227,22 +213,20 @@ GDValue &GDValue::operator=(GDValue &&obj)
 
 GDValue::GDValue(GDValueKind kind)
   : m_kind(kind),
-    m_value()
+    m_value(s_symbolName_null)
 {
   switch (m_kind) {
     default:
       assert(!"invalid kind");
-
-    case GDVK_NULL:
-      break;
 
     case GDVK_INTEGER:
       m_value.m_int64 = 0;
       break;
 
     case GDVK_SYMBOL:
-      m_kind = GDVK_SYMBOL;
-      m_value.m_symbolName = GDVSymbol::getEmptySymbolName();
+      // Redundant, but for clarity.
+      m_value.m_symbolName = s_symbolName_null;
+      assert(m_value.m_symbolName);
       break;
 
     case GDVK_STRING:
@@ -327,9 +311,6 @@ int compare(GDValue const &a, GDValue const &b)
     default:
       assert(!"invalid kind");
 
-    case GDVK_NULL:
-      return 0;
-
     case GDVK_INTEGER:
       return COMPARE_MEMBERS(m_value.m_int64);
 
@@ -380,11 +361,10 @@ GDVSize GDValue::size() const
     default:
       assert(!"invalid kind");
 
-    case GDVK_NULL:
-      return 0;
+    case GDVK_SYMBOL:
+      return isNull()? 0 : 1;
 
     case GDVK_INTEGER:
-    case GDVK_SYMBOL:
     case GDVK_STRING:
       return 1;
 
@@ -412,7 +392,6 @@ void GDValue::clear()
     default:
       assert(!"invalid kind");
 
-    case GDVK_NULL:
     case GDVK_INTEGER:
       break;
 
@@ -436,8 +415,8 @@ void GDValue::clear()
       break;
   }
 
-  m_kind = GDVK_NULL;
-  m_value.m_int64 = 0;
+  m_kind = GDVK_SYMBOL;
+  m_value.m_symbolName = s_symbolName_null;
 }
 
 
@@ -531,6 +510,16 @@ void GDValue::writeToFile(
 
   GDValueReader reader(inFile, fileName);
   return reader.readExactlyOneValue();
+}
+
+
+// ------------------------------- Null --------------------------------
+bool GDValue::isNull() const
+{
+  if (m_kind == GDVK_SYMBOL) {
+    return m_value.m_symbolName == s_symbolName_null;
+  }
+  return false;
 }
 
 
