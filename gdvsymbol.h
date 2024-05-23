@@ -9,7 +9,8 @@
 #include "strtable-fwd.h"              // StringTable [n]
 
 // libc++
-#include <string>                      // std::string
+#include <cstddef>                     // std::size_t
+#include <string>                      // std::string [n]
 
 
 namespace gdv {
@@ -29,6 +30,15 @@ private:     // class data
   // ensure the table gets built in time.
   static StringTable *s_stringTable;
 
+  // Pointer to the empty string in `s_stringTable`.  This allows the
+  // default constructor to avoid looking up the empty string.
+  static char const *s_emptySymbolName;
+
+public:      // class data
+  // Number of calls to the GDVSymbol ctor and dtor.
+  static std::size_t s_numSymbolCtorCalls;
+  static std::size_t s_numSymbolDtorCalls;
+
 private:     // instance data
   // Pointer into `m_stringTable` providing the symbol name.  All
   // symbols that have the same name use the same pointer value.
@@ -45,9 +55,26 @@ private:     // methods
   // Get the string table, making it if necessary.
   static StringTable *getStringTable();
 
+  // Get the empty symbol name, again performing initialization if
+  // needed.  This is meant to be called only once during the program,
+  // if at all, and exists to keep the size of the default constructor
+  // as small as possible.
+  static char const *getEmptySymbolName();
+
+  static void incCtorCalls(GDVSymbol *ptr);
+  static void incDtorCalls(GDVSymbol *ptr);
+
 public:      // methods
   // Empty symbol, i.e., a symbol whose name is the empty string.
-  GDVSymbol();
+  GDVSymbol()
+    : m_symbolName(s_emptySymbolName)
+  {
+    if (m_symbolName == nullptr) {
+      // Must initialize the table.
+      m_symbolName = getEmptySymbolName();
+    }
+    incCtorCalls(this);
+  }
 
   // Convert string to corresponding symbol.  This makes a copy of the
   // string in `m_stringTable` if it is not already there.
@@ -59,13 +86,16 @@ public:      // methods
   explicit GDVSymbol(char const *p);
 
   // No deallocation is required since `m_symbolName` is not an owner
-  // pointer.
-  ~GDVSymbol() {}
+  // pointer, but we increment a counter in order to later check that
+  // everything is balanced.
+  ~GDVSymbol()
+    { incDtorCalls(this); }
 
   // `GDVSymbol` objects can be freely and cheaply copied.
   GDVSymbol(GDVSymbol const &obj)
-    : m_symbolName(obj.m_symbolName) {}
-  GDVSymbol operator=(GDVSymbol const &obj)
+    : m_symbolName(obj.m_symbolName)
+    { incCtorCalls(this); }
+  GDVSymbol &operator=(GDVSymbol const &obj)
     { m_symbolName = obj.m_symbolName; return *this; }
 
   friend int compare(GDVSymbol const &a, GDVSymbol const &b);
@@ -74,7 +104,15 @@ public:      // methods
   // Get a pointer to a NUL-terminated string of characters with the
   // symbol name.
   char const *getSymbolName() const { return m_symbolName; }
+
+  // Exchange names with 'obj'.
+  void swap(GDVSymbol &obj);
 };
+
+inline void swap(GDVSymbol &a, GDVSymbol &b)
+{
+  a.swap(b);
+}
 
 
 } // namespace gdv

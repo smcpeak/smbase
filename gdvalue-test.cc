@@ -890,7 +890,10 @@ void test_gdvalue()
   }
 
   // Ctor and dtor calls should be balanced.
-  assert(GDValue::countConstructorCalls() == GDValue::s_ct_dtor);
+  EXPECT_EQ(GDValue::countConstructorCalls(),
+            GDValue::s_ct_dtor);
+  EXPECT_EQ(GDVSymbol::s_numSymbolCtorCalls,
+            GDVSymbol::s_numSymbolDtorCalls);
 }
 
 
