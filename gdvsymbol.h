@@ -34,11 +34,6 @@ private:     // class data
   // default constructor to avoid looking up the empty string.
   static char const *s_emptySymbolName;
 
-public:      // class data
-  // Number of calls to the GDVSymbol ctor and dtor.
-  static std::size_t s_numSymbolCtorCalls;
-  static std::size_t s_numSymbolDtorCalls;
-
 private:     // instance data
   // Pointer into `m_stringTable` providing the symbol name.  All
   // symbols that have the same name use the same pointer value.
@@ -55,16 +50,11 @@ private:     // methods
   // Get the string table, making it if necessary.
   static StringTable *getStringTable();
 
-  static void incCtorCalls(GDVSymbol *ptr);
-  static void incDtorCalls(GDVSymbol *ptr);
-
 public:      // methods
   // Empty symbol, i.e., a symbol whose name is the empty string.
   GDVSymbol()
     : m_symbolName(getEmptySymbolName())
-  {
-    incCtorCalls(this);
-  }
+  {}
 
   // Convert string to corresponding symbol.  This makes a copy of the
   // string in `m_stringTable` if it is not already there.
@@ -84,13 +74,11 @@ public:      // methods
   // No deallocation is required since `m_symbolName` is not an owner
   // pointer, but we increment a counter in order to later check that
   // everything is balanced.
-  ~GDVSymbol()
-    { incDtorCalls(this); }
+  ~GDVSymbol() {}
 
   // `GDVSymbol` objects can be freely and cheaply copied.
   GDVSymbol(GDVSymbol const &obj)
-    : m_symbolName(obj.m_symbolName)
-    { incCtorCalls(this); }
+    : m_symbolName(obj.m_symbolName) {}
   GDVSymbol &operator=(GDVSymbol const &obj)
     { m_symbolName = obj.m_symbolName; return *this; }
 
