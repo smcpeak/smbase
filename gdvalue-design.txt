@@ -262,6 +262,17 @@ Map: {a:1 b:2 c:3}
   insert at least one space after the outer map's opening brace (as
   shown above in the third example).
 
+For all values, if their last character is not the last character in the
+file, then the following character must be one of:
+
+  * Whitespace, including ','
+  * '}'
+  * ']'
+  * ':'
+
+Consequently, for example, "[1a]" is invalid, whereas without this rule,
+it could potentially be parsed the same as "[1 a]".
+
 
 GDVN Rationale
 ==============
@@ -310,6 +321,10 @@ likely to indicate a problem in the upstream production of the data,
 silently dropping one of two different values (which one?) would be
 quite surprising and constitute potential data loss, and that policy is
 extended to the case of identical values for uniformity.
+
+The restriction on what characters can follow a value, which has the
+effect of preventing values from being juxtaposed, is meant in part to
+ensure readability, and also to preserve future extension points.
 
 
 The double-brace conflict

@@ -12,6 +12,7 @@
 
 // libc++
 #include <cassert>                     // assert
+#include <cstdint>                     // INT64_C
 #include <cstdlib>                     // std::{atoi, exit}
 #include <iostream>                    // std::cout
 
@@ -742,7 +743,7 @@ static void testSyntaxErrors()
   testOneErrorRegex("{1]", 1, 3,
     "']'.*looking for ':'");
   testOneErrorRegex("{1-", 1, 3,
-    "'-'.*looking for ':'");
+    "'-' after a value");
   testOneErrorRegex("{1 2", 1, 4,
     "'2'.*looking for ':'");
 
@@ -763,10 +764,56 @@ static void testSyntaxErrors()
   // readNextMap: Duplicate map key.
   testOneErrorSubstr("{1:2 1:2}", 1, 6,
     "Duplicate map key: 1");
-  // TODO: More, specifically here.
+  testOneErrorSubstr("{1:2 3:4 1:2}", 1, 10,
+    "Duplicate map key: 1");
+  testOneErrorSubstr("{1:2 {4:4}:4 11:2 {4:4}:5}", 1, 19,
+    "Duplicate map key: {4:4}");
 
+  // readNextDQString: looking for closing '"'.
+  testOneErrorRegex("\"", 1, 2,
+    "end of file.*looking for closing '\"'");
+  testOneErrorRegex("\"\\\"", 1, 4,
+    "end of file.*looking for closing '\"'");
+  testOneErrorRegex("\"\n", 2, 1,
+    "end of file.*looking for closing '\"'");
 
-  // TODO: More
+  // readNextDQString: looking for character after backslash (1).
+  testOneErrorRegex("\"\\", 1, 3,
+    "end of file.*looking for character after '\\\\'");
+
+  // TODO: More in readNextDQString after I fix it to match spec.
+
+  // readNextDQString: looking for character after backslash (2).
+  testOneErrorRegex("\"\\z", 1, 3,
+    "'z'.*looking for the character after a '\\\\'");
+
+  // readNextInteger: putbackAfterValue.
+  testOneErrorRegex("1a", 1, 2,
+    "'a'.*after a value");
+
+  // For reference, the maximum uint64_t is 18446744073709551615.
+
+  // readNextInteger: value too large.
+  testOneErrorSubstr("12345678901234567890", 1, 20,
+    "too large");
+
+  // readNextSymbolOrSpecial: after value.
+  testOneErrorSubstr("true[", 1, 5,
+    "'[' after a value");
+
+  // readNextValue: EOF after '{'.
+  testOneErrorSubstr("{", 1, 2,
+    "end of file after '{'");
+
+  // readNextValue: Bad character at start of value.
+  testOneErrorSubstr("(", 1, 1,
+    "'(' while looking for the start of a value");
+
+  // readExactlyOneValue: EOF or bad at start.
+  testOneErrorSubstr("", 1, 1,
+    "end of file while looking for the start of a value");
+  testOneErrorSubstr("]", 1, 1,
+    "']' while looking for the start of a value");
 }
 
 
@@ -798,6 +845,15 @@ static void testDeserialize()
   testOneDeserialize("1 //\n//\n", 1);
   testOneDeserialize("1 /**/", 1);
   testOneDeserialize("1 /**/ ", 1);
+
+  // Check that we don't somehow recognize comments inside strings.
+  testOneDeserialize("\"/*\"", GDVString("/*"));
+
+  // Confirm we can deserialize a value near the top of the range for a
+  // signed 64-bit integer.
+  testOneDeserialize("1234567890123456789", INT64_C(1234567890123456789));
+
+  // TODO: Lots here.
 }
 
 

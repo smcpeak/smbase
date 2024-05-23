@@ -57,19 +57,25 @@ void GDValueReader::errAt(FileLineCol const &loc,
 
 void GDValueReader::errUnexpectedChar(int c, char const *lookingFor) const
 {
+  errUnexpectedCharInCtx(c, stringbc("while " << lookingFor));
+}
+
+
+void GDValueReader::errUnexpectedCharInCtx(int c, char const *context) const
+{
   if (c == eofCode()) {
-    err(stringb("Unexpected end of file while " <<
-                lookingFor << "."));
+    err(stringb("Unexpected end of file " <<
+                context << "."));
   }
   else if (isASCIIPrintable(c)) {
-    err(stringb("Unexpected '" << (char)c << "' while " <<
-                lookingFor << "."));
+    err(stringb("Unexpected '" << (char)c << "' " <<
+                context << "."));
   }
   else {
     err(stringb("Unexpected unprintable character code " <<
                 (unsigned)c << " (0x" << std::hex << std::setw(2) <<
                 std::setfill('0') << (unsigned)c <<
-                ") while " << lookingFor << "."));
+                ") " << context << "."));
   }
 
   // Not reached.
@@ -139,6 +145,46 @@ void GDValueReader::putback(int c)
   // was incremented when when we did the corresponding 'readChar', even
   // if it returned EOF.
   m_location.decrementForChar(c);
+}
+
+
+bool GDValueReader::isAllowedAfterValue(int c)
+{
+  if (c == eofCode()) {
+    return true;
+  }
+
+  switch (c) {
+    case ' ':
+    case '\t':
+    case '\n':
+    case '\r':
+    case ',':
+    case '}':
+    case ']':
+    case ':':
+      return true;
+
+    default:
+      return false;
+  }
+}
+
+
+void GDValueReader::checkAllowedAfterValue(int c)
+{
+  if (!isAllowedAfterValue(c)) {
+    errUnexpectedCharInCtx(c,
+      "after a value; every value must be followed by EOF, whitespace, "
+      "',', ':', ']', or '}'");
+  }
+}
+
+
+void GDValueReader::putbackAfterValue(int c)
+{
+  checkAllowedAfterValue(c);
+  putback(c);
 }
 
 
@@ -467,7 +513,7 @@ GDValue GDValueReader::readNextInteger(int firstChar)
     while (true) {
       int c = readChar();
       if (!isASCIIDigit(c)) {
-        putback(c);          // 'c' might be 'eofCode()'; that is fine.
+        putbackAfterValue(c);
         break;
       }
 
@@ -507,7 +553,7 @@ GDValue GDValueReader::readNextSymbolOrSpecial(int firstChar)
   while (true) {
     int c = readChar();
     if (!isCIdentifierCharacter(c)) {
-      putback(c);       // Could be EOF, fine.
+      putbackAfterValue(c);       // Could be EOF, fine.
       break;
     }
 
@@ -556,7 +602,7 @@ std::optional<GDValue> GDValueReader::readNextValue()
       case '{': {
         c = readChar();
         if (c == eofCode()) {
-          err("Unexpected end of file after '{'.");
+          errUnexpectedCharInCtx(c, "after '{'");
           return std::nullopt;    // Not reached.
         }
         else if (c == '{') {

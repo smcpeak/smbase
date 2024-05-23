@@ -41,6 +41,10 @@ protected:   // methods
   // encountered.
   void errUnexpectedChar(int c, char const *lookingFor) const;
 
+  // Slightly more general version that does not insert the word
+  // "while".
+  void errUnexpectedCharInCtx(int c, char const *context) const;
+
   // Read a single character from 'm_is', updating 'm_location' so it
   // refers to the *next* character.  (Thus, when we report an error, we
   // must use the immediately prior location.)  Returns 'eofCode()' on
@@ -68,6 +72,16 @@ protected:   // methods
   // between calls to 'readChar()'.  If 'c' is 'eofCode()', this does
   // nothing.
   void putback(int c);
+
+  // True if 'c' is among the characters (including 'eofCode()') that
+  // can directly follow the last character of a value.
+  bool isAllowedAfterValue(int c);
+
+  // If 'c' is not allowed after a value, throw an error.
+  void checkAllowedAfterValue(int c);
+
+  // Check that 'c' is allowed after a value and put it back.
+  void putbackAfterValue(int c);
 
   // Skip whitespace and comments, returning the first character after
   // them, or 'eofCode()'.
