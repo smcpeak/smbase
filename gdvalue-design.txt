@@ -233,7 +233,10 @@ Symbols use the regex: [a-zA-Z_][a-zA-Z0-9_]
   them uniformly as symbols.
 
   TODO: Ideally I would extend this to any unicode sequence that has
-  similar starting and continuation conditions.
+  similar starting and continuation conditions.  Actually, now I'm
+  thinking to drop the restriction on what symbols are, letting them be
+  any string (including empty), and using backticks to enclose them if
+  not of a "simple" form.
 
 Integers use the regex: (0|-?([1-9][0-9]+))
 
@@ -386,10 +389,7 @@ superset, which is valuable.  But "canonical" GDVN does not use them.
 
 The common symbols "null", "true", and "false" are not special because
 they do not need to be.  Whether and how applications give them special
-semantics is entirely up to those applications.  Within my C++
-implementation, I map them to special representations, but that is
-simply because I expect essentially all clients to want to treat them
-specially, not because the text syntax forces it.  Furthermore, this
+semantics is entirely up to those applications.  Furthermore, this
 allows additional symbols such as "NaN", "PInf", and "NInf" to be used
 as alternatives to ordinary floating point numbers once floats are
 added.
