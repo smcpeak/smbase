@@ -42,8 +42,103 @@ Goals
 * Serialize and deserialze to a compact binary form.
 
 
+Data model
+==========
+
+The core concept of a Generalized Data Value is the "value".  A value is
+one of the following:
+
+  * Integer: Positive or negative integer, of unbounded but finite
+    magnitude.  There is only one zero value (not both a positive and
+    negative zero).
+
+  * TODO: Add floats.
+
+  * String: A finite sequence of Unicode code points.
+
+  * Symbol: A non-empty finite sequence of characters conforming to the
+    regex "[a-zA-Z_][a-zA-Z_0-9]+".  Symbols are distinct from strings,
+    and intended to be names of entities or concepts with semantics
+    specified elsewhere, rather than having intrinsic meaning.
+
+    * TODO: Generalize symbols.  Allow all unicode letters at least.
+      Perhaps dots too.  What is the standard used in certificates that
+      puts everything into one enormous concept hierarchy?  Symbols
+      should be able to represent those.
+
+  * Sequence: A finite ordered sequence of values.
+
+  * Set: A finite unordered set of values.  An empty set is distinct
+    from an empty sequence.
+
+  * Map: A finite unordered map from values to values.  An empty map is
+    a distinct value from an empty set or empty sequence.
+
+  * TODO: Add a tagged map.
+
+The meaning of a symbol is determined by mutual agreement between
+producer and consumer; its meaning is extrinsic rather than intrinsic.
+In this specification, it is encouraged for producers and consumers to
+regard the following symbols as having pre-established reserved meaning:
+
+  * null: An "absent" value, used in a context where a value is
+    expected but no such value exists.
+
+  * false: Boolean false.
+
+  * true: Boolean true.
+
+  * TODO: Nan, PInf, NInf.
+
+The data model is meant to allow values to be totally ordered (that is,
+for all values A and B, exactly one of A<B, A>B, and A==B is true)
+within applications using it, but this specification does not prescribe
+such an order, as this is just a passive data model without any defined
+operations.
+
+
+Data model rationale
+====================
+
+
+The name "sequence"
+-------------------
+
+This model uses the name "sequence" to refer to a finite sequence.
+There are several other plausible candidate terms that could have been
+used for this role:
+
+  * List
+
+  * Array (the term used in JSON)
+
+  * Vector
+
+All of these have roots in mathematical literature.  However, when used
+in a programming context, both "list" and "array" are closely associated
+with particular data structures, whereas this data model is specifically
+independent of any particular data structure realization, so those two
+are rejected.
+
+In mathematics, a vector need not consist of a sequence (a matrix can be
+a vector) and has the algebraic properties that come with being a member
+of a vector space.  Furthermore, in C++ at least, "vector" is closely
+associated with an array-like data structure.
+
+In contrast, the mathematical term "finite sequence" is a precise match
+for the "sequence" of GDV, with little need in a programming context for
+the "finite" qualifier.  Consequently, we use "sequence".
+
+The one disadvantage of "sequence" is it is a slightly longer term than
+is ideal for a concept that will be frequently used.  Fortunately, the
+abbreviation "seq" is concise and unambiguous, so works well as a
+substitute in cases where the longer term would get in the way.  That
+abbreviation is not further used in this document but it is in the
+reference C++ implementation.
+
+
 Sets versus maps
-================
+----------------
 
 In mathmatics, a map (or "function") is usually defined as a set of
 tuples where every first element is unique.  This provides some economy
@@ -52,7 +147,7 @@ theorems that apply to sets also apply to maps.
 
 It's therefore tempting to try to do the same for GDValue.  In
 particular, the idea would be to say that a map is simply a set that
-conforms to the requirement of all elements being two-element vectors
+conforms to the requirement of all elements being two-element sequences
 (as I do not have a distinct "pair" or even "tuple" notion) whose first
 elements are all unique within the map.
 
@@ -115,7 +210,7 @@ when iterating over a map, it is often (for example with C++ std::map)
 allowed to modify the value.  Furthermore, the client interface
 structurally ensures that it receives exactly (K,V) pairs, whereas when
 iterating over a map as if it were a set, the client would receive
-arbitrary values and have to check that they are two-element vectors,
+arbitrary values and have to check that they are two-element sequences,
 doing something (what exactly?) when they are not.
 
 Consequently, in this design, I simply treat sets and maps as entirely
@@ -133,16 +228,15 @@ GDVN is a textual format, regarded as a sequence of Unicode code points.
 In principle any encoding can be used, but in practice UTF-8 encoding is
 strongly preferred.
 
-The absent value is 'null'.  Syntactically, 'null' is a symbol, but it
-has special meaning.
-
-Booleans are 'true' and 'false'.
-
 Integers use the regex: (0|-?([1-9][0-9]+))
 
 TODO: Specify a form for floating-point numbers.
 
 Symbols use the regex: [a-zA-Z_][a-zA-Z0-9_]
+
+  This includes symbols that are expected to have ubiquitous special
+  meaning such as "null", "true", and "false".  The syntax simply treats
+  them uniformly as symbols.
 
   TODO: Ideally I would extend this to any unicode sequence that has
   similar starting and continuation conditions.
@@ -194,7 +288,7 @@ Whitespace: All of the following are treated as whitespace:
 Whitespace separates values within a container and optionally separates
 the container delimiters from values inside them.
 
-Vector: [1 2 3]
+Sequence: [1 2 3]
 
   Note that there is no punctuation between values.  Separators are not
   needed for parsing disambiguation, can contribute visual clutter
@@ -291,6 +385,16 @@ allowed in the trailing position and often ugly regardless.  They are
 not necessary for parsing, so originally GDVN did not have them at all.
 I then decided that allowing but ignoring them would let GDVN be a JSON
 superset, which is valuable.  But "canonical" GDVN does not use them.
+
+The common symbols "null", "true", and "false" are not special because
+they do not need to be.  Whether and how applications give them special
+semantics is entirely up to those applications.  Within my C++
+implementation, I map them to special representations, but that is
+simply because I expect essentially all clients to want to treat them
+specially, not because the text syntax forces it.  Furthermore, this
+allows additional symbols such as "NaN", "PInf", and "NInf" to be used
+as alternatives to ordinary floating point numbers once floats are
+added.
 
 Within strings, unknown baskslash codes are disallowed in order to
 reserve them for possible future use.  If instead, say, "\c" just meant
