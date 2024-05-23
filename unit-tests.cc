@@ -123,6 +123,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(taillist);
   RUN_TEST(trdelete);
   RUN_TEST(tree_print);
+  RUN_TEST(utf8);
   RUN_TEST(vdtllist);
   RUN_TEST(vector_utils);
   RUN_TEST(voidlist);
