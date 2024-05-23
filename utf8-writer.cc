@@ -9,7 +9,7 @@
 namespace smbase {
 
 
-inline char startByte(
+static inline char startByte(
   int c,
   unsigned char fixedHighBits,
   unsigned char lowBitsMask,
@@ -20,7 +20,7 @@ inline char startByte(
 }
 
 
-inline char continuationByte(
+static inline char continuationByte(
   int c,
   int shiftAmount)
 {

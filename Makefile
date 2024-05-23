@@ -277,6 +277,7 @@ SRCS += syserr.cc
 SRCS += trace.cc
 SRCS += trdelete.cc
 SRCS += tree-print.cc
+SRCS += utf8-reader.cc
 SRCS += utf8-writer.cc
 SRCS += vdtllist.cc
 SRCS += voidlist.cc
