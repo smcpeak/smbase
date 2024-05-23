@@ -102,29 +102,7 @@ char const *toString(GDValueKind gdvk);
 // A General Data Value is a disjoint union of several different types
 // of data, enumerated as 'GDValueKind'.
 class GDValue {
-private:     // data
-  // Tag indicating which kind of value is represented.
-  GDValueKind m_kind;
-
-  // Representation of the value.
-  union GDValueUnion {
-    GDVBool      m_bool;
-    GDVInteger   m_int64;
-
-    // Non-owning pointer to a NUL-terminated string stored in
-    // 'GDVSymbol::s_stringTable'.
-    char const  *m_symbolName;
-
-    // These are all owner pointers.
-    GDVString   *m_string;
-    GDVSequence *m_sequence;
-    GDVSet      *m_set;
-    GDVMap      *m_map;
-
-    GDValueUnion() : m_int64(0) {}
-  } m_value;
-
-public:      // static data
+public:      // class data
   // Expose some method counts for testing purposes.
   static unsigned s_ct_ctorDefault;
   static unsigned s_ct_dtor;
@@ -152,6 +130,28 @@ public:      // static data
   static unsigned s_ct_mapCtorMove;
   static unsigned s_ct_mapSetCopy;
   static unsigned s_ct_mapSetMove;
+
+private:     // instance data
+  // Tag indicating which kind of value is represented.
+  GDValueKind m_kind;
+
+  // Representation of the value.
+  union GDValueUnion {
+    GDVBool      m_bool;
+    GDVInteger   m_int64;
+
+    // Non-owning pointer to a NUL-terminated string stored in
+    // 'GDVSymbol::s_stringTable'.
+    char const  *m_symbolName;
+
+    // These are all owner pointers.
+    GDVString   *m_string;
+    GDVSequence *m_sequence;
+    GDVSet      *m_set;
+    GDVMap      *m_map;
+
+    GDValueUnion() : m_int64(0) {}
+  } m_value;
 
 private:     // methods
   // Reset the object to 'null' without deallocating anything that
