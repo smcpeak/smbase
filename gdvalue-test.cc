@@ -283,72 +283,72 @@ static void testString()
 }
 
 
-static void testVector()
+static void testSequence()
 {
-  GDValue v1(GDVK_VECTOR);
-  cout << "empty vec: " << v1 << "\n";
+  GDValue v1(GDVK_SEQUENCE);
+  cout << "empty seq: " << v1 << "\n";
   assert(v1.asString() == "[]");
   assert(v1.size() == 0);
   assert(v1.empty());
-  assert(v1.getKind() == GDVK_VECTOR);
-  assert(v1.isVector());
-  assert(v1.vectorGet() == GDVVector());
+  assert(v1.getKind() == GDVK_SEQUENCE);
+  assert(v1.isSequence());
+  assert(v1.sequenceGet() == GDVSequence());
   testSerializeRoundtrip(v1);
 
-  GDValue v2((GDVVector()));
+  GDValue v2((GDVSequence()));
 
   assert(v1 == v2);
 
-  GDVVector vec1b3{GDValue(1), GDValue("b"), GDValue(3)};
-  GDValue v3(vec1b3);
-  cout << "three-element vec: " << v3 << "\n";
+  GDVSequence seq1b3{GDValue(1), GDValue("b"), GDValue(3)};
+  GDValue v3(seq1b3);
+  cout << "three-element seq: " << v3 << "\n";
   assert(v3.asString() == "[1 \"b\" 3]");
   assert(v3.size() == 3);
   assert(!v3.empty());
-  assert(v3.getKind() == GDVK_VECTOR);
-  assert(v3.vectorGet() == vec1b3);
+  assert(v3.getKind() == GDVK_SEQUENCE);
+  assert(v3.sequenceGet() == seq1b3);
   assert(v1 < v3);
   testSerializeRoundtrip(v3);
 
-  v1.vectorAppend(GDValue(-1));
+  v1.sequenceAppend(GDValue(-1));
   assert(v1.asString() == "[-1]");
   assert(v1 < v3);
 
-  v3.vectorAppend(GDValue("four"));
+  v3.sequenceAppend(GDValue("four"));
   assert(v3.asString() == R"([1 "b" 3 "four"])");
 
-  v1.vectorResize(3);
+  v1.sequenceResize(3);
   assert(v1.asString() == "[-1 null null]");
 
-  v3.vectorResize(3);
+  v3.sequenceResize(3);
   assert(v3.asString() == R"([1 "b" 3])");
 
-  v1.vectorSetValueAt(1, v3);
+  v1.sequenceSetValueAt(1, v3);
   assert(v1.asString() == R"([-1 [1 "b" 3] null])");
 
-  v1.vectorSetValueAt(4, GDValue(5));
+  v1.sequenceSetValueAt(4, GDValue(5));
   cout << v1 << "\n";
   assert(v1.asString() == R"([-1 [1 "b" 3] null null 5])");
   testSerializeRoundtrip(v1);
 
-  assert(v1.vectorGetValueAt(1) == v3);
+  assert(v1.sequenceGetValueAt(1) == v3);
 
   {
     GDVIndex i = 0;
-    for (GDValue const &value : v1.vectorIterableC()) {
-      assert(value == v1.vectorGetValueAt(i));
+    for (GDValue const &value : v1.sequenceIterableC()) {
+      assert(value == v1.sequenceGetValueAt(i));
       ++i;
     }
   }
 
-  for (GDValue &value : v1.vectorIterable()) {
+  for (GDValue &value : v1.sequenceIterable()) {
     if (value.isInteger()) {
       value.integerSet(value.integerGet() + 1);
     }
   }
   assert(v1.asString() == R"([0 [1 "b" 3] null null 6])");
 
-  v1.vectorClear();
+  v1.sequenceClear();
   assert(v1 == v2);
   assert(v1.empty());
   testSerializeRoundtrip(v1);
@@ -390,7 +390,7 @@ static void testSet()
   v2 = GDValue(GDVSet{
          GDValue("x"),
          GDValue(10),
-         GDValue(GDVVector{
+         GDValue(GDVSequence{
            GDValue(2),
            GDValue(3),
            GDValue(4),
@@ -449,7 +449,7 @@ static void testMap()
          GDVMapEntry(GDValue("a"), GDValue(1)),
          GDVMapEntry(GDValue(2), GDValue(3)),
          GDVMapEntry(
-           GDValue(GDVVector({        // Use a vector as a key.
+           GDValue(GDVSequence({        // Use a sequence as a key.
              GDValue(10),
              GDValue(11)
            })),
@@ -461,7 +461,7 @@ static void testMap()
   testSerializeRoundtrip(v2);
 
   assert(v2.mapGetValueAt(
-           GDValue(GDVVector({GDValue(10), GDValue(11)}))) ==
+           GDValue(GDVSequence({GDValue(10), GDValue(11)}))) ==
          GDValue(GDVSymbol("ten_eleven")));
 }
 
@@ -492,7 +492,7 @@ static void testPrettyPrint(int width)
   cout << "pretty print target width: " << width << "\n";
   printRuler(width);
 
-  GDValue v(GDVVector{1,2,3});
+  GDValue v(GDVSequence{1,2,3});
   v.writeLines(cout, GDValueWriteOptions()
                        .setTargetLineWidth(width));
 
@@ -503,14 +503,14 @@ static void testPrettyPrint(int width)
   m2.writeLines(cout, GDValueWriteOptions()
                         .setTargetLineWidth(width));
 
-  v = GDVVector{
+  v = GDVSequence{
     1,
     "hello",
-    GDVVector{2,3,4},
+    GDVSequence{2,3,4},
     GDVSet{
       "x",
       10,
-      GDVVector{2,3,4},
+      GDVSequence{2,3,4},
     }
   };
   v.writeLines(cout, GDValueWriteOptions()
@@ -873,7 +873,7 @@ void test_gdvalue()
     testInteger();
     testSymbol();
     testString();
-    testVector();
+    testSequence();
     testSet();
     testMap();
     testSyntaxErrors();

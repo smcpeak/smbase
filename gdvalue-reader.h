@@ -94,8 +94,8 @@ protected:   // methods
   void skipCStyleComment(int nestingDepth);
 
   // Having seen and consumed '(', read the following values and put
-  // them into a vector.  Return after consuming the ')'.
-  GDValue readNextVector();
+  // them into a sequence.  Return after consuming the ')'.
+  GDValue readNextSequence();
 
   // Having seen and consumed "{{", read the following values and put
   // them into a set.  Return after consuming the "}}".

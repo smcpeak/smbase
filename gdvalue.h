@@ -49,10 +49,10 @@ using GDVInteger = std::int64_t;
 // sequence of Unicode code points the string represents.
 using GDVString = std::string;
 
-//using GDVOctetVector = std::vector<unsigned char>;
+//using GDVOctetSequence = std::vector<unsigned char>;
 
-// GDValue(GDVK_VECTOR) holds this.
-using GDVVector = std::vector<GDValue>;
+// GDValue(GDVK_SEQUENCE) holds this.
+using GDVSequence = std::vector<GDValue>;
 
 // GDValue(GDVK_SET) holds this.
 using GDVSet = std::set<GDValue>;
@@ -82,8 +82,8 @@ enum GDValueKind : int {
   // string: Sequence of Unicode characters encoded as UTF-8.
   GDVK_STRING,
 
-  // vector: Ordered sequence of values.
-  GDVK_VECTOR,
+  // sequence: Ordered sequence of values.
+  GDVK_SEQUENCE,
 
   // set: Unordered set of (unique) values.
   GDVK_SET,
@@ -118,17 +118,17 @@ private:     // data
 
   // Representation of the value.
   union GDValueUnion {
-    GDVBool    m_bool;
-    GDVInteger m_int64;
+    GDVBool      m_bool;
+    GDVInteger   m_int64;
 
     // This is for now an owner pointer.
-    GDVSymbol *m_symbol;
+    GDVSymbol   *m_symbol;
 
     // These are all owner pointers.
-    GDVString *m_string;
-    GDVVector *m_vector;
-    GDVSet    *m_set;
-    GDVMap    *m_map;
+    GDVString   *m_string;
+    GDVSequence *m_sequence;
+    GDVSet      *m_set;
+    GDVMap      *m_map;
 
     GDValueUnion() : m_int64(0) {}
   } m_value;
@@ -149,10 +149,10 @@ public:      // static data
   static unsigned s_ct_stringCtorMove;
   static unsigned s_ct_stringSetCopy;
   static unsigned s_ct_stringSetMove;
-  static unsigned s_ct_vectorCtorCopy;
-  static unsigned s_ct_vectorCtorMove;
-  static unsigned s_ct_vectorSetCopy;
-  static unsigned s_ct_vectorSetMove;
+  static unsigned s_ct_sequenceCtorCopy;
+  static unsigned s_ct_sequenceCtorMove;
+  static unsigned s_ct_sequenceSetCopy;
+  static unsigned s_ct_sequenceSetMove;
   static unsigned s_ct_setCtorCopy;
   static unsigned s_ct_setCtorMove;
   static unsigned s_ct_setSetCopy;
@@ -190,14 +190,14 @@ public:      // methods
 
 
   GDValueKind getKind() const { return m_kind; }
-  bool isNull()    const { return getKind() == GDVK_NULL;    }
-  bool isBool()    const { return getKind() == GDVK_BOOL;    }
-  bool isInteger() const { return getKind() == GDVK_INTEGER; }
-  bool isSymbol()  const { return getKind() == GDVK_SYMBOL;  }
-  bool isString()  const { return getKind() == GDVK_STRING;  }
-  bool isVector()  const { return getKind() == GDVK_VECTOR;  }
-  bool isSet()     const { return getKind() == GDVK_SET;     }
-  bool isMap()     const { return getKind() == GDVK_MAP;     }
+  bool isNull()     const { return getKind() == GDVK_NULL;     }
+  bool isBool()     const { return getKind() == GDVK_BOOL;     }
+  bool isInteger()  const { return getKind() == GDVK_INTEGER;  }
+  bool isSymbol()   const { return getKind() == GDVK_SYMBOL;   }
+  bool isString()   const { return getKind() == GDVK_STRING;   }
+  bool isSequence() const { return getKind() == GDVK_SEQUENCE; }
+  bool isSet()      const { return getKind() == GDVK_SET;      }
+  bool isMap()      const { return getKind() == GDVK_MAP;      }
 
 
   // Return <0 if a<b, 0 if a==b, and >0 otherwise.
@@ -213,7 +213,7 @@ public:      // methods
   // Number of contained values.  Result depends on kind of value:
   //   - null: 0
   //   - bool, int, symbol, string: 1
-  //   - vector, set: number of elements
+  //   - sequence, set: number of elements
   //   - map: number of entries
   GDVSize size() const;
 
@@ -365,30 +365,30 @@ public:      // methods
   DECLARE_GDV_KIND_ITERATORS(GDVString, string)
 
 
-  // ---- Vector ----
-  GDVALUE_CORE_CTOR GDValue(GDVVector const &vec);
-  GDVALUE_CORE_CTOR GDValue(GDVVector      &&vec);
+  // ---- Sequence ----
+  GDVALUE_CORE_CTOR GDValue(GDVSequence const &seq);
+  GDVALUE_CORE_CTOR GDValue(GDVSequence      &&seq);
 
-  void vectorSet(GDVVector const &vec);
-  void vectorSet(GDVVector      &&vec);
+  void sequenceSet(GDVSequence const &seq);
+  void sequenceSet(GDVSequence      &&seq);
 
-  GDVVector const &vectorGet()        const;
-  GDVVector       &vectorGetMutable()      ;
+  GDVSequence const &sequenceGet()        const;
+  GDVSequence       &sequenceGetMutable()      ;
 
-  DECLARE_GDV_KIND_ITERATORS(GDVVector, vector)
+  DECLARE_GDV_KIND_ITERATORS(GDVSequence, sequence)
 
-  void vectorAppend(GDValue value);
+  void sequenceAppend(GDValue value);
 
   // Discard extra elements or pad with nulls to match the size.
-  void vectorResize(GDVSize newSize);
+  void sequenceResize(GDVSize newSize);
 
-  void vectorSetValueAt(GDVIndex index, GDValue const &value);
-  void vectorSetValueAt(GDVIndex index, GDValue      &&value);
+  void sequenceSetValueAt(GDVIndex index, GDValue const &value);
+  void sequenceSetValueAt(GDVIndex index, GDValue      &&value);
 
-  GDValue const &vectorGetValueAt(GDVIndex index) const;
-  GDValue       &vectorGetValueAt(GDVIndex index)     ;
+  GDValue const &sequenceGetValueAt(GDVIndex index) const;
+  GDValue       &sequenceGetValueAt(GDVIndex index)     ;
 
-  void vectorClear();
+  void sequenceClear();
 
 
   // ---- Set ---
@@ -508,7 +508,7 @@ GDVALUE_CORE_CTOR GDValue::GDValue(char const *str);
 // GDValue::stringIterable[C].
 DEFINE_GDV_KIND_ITERABLE(GDVString, string)
 
-DEFINE_GDV_KIND_ITERABLE(GDVVector, vector)
+DEFINE_GDV_KIND_ITERABLE(GDVSequence, sequence)
 
 DEFINE_GDV_KIND_ITERABLE(GDVSet, set)
 

@@ -11,8 +11,8 @@ string iterable const iteration: str1
 string begin/end non-const iteration: tus2
 again: "tus2"
 string iterable non-const iteration: str1
-empty vec: []
-three-element vec: [1 "b" 3]
+empty seq: []
+three-element seq: [1 "b" 3]
 [-1 [1 "b" 3] null null 5]
 empty set: {{}}
 {{10 "x" [2 3 4]}}

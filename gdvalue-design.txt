@@ -132,9 +132,7 @@ the "finite" qualifier.  Consequently, we use "sequence".
 The one disadvantage of "sequence" is it is a slightly longer term than
 is ideal for a concept that will be frequently used.  Fortunately, the
 abbreviation "seq" is concise and unambiguous, so works well as a
-substitute in cases where the longer term would get in the way.  That
-abbreviation is not further used in this document but it is in the
-reference C++ implementation.
+substitute in cases where the longer term would get in the way.
 
 
 Sets versus maps

@@ -306,18 +306,18 @@ void GDValueReader::skipCStyleComment(int nestingDepth)
 }
 
 
-GDValue GDValueReader::readNextVector()
+GDValue GDValueReader::readNextSequence()
 {
-  GDValue ret(GDVK_VECTOR);
+  GDValue ret(GDVK_SEQUENCE);
 
   while (true) {
     std::optional<GDValue> next = readNextValue();
     if (!next) {
-      readExpectChar(']', "looking for ']' at end of vector");
+      readExpectChar(']', "looking for ']' at end of sequence");
       return ret;
     }
 
-    ret.vectorAppend(std::move(*next));
+    ret.sequenceAppend(std::move(*next));
   }
 }
 
@@ -597,7 +597,7 @@ std::optional<GDValue> GDValueReader::readNextValue()
         return std::nullopt;
 
       case '[':
-        return std::make_optional(readNextVector());
+        return std::make_optional(readNextSequence());
 
       case '{': {
         c = readChar();

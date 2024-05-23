@@ -228,9 +228,9 @@ bool GDValueWriter::tryWrite(GDValue const &value,
       os() << doubleQuote(value.stringGet());
       break;
 
-    case GDVK_VECTOR:
+    case GDVK_SEQUENCE:
       return writeContainer(
-        value.vectorGet(),
+        value.sequenceGet(),
         "[",
         "]");
 
@@ -416,7 +416,7 @@ void GDValueWriter::startNewIndentedLine()
 bool GDValueWriter::isContainer(GDValue const &value) const
 {
   switch (value.getKind()) {
-    case GDVK_VECTOR:
+    case GDVK_SEQUENCE:
     case GDVK_SET:
     case GDVK_MAP:
       return true;
@@ -430,7 +430,7 @@ bool GDValueWriter::isContainer(GDValue const &value) const
 int GDValueWriter::openDelimLength(GDValue const &value) const
 {
   switch (value.getKind()) {
-    case GDVK_VECTOR:
+    case GDVK_SEQUENCE:
     case GDVK_MAP:
       return 1;    // '(' or '{'
 

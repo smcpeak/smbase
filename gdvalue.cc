@@ -30,7 +30,7 @@ char const *toString(GDValueKind gdvk)
     CASE(GDVK_INTEGER)
     CASE(GDVK_SYMBOL)
     CASE(GDVK_STRING)
-    CASE(GDVK_VECTOR)
+    CASE(GDVK_SEQUENCE)
     CASE(GDVK_SET)
     CASE(GDVK_MAP)
     #undef CASE
@@ -56,10 +56,10 @@ unsigned GDValue::s_ct_stringCtorCopy = 0;
 unsigned GDValue::s_ct_stringCtorMove = 0;
 unsigned GDValue::s_ct_stringSetCopy = 0;
 unsigned GDValue::s_ct_stringSetMove = 0;
-unsigned GDValue::s_ct_vectorCtorCopy = 0;
-unsigned GDValue::s_ct_vectorCtorMove = 0;
-unsigned GDValue::s_ct_vectorSetCopy = 0;
-unsigned GDValue::s_ct_vectorSetMove = 0;
+unsigned GDValue::s_ct_sequenceCtorCopy = 0;
+unsigned GDValue::s_ct_sequenceCtorMove = 0;
+unsigned GDValue::s_ct_sequenceSetCopy = 0;
+unsigned GDValue::s_ct_sequenceSetMove = 0;
 unsigned GDValue::s_ct_setCtorCopy = 0;
 unsigned GDValue::s_ct_setCtorMove = 0;
 unsigned GDValue::s_ct_setSetCopy = 0;
@@ -108,8 +108,8 @@ void GDValue::clearSelfAndSwapWith(GDValue &obj) noexcept
       SWAP_MEMBER(m_string);
       break;
 
-    case GDVK_VECTOR:
-      SWAP_MEMBER(m_vector);
+    case GDVK_SEQUENCE:
+      SWAP_MEMBER(m_sequence);
       break;
 
     case GDVK_SET:
@@ -175,8 +175,8 @@ GDValue::GDValue(GDValue const &obj)
       stringSet(obj.stringGet());
       break;
 
-    case GDVK_VECTOR:
-      vectorSet(obj.vectorGet());
+    case GDVK_SEQUENCE:
+      sequenceSet(obj.sequenceGet());
       break;
 
     case GDVK_SET:
@@ -253,8 +253,8 @@ GDValue::GDValue(GDValueKind kind)
       m_value.m_string = new GDVString;
       break;
 
-    case GDVK_VECTOR:
-      m_value.m_vector = new GDVVector;
+    case GDVK_SEQUENCE:
+      m_value.m_sequence = new GDVSequence;
       break;
 
     case GDVK_SET:
@@ -346,8 +346,8 @@ int compare(GDValue const &a, GDValue const &b)
     case GDVK_STRING:
       return DEEP_COMPARE_PTR_MEMBERS(m_value.m_string);
 
-    case GDVK_VECTOR:
-      return DEEP_COMPARE_PTR_MEMBERS(m_value.m_vector);
+    case GDVK_SEQUENCE:
+      return DEEP_COMPARE_PTR_MEMBERS(m_value.m_sequence);
 
     case GDVK_SET:
       return DEEP_COMPARE_PTR_MEMBERS(m_value.m_set);
@@ -371,8 +371,8 @@ int compare(GDValue const &a, GDValue const &b)
     + s_ct_symbolCtor
     + s_ct_stringCtorCopy
     + s_ct_stringCtorMove
-    + s_ct_vectorCtorCopy
-    + s_ct_vectorCtorMove
+    + s_ct_sequenceCtorCopy
+    + s_ct_sequenceCtorMove
     + s_ct_setCtorCopy
     + s_ct_setCtorMove
     + s_ct_mapCtorCopy
@@ -396,8 +396,8 @@ GDVSize GDValue::size() const
     case GDVK_STRING:
       return 1;
 
-    case GDVK_VECTOR:
-      return m_value.m_vector->size();
+    case GDVK_SEQUENCE:
+      return m_value.m_sequence->size();
 
     case GDVK_SET:
       return m_value.m_set->size();
@@ -433,8 +433,8 @@ void GDValue::clear()
       delete m_value.m_string;
       break;
 
-    case GDVK_VECTOR:
-      delete m_value.m_vector;
+    case GDVK_SEQUENCE:
+      delete m_value.m_sequence;
       break;
 
     case GDVK_SET:
@@ -715,107 +715,107 @@ GDVString &GDValue::stringGetMutable()
 DEFINE_GDV_KIND_BEGIN_END(GDVString, string, GDVK_STRING)
 
 
-// ------------------------------ Vector -------------------------------
-GDValue::GDValue(GDVVector const &vec)
+// ----------------------------- Sequence ------------------------------
+GDValue::GDValue(GDVSequence const &vec)
   : INIT_AS_NULL()
 {
-  vectorSet(vec);
+  sequenceSet(vec);
 
-  ++s_ct_vectorCtorCopy;
+  ++s_ct_sequenceCtorCopy;
 }
 
 
-GDValue::GDValue(GDVVector &&vec)
+GDValue::GDValue(GDVSequence &&vec)
   : INIT_AS_NULL()
 {
-  vectorSet(std::move(vec));
+  sequenceSet(std::move(vec));
 
-  ++s_ct_vectorCtorMove;
+  ++s_ct_sequenceCtorMove;
 }
 
 
-void GDValue::vectorSet(GDVVector const &vec)
+void GDValue::sequenceSet(GDVSequence const &vec)
 {
   clear();
-  m_value.m_vector = new GDVVector(vec);
-  m_kind = GDVK_VECTOR;
+  m_value.m_sequence = new GDVSequence(vec);
+  m_kind = GDVK_SEQUENCE;
 
-  ++s_ct_vectorSetCopy;
+  ++s_ct_sequenceSetCopy;
 }
 
 
-void GDValue::vectorSet(GDVVector &&vec)
+void GDValue::sequenceSet(GDVSequence &&vec)
 {
   clear();
-  m_value.m_vector = new GDVVector(std::move(vec));
-  m_kind = GDVK_VECTOR;
+  m_value.m_sequence = new GDVSequence(std::move(vec));
+  m_kind = GDVK_SEQUENCE;
 
-  ++s_ct_vectorSetMove;
+  ++s_ct_sequenceSetMove;
 }
 
 
-GDVVector const &GDValue::vectorGet() const
+GDVSequence const &GDValue::sequenceGet() const
 {
-  assert(m_kind == GDVK_VECTOR);
-  return *(m_value.m_vector);
+  assert(m_kind == GDVK_SEQUENCE);
+  return *(m_value.m_sequence);
 }
 
 
-GDVVector &GDValue::vectorGetMutable()
+GDVSequence &GDValue::sequenceGetMutable()
 {
-  assert(m_kind == GDVK_VECTOR);
-  return *(m_value.m_vector);
+  assert(m_kind == GDVK_SEQUENCE);
+  return *(m_value.m_sequence);
 }
 
 
-DEFINE_GDV_KIND_BEGIN_END(GDVVector, vector, GDVK_VECTOR)
+DEFINE_GDV_KIND_BEGIN_END(GDVSequence, sequence, GDVK_SEQUENCE)
 
 
-void GDValue::vectorAppend(GDValue value)
+void GDValue::sequenceAppend(GDValue value)
 {
-  vectorGetMutable().push_back(value);
+  sequenceGetMutable().push_back(value);
 }
 
 
-void GDValue::vectorResize(GDVSize newSize)
+void GDValue::sequenceResize(GDVSize newSize)
 {
-  vectorGetMutable().resize(newSize);
+  sequenceGetMutable().resize(newSize);
 }
 
 
-void GDValue::vectorSetValueAt(GDVIndex index, GDValue const &value)
-{
-  if (index >= size()) {
-    vectorResize(index+1);
-  }
-  vectorGetMutable().at(index) = value;
-}
-
-
-void GDValue::vectorSetValueAt(GDVIndex index, GDValue &&value)
+void GDValue::sequenceSetValueAt(GDVIndex index, GDValue const &value)
 {
   if (index >= size()) {
-    vectorResize(index+1);
+    sequenceResize(index+1);
   }
-  vectorGetMutable().at(index) = std::move(value);
+  sequenceGetMutable().at(index) = value;
 }
 
 
-GDValue const &GDValue::vectorGetValueAt(GDVIndex index) const
+void GDValue::sequenceSetValueAt(GDVIndex index, GDValue &&value)
 {
-  return vectorGet().at(index);
+  if (index >= size()) {
+    sequenceResize(index+1);
+  }
+  sequenceGetMutable().at(index) = std::move(value);
 }
 
 
-GDValue &GDValue::vectorGetValueAt(GDVIndex index)
+GDValue const &GDValue::sequenceGetValueAt(GDVIndex index) const
 {
-  return vectorGetMutable().at(index);
+  return sequenceGet().at(index);
 }
 
 
-void GDValue::vectorClear()
+GDValue &GDValue::sequenceGetValueAt(GDVIndex index)
 {
-  vectorGetMutable().clear();
+  return sequenceGetMutable().at(index);
+}
+
+
+void GDValue::sequenceClear()
+{
+  sequenceGetMutable().clear();
 }
 
 
