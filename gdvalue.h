@@ -99,16 +99,6 @@ enum GDValueKind : int {
 char const *toString(GDValueKind gdvk);
 
 
-// 'GDVALUE_CORE_CTOR' is placed before a "core" constructor
-// declaration, meaning one that creates a GDValue from the type of data
-// it wraps.  I'm experimenting with making those non-explicit.
-#if 0
-  #define GDVALUE_CORE_CTOR explicit
-#else
-  #define GDVALUE_CORE_CTOR /*nothing*/
-#endif
-
-
 // A General Data Value is a disjoint union of several different types
 // of data, enumerated as 'GDValueKind'.
 class GDValue {
@@ -294,7 +284,12 @@ public:      // methods
 
 
   // ---- Integer ----
-  GDVALUE_CORE_CTOR GDValue(GDVInteger i);
+  // The GDValue ctors are safe to use implicitly because they are
+  // merely passive containers for data that preserve the information
+  // passed as arguments.  Furthermore, making them explicit (which I
+  // initially did) *greatly* expands the verbosity and difficulty of
+  // reading initializers for complex values.
+  /*implicit*/ GDValue(GDVInteger i);
 
   void integerSet(GDVInteger i);
 
@@ -302,7 +297,7 @@ public:      // methods
 
 
   // ---- Symbol ----
-  GDVALUE_CORE_CTOR GDValue(GDVSymbol sym);
+  /*implicit*/ GDValue(GDVSymbol sym);
 
   void symbolSet(GDVSymbol sym);
 
@@ -310,8 +305,8 @@ public:      // methods
 
 
   // ---- String ----
-  GDVALUE_CORE_CTOR GDValue(GDVString const &str);
-  GDVALUE_CORE_CTOR GDValue(GDVString      &&str);
+  /*implicit*/ GDValue(GDVString const &str);
+  /*implicit*/ GDValue(GDVString      &&str);
 
   // Accept string literals.  But doing so in the obvious way causes
   // ambiguity with the constructor that accepts GDVInteger with an
@@ -319,7 +314,7 @@ public:      // methods
   // make the ctor that accepts a pointer be a template, but delete the
   // general form.
   template <typename T>
-  GDVALUE_CORE_CTOR GDValue(T const *str) = delete;
+  /*implicit*/ GDValue(T const *str) = delete;
 
   // Then define the actual constructor I want as a specialization.
   //
@@ -328,7 +323,7 @@ public:      // methods
   //
   // Moving the declaration to namespace scope...
   //template <>
-  //GDVALUE_CORE_CTOR GDValue(char const *str);
+  ///*implicit*/ GDValue(char const *str);
 
   void stringSet(GDVString const &str);
   void stringSet(GDVString      &&str);
@@ -366,8 +361,8 @@ public:      // methods
 
 
   // ---- Sequence ----
-  GDVALUE_CORE_CTOR GDValue(GDVSequence const &seq);
-  GDVALUE_CORE_CTOR GDValue(GDVSequence      &&seq);
+  /*implicit*/ GDValue(GDVSequence const &seq);
+  /*implicit*/ GDValue(GDVSequence      &&seq);
 
   void sequenceSet(GDVSequence const &seq);
   void sequenceSet(GDVSequence      &&seq);
@@ -386,14 +381,14 @@ public:      // methods
   void sequenceSetValueAt(GDVIndex index, GDValue      &&value);
 
   GDValue const &sequenceGetValueAt(GDVIndex index) const;
-  GDValue       &sequenceGetValueAt(GDVIndex index)     ;
+  GDValue       &sequenceGetValueAt(GDVIndex index)      ;
 
   void sequenceClear();
 
 
   // ---- Set ---
-  GDVALUE_CORE_CTOR GDValue(GDVSet const &set);
-  GDVALUE_CORE_CTOR GDValue(GDVSet      &&set);
+  /*implicit*/ GDValue(GDVSet const &set);
+  /*implicit*/ GDValue(GDVSet      &&set);
 
   void setSet(GDVSet const &set);
   void setSet(GDVSet      &&set);
@@ -416,8 +411,8 @@ public:      // methods
 
 
   // ---- Map ----
-  GDVALUE_CORE_CTOR GDValue(GDVMap const &map);
-  GDVALUE_CORE_CTOR GDValue(GDVMap      &&map);
+  /*implicit*/ GDValue(GDVMap const &map);
+  /*implicit*/ GDValue(GDVMap      &&map);
 
   void mapSet(GDVMap const &map);
   void mapSet(GDVMap      &&map);
@@ -448,7 +443,7 @@ public:      // methods
 // Declare the ctor specialization that GCC does not like to have inside
 // the class body.
 template <>
-GDVALUE_CORE_CTOR GDValue::GDValue(char const *str);
+/*implicit*/ GDValue::GDValue(char const *str);
 
 
 #define DEFINE_GDV_KIND_ITERABLE(GDVKindName, kindName)              \
