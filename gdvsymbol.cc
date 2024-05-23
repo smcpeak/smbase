@@ -3,35 +3,46 @@
 
 #include "gdvsymbol.h"                 // this module
 
-#include "compare-util.h"              // COMPARE_MEMBERS
+// this dir
+#include "strtable.h"                  // StringTable
+
+// libc++
+#include <cstring>                     // std::strcmp
 
 
 namespace gdv {
 
 
+StringTable *GDVSymbol::s_stringTable = nullptr;
+
+
+/*static*/ StringTable *GDVSymbol::getStringTable()
+{
+  if (!s_stringTable) {
+    s_stringTable = new StringTable;
+  }
+  return s_stringTable;
+}
+
+
 GDVSymbol::GDVSymbol()
-  : m_symbolName()
+  : GDVSymbol("")
 {}
 
 
 GDVSymbol::GDVSymbol(std::string const &s)
-  : m_symbolName(s)
+  : GDVSymbol(s.c_str())
 {}
 
 
 GDVSymbol::GDVSymbol(char const *p)
-  : m_symbolName(p)
-{}
-
-
-GDVSymbol::~GDVSymbol()
+  : m_symbolName(getStringTable()->add(p))
 {}
 
 
 int compare(GDVSymbol const &a, GDVSymbol const &b)
 {
-  using ::compare;
-  return COMPARE_MEMBERS(m_symbolName);
+  return std::strcmp(a.getSymbolName(), b.getSymbolName());
 }
 
 

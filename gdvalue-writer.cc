@@ -221,7 +221,7 @@ bool GDValueWriter::tryWrite(GDValue const &value,
       break;
 
     case GDVK_SYMBOL:
-      os() << value.symbolGet().m_symbolName;
+      os() << value.symbolGet().getSymbolName();
       break;
 
     case GDVK_STRING:
