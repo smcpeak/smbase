@@ -48,14 +48,6 @@ Data model
 The core concept of a Generalized Data Value is the "value".  A value is
 one of the following:
 
-  * Integer: Positive or negative integer, of unbounded but finite
-    magnitude.  There is only one zero value (not both a positive and
-    negative zero).
-
-  * TODO: Add floats.
-
-  * String: A finite sequence of Unicode code points.
-
   * Symbol: A non-empty finite sequence of characters conforming to the
     regex "[a-zA-Z_][a-zA-Z_0-9]+".  Symbols are distinct from strings,
     and intended to be names of entities or concepts with semantics
@@ -65,6 +57,14 @@ one of the following:
       Perhaps dots too.  What is the standard used in certificates that
       puts everything into one enormous concept hierarchy?  Symbols
       should be able to represent those.
+
+  * Integer: Positive or negative integer, of unbounded but finite
+    magnitude.  There is only one zero value (not both a positive and
+    negative zero).
+
+  * TODO: Add floats.
+
+  * String: A finite sequence of Unicode code points.
 
   * Sequence: A finite ordered sequence of values.
 
@@ -226,10 +226,6 @@ GDVN is a textual format, regarded as a sequence of Unicode code points.
 In principle any encoding can be used, but in practice UTF-8 encoding is
 strongly preferred.
 
-Integers use the regex: (0|-?([1-9][0-9]+))
-
-TODO: Specify a form for floating-point numbers.
-
 Symbols use the regex: [a-zA-Z_][a-zA-Z0-9_]
 
   This includes symbols that are expected to have ubiquitous special
@@ -238,6 +234,10 @@ Symbols use the regex: [a-zA-Z_][a-zA-Z0-9_]
 
   TODO: Ideally I would extend this to any unicode sequence that has
   similar starting and continuation conditions.
+
+Integers use the regex: (0|-?([1-9][0-9]+))
+
+TODO: Specify a form for floating-point numbers.
 
 A double-quoted string is as in JSON:
 

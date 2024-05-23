@@ -63,13 +63,13 @@ using GDVMapEntry = std::pair<GDValue const, GDValue>;
 
 // Possible kinds of GDValues.
 enum GDValueKind : int {
-  // integer: int64_t for now, but arbitrary precision in the future
-  GDVK_INTEGER,
-
   // symbol: An identifier-like string that acts as a name of something
   // defined elsewhere.  This includes the special symbols `null`,
   // `false`, and `true`.
   GDVK_SYMBOL,
+
+  // integer: int64_t for now, but arbitrary precision in the future
+  GDVK_INTEGER,
 
   // string: Sequence of Unicode characters encoded as UTF-8.
   GDVK_STRING,
@@ -110,8 +110,8 @@ public:      // class data
   static unsigned s_ct_assignMove;
   static unsigned s_ct_valueKindCtor;
   static unsigned s_ct_boolCtor;
-  static unsigned s_ct_integerCtor;
   static unsigned s_ct_symbolCtor;
+  static unsigned s_ct_integerCtor;
   static unsigned s_ct_stringCtorCopy;
   static unsigned s_ct_stringCtorMove;
   static unsigned s_ct_stringSetCopy;
@@ -135,20 +135,17 @@ private:     // instance data
 
   // Representation of the value.
   union GDValueUnion {
-    GDVInteger   m_int64;
-
     // Non-owning pointer to a NUL-terminated string stored in
     // 'GDVSymbol::s_stringTable'.
     char const  *m_symbolName;
+
+    GDVInteger   m_int64;
 
     // These are all owner pointers.
     GDVString   *m_string;
     GDVSequence *m_sequence;
     GDVSet      *m_set;
     GDVMap      *m_map;
-
-    // Constructors.
-    //GDValueUnion() : m_int64(0) {}
 
     explicit GDValueUnion(char const *symbolName)
       : m_symbolName(symbolName)
@@ -174,16 +171,16 @@ public:      // methods
 
 
   // Make an empty/zero value of 'kind':
-  //   integer: 0
   //   symbol: null  (Note: This is not the empty symbol, ``.)
+  //   integer: 0
   //   string: ""
   //   container: empty
   explicit GDValue(GDValueKind kind);
 
 
   GDValueKind getKind() const { return m_kind; }
-  bool isInteger()  const { return getKind() == GDVK_INTEGER;  }
   bool isSymbol()   const { return getKind() == GDVK_SYMBOL;   }
+  bool isInteger()  const { return getKind() == GDVK_INTEGER;  }
   bool isString()   const { return getKind() == GDVK_STRING;   }
   bool isSequence() const { return getKind() == GDVK_SEQUENCE; }
   bool isSet()      const { return getKind() == GDVK_SET;      }
@@ -195,11 +192,12 @@ public:      // methods
      Comparison is first by value kind, in order of GDValueKind.  Then
      within each kind:
 
+       symbol: Ordered lexicographically by code point.  A prefix (e.g.,
+       "a") is less than any string it is a prefix of (e.g., "aa").
+
        integer: Ordered numerically.
 
-       symbol, string: Ordered lexicographically by code point.  A
-       prefix (e.g., "a") is less than any string it is a prefix of
-       (e.g., "aa").
+       string: Lexicographic, like symbol.
 
        sequence: Lexicographic by element order.
 
@@ -230,6 +228,7 @@ public:      // methods
   // Number of contained values.  Result depends on kind of value:
   //   - symbol that is null: 0
   //   - symbol that is not null: 1
+  //   - integer: 1
   //   - string: 1
   //   - sequence, set: number of elements
   //   - map: number of entries
@@ -319,6 +318,14 @@ public:      // methods
   bool boolGet() const;
 
 
+  // ---- Symbol ----
+  /*implicit*/ GDValue(GDVSymbol sym);
+
+  void symbolSet(GDVSymbol sym);
+
+  GDVSymbol symbolGet() const;
+
+
   // ---- Integer ----
   // The GDValue ctors are safe to use implicitly because they are
   // merely passive containers for data that preserve the information
@@ -330,14 +337,6 @@ public:      // methods
   void integerSet(GDVInteger i);
 
   GDVInteger integerGet() const;
-
-
-  // ---- Symbol ----
-  /*implicit*/ GDValue(GDVSymbol sym);
-
-  void symbolSet(GDVSymbol sym);
-
-  GDVSymbol symbolGet() const;
 
 
   // ---- String ----

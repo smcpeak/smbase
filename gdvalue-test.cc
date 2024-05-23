@@ -130,35 +130,6 @@ static void testBool()
 }
 
 
-static void testInteger()
-{
-  GDValue d0(0);
-  cout << "0: " << d0 << "\n";
-  assert(d0.asString() == "0");
-  assert(d0.size() == 1);
-  assert(!d0.empty());
-  assert(d0.getKind() == GDVK_INTEGER);
-  assert(d0.isInteger());
-  assert(d0.integerGet() == 0);
-
-  GDValue d1(1);
-  assert(d1.asString() == "1");
-  assert(d1.size() == 1);
-  assert(!d1.empty());
-  assert(d1.getKind() == GDVK_INTEGER);
-  assert(d1.integerGet() == 1);
-
-  assert(d0 < d1);
-  assert(GDValue() > d0);    // TODO: Change order so symbols are first.
-
-  testSerializeRoundtrip(d0);
-  testSerializeRoundtrip(d1);
-
-  testSerializeRoundtrip(GDValue(1234567890));
-  testSerializeRoundtrip(GDValue(-1234567890));
-}
-
-
 static void testSymbol()
 {
   GDValue dSym1(GDVSymbol("sym1"));
@@ -187,6 +158,35 @@ static void testSymbol()
   assert(dSym2.getKind() == GDVK_SYMBOL);
 
   testSerializeRoundtrip(dSym2);
+}
+
+
+static void testInteger()
+{
+  GDValue d0(0);
+  cout << "0: " << d0 << "\n";
+  assert(d0.asString() == "0");
+  assert(d0.size() == 1);
+  assert(!d0.empty());
+  assert(d0.getKind() == GDVK_INTEGER);
+  assert(d0.isInteger());
+  assert(d0.integerGet() == 0);
+
+  GDValue d1(1);
+  assert(d1.asString() == "1");
+  assert(d1.size() == 1);
+  assert(!d1.empty());
+  assert(d1.getKind() == GDVK_INTEGER);
+  assert(d1.integerGet() == 1);
+
+  assert(d0 < d1);
+  assert(GDValue() < d0);
+
+  testSerializeRoundtrip(d0);
+  testSerializeRoundtrip(d1);
+
+  testSerializeRoundtrip(GDValue(1234567890));
+  testSerializeRoundtrip(GDValue(-1234567890));
 }
 
 
@@ -873,8 +873,8 @@ void test_gdvalue()
   else {
     testNull();
     testBool();
-    testInteger();
     testSymbol();
+    testInteger();
     testString();
     testSequence();
     testSet();

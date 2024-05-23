@@ -3,8 +3,8 @@
 null: null
 true: true
 false: false
-0: 0
 sym1: sym1
+0: 0
 str1: "str1"
 string begin/end const iteration: str1
 string iterable const iteration: str1

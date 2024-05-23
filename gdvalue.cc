@@ -27,8 +27,8 @@ char const *toString(GDValueKind gdvk)
 {
   switch (gdvk) {
     #define CASE(kind) case kind: return #kind;
-    CASE(GDVK_INTEGER)
     CASE(GDVK_SYMBOL)
+    CASE(GDVK_INTEGER)
     CASE(GDVK_STRING)
     CASE(GDVK_SEQUENCE)
     CASE(GDVK_SET)
@@ -54,8 +54,8 @@ unsigned GDValue::s_ct_assignCopy = 0;
 unsigned GDValue::s_ct_assignMove = 0;
 unsigned GDValue::s_ct_valueKindCtor = 0;
 unsigned GDValue::s_ct_boolCtor = 0;
-unsigned GDValue::s_ct_integerCtor = 0;
 unsigned GDValue::s_ct_symbolCtor = 0;
+unsigned GDValue::s_ct_integerCtor = 0;
 unsigned GDValue::s_ct_stringCtorCopy = 0;
 unsigned GDValue::s_ct_stringCtorMove = 0;
 unsigned GDValue::s_ct_stringSetCopy = 0;
@@ -88,12 +88,12 @@ void GDValue::clearSelfAndSwapWith(GDValue &obj) noexcept
     default:
       assert(!"invalid kind");
 
-    case GDVK_INTEGER:
-      SWAP_MEMBER(m_int64);
-      break;
-
     case GDVK_SYMBOL:
       SWAP_MEMBER(m_symbolName);
+      break;
+
+    case GDVK_INTEGER:
+      SWAP_MEMBER(m_int64);
       break;
 
     case GDVK_STRING:
@@ -148,12 +148,12 @@ GDValue::GDValue(GDValue const &obj)
     default:
       assert(!"invalid kind");
 
-    case GDVK_INTEGER:
-      integerSet(obj.integerGet());
-      break;
-
     case GDVK_SYMBOL:
       symbolSet(obj.symbolGet());
+      break;
+
+    case GDVK_INTEGER:
+      integerSet(obj.integerGet());
       break;
 
     case GDVK_STRING:
@@ -219,14 +219,14 @@ GDValue::GDValue(GDValueKind kind)
     default:
       assert(!"invalid kind");
 
-    case GDVK_INTEGER:
-      m_value.m_int64 = 0;
-      break;
-
     case GDVK_SYMBOL:
       // Redundant, but for clarity.
       m_value.m_symbolName = s_symbolName_null;
       assert(m_value.m_symbolName);
+      break;
+
+    case GDVK_INTEGER:
+      m_value.m_int64 = 0;
       break;
 
     case GDVK_STRING:
@@ -311,11 +311,11 @@ int compare(GDValue const &a, GDValue const &b)
     default:
       assert(!"invalid kind");
 
-    case GDVK_INTEGER:
-      return COMPARE_MEMBERS(m_value.m_int64);
-
     case GDVK_SYMBOL:
       return std::strcmp(a.m_value.m_symbolName, b.m_value.m_symbolName);
+
+    case GDVK_INTEGER:
+      return COMPARE_MEMBERS(m_value.m_int64);
 
     case GDVK_STRING:
       return DEEP_COMPARE_PTR_MEMBERS(m_value.m_string);
@@ -341,8 +341,8 @@ int compare(GDValue const &a, GDValue const &b)
     + s_ct_ctorMove
     + s_ct_valueKindCtor
     + s_ct_boolCtor
-    + s_ct_integerCtor
     + s_ct_symbolCtor
+    + s_ct_integerCtor
     + s_ct_stringCtorCopy
     + s_ct_stringCtorMove
     + s_ct_sequenceCtorCopy
@@ -392,10 +392,10 @@ void GDValue::clear()
     default:
       assert(!"invalid kind");
 
-    case GDVK_INTEGER:
+    case GDVK_SYMBOL:
       break;
 
-    case GDVK_SYMBOL:
+    case GDVK_INTEGER:
       break;
 
     case GDVK_STRING:
@@ -569,31 +569,6 @@ bool GDValue::boolGet() const
 }
 
 
-// ------------------------------ Integer ------------------------------
-GDValue::GDValue(GDVInteger i)
-  : INIT_AS_NULL()
-{
-  integerSet(i);
-
-  ++s_ct_integerCtor;
-}
-
-
-void GDValue::integerSet(GDVInteger i)
-{
-  clear();
-  m_kind = GDVK_INTEGER;
-  m_value.m_int64 = i;
-}
-
-
-GDVInteger GDValue::integerGet() const
-{
-  assert(m_kind == GDVK_INTEGER);
-  return m_value.m_int64;
-}
-
-
 // ------------------------------ Symbol -------------------------------
 GDValue::GDValue(GDVSymbol sym)
   : INIT_AS_NULL()
@@ -617,6 +592,31 @@ GDVSymbol GDValue::symbolGet() const
 {
   assert(m_kind == GDVK_SYMBOL);
   return GDVSymbol(GDVSymbol::BypassSymbolLookup, m_value.m_symbolName);
+}
+
+
+// ------------------------------ Integer ------------------------------
+GDValue::GDValue(GDVInteger i)
+  : INIT_AS_NULL()
+{
+  integerSet(i);
+
+  ++s_ct_integerCtor;
+}
+
+
+void GDValue::integerSet(GDVInteger i)
+{
+  clear();
+  m_kind = GDVK_INTEGER;
+  m_value.m_int64 = i;
+}
+
+
+GDVInteger GDValue::integerGet() const
+{
+  assert(m_kind == GDVK_INTEGER);
+  return m_value.m_int64;
 }
 
 
