@@ -111,10 +111,9 @@ private:     // data
     GDVBool      m_bool;
     GDVInteger   m_int64;
 
-    // This is an object that contains a single pointer.  This member
-    // has to be explicitly activated and deactivated using
-    // `[de]activateSymbolValue`.
-    GDVSymbol    m_symbol;
+    // Non-owning pointer to a NUL-terminated string stored in
+    // 'GDVSymbol::s_stringTable'.
+    char const  *m_symbolName;
 
     // These are all owner pointers.
     GDVString   *m_string;
@@ -123,10 +122,6 @@ private:     // data
     GDVMap      *m_map;
 
     GDValueUnion() : m_int64(0) {}
-
-    // It's up to the caller to ensure that `m_symbol` gets deactivated
-    // at the proper times.
-    ~GDValueUnion() {}
   } m_value;
 
 public:      // static data
@@ -167,13 +162,6 @@ private:     // methods
   // Clear this object, then take the data in 'obj', leaving 'obj' as
   // the null value.
   void clearSelfAndSwapWith(GDValue &obj) noexcept;
-
-  // Make `m_symbol` the active member of `m_value`.
-  void activateSymbolValue();
-
-  // Destroy `m_symbol` and make it no longer the active member of
-  // `m_value`.
-  void deactivateSymbolValue();
 
 public:      // methods
   // Make a null value.

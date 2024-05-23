@@ -55,24 +55,14 @@ private:     // methods
   // Get the string table, making it if necessary.
   static StringTable *getStringTable();
 
-  // Get the empty symbol name, again performing initialization if
-  // needed.  This is meant to be called only once during the program,
-  // if at all, and exists to keep the size of the default constructor
-  // as small as possible.
-  static char const *getEmptySymbolName();
-
   static void incCtorCalls(GDVSymbol *ptr);
   static void incDtorCalls(GDVSymbol *ptr);
 
 public:      // methods
   // Empty symbol, i.e., a symbol whose name is the empty string.
   GDVSymbol()
-    : m_symbolName(s_emptySymbolName)
+    : m_symbolName(getEmptySymbolName())
   {
-    if (m_symbolName == nullptr) {
-      // Must initialize the table.
-      m_symbolName = getEmptySymbolName();
-    }
     incCtorCalls(this);
   }
 
@@ -84,6 +74,12 @@ public:      // methods
   // `m_symbolName` will usually *not* equal `p`; it would only be equal
   // if `p` was itself some other symbol's `m_symbolName`.
   explicit GDVSymbol(char const *p);
+
+  // Create a `GDVSymbol` that points to `symbolName` directly, without
+  // looking it up in the symbol table.  The caller must have obtained
+  // `symbolName` from a previous call to `getSymbolName()`.
+  enum BypassSymbolLookupTag { BypassSymbolLookup };
+  GDVSymbol(BypassSymbolLookupTag, char const *symbolName);
 
   // No deallocation is required since `m_symbolName` is not an owner
   // pointer, but we increment a counter in order to later check that
@@ -104,6 +100,10 @@ public:      // methods
   // Get a pointer to a NUL-terminated string of characters with the
   // symbol name.
   char const *getSymbolName() const { return m_symbolName; }
+
+  // Get the empty symbol name, again performing initialization if
+  // needed.
+  static char const *getEmptySymbolName();
 
   // Exchange names with 'obj'.
   void swap(GDVSymbol &obj);

@@ -6,6 +6,7 @@
 // this dir
 #include "sm-macros.h"                 // PRETEND_USED
 #include "strtable.h"                  // StringTable
+#include "xassert.h"                   // xassertdb
 
 // libc++
 #include <cassert>                     // assert
@@ -46,14 +47,6 @@ std::size_t GDVSymbol::s_numSymbolDtorCalls = 0;
 }
 
 
-/*static*/ char const *GDVSymbol::getEmptySymbolName()
-{
-  getStringTable();
-  assert(s_emptySymbolName);
-  return s_emptySymbolName;
-}
-
-
 /*static*/ void GDVSymbol::incCtorCalls(GDVSymbol *ptr)
 {
   ++s_numSymbolCtorCalls;
@@ -84,9 +77,28 @@ GDVSymbol::GDVSymbol(char const *p)
 }
 
 
+GDVSymbol::GDVSymbol(BypassSymbolLookupTag, char const *symbolName)
+  : m_symbolName(symbolName)
+{
+  // Although the point of this ctor is to bypass the lookup for speed,
+  // during development I'd like to check anyway.
+  xassertdb(symbolName == getStringTable()->add(symbolName));
+
+  incCtorCalls(this);
+}
+
+
 int compare(GDVSymbol const &a, GDVSymbol const &b)
 {
   return std::strcmp(a.getSymbolName(), b.getSymbolName());
+}
+
+
+/*static*/ char const *GDVSymbol::getEmptySymbolName()
+{
+  getStringTable();
+  assert(s_emptySymbolName);
+  return s_emptySymbolName;
 }
 
 

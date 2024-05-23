@@ -12,21 +12,11 @@
 
 // libc++
 #include <cassert>                     // assert
+#include <cstring>                     // std::strcmp
 #include <fstream>                     // std::{ifstream, ofstream}
 #include <new>                         // placement `new`
 #include <sstream>                     // std::ostringstream
 #include <utility>                     // std::move, std::swap, std::make_pair
-
-// Crude diagnostic facility.
-//
-// TODO: Move the better tracing module from print-clang-ast into smbase
-// and use it here.
-#if 0
-  #include <iostream>                  // std::{cout, endl}
-  #define TRACE(stuff) std::cout << stuff << std::endl /* user ; */
-#else
-  #define TRACE(stuff) /*nothing*/
-#endif
 
 
 namespace gdv {
@@ -115,8 +105,7 @@ void GDValue::clearSelfAndSwapWith(GDValue &obj) noexcept
       break;
 
     case GDVK_SYMBOL:
-      activateSymbolValue();
-      SWAP_MEMBER(m_symbol);
+      SWAP_MEMBER(m_symbolName);
       break;
 
     case GDVK_STRING:
@@ -142,28 +131,6 @@ void GDValue::clearSelfAndSwapWith(GDValue &obj) noexcept
 }
 
 
-void GDValue::activateSymbolValue()
-{
-  assert(m_kind != GDVK_SYMBOL);
-
-  new (&m_value.m_symbol) GDVSymbol();
-
-  // Whenever the symbol is active, the kind must reflect that.
-  m_kind = GDVK_SYMBOL;
-}
-
-
-void GDValue::deactivateSymbolValue()
-{
-  assert(m_kind == GDVK_SYMBOL);
-
-  m_value.m_symbol.~GDVSymbol();
-
-  // Ensure we do not leave `m_kind` as `GDVK_SYMBOL`.
-  resetWithoutDeallocating();
-}
-
-
 // --------------------- GDValue ctor/dtor/assign ----------------------
 // In a ctor, initialize fields for the null value.
 #define INIT_AS_NULL() \
@@ -180,14 +147,9 @@ GDValue::GDValue() noexcept
 
 GDValue::~GDValue()
 {
-  // NOCHECKIN
-  TRACE("starting ~GDValue, &m_value.m_symbol: " << (void*)&m_value.m_symbol);
-
   clear();
 
   ++s_ct_dtor;
-
-  TRACE("finishing ~GDValue, &m_value.m_symbol: " << (void*)&m_value.m_symbol);
 }
 
 
@@ -288,12 +250,8 @@ GDValue::GDValue(GDValueKind kind)
       break;
 
     case GDVK_SYMBOL:
-      // There is an assertion inside 'activateSymbolValue' that insists
-      // the current kind should not be GDVK_SYMBOL.  It gets briefly
-      // set that way by this constructor's member initialozer list, but
-      // we need to reset it now for the sake of that assertion.
-      m_kind = GDVK_NULL;
-      activateSymbolValue();
+      m_kind = GDVK_SYMBOL;
+      m_value.m_symbolName = GDVSymbol::getEmptySymbolName();
       break;
 
     case GDVK_STRING:
@@ -388,7 +346,7 @@ int compare(GDValue const &a, GDValue const &b)
       return COMPARE_MEMBERS(m_value.m_int64);
 
     case GDVK_SYMBOL:
-      return COMPARE_MEMBERS(m_value.m_symbol);
+      return std::strcmp(a.m_value.m_symbolName, b.m_value.m_symbolName);
 
     case GDVK_STRING:
       return DEEP_COMPARE_PTR_MEMBERS(m_value.m_string);
@@ -473,7 +431,6 @@ void GDValue::clear()
       break;
 
     case GDVK_SYMBOL:
-      deactivateSymbolValue();
       break;
 
     case GDVK_STRING:
@@ -655,9 +612,7 @@ void GDValue::symbolSet(GDVSymbol sym)
 {
   clear();
 
-  activateSymbolValue();
-  m_value.m_symbol = sym;
-
+  m_value.m_symbolName = sym.getSymbolName();
   m_kind = GDVK_SYMBOL;
 }
 
@@ -665,7 +620,7 @@ void GDValue::symbolSet(GDVSymbol sym)
 GDVSymbol GDValue::symbolGet() const
 {
   assert(m_kind == GDVK_SYMBOL);
-  return m_value.m_symbol;
+  return GDVSymbol(GDVSymbol::BypassSymbolLookup, m_value.m_symbolName);
 }
 
 
