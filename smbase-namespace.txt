@@ -1,0 +1,10 @@
+smbase-namespace.txt
+====================
+
+
+Most of smbase is *not* inside the `smbase` namespace, but I'm trying to
+gradually change that, at first just by putting new code into it.  The
+eventual goal is for all of smbase to be in that namespace.
+
+
+EOF

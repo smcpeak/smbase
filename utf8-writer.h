@@ -11,7 +11,7 @@
 #include <iostream>                    // std::ostream
 
 
-namespace smbase {
+namespace smbase { // see smbase-namespace.txt
 
 
 // This module assumes 'int' can store all Unicode code points.
