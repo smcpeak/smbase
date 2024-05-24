@@ -395,4 +395,25 @@ public:
 #define NULLABLE /**/
 
 
+/* Function attribute to indicate that it acts like `printf`.
+
+   `formatArgIndex` is the 1-based index of the argument that contains
+   the format string.  `firstCheckArgIndex` is the index of the first
+   argument to be checked for compatibility with the format string, with
+   all subsequent arguments also being checked.
+
+   This goes after the declarator in a prototype, for example:
+
+     std::string stringf(char const *format, ...)
+       SM_PRINTF_ANNOTATION(1, 2);
+*/
+#if defined(__GNUC__) || defined (__CLANG__)
+  #define SM_PRINTF_ANNOTATION(formatArgIndex, firstCheckArgIndex) \
+    __attribute__((format (printf, formatArgIndex, firstCheckArgIndex)))
+#else
+  #define SM_PRINTF_ANNOTATION(formatArgIndex, firstCheckArgIndex) \
+    /*nothing*/
+#endif
+
+
 #endif // SMBASE_SM_MACROS_H

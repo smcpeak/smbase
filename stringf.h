@@ -12,6 +12,8 @@
 #ifndef SMBASE_STRINGF_H
 #define SMBASE_STRINGF_H
 
+#include "sm-macros.h"                 // SM_PRINTF_ANNOTATION
+
 #include <string>                      // std::string
 
 #include <stdarg.h>                    // va_list
@@ -20,12 +22,9 @@
 namespace smbase { // see smbase-namespace.txt
 
 
-// TODO: Can I annotate these with attributes that will allow the
-// compiler to diagnose misuse?
-
-
 // Build a string using a `printf` format string and arguments.
-std::string stringf(char const *format, ...);
+std::string stringf(char const *format, ...)
+  SM_PRINTF_ANNOTATION(1, 2);
 
 // Same but using a `va_list`.
 std::string vstringf(char const *format, va_list args);
