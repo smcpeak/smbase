@@ -158,6 +158,10 @@ include sm-lib.mk
 %.o: %.c
 	$(CC) -c -o $@ $(GENDEPS_FLAGS) $(call MJ_FLAG,$*) $(CFLAGS) $<
 
+# For occasional diagnostic purposes, a rule to preprocess explicitly.
+%.ii: %.cc
+	$(CXX) -E -o $@ $(CXXFLAGS) $<
+
 
 # $(PRE_TARGET) is usually nothing, but can be set in personal.mk to
 # direct 'make' to build something of interest first, in order to speed
