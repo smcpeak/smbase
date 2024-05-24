@@ -7,6 +7,8 @@
 #include "crc.h"          // crc32
 #include "syserr.h"       // xsyserror
 
+#include <algorithm>      // std::{min, max}
+
 #include <limits.h>       // INT_MAX
 #include <stdio.h>        // printf
 #include <stdlib.h>       // abort
@@ -133,7 +135,7 @@ void DataBlock::copyCtorShared(DataBlock const &obj)
 
 DataBlock::DataBlock(DataBlock const &obj, size_t minToAllocate)
 {
-  init(max(obj.getAllocated(), minToAllocate));
+  init(std::max(obj.getAllocated(), minToAllocate));
   copyCtorShared(obj);
 }
 
@@ -307,7 +309,7 @@ void DataBlock::print(char const *label, int bytesPerLine) const
 
   size_t cursor = 0;
   while (cursor < getDataLen()) {
-    int linelen = (int)min((size_t)bytesPerLine, getDataLen() - cursor);
+    int linelen = (int)std::min((size_t)bytesPerLine, getDataLen() - cursor);
     xassert(linelen >= 1);    // ensure can't loop infinitely
 
     printf("  ");     // indent

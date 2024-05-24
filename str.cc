@@ -4,15 +4,17 @@
 
 #include "str.h"            // this module
 
+#include "flatten.h"        // Flatten
+#include "sm-iostream.h"    // ostream << char*
+#include "xassert.h"        // xassert
+
+#include <algorithm>        // std::max
+
 #include <stdlib.h>         // atoi
 #include <stdio.h>          // sprintf
 #include <ctype.h>          // isspace
 #include <string.h>         // strcmp
-#include "sm-iostream.h"    // ostream << char*
 #include <assert.h>         // assert
-
-#include "xassert.h"        // xassert
-#include "flatten.h"        // Flatten
 
 
 // ----------------------- OldSmbaseString ---------------------
@@ -358,7 +360,7 @@ void stringBuilder::grow(int newMinLength)
   int suggest = size * 3 / 2;
 
   // see which is bigger
-  newMinSize = max(newMinSize, suggest);
+  newMinSize = std::max(newMinSize, suggest);
 
   // remember old length..
   int len = length();
