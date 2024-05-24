@@ -15,7 +15,6 @@
 #define SMBASE_EXC_H
 
 #include "breaker.h"     // breaker
-#include "typ.h"         // bool
 #include "xassert.h"     // xassert, for convenience for #includers
 #include "str.h"         // string
 #include "stringb.h"     // stringb

@@ -7,7 +7,6 @@
 #define SMBASE_VOIDLIST_H
 
 #include "xassert.h"     // xassert
-#include "typ.h"         // bool
 #include "trdelete.h"    // TRASHINGDELETE
 
 // -------------------------- non-typesafe core -----------------------------

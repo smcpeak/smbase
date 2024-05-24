@@ -11,7 +11,6 @@
 #include "sm-iostream.h"// ostream
 #include "sm-macros.h"  // DMEMB
 #include "str.h"        // string
-#include "typ.h"        // MUTABLE
 #include "xassert.h"    // xassert
 
 class StringDict {

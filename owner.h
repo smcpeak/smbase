@@ -5,7 +5,8 @@
 #ifndef OWNER_H
 #define OWNER_H
 
-#include "typ.h"      // NULL
+#include <stddef.h>   // NULL
+
 
 // Previously, I had #definitions of "owner", "serf", and "nullable"
 // (all expanding to nothing), intended as a form of annotation that

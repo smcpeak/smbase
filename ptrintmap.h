@@ -14,7 +14,8 @@
 #define PTRINTMAP_H
 
 #include "vptrmap.h"       // VoidPtrMap
-#include "typ.h"           // NULL
+
+#include <stddef.h>        // NULL
 
 
 template <class KEY, class DATAVALUE>

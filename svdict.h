@@ -5,14 +5,13 @@
 // created by modifying strdict; at some point strdict should
 // be rewritten to use this module
 
-#ifndef __SVDICT_H
-#define __SVDICT_H
+#ifndef SMBASE_SVDICT_H
+#define SMBASE_SVDICT_H
 
 #include "sm-iostream.h"// ostream
 #include "sm-macros.h"  // DMEMB
 #include "str.h"        // string
 #include "strhash.h"    // StringHash
-#include "typ.h"        // MUTABLE
 #include "xassert.h"    // xassert
 
 
@@ -188,4 +187,4 @@ public:
   uintptr_t private_getTopAddr() const { return (uintptr_t)top; }
 };
 
-#endif // __SVDICT_H
+#endif // SMBASE_SVDICT_H

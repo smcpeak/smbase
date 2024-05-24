@@ -3,7 +3,6 @@
 // Scott McPeak, 1999  This file is public domain.
 
 #include "warn.h"       // this module
-#include "typ.h"        // bool
 #include "breaker.h"    // breaker
 #include <stdio.h>      // fopen, stderr, etc.
 #include <time.h>       // time, ctime

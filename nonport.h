@@ -8,9 +8,8 @@
 #ifndef SMBASE_NONPORT_H
 #define SMBASE_NONPORT_H
 
-#include "typ.h"                       // bool
-
 #include <stdarg.h>                    // va_list
+#include <stddef.h>                    // NULL
 #include <stdint.h>                    // int64_t
 
 

@@ -4,8 +4,6 @@
 #ifndef SMBASE_POINT_H
 #define SMBASE_POINT_H
 
-#include "typ.h"             // bool, min, max
-
 #include <iosfwd>            // std::ostream
 
 // point defined over arbitrary underlying types

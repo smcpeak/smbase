@@ -7,8 +7,8 @@
 #include "sm-iostream.h"               // cout
 #include "sm-test.h"                   // PVAL
 #include "str.h"                       // streq
-#include "typ.h"                       // int64_t, uint64_t, INT64_C
 
+#include <stdint.h>                    // int64_t, uint64_t, INT64_C
 #include <limits.h>                    // INT_MIN, INT_MIN
 
 

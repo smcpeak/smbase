@@ -10,7 +10,6 @@
 #include "sm-iostream.h" // istream, ostream
 #include "stringb.h"     // stringb
 #include "stringf.h"     // stringf
-#include "typ.h"         // bool
 
 #include <string>        // std::string
 
