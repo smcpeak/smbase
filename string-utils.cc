@@ -4,6 +4,7 @@
 #include "string-utils.h"              // this module
 
 #include "strcmp-compare.h"            // StrcmpCompare
+#include "strutil.h"                   // stringf
 #include "vector-utils.h"              // accumulateWith
 #include "xassert.h"                   // xassertdb
 
@@ -88,74 +89,69 @@ std::vector<std::string> suffixAll(std::vector<std::string> const &vec,
 }
 
 
+void insertPossiblyEscapedChar(std::ostream &os, int c)
+{
+  switch (c) {
+    case '"':
+    case '\\':
+      os << '\\' << (char)c;
+      break;
+
+    case '\a':
+      os << "\\a";
+      break;
+
+    case '\b':
+      os << "\\b";
+      break;
+
+    case '\f':
+      os << "\\f";
+      break;
+
+    case '\n':
+      os << "\\n";
+      break;
+
+    case '\r':
+      os << "\\r";
+      break;
+
+    case '\t':
+      os << "\\t";
+      break;
+
+    case '\v':
+      os << "\\v";
+      break;
+
+    default:
+      if (32 <= c && c <= 126) {
+        os << (char)c;
+      }
+      else {
+        // I choose to print in octal rather than hex because a hex
+        // sequence does not have any length limit, meaning if the
+        // hex sequence is followed by a printable character that is
+        // also a hex digit, that will be misinterpreted (unless I
+        // use a hex escape for it too).
+        os << stringf("\\%03o", (int)c);
+      }
+      break;
+  }
+}
+
+
 void insertDoubleQuoted(std::ostream &os, std::string const &str)
 {
-  os << '"' << std::oct;
+  os << '"';
 
   for (char c : str) {
     unsigned char uc = (unsigned char)c;
-    switch (c) {
-      case '"':
-      case '\\':
-        os << '\\' << c;
-        break;
-
-      case '\a':
-        os << "\\a";
-        break;
-
-      case '\b':
-        os << "\\b";
-        break;
-
-      case '\f':
-        os << "\\f";
-        break;
-
-      case '\n':
-        os << "\\n";
-        break;
-
-      case '\r':
-        os << "\\r";
-        break;
-
-      case '\t':
-        os << "\\t";
-        break;
-
-      case '\v':
-        os << "\\v";
-        break;
-
-      default:
-        if (32 <= uc && uc <= 126) {
-          os << c;
-        }
-        else if (uc <= 7) {
-          // 'uc' would print as a single digit, so explicitly print
-          // leading zeroes.  Octal output is configured above.
-          //
-          // I choose to print in octal rather than hex because a hex
-          // sequence does not have any length limit, meaning if the
-          // hex sequence is followed by a printable character that is
-          // also a hex digit, that will be misinterpreted (unless I
-          // use a hex escape for it too).
-          os << "\\00" << (int)uc;
-        }
-        else if (uc <= 077) {
-          // Would be two digits.
-          os << "\\0" << (int)uc;
-        }
-        else {
-          // Three digits.
-          os << '\\' << (int)uc;
-        }
-        break;
-    }
+    insertPossiblyEscapedChar(os, (int)uc);
   }
 
-  os << std::dec << '"';
+  os << '"';
 }
 
 
@@ -193,6 +189,16 @@ std::string toString(std::vector<std::string> const &vec)
 {
   std::ostringstream oss;
   oss << vec;
+  return oss.str();
+}
+
+
+std::string singleQuoteChar(int c)
+{
+  std::ostringstream oss;
+  oss << '\'';
+  insertPossiblyEscapedChar(oss, c);
+  oss << '\'';
   return oss.str();
 }
 

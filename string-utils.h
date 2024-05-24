@@ -31,6 +31,10 @@ std::vector<std::string> prefixAll(std::vector<std::string> const &vec,
 std::vector<std::string> suffixAll(std::vector<std::string> const &vec,
                                    std::string const &suffix);
 
+// Write `c` to `os`, substituting a C escape sequence if it is not
+// printable or is a metacharacter.
+void insertPossiblyEscapedChar(std::ostream &os, int c);
+
 // Insert 'str' into 'os', surrounded by double quotes, and using C-like
 // escape sequences for double-quotes, backslashes, and all
 // non-printable characters.
@@ -46,6 +50,10 @@ std::ostream& operator<< (std::ostream &os,
 
 // Convert 'vec' to a string using 'operator<<'.
 std::string toString(std::vector<std::string> const &vec);
+
+// Return `c` enclosed in single quotes if it is printable and not a
+// metacharacter, or as an escape sequence if not.
+std::string singleQuoteChar(int c);
 
 // If 'fname' contains any '.' characters, remove the last one and all
 // following characters, and return that.  Otherwise return 'fname'.

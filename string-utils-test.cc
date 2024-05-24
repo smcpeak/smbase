@@ -306,6 +306,25 @@ static void testMatchesRegex()
 }
 
 
+static void testInsertPossiblyEscapedChar()
+{
+  std::ostringstream oss;
+  insertPossiblyEscapedChar(oss, 'x');
+  insertPossiblyEscapedChar(oss, '\0');
+  insertPossiblyEscapedChar(oss, '\n');
+  EXPECT_EQ(oss.str(), std::string("x\\000\\n"));
+}
+
+
+static void testSingleQuoteChar()
+{
+  EXPECT_EQ(singleQuoteChar('x'), std::string("'x'"));
+  EXPECT_EQ(singleQuoteChar('\0'), std::string("'\\000'"));
+  EXPECT_EQ(singleQuoteChar('\n'), std::string("'\\n'"));
+}
+
+
+
 void test_string_utils()
 {
   testSplitNonEmpty();
@@ -319,6 +338,8 @@ void test_string_utils()
   testStringInSortedArray();
   testBeginsWith();
   testMatchesRegex();
+  testInsertPossiblyEscapedChar();
+  testSingleQuoteChar();
 }
 
 
