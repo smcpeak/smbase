@@ -70,10 +70,6 @@ inline T max(T const &a, T const &b)
 #define STATICDEF /*static*/
 
 
-// often-useful number-of-entries function
-#define TABLESIZE(tbl) ((int)(sizeof(tbl)/sizeof((tbl)[0])))
-
-
 // concise way to loop on an integer range
 #define loopi(end) for(int i=0; i<(int)(end); i++)
 #define loopj(end) for(int j=0; j<(int)(end); j++)

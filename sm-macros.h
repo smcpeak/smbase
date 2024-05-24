@@ -95,6 +95,13 @@ void T::insertOstream(ostream &os) const
 #endif // 0
 
 
+// Get the number of entries in the array `tbl`.
+//
+// This has a cast to `int` because I was historically using `int`
+// almost exclusively.  TODO: I should remove that cast.
+#define TABLESIZE(tbl) ((int)(sizeof(tbl)/sizeof((tbl)[0])))
+
+
 #if __cplusplus >= 201103L
   // I think the C++11 requirement of a message string is dumb, but I
   // do not want to require C++17 yet, so I use "".
