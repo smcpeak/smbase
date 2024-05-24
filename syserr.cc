@@ -51,7 +51,7 @@ STATICDEF char const *xSysError::
 
 xSysError::xSysError(xSysError::Reason r, int sysCode, rostring sysReason,
                      rostring syscall, rostring ctx)
-  : xBase(constructWhyString(r, sysReason, syscall, ctx)),
+  : XBase(constructWhyString(r, sysReason, syscall, ctx)),
     reason(r),
     reasonString(getReasonString(r)),
     sysErrorCode(sysCode),
@@ -94,7 +94,7 @@ STATICDEF string xSysError::
 
 
 xSysError::xSysError(xSysError const &obj)
-  : xBase(obj),
+  : XBase(obj),
     reason(obj.reason),
     reasonString(obj.reasonString),
     sysErrorCode(obj.sysErrorCode),
@@ -373,7 +373,7 @@ STATICDEF xSysError::Reason xSysError::portablize(
 void entry()
 {
   int errors = 0;
-  xBase::logExceptions = false;
+  XBase::logExceptions = false;
   //nonportFail = xSysError::xsyserror;
 
   //TRY_FAIL(createDirectory("/tmp\\Scott\\"),

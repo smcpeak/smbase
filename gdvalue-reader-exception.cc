@@ -38,7 +38,7 @@ void GDValueReaderException::prependGDVNContext(std::string const &context)
 {
   m_syntaxError = stringb(context << ": " << m_syntaxError);
 
-  // Recreate the message rather than calling `xBase::prependContext`
+  // Recreate the message rather than calling `XBase::prependContext`
   // so `context` ends up in the right place.
   this->msg = makeExceptionMessage(m_location, m_syntaxError);
 }

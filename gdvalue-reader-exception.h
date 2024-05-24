@@ -28,7 +28,7 @@ public:      // methods
   ~GDValueReaderException();
 
   // Prepend "context: " to `m_syntaxError`.  Also insert it into
-  // the `xBase::msg` member by recomputing that member.
+  // the `XBase::msg` member by recomputing that member.
   void prependGDVNContext(std::string const &context);
 };
 

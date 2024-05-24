@@ -5,7 +5,7 @@
 #define SMBASE_SM_TEST_H
 
 #include "dev-warning.h"   // g_abortUponDevWarning
-#include "exc.h"           // xBase
+#include "exc.h"           // XBase
 #include "nonport.h"       // getMilliseconds
 #include "sm-iostream.h"   // cout
 #include "str.h"           // stringb, string
@@ -29,7 +29,7 @@ int main()                                      \
     entry();                                    \
     return 0;                                   \
   }                                             \
-  catch (xBase &x) {                            \
+  catch (XBase &x) {                            \
     cout << x << endl;                          \
     return 4;                                   \
   }                                             \
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])                \
     entry(argc, argv);                          \
     return 0;                                   \
   }                                             \
-  catch (xBase &x) {                            \
+  catch (XBase &x) {                            \
     cout << x << endl;                          \
     return 4;                                   \
   }                                             \
@@ -60,7 +60,7 @@ int main(int argc, char *argv[])                \
       entry();                                  \
       return 0;                                 \
     }                                           \
-    catch (xBase &x) {                          \
+    catch (XBase &x) {                          \
       cout << x << endl;                        \
       return 4;                                 \
     }                                           \
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])                \
       entry(argc, argv);                        \
       return 0;                                 \
     }                                           \
-    catch (xBase &x) {                          \
+    catch (XBase &x) {                          \
       cout << x << endl;                        \
       return 4;                                 \
     }                                           \

@@ -1,10 +1,10 @@
 // exc.h            see license.txt for copyright and terms of use
 // Various exception classes.  The intent is derive everything from
-// xBase, so a program can catch this one exception type in main() and
+// XBase, so a program can catch this one exception type in main() and
 // be assured no exception will propagate out of the program (or any
 // other unit of granularity you want).
 
-// TODO: 'xBase' should inherit 'std::exception'.
+// TODO: 'XBase' should inherit 'std::exception'.
 
 // I apologize for the inconsistent naming in this module.  It is
 // the product of an extended period of experimenting with naming
@@ -44,9 +44,9 @@
 // propagate out of destructors.
 
 
-// -------------------- xBase ------------------
+// -------------------- XBase ------------------
 // intent is to derive all exception objects from this
-class xBase {
+class XBase {
 protected:
   // the human-readable description of the exception
   string msg;
@@ -56,20 +56,20 @@ public:
   // exception to clog for debug assistance.
   static bool logExceptions;
 
-  // current # of xBases running about; used to support unrolling()
+  // current # of XBases running about; used to support unrolling()
   static int creationCount;
 
 public:
-  xBase(rostring m);       // create exception object with message 'm'
-  xBase(xBase const &m);   // copy ctor
-  virtual ~xBase();
+  XBase(rostring m);       // create exception object with message 'm'
+  XBase(XBase const &m);   // copy ctor
+  virtual ~XBase();
 
   rostring why() const
     { return msg; }
 
   // print why
   void insert(ostream &os) const;
-  friend ostream& operator << (ostream &os, xBase const &obj)
+  friend ostream& operator << (ostream &os, XBase const &obj)
     { obj.insert(os); return os; }
 
   // add a string describing what was going on at the time the
@@ -85,7 +85,7 @@ public:
   void prependContext(rostring context);
 };
 
-// equivalent to THROW(xBase(msg))
+// equivalent to THROW(XBase(msg))
 void xbase(rostring msg) NORETURN;
 
 
@@ -94,7 +94,7 @@ void xbase(rostring msg) NORETURN;
 // do not want to simply terminate.
 //
 // Print details about 'x' to stderr using DEV_WARNING (dev-warning.h).
-void printUnhandled(xBase const &x);
+void printUnhandled(XBase const &x);
 
 
 // This goes at the top of any function we do not want to let throw
@@ -108,33 +108,33 @@ void printUnhandled(xBase const &x);
 // with that name.
 #define GENERIC_CATCH_END             \
   }                                   \
-  catch (xBase &x) {                  \
+  catch (XBase &x) {                  \
     printUnhandled(x);                \
   }
 
 // Variant for functions that return a value.
 #define GENERIC_CATCH_END_RET(retval) \
   }                                   \
-  catch (xBase &x) {                  \
+  catch (XBase &x) {                  \
     printUnhandled(x);                \
     return retval;                    \
   }
 
 
-// Define a subclass of xBase.  All methods are inline.
+// Define a subclass of XBase.  All methods are inline.
 #define DEFINE_XBASE_SUBCLASS(SubclassName)                          \
-  class SubclassName : public xBase {                                \
+  class SubclassName : public XBase {                                \
   public:                                                            \
-    SubclassName(char const *p) : xBase(p) {}                        \
-    SubclassName(string const &s) : xBase(s) {}             \
-    SubclassName(SubclassName const &obj) : xBase(obj) {}            \
+    SubclassName(char const *p) : XBase(p) {}                        \
+    SubclassName(string const &s) : XBase(s) {}             \
+    SubclassName(SubclassName const &obj) : XBase(obj) {}            \
   } /* user ; */
 
 
 // -------------------- x_assert -----------------------
 // thrown by _xassert_fail, declared in xassert.h
 // throwing this corresponds to detecting a bug in the program
-class x_assert : public xBase {
+class x_assert : public XBase {
   string condition; // text of the failed condition
   string filename;  // name of the source file
   int lineno;                // line number
@@ -154,7 +154,7 @@ public:
 // throwing this means a formatting error has been detected
 // in some input data; the program cannot process it, but it
 // is not a bug in the program
-class xFormat : public xBase {
+class xFormat : public XBase {
 public:      // methods
   xFormat(rostring cond);
   xFormat(xFormat const &obj);
@@ -186,7 +186,7 @@ void formatAssert_fail(char const *cond, char const *file, int line) NORETURN;
 // ------------------- XUnimp ---------------------
 // thrown in response to a condition that is in principle
 // allowed but not yet handled by the existing code
-class XUnimp : public xBase {
+class XUnimp : public XBase {
 public:
   XUnimp(rostring msg);
   XUnimp(XUnimp const &obj);
@@ -204,7 +204,7 @@ void throw_XUnimp(char const *msg, char const *file, int line) NORETURN;
 // ------------------- XFatal ---------------------
 // thrown in response to a user action that leads to an unrecoverable
 // error; it is not due to a bug in the program
-class XFatal : public xBase {
+class XFatal : public XBase {
 public:
   XFatal(rostring msg);
   XFatal(XFatal const &obj);

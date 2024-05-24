@@ -86,7 +86,7 @@ void test_array2d()
   arr1.eltRef(0,4) = 0;
 
   // Test out of bounds access.
-  xBase::logExceptions = false;
+  XBase::logExceptions = false;
 
   #define SHOULD_FAIL(expr)                          \
     try {                                            \

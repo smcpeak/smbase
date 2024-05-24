@@ -8,9 +8,9 @@
 #ifndef SMBASE_SYSERR_H
 #define SMBASE_SYSERR_H
 
-#include "exc.h"       // xBase
+#include "exc.h"       // XBase
 
-class xSysError : public xBase {
+class xSysError : public XBase {
 private:    // data
   // error strings for Reasons
   static char const * const reasonStrings[];
@@ -76,7 +76,7 @@ public:    // funcs
 
   static string constructWhyString(Reason r, rostring sysReason,
                                             rostring syscall, rostring ctx);
-    // construct the string we throw as the 'why' of xBase; if ctx is NULL,
+    // construct the string we throw as the 'why' of XBase; if ctx is NULL,
     // the string doesn't include it
 
   static void xsyserror(rostring syscallName, rostring context);

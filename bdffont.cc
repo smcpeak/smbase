@@ -584,7 +584,7 @@ static void parseGlyph(char const *&p, BDFFont::Glyph *glyph,
         XFORMAT("unknown glyph attribute \"" << keyword << "\"");
       }
     }
-    catch (xBase &x) {
+    catch (XBase &x) {
       x.prependContext(keyword);
       throw;
     }
@@ -631,7 +631,7 @@ static void parseChars(char const *&p, int numChars, BDFFont &font)
       BDFFont::Glyph const *g = font.glyphs.swapAt(index, glyph.xfr());
       xassert(g == NULL);
     }
-    catch (xBase &x) {
+    catch (XBase &x) {
       x.prependContext(stringb("glyph \"" << glyphName << "\""));
       throw;
     }
@@ -746,14 +746,14 @@ void parseBDFString(BDFFont &font, char const *bdfSourceData)
           XFORMAT("unknown font attribute \"" << keyword << "\"");
         }
       }
-      catch (xBase &x) {
+      catch (XBase &x) {
         x.prependContext(keyword);
         throw;
       }
     }
   }
 
-  catch (xBase &x) {
+  catch (XBase &x) {
     x.prependContext(getLineCol(bdfSourceData, p));
     throw;
   }
@@ -766,7 +766,7 @@ void parseBDFFile(BDFFont &font, char const *bdfFileName)
     string contents = readStringFromFile(bdfFileName);
     parseBDFString(font, contents.c_str());
   }
-  catch (xBase &x) {
+  catch (XBase &x) {
     x.prependContext(bdfFileName);
     throw;
   }
@@ -944,7 +944,7 @@ void writeBDFFile(char const *fname, BDFFont const &font)
     writeBDFString(buf, font);
     writeStringToFile(buf.str(), fname);
   }
-  catch (xBase &x) {
+  catch (XBase &x) {
     x.prependContext(stringb("writing font \"" << font.fontName <<
                              "\" to file " << fname));
     throw;

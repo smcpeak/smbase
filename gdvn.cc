@@ -1,7 +1,7 @@
 // gdvn.cc
 // Program to read and write GDVN.
 
-#include "exc.h"                       // xBase
+#include "exc.h"                       // XBase
 #include "gdvalue.h"                   // gdv::GDValue
 
 #include <iostream>                    // std::{cin, cout, cerr, endl}
@@ -29,7 +29,7 @@ int main(int argc, char **argv)
 
     value.writeLines(std::cout);
   }
-  catch (xBase &x) {
+  catch (XBase &x) {
     std::cerr << x.why() << std::endl;
     return 2;
   }

@@ -98,7 +98,7 @@ void x_assert_fail(char const *cond, char const *file, int line) NORETURN;
   context, if they want to make the message more informative.
 
   In most of my programs, the 'x_assert' exception is only caught in
-  main() (implicitly, by catching 'xBase'), and hence 'xassert' acts
+  main() (implicitly, by catching 'XBase'), and hence 'xassert' acts
   very much like 'assert'.  But by using 'xassert' consistenty, any
   time I *do* have a large program with recovery, all the lower-level
   modules are all ready to cooperate.

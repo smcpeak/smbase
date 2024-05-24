@@ -364,7 +364,7 @@ static void testGetDirectoryEntries()
     sfu.getDirectoryEntries(entries, "nonexist-dir");
     cout << "nonexist-dir exists?!" << endl;
   }
-  catch (xBase &x) {
+  catch (XBase &x) {
     cout << "Attempting to read nonexist-dir: " << x.why() << endl;
   }
 }

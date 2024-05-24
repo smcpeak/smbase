@@ -3,7 +3,7 @@
 
 #include "run-process.h"               // module under test
 
-#include "exc.h"                       // xBase
+#include "exc.h"                       // XBase
 #include "sm-platform.h"               // PLATFORM_IS_POSIX
 #include "string-utils.h"              // splitNonEmpty
 #include "xassert.h"                   // xassert
@@ -204,7 +204,7 @@ void test_run_process()
       unit_test();
     }
   }
-  catch (xBase &x) {
+  catch (XBase &x) {
     cout << "exception: " << x.why() << endl;
     std::exit(4);
   }

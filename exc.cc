@@ -14,18 +14,18 @@
 #include <string.h>                    // strlen, strcpy
 
 
-void printUnhandled(xBase const &x)
+void printUnhandled(XBase const &x)
 {
   DEV_WARNING("Unhandled exception: " << x.why());
 }
 
 
-// ------------------------- xBase -----------------
-bool xBase::logExceptions = false;
-int xBase::creationCount = 0;
+// ------------------------- XBase -----------------
+bool XBase::logExceptions = false;
+int XBase::creationCount = 0;
 
 
-xBase::xBase(rostring m)
+XBase::XBase(rostring m)
   : msg(m)
 {
   if (logExceptions) {
@@ -38,20 +38,20 @@ xBase::xBase(rostring m)
 }
 
 
-xBase::xBase(xBase const &obj)
+XBase::XBase(XBase const &obj)
   : msg(obj.msg)
 {
   creationCount++;
 }
 
 
-xBase::~xBase()
+XBase::~XBase()
 {
   creationCount--;
 }
 
 
-void xBase::insert(ostream &os) const
+void XBase::insert(ostream &os) const
 {
   os << why();
 }
@@ -59,25 +59,25 @@ void xBase::insert(ostream &os) const
 
 void xbase(rostring msg)
 {
-  xBase x(msg);
+  XBase x(msg);
   THROW(x);
 }
 
 
-void xBase::addContext(rostring context)
+void XBase::addContext(rostring context)
 {
   // for now, fairly simple
   msg = stringb("while " << context << ",\n" << msg);
 }
 
 
-void xBase::addContextLeft(rostring context)
+void XBase::addContextLeft(rostring context)
 {
   msg = stringb(context << msg);
 }
 
 
-void xBase::prependContext(rostring context)
+void XBase::prependContext(rostring context)
 {
   msg = stringb(context << ": " << msg);
 }
@@ -85,7 +85,7 @@ void xBase::prependContext(rostring context)
 
 // ------------------- x_assert -----------------
 x_assert::x_assert(rostring cond, rostring fname, int line)
-  : xBase(stringb(
+  : XBase(stringb(
       fname << ":" << line << ": assertion failed: " << cond)),
     condition(cond),
     filename(fname),
@@ -93,7 +93,7 @@ x_assert::x_assert(rostring cond, rostring fname, int line)
 {}
 
 x_assert::x_assert(x_assert const &obj)
-  : xBase(obj),
+  : XBase(obj),
     condition(obj.condition),
     filename(obj.filename),
     lineno(obj.lineno)
@@ -112,11 +112,11 @@ void x_assert_fail(char const *cond, char const *file, int line)
 
 // --------------- xFormat ------------------
 xFormat::xFormat(rostring cond)
-  : xBase(cond)
+  : XBase(cond)
 {}
 
 xFormat::xFormat(xFormat const &obj)
-  : xBase(obj)
+  : XBase(obj)
 {}
 
 xFormat::~xFormat()
@@ -140,11 +140,11 @@ void formatAssert_fail(char const *cond, char const *file, int line)
 
 // -------------------- XUnimp -------------------
 XUnimp::XUnimp(rostring msg)
-  : xBase(stringb("unimplemented: " << msg))
+  : XBase(stringb("unimplemented: " << msg))
 {}
 
 XUnimp::XUnimp(XUnimp const &obj)
-  : xBase(obj)
+  : XBase(obj)
 {}
 
 XUnimp::~XUnimp()
@@ -170,11 +170,11 @@ void throw_XUnimp(char const *msg, char const *file, int line)
 // fatal-ness is sufficiently expressed by the fact that an exception
 // is thrown, as opposed to simply printing the message and continuing.
 XFatal::XFatal(rostring msg)
-  : xBase(stringb("error: " << msg))
+  : XBase(stringb("error: " << msg))
 {}
 
 XFatal::XFatal(XFatal const &obj)
-  : xBase(obj)
+  : XBase(obj)
 {}
 
 XFatal::~XFatal()
@@ -193,14 +193,14 @@ void throw_XFatal(rostring msg)
 
 int main()
 {
-  xBase x("yadda");
+  XBase x("yadda");
   cout << x << endl;
 
   try {
     THROW(x);
   }
-  catch (xBase &x) {
-    cout << "caught xBase: " << x << endl;
+  catch (XBase &x) {
+    cout << "caught XBase: " << x << endl;
   }
 
   return 0;

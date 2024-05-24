@@ -660,7 +660,7 @@ static void testOneErrorSubstrOrRegex(
       }
     }
   }
-  catch (xBase &x) {
+  catch (XBase &x) {
     x.prependContext(stringb("input=" << doubleQuote(input)));
     throw;
   }
@@ -850,7 +850,7 @@ static void testOneDeserialize(
     GDValue actual = GDValue::readFromString(input);
     EXPECT_EQ(actual, expect);
   }
-  catch (xBase &x) {
+  catch (XBase &x) {
     x.prependContext(stringb("input=" << doubleQuote(input)));
     throw;
   }
@@ -926,7 +926,7 @@ static void testOneDecodeCodePoint(int c)
   try {
     EXPECT_EQ(decoded, plain);
   }
-  catch (xBase &x) {
+  catch (XBase &x) {
     x.prependContext(stringb("c=" << c));
   }
 }

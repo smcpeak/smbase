@@ -830,7 +830,7 @@ static void testGetDefaultDependencyTarget()
         EXPECT_EQ(actual, std::string(t.m_expect));
       }
     }
-    catch (xBase &x) {
+    catch (XBase &x) {
       x.prependContext(stringb(__func__ << ": " << toString(t.m_input)));
       throw x;
     }
@@ -885,7 +885,7 @@ static void testNumSourceFiles()
       int actual = opts.numSourceFiles();
       EXPECT_EQ(actual, t.m_expect);
     }
-    catch (xBase &x) {
+    catch (XBase &x) {
       x.prependContext(stringb(__func__ << ": " << toString(t.m_input)));
       throw x;
     }

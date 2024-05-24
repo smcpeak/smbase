@@ -3,7 +3,7 @@
 
 #include "map-utils.h"                 // module under test
 
-#include "exc.h"                       // xBase
+#include "exc.h"                       // XBase
 
 
 static void testInsertMapUnique()
@@ -23,7 +23,7 @@ static void testInsertMapUnique()
     insertMapUnique(m, 2,2);
     inserted = true;
   }
-  catch (xBase &)
+  catch (XBase &)
   {}
   xassert(!inserted);
 }

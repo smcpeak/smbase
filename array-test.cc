@@ -317,7 +317,7 @@ static void testArrayNegativeLength()
     Array<char> arr(-700);
     assert(!"should have failed");
   }
-  catch (xBase &x) {
+  catch (XBase &x) {
     cout << "as expected: " << x.why() << endl;
   }
 }

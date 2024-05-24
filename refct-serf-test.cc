@@ -573,7 +573,7 @@ static void testListSuccess()
     cout << "should have failed" << endl;
     abort();
   }
-  catch (xBase &x)
+  catch (XBase &x)
   {}
 
   try {
@@ -582,7 +582,7 @@ static void testListSuccess()
     cout << "should have failed" << endl;
     abort();
   }
-  catch (xBase &x)
+  catch (XBase &x)
   {}
 }
 

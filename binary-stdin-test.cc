@@ -180,7 +180,7 @@ int main(int argc, char **argv)
   try {
     innerMain(argc, argv);
   }
-  catch (xBase &x) {
+  catch (XBase &x) {
     cerr << x.why() << endl;
     return 2;
   }

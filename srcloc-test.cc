@@ -292,7 +292,7 @@ void testHashMap2()
 // Called from unit-tests.cc.
 void test_srcloc()
 {
-  xBase::logExceptions = false;
+  XBase::logExceptions = false;
   traceAddSys("progress");
   traceProgress() << "begin" << endl;
 
