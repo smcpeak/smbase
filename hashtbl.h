@@ -6,7 +6,7 @@
 #ifndef SMBASE_HASHTBL_H
 #define SMBASE_HASHTBL_H
 
-#include "typ.h"     // STATICDEF
+#include "sm-macros.h"                 // STATICDEF
 
 class HashTable {
 private:    // types

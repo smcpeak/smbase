@@ -14,14 +14,6 @@
 #include <stddef.h>                    // NULL
 
 
-// tag for definitions of static member functions; there is no
-// compiler in existence for which this is useful, but I like
-// to see *something* next to implementations of static members
-// saying that they are static, and this seems slightly more
-// formal than just a comment
-#define STATICDEF /*static*/
-
-
 // concise way to loop on an integer range
 #define loopi(end) for(int i=0; i<(int)(end); i++)
 #define loopj(end) for(int j=0; j<(int)(end); j++)

@@ -392,6 +392,12 @@ inline void pretendUsedFn(T const &) {}
 #define NULLABLE /**/
 
 
+// When defining a static class method outside the class body, I put
+// this where the `static` keyword ought to go but C++ does not allow
+// it.  This is another one I hope to eventually enforce.
+#define STATICDEF /*static*/
+
+
 /* Function attribute to indicate that it acts like `printf`.
 
    `formatArgIndex` is the 1-based index of the argument that contains
