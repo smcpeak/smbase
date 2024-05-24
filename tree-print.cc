@@ -230,7 +230,7 @@ void TreePrint::TPBreak::debugPrint(std::ostream &os, int ind) const
 
 
 // --------------------------- TreePrint -------------------------------
-/*static*/ char const *TreePrint::toString(BreakKind breakKind)
+STATICDEF char const *TreePrint::toString(BreakKind breakKind)
 {
   static char const * const names[] = {
     "BK_NEWLINE_ALWAYS",

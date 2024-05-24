@@ -333,7 +333,7 @@ int compare(GDValue const &a, GDValue const &b)
 
 
 // ------------------- GDValue general container ops -------------------
-/*static*/ unsigned GDValue::countConstructorCalls()
+STATICDEF unsigned GDValue::countConstructorCalls()
 {
   return
     + s_ct_ctorDefault
@@ -479,28 +479,28 @@ void GDValue::writeToFile(
 
 
 // --------------------------- Read as text ----------------------------
-/*static*/ std::optional<GDValue> GDValue::readNextValue(std::istream &is)
+STATICDEF std::optional<GDValue> GDValue::readNextValue(std::istream &is)
 {
   GDValueReader reader(is, std::nullopt);
   return reader.readNextValue();
 }
 
 
-/*static*/ GDValue GDValue::readFromStream(std::istream &is)
+STATICDEF GDValue GDValue::readFromStream(std::istream &is)
 {
   GDValueReader reader(is, std::nullopt);
   return reader.readExactlyOneValue();
 }
 
 
-/*static*/ GDValue GDValue::readFromString(std::string const &str)
+STATICDEF GDValue GDValue::readFromString(std::string const &str)
 {
   std::istringstream iss(str);
   return readFromStream(iss);
 }
 
 
-/*static*/ GDValue GDValue::readFromFile(std::string const &fileName)
+STATICDEF GDValue GDValue::readFromFile(std::string const &fileName)
 {
   // TODO: I should wrap this behavior in a class.
   std::ifstream inFile(fileName.c_str(), std::ios_base::binary);

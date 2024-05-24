@@ -294,7 +294,7 @@ string RunProcess::exitDescription() const
 }
 
 
-/*static*/ void RunProcess::check_run(std::vector<string> const &command)
+STATICDEF void RunProcess::check_run(std::vector<string> const &command)
 {
   RunProcess rproc;
   rproc.setCommand(command);
@@ -314,7 +314,7 @@ string RunProcess::exitDescription() const
 // a command name containing a double-quote cannot be expressed), but
 // are evidently what we're forced to use.
 //
-/*static*/ void RunProcess::buildWindowsCommandLine(
+STATICDEF void RunProcess::buildWindowsCommandLine(
   std::vector<char> &commandLine, std::vector<string> const &command)
 {
   xassert(!command.empty());

@@ -31,7 +31,7 @@ GDValueReader::~GDValueReader()
 {}
 
 
-/*static*/ constexpr int GDValueReader::eofCode()
+STATICDEF constexpr int GDValueReader::eofCode()
 {
   return std::istream::traits_type::eof();
 }

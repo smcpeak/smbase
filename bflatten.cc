@@ -23,12 +23,12 @@ OwnerTableFlatten::~OwnerTableFlatten()
 {}
 
 
-/*static*/ void const* OwnerTableFlatten::getOwnerPtrKeyFn(OwnerMapping *data)
+STATICDEF void const* OwnerTableFlatten::getOwnerPtrKeyFn(OwnerMapping *data)
 {
   return data->ownerPtr;
 }
 
-/*static*/ void const* OwnerTableFlatten::getIntNameKeyFn(OwnerMapping *data)
+STATICDEF void const* OwnerTableFlatten::getIntNameKeyFn(OwnerMapping *data)
 {
   return (void const*)(intptr_t)(data->intName);
 }

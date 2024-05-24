@@ -21,7 +21,7 @@ CHECK_OBJECT_COUNT(SerfRefCount);
 void (*SerfRefCount::s_preAbortFunction)() = NULL;
 
 
-/*static*/ void SerfRefCount::callPreAbortFunction()
+STATICDEF void SerfRefCount::callPreAbortFunction()
 {
   breaker();
   if (s_preAbortFunction) {
@@ -70,7 +70,7 @@ SerfRefCount::~SerfRefCount()
 
 
 // --------------------- RCSerfPrivateHelpers -----------------------
-/*static*/ void RCSerfPrivateHelpers::incRefct(SerfRefCount const *p)
+STATICDEF void RCSerfPrivateHelpers::incRefct(SerfRefCount const *p)
 {
   if (p) {
     p->m_serfRefCount++;               // refct is mutable
@@ -78,7 +78,7 @@ SerfRefCount::~SerfRefCount()
 }
 
 
-/*static*/ void RCSerfPrivateHelpers::decRefct(SerfRefCount const *p)
+STATICDEF void RCSerfPrivateHelpers::decRefct(SerfRefCount const *p)
 {
   if (p) {
     p->m_serfRefCount--;               // refct is mutable

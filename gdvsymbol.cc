@@ -22,7 +22,7 @@ StringTable *GDVSymbol::s_stringTable = nullptr;
 char const *GDVSymbol::s_emptySymbolName = nullptr;
 
 
-/*static*/ StringTable *GDVSymbol::getStringTable()
+STATICDEF StringTable *GDVSymbol::getStringTable()
 {
   if (!s_stringTable) {
     s_stringTable = new StringTable;
@@ -57,13 +57,13 @@ int compare(GDVSymbol const &a, GDVSymbol const &b)
 }
 
 
-/*static*/ char const *GDVSymbol::lookupSymbolName(char const *name)
+STATICDEF char const *GDVSymbol::lookupSymbolName(char const *name)
 {
   return getStringTable()->add(name);
 }
 
 
-/*static*/ char const *GDVSymbol::getEmptySymbolName()
+STATICDEF char const *GDVSymbol::getEmptySymbolName()
 {
   getStringTable();
   assert(s_emptySymbolName);

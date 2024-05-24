@@ -12,7 +12,7 @@ OPEN_NAMESPACE(smbase)
 
 
 // ------------------------ UTF8ReaderException ------------------------
-/*static*/ std::string UTF8ReaderException::makeCondition(
+STATICDEF std::string UTF8ReaderException::makeCondition(
   std::string const &utf8Details,
   std::ptrdiff_t byteOffset)
 {

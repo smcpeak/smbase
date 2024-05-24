@@ -315,14 +315,14 @@ bool SMFileName::endsWithPathSeparator() const
 }
 
 
-/*static*/ bool SMFileName::isWindowsSyntax(Syntax syntax)
+STATICDEF bool SMFileName::isWindowsSyntax(Syntax syntax)
 {
   return syntax == S_WINDOWS ||
          (PLATFORM_IS_WINDOWS && syntax == S_NATIVE);
 }
 
 
-/*static*/ bool SMFileName::isPathSeparator(unsigned char c, Syntax syntax)
+STATICDEF bool SMFileName::isPathSeparator(unsigned char c, Syntax syntax)
 {
   return c == '/' || (isWindowsSyntax(syntax) && c == '\\');
 }
@@ -370,7 +370,7 @@ int SMFileUtil::DirEntryInfo::compareTo(DirEntryInfo const &b) const
 }
 
 
-/*static*/ int SMFileUtil::DirEntryInfo::compare(
+STATICDEF int SMFileUtil::DirEntryInfo::compare(
   DirEntryInfo const *a, DirEntryInfo const *b)
 {
   return a->compareTo(*b);

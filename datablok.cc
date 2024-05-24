@@ -19,9 +19,9 @@
 // define the endpost byte as something we hope is
 // unlikely to coincidentally be written during an
 // overrun
-/*static*/ unsigned char const DataBlock::endpost = 0xBB;
+STATICDEF unsigned char const DataBlock::endpost = 0xBB;
 
-/*static*/ void (*DataBlock::s_memoryCorruptionOverrideHandler)() = NULL;
+STATICDEF void (*DataBlock::s_memoryCorruptionOverrideHandler)() = NULL;
 
 
 void DataBlock::init(size_t allocatedSize)
