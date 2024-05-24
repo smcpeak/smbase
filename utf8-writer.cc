@@ -8,7 +8,7 @@
 #include <sstream>                     // std::ostringstream
 
 
-namespace smbase {
+OPEN_NAMESPACE(smbase)
 
 
 static inline char startByte(
@@ -64,7 +64,7 @@ std::string utf8EncodeVector(std::vector<int> codePoints)
 }
 
 
-} // namespace smbase
+CLOSE_NAMESPACE(smbase)
 
 
 // EOF

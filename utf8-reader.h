@@ -12,7 +12,7 @@
 #include <string>                      // std::string
 
 
-namespace smbase { // see smbase-namespace.txt
+OPEN_NAMESPACE(smbase)
 
 
 // This module assumes 'int' can store all Unicode code points.
@@ -160,7 +160,7 @@ public:
 };
 
 
-} // namespace smbase
+CLOSE_NAMESPACE(smbase)
 
 
 #endif // SMBASE_UTF8_READER_H

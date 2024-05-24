@@ -13,7 +13,7 @@
 #include <vector>                      // std::vector
 
 
-namespace smbase { // see smbase-namespace.txt
+OPEN_NAMESPACE(smbase)
 
 
 // This module assumes 'int' can store all Unicode code points.
@@ -61,7 +61,7 @@ public:      // methods
 std::string utf8EncodeVector(std::vector<int> codePoints);
 
 
-} // namespace smbase
+CLOSE_NAMESPACE(smbase)
 
 
 #endif // SMBASE_UTF8_WRITER_H

@@ -8,7 +8,7 @@
 #include "exc.h"                       // THROW
 
 
-namespace smbase {
+OPEN_NAMESPACE(smbase)
 
 
 // ------------------------ UTF8ReaderException ------------------------
@@ -146,7 +146,7 @@ UTF8StringReader::UTF8StringReader(std::string const &encodedInput)
 {}
 
 
-} // namespace smbase
+CLOSE_NAMESPACE(smbase)
 
 
 // EOF

@@ -331,12 +331,36 @@ public:
 // 'override' has made that unnecessary.
 
 
-// Open and close namespaces w/o interfering with indentation.
+/* Open and close namespaces without interfering with indentation (if
+   the editor does not treat `namespace` braces specially).  This also
+   makes it a little easier to find and (if needed) automatically
+   process these enclosures, especially for the closing brace.
+
+   There is nothing to enforce that `CLOSE_NAMESPACE` names the same
+   namespace as `OPEN_NAMESPACE`, but that would be a pretty easy check
+   to add to some ad-hoc tool at some point.
+
+   See smbase-namespace.txt for information about the `smbase` namespace
+   specfically.
+*/
 #define OPEN_NAMESPACE(name) namespace name {
 #define CLOSE_NAMESPACE(name) } /* name */
 
 #define OPEN_ANONYMOUS_NAMESPACE namespace {
 #define CLOSE_ANONYMOUS_NAMESPACE } /* anon */
+
+
+/* For `name` that is declared in the `smbase` namespace, export it into
+   the global namespace (assuming that is where the macro is invoked)
+   unless `SMBASE_NO_GLOBAL_ALIASES` suppresses that.  The idea is a
+   client could set that symbol to turn off the global aliases, which
+   are primarily meant for compatibility with older code.
+*/
+#ifdef SMBASE_NO_GLOBAL_ALIASES
+  #define SMBASE_GLOBAL_ALIAS(name) /*nothing*/
+#else
+  #define SMBASE_GLOBAL_ALIAS(name) using smbase::name;
+#endif
 
 
 // My recollection is there is a way to do what this macro does without

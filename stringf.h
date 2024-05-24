@@ -12,14 +12,14 @@
 #ifndef SMBASE_STRINGF_H
 #define SMBASE_STRINGF_H
 
-#include "sm-macros.h"                 // SM_PRINTF_ANNOTATION
+#include "sm-macros.h"                 // SM_PRINTF_ANNOTATION, OPEN_SMBASE_NAMESPACE
 
 #include <string>                      // std::string
 
 #include <stdarg.h>                    // va_list
 
 
-namespace smbase { // see smbase-namespace.txt
+OPEN_NAMESPACE(smbase)
 
 
 // Build a string using a `printf` format string and arguments.
@@ -30,13 +30,11 @@ std::string stringf(char const *format, ...)
 std::string vstringf(char const *format, va_list args);
 
 
-} // namespace smbase
+CLOSE_NAMESPACE(smbase)
 
 
-#ifndef SMBASE_NO_COMPAT_ALIASES
-using smbase::stringf;
-using smbase::vstringf;
-#endif // SMBASE_NO_COMPAT_ALIASES
+SMBASE_GLOBAL_ALIAS(stringf)
+SMBASE_GLOBAL_ALIAS(vstringf)
 
 
 #endif // SMBASE_STRINGF_H

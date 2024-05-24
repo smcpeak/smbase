@@ -13,7 +13,7 @@
 #include <stdio.h>                     // vsnprintf
 
 
-namespace smbase {
+OPEN_NAMESPACE(smbase)
 
 
 std::string stringf(char const *format, ...)
@@ -64,7 +64,7 @@ std::string vstringf(char const *format, va_list args)
 }
 
 
-} // namespace smbase
+CLOSE_NAMESPACE(smbase)
 
 
 // EOF
