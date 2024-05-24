@@ -234,39 +234,10 @@ inline void pretendUsedFn(T const &) {}
   numAllocd--;
 
 
-// ----------- automatic data value restorer -------------
-// used when a value is to be set to one thing now, but restored
-// to its original value on return (even when the return is by
-// an exception being thrown)
-template <class T>
-class Restorer {
-  T &variable;
-  T prevValue;
-
-public:
-  Restorer(T &var, T newValue)
-    : variable(var),
-      prevValue(var)
-  {
-    variable = newValue;
-  }
-
-  // this one does not set it to a new value, just remembers the current
-  Restorer(T &var)
-    : variable(var),
-      prevValue(var)
-  {}
-
-  ~Restorer()
-  {
-    variable = prevValue;
-  }
-};
-
-
-// Declare a restorer for 'variable', of 'type'.
-#define RESTORER(type, variable, value) \
-  Restorer< type > SMBASE_PP_CAT(restorer,__LINE__)((variable), (value)) /* user ; */
+// 2024-05-24: In the past, there was in this file a class called
+// `Restorer` and a macro called `RESTORER`.  These did not belong in
+// this file, so were removed.  The file `save-restore.h` has
+// `SetRestore` and `SET_RESTORE` that should be used instead.
 
 
 // declare a bunch of a set-like operators for enum types

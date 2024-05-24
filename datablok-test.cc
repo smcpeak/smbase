@@ -4,7 +4,7 @@
 #include "datablok.h"                  // module under test
 
 #include "nonport.h"                   // removeFile
-#include "sm-macros.h"                 // Restorer
+#include "save-restore.h"              // SET_RESTORE
 #include "xassert.h"                   // xfailure
 
 #include <stdio.h>                     // printf
@@ -19,7 +19,7 @@ static void corruptionHandler()
 
 static void testMemoryCorruption()
 {
-  Restorer< void (*)() > restorer(DataBlock::s_memoryCorruptionOverrideHandler,
+  SET_RESTORE(DataBlock::s_memoryCorruptionOverrideHandler,
     &corruptionHandler);
 
   {

@@ -5,7 +5,7 @@
 #include "refct-serf.h"                // module to test
 
 #include "array.h"                     // ArrayStack
-#include "sm-macros.h"                 // Restorer
+#include "save-restore.h"              // SET_RESTORE
 #include "objlist.h"                   // ObjList
 #include "owner.h"                     // Owner
 #include "sm-iostream.h"               // cout, etc.
@@ -140,10 +140,10 @@ static void incFailCount()
 
 
 // Prepare for a failure to be reported.
-#define PREPARE_TO_FAIL()                                       \
-  failCount = 0;                                                \
-  Restorer< void (*)() > abortRestorer(                         \
-    SerfRefCount::s_preAbortFunction, &incFailCount) /* user ; */
+#define PREPARE_TO_FAIL()                       \
+  failCount = 0;                                \
+  SET_RESTORE(SerfRefCount::s_preAbortFunction, \
+    &incFailCount) /* user ; */
 
 // Add an RCSerf to the set of those that we know are about to dangle
 // due to an intentional failure.
