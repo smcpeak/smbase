@@ -373,7 +373,6 @@ STATICDEF xSysError::Reason xSysError::portablize(
 void entry()
 {
   int errors = 0;
-  XBase::logExceptions = false;
   //nonportFail = xSysError::xsyserror;
 
   //TRY_FAIL(createDirectory("/tmp\\Scott\\"),
