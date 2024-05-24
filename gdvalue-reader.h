@@ -109,6 +109,10 @@ protected:   // methods
   // put them into a string.  Return after consuming the final '"'.
   GDValue readNextDQString();
 
+  // Having seen and consumed "\u", read the following four hexadecimal
+  // characters and decode them as a UTF-16 code unit.
+  int readNextU4Escape();
+
   // Having seen and consumed 'firstChar', a character that starts an
   // integer (so, it is '-' or a digit), read the remainder and put them
   // into an integer.  Return after consuming the final digit.

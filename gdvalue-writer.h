@@ -73,6 +73,10 @@ private:     // methods
   // Same as 'tryWrite(GDValue)', but for 'GDVMapEntry'.
   bool tryWrite(GDVMapEntry const &entry, bool forceLineBreaks = false);
 
+  // Write 'str'.  Return false if we are doing a speculative write and
+  // we exceed the available capacity.
+  bool writeDQString(GDVString const &str);
+
   // True if we are performing a speculative write, and while doing so,
   // the number of written characters exceeds what is available.
   bool exceededSpeculativeCapacity() const;

@@ -4,6 +4,8 @@
 #include "codepoint.h"                 // this module
 
 #include "str.h"                       // stringf
+#include "string-utils.h"              // singleQuoteChar
+#include "xassert.h"                   // xfailure_stringbc
 
 
 bool isUppercaseLetter(int c)
@@ -64,6 +66,18 @@ bool isWhitespace(int c)
     default:
       return false;
   }
+}
+
+
+bool isHighSurrogate(int c)
+{
+  return 0xD800 <= c && c < 0xDC00;
+}
+
+
+bool isLowSurrogate(int c)
+{
+  return 0xDC00 <= c && c < 0xE000;
 }
 
 
@@ -154,6 +168,37 @@ bool isShellMetacharacter(int c)
       return false;
   }
 }
+
+
+int decodeASCIIHexDigit(int c)
+{
+  if (isASCIIDigit(c)) {
+    return c - '0';
+  }
+  else if ('A' <= c && c <= 'F') {
+    return c - 'A' + 10;
+  }
+  else if ('a' <= c && c <= 'f') {
+    return c - 'a' + 10;
+  }
+  else {
+    xfailure_stringbc("bad hex digit: " << singleQuoteChar(c));
+    return 0;    // Not reached.
+  }
+}
+
+
+int decodeSurrogatePair(int highSurrogate, int lowSurrogate)
+{
+  xassert(isHighSurrogate(highSurrogate));
+  xassert(isLowSurrogate(lowSurrogate));
+
+  return 0x10000 |
+         ((highSurrogate & 0x3FF) << 10) |
+         (lowSurrogate & 0x3FF);
+}
+
+
 
 
 // EOF

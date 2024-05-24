@@ -9,6 +9,8 @@
 #include "xassert.h"                   // xassert
 
 #include <iostream>                    // std::ostream
+#include <string>                      // std::string
+#include <vector>                      // std::vector
 
 
 namespace smbase { // see smbase-namespace.txt
@@ -53,6 +55,10 @@ public:      // methods
     }
   }
 };
+
+
+// Encode a sequence of code points as UTF-8.
+std::string utf8EncodeVector(std::vector<int> codePoints);
 
 
 } // namespace smbase

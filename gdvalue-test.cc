@@ -9,6 +9,7 @@
 #include "sm-test.h"                   // EXPECT_EQ, EXPECT_MATCHES_REGEX
 #include "strutil.h"                   // hasSubstring
 #include "string-utils.h"              // doubleQuote
+#include "utf8-writer.h"               // smbase::utf8EncodeVector
 
 // libc++
 #include <cassert>                     // assert
@@ -16,8 +17,10 @@
 #include <cstdlib>                     // std::{atoi, exit}
 #include <iostream>                    // std::cout
 
-using std::cout;
+using namespace smbase;
 using namespace gdv;
+
+using std::cout;
 
 
 // Check that 'ser' deserializes to 'expect'.
@@ -784,7 +787,25 @@ static void testSyntaxErrors()
   testOneErrorRegex("\"\\", 1, 3,
     "end of file.*looking for character after '\\\\'");
 
-  // TODO: More in readNextDQString after I fix it to match spec.
+  // readNextDQString: after high surrogate, backslash.
+  testOneErrorRegex("\"\\ud800", 1, 8,
+    "After high surrogate.*uD800.*end of file.*expecting '\\\\'");
+  testOneErrorRegex("\"\\ud8000", 1, 8,
+    "After high surrogate.*uD800.*'0'.*expecting '\\\\'");
+
+  // readNextDQString: after high surrogate and backslash, 'u'.
+  testOneErrorRegex("\"\\ud800\\", 1, 9,
+    "After high surrogate.*uD800.*end of file.*expecting 'u'");
+  testOneErrorRegex("\"\\ud800\\n", 1, 9,
+    "After high surrogate.*uD800.*'n'.*expecting 'u'");
+
+  // readNextDQString: after high surrogate, not a low surrogate.
+  testOneErrorRegex("\"\\uDABC\\uDbad", 1, 13,
+    "After high surrogate.*uDABC.*Expected low surrogate.*DBAD");
+
+  // readNextDQString: unpaired low surrogate.
+  testOneErrorRegex("\"\\uDEAD", 1, 7,
+    "Found low surrogate.*uDEAD.*not preceded");
 
   // readNextDQString: looking for character after backslash (2).
   testOneErrorRegex("\"\\z", 1, 3,
@@ -860,6 +881,90 @@ static void testDeserialize()
 }
 
 
+// Test the string encoding/escaping.  `plain` is a string to encode as
+// a double-quoted string in GDVN.  `expectEncodedNoQuotes` is what it
+// should yield, without the double-quotes (just so the tests are a
+// little less cluttered).
+static void testOneStringEscapes(
+  std::string const &plain,
+  std::string const &expectEncodedNoQuotes)
+{
+  std::string expectEncoded =
+    stringb('"' << expectEncodedNoQuotes << '"');
+
+  std::string actualEncoded =
+    GDValue(plain).asString();
+  EXPECT_EQ(actualEncoded, expectEncoded);
+
+  std::string actualPlain =
+    GDValue::readFromString(actualEncoded).stringGet();
+  EXPECT_EQ(actualPlain, plain);
+}
+
+
+// Test decode only.  This is useful when I want to test the
+// interpretation of a form my encoder does not produce.
+static void testOneDecode(
+  std::string const &encodedNoQuotes,
+  std::string const &expect)
+{
+  std::string encoded = stringb('"' << encodedNoQuotes << '"');
+
+  std::string actual =
+    GDValue::readFromString(encoded).stringGet();
+  EXPECT_EQ(actual, expect);
+}
+
+
+// Encode `c` as a UTF-8 string, encoded it as GDVN, decode that, and
+// check the result is the original UTF-8 string.
+static void testOneDecodeCodePoint(int c)
+{
+  std::string plain = utf8EncodeVector({c});
+  std::string encoded = GDValue(plain).asString();
+  std::string decoded = GDValue::readFromString(encoded).stringGet();
+  try {
+    EXPECT_EQ(decoded, plain);
+  }
+  catch (xBase &x) {
+    x.prependContext(stringb("c=" << c));
+  }
+}
+
+
+static void testStringEscapes()
+{
+  testOneStringEscapes("", "");
+  testOneStringEscapes("\"\\\001\037",
+                       "\\\"\\\\\\u0001\\u001F");
+  testOneStringEscapes("\t\r\n\f\b/\\\"",
+                       "\\t\\r\\n\\f\\b/\\\\\\\"");
+  testOneStringEscapes(std::string("\0", 1),
+                       "\\u0000");
+
+  // The JSON syntax, and hence GDVN, allows forward slash to be escaped
+  // with backslash; I do not know why.
+  testOneDecode("\\/", "/");
+
+  //     [--]   [--][-   -][--]
+  //        1      2      3   4
+  // 1110xxxx 10xxxxxx 10xxxxxx
+  //    E   1    8   8    B   4
+  // [--][--] [--][--] [--][--]
+  testOneDecode("\\u1234", "\xE1\x88\xB4");
+
+  testOneDecodeCodePoint(0x01);
+  testOneDecodeCodePoint(0x7F);
+  testOneDecodeCodePoint(0x80);
+  testOneDecodeCodePoint(0x7FF);
+  testOneDecodeCodePoint(0x800);
+  testOneDecodeCodePoint(0x1234);
+  testOneDecodeCodePoint(0xFFFF);
+  testOneDecodeCodePoint(0x10000);
+  testOneDecodeCodePoint(0x10FFFF);
+}
+
+
 // Called from unit-tests.cc.
 void test_gdvalue()
 {
@@ -881,6 +986,7 @@ void test_gdvalue()
     testMap();
     testSyntaxErrors();
     testDeserialize();
+    testStringEscapes();
 
     // Some interesting values for the particular data used.
     testPrettyPrint(0);

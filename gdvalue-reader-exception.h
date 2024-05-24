@@ -19,13 +19,17 @@ public:      // data
   // Where the error occurred.
   FileLineCol m_location;
 
-  // What specifically is wrong with the syntax at that location?
+  // What specifically is wrong with the GDVN syntax at that location?
   std::string m_syntaxError;
 
 public:      // methods
   GDValueReaderException(FileLineCol const &location,
                          std::string const &syntaxError) noexcept;
   ~GDValueReaderException();
+
+  // Prepend "context: " to `m_syntaxError`.  Also insert it into
+  // the `xBase::msg` member by recomputing that member.
+  void prependGDVNContext(std::string const &context);
 };
 
 

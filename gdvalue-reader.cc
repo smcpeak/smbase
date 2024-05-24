@@ -9,9 +9,12 @@
 #include "gdvsymbol.h"                 // GDVSymbol
 #include "overflow.h"                  // addWithOverflowCheck, multiplyWithOverflowCheck
 #include "string-utils.h"              // possiblyTruncatedWithEllipsis
+#include "utf8-writer.h"               // smbase::UTF8Writer
 
 #include <iomanip>                     // std::hex
 #include <utility>                     // std::move
+
+using namespace smbase;
 
 
 namespace gdv {
@@ -391,92 +394,87 @@ GDValue GDValueReader::readNextMap()
 
 GDValue GDValueReader::readNextDQString()
 {
-  std::vector<char> strChars;
+  std::ostringstream oss;
+  UTF8Writer utf8Writer(oss);
 
   while (true) {
     int c = readCharNotEOF("looking for closing '\"' in double-quoted string");
 
     if (c == '"') {
-      return GDValue(std::string(strChars.begin(), strChars.end()));
+      break;
     }
 
     if (c == '\\') {
       c = readCharNotEOF("looking for character after '\\' in double-quoted string");
 
       // Interpret what follows the backslash.
-      //
-      // TODO: This is incomplete.  For the moment I am just doing
-      // enough to invert what 'doubleQuote' does.  But I need to decide
-      // exactly what my encoding scheme is first.
       switch (c) {
         // Characters that denote themselves.
-        case '\\':
         case '"':
-        case '\'':
-          strChars.push_back(c);
-          break;
-
-        case 'a':
-          strChars.push_back('\a');
+        case '\\':
+        case '/':
+          oss << (char)c;
           break;
 
         case 'b':
-          strChars.push_back('\b');
+          oss << '\b';
           break;
 
         case 'f':
-          strChars.push_back('\f');
+          oss << '\f';
           break;
 
         case 'n':
-          strChars.push_back('\n');
+          oss << '\n';
           break;
 
         case 'r':
-          strChars.push_back('\r');
+          oss << '\r';
           break;
 
         case 't':
-          strChars.push_back('\t');
+          oss << '\t';
           break;
 
-        case 'v':
-          strChars.push_back('\v');
-          break;
+        case 'u': {
+          // Decode hex.
+          int decoded = readNextU4Escape();
 
-        case '0':
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7': {
-          // Decode octal.
-          int decoded = c - '0';
-          while (true) {
-            c = readCharNotEOF("looking for digits in octal escape sequence in double-quoted string");
-            if (isASCIIOctDigit(c)) {
-              try {
-                decoded = addWithOverflowCheck(
-                            multiplyWithOverflowCheck(decoded, 8),
-                            c - '0');
+          if (isHighSurrogate(decoded)) {
+            try {
+              // This should be followed by the other half of a surrogate
+              // pair.
+              readExpectChar('\\', "expecting '\\'");
+              readExpectChar('u', "expecting 'u' after '\\'");
+              int decoded2 = readNextU4Escape();
+
+              if (isLowSurrogate(decoded2)) {
+                decoded = decodeSurrogatePair(decoded, decoded2);
               }
-              catch (XOverflow const &) {
-                err(stringb("Code point denoted by octal escape in double-quoted string is too large."));
+              else {
+                err(stringf(
+                  "Expected low surrogate in [U+DC00,U+DFFF], "
+                  "but instead found \"\\u%04X\".",
+                  decoded2));
               }
             }
-            else {
-              // Put the character after the escape sequence back.
-              putback(c);
-
-              // Store the decoded value.
-              //
-              // TODO: This discards values larger than 127-ish.
-              strChars.push_back((char)decoded);
-              break;
+            catch (GDValueReaderException &e) {
+              // We do not compute the more detailed context above
+              // because we do not yet know we will report an error.
+              e.prependGDVNContext(stringf(
+                "After high surrogate \"\\u%04X\"", decoded));
+              throw;
             }
           }
+          else if (isLowSurrogate(decoded)) {
+            err(stringf(
+              "Found low surrogate \"\\u%04X\" that is not preceded by "
+              "a high surrogate in [U+D800,U+DBFF].",
+              decoded));
+          }
+
+          // Store the decoded value as UTF-8.
+          utf8Writer.writeCodePoint(decoded);
           break;
         }
 
@@ -488,11 +486,28 @@ GDValue GDValueReader::readNextDQString()
 
     else /* not backslash, double-quote, or EOF */ {
       // Ordinary character.
-      strChars.push_back((char)c);
+      oss << (char)c;
     }
   } // while(true)
 
-  // Not reached.
+  return GDValue(oss.str());
+}
+
+
+int GDValueReader::readNextU4Escape()
+{
+  int decoded = 0;
+  for (int i=0; i < 4; ++i) {
+    int c = readChar();
+    if (isASCIIHexDigit(c)) {
+      decoded = decoded*16 + decodeASCIIHexDigit(c);
+    }
+    else {
+      errUnexpectedChar(c, "looking for digits in \"\\u\" escape sequence in double-quoted string");
+    }
+  }
+
+  return decoded;
 }
 
 

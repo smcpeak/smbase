@@ -5,6 +5,8 @@
 
 #include "utf8-writer.h"               // this module
 
+#include <sstream>                     // std::ostringstream
+
 
 namespace smbase {
 
@@ -48,6 +50,17 @@ void UTF8Writer::writeCodePointSlow(int c)
     m_os << continuationByte(c, 6);
     m_os << continuationByte(c, 0);
   }
+}
+
+
+std::string utf8EncodeVector(std::vector<int> codePoints)
+{
+  std::ostringstream oss;
+  UTF8Writer writer(oss);
+  for (int i : codePoints) {
+    writer.writeCodePoint(i);
+  }
+  return oss.str();
 }
 
 

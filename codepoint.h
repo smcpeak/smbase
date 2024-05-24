@@ -28,6 +28,12 @@ bool isDecimalDigit(int c);
 // Unicode property White_Space=yes.
 bool isWhitespace(int c);
 
+// True if `c` is in [0xD800,0xDC00).
+bool isHighSurrogate(int c);
+
+// True if `c` is in [0xDC00,0xE000).
+bool isLowSurrogate(int c);
+
 
 // ------------------------ My own categories -----------------------
 // This section has code point categories unrelated to those in
@@ -54,6 +60,16 @@ bool isASCIIOctDigit(int c);
 // True if 'c' is a POSIX or Bash shell metacharacter, including space,
 // under the assumption that IFS has its usual value.
 bool isShellMetacharacter(int c);
+
+
+// ------------------------------ Decoders -----------------------------
+// Map a hex digit to [0,15].
+int decodeASCIIHexDigit(int c);
+
+// Given `highSurrogate` in [0xD800,0xDC00) and `lowSurrogate` in
+// [0xDC00,0xE000), decode them as a single code point in
+// [0x0,0x10FFFF].
+int decodeSurrogatePair(int highSurrogate, int lowSurrogate);
 
 
 #endif // CODEPOINT_H

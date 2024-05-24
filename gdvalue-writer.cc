@@ -9,6 +9,7 @@
 #include "gdvsymbol.h"                 // gdv::GDVSymbol
 #include "save-restore.h"              // SAVE_RESTORE, SET_RESTORE
 #include "string-utils.h"              // doubleQuote
+#include "stringf.h"                   // stringf
 
 // libc++
 #include <cassert>                     // assert
@@ -217,8 +218,7 @@ bool GDValueWriter::tryWrite(GDValue const &value,
       break;
 
     case GDVK_STRING:
-      os() << doubleQuote(value.stringGet());
-      break;
+      return writeDQString(value.stringGet());
 
     case GDVK_SEQUENCE:
       return writeContainer(
@@ -361,6 +361,67 @@ bool GDValueWriter::tryWrite(GDVMapEntry const &pair,
       return false;
     }
   }
+
+  return true;
+}
+
+
+bool GDValueWriter::writeDQString(GDVString const &str)
+{
+  os() << '"';
+
+  for (char c : str) {
+    switch (c) {
+      case '"':
+        os() << "\\\"";
+        break;
+
+      case '\\':
+        os() << "\\\\";
+        break;
+
+      case '\b':
+        os() << "\\b";
+        break;
+
+      case '\f':
+        os() << "\\f";
+        break;
+
+      case '\n':
+        os() << "\\n";
+        break;
+
+      case '\r':
+        os() << "\\r";
+        break;
+
+      case '\t':
+        os() << "\\t";
+        break;
+
+      default:
+        if ((unsigned char)c < 0x20) {
+          os() << stringf("\\u%04X", (int)(unsigned char)c);
+        }
+        else {
+          // I'm not using numeric escapes for anything except
+          // non-printable characters since, ideally, the producer and
+          // consumer both speak UTF-8 fluently.
+          //
+          // Note that UTF-8 code units will be written one at a time
+          // by this line.
+          os() << c;
+        }
+        break;
+    }
+
+    if (exceededSpeculativeCapacity()) {
+      return false;
+    }
+  }
+
+  os() << '"';
 
   return true;
 }
