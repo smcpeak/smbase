@@ -17,9 +17,6 @@
 #include <stdarg.h>                    // va_list
 
 
-// TODO: Currently these are defined in str.cc but I should move them
-// into a new stringf.cc.
-
 // TODO: Can I annotate these with attributes that will allow the
 // compiler to diagnose misuse?
 

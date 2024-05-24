@@ -268,6 +268,7 @@ SRCS += str.cc
 SRCS += strdict.cc
 SRCS += strhash.cc
 SRCS += string-utils.cc
+SRCS += stringf.cc
 SRCS += stringset.cc
 SRCS += strtable.cc
 SRCS += strtokp.cc
