@@ -1,11 +1,13 @@
 // vptrmap.cc
 // code for vptrmap.h
 
-#include "vptrmap.h"     // this module
-#include "xassert.h"     // xfailure
+#include "vptrmap.h"                   // this module
 
-#include <stddef.h>      // NULL
-#include <string.h>      // memset
+#include "pointer-utils.h"             // pointerToInteger
+#include "xassert.h"                   // xfailure
+
+#include <stddef.h>                    // NULL
+#include <string.h>                    // memset
 
 
 // ------------------ VoidPtrMap -------------------

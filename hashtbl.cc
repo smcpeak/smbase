@@ -1,10 +1,12 @@
 // hashtbl.cc            see license.txt for copyright and terms of use
 // code for hashtbl.h
 
-#include "hashtbl.h"     // this module
-#include "xassert.h"     // xassert
+#include "hashtbl.h"                   // this module
 
-#include <string.h>      // memset
+#include "pointer-utils.h"             // pointerToInteger
+#include "xassert.h"                   // xassert
+
+#include <string.h>                    // memset
 
 
 unsigned HashTable::hashFunction(void const *key) const

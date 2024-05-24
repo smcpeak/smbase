@@ -7,8 +7,6 @@
 #ifndef SMBASE_SM_MACROS_H
 #define SMBASE_SM_MACROS_H
 
-#include "typ.h"        // bool
-
 
 // Concatenate tokens.  Unlike plain '##', this works for __LINE__.  It
 // is the same as BOOST_PP_CAT.

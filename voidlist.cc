@@ -1,11 +1,13 @@
 // voidlist.cc            see license.txt for copyright and terms of use
 // code for voidlist.h
 
-#include "voidlist.h"   // this module
-#include "breaker.h"    // breaker
-#include "str.h"        // stringb
+#include "voidlist.h"                  // this module
 
-#include <stdio.h>      // printf()
+#include "breaker.h"                   // breaker
+#include "pointer-utils.h"             // comparePointerAddresses
+#include "str.h"                       // stringb
+
+#include <stdio.h>                     // printf
 
 
 VoidList::VoidList(VoidList const &obj)
