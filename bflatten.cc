@@ -6,6 +6,7 @@
 #include "overflow.h"     // convertNumber
 #include "sm-stdint.h"    // intptr_t
 #include "syserr.h"       // xsyserror
+#include "xassert.h"      // xassert
 
 #include <fstream>        // std::fstream, etc.
 

@@ -9,6 +9,7 @@
 // smbase
 #include "exc.h"                       // formatAssert
 #include "overflow.h"                  // convertWithoutLoss
+#include "xassert.h"                   // xassert
 
 // libc
 #include <limits.h>                    // INT_MAX

@@ -6,6 +6,7 @@
 // smbase
 #include "autofile.h"                  // AutoFILE
 #include "syserr.h"                    // xsyserror
+#include "xassert.h"                   // xassert
 
 // libc++
 #include <vector>                      // std::vector

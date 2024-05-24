@@ -6,6 +6,7 @@
 #include "exc.h"          // xassert, CAUTIOUS_RELAY
 #include "crc.h"          // crc32
 #include "syserr.h"       // xsyserror
+#include "xassert.h"      // xassert
 
 #include <algorithm>      // std::{min, max}
 

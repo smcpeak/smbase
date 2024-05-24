@@ -9,6 +9,7 @@
 #include "gdvalue-writer.h"            // gdv::GDValueWriter
 #include "gdvsymbol.h"                 // gdv::GDVSymbol
 #include "syserr.h"                    // xsyserror
+#include "xassert.h"                   // xassert
 
 // libc++
 #include <cassert>                     // assert

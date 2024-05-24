@@ -6,6 +6,7 @@
 #include "utf8-reader.h"               // this module
 
 #include "exc.h"                       // THROW
+#include "xassert.h"                   // xassert
 
 
 OPEN_NAMESPACE(smbase)

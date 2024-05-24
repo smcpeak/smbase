@@ -9,6 +9,7 @@
 #include "nonport.h"       // getMilliseconds
 #include "sm-iostream.h"   // cout
 #include "str.h"           // stringb, string
+#include "xassert.h"       // xassert
 
 #include <iomanip>         // std::hex, std::dec
 
