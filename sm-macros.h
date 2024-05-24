@@ -425,4 +425,23 @@ inline void pretendUsedFn(T const &) {}
 #define smbase_loopk(end) for(int k=0; k<(int)(end); k++)
 
 
+// `ENABLE_SELFCHECK` can be set to 0 (disable) or 1 (enable).  If not
+// explicitly set, it is set to 0 when `NDEBUG`.
+#ifndef ENABLE_SELFCHECK
+  #ifdef NDEBUG
+    #define ENABLE_SELFCHECK 0
+  #else
+    #define ENABLE_SELFCHECK 1
+  #endif
+#endif
+
+// The `SELFCHECK()` macro runs the `selfCheck()` method unless it is
+// disabled for speed reasons.
+#if ENABLE_SELFCHECK != 0
+  #define SELFCHECK() selfCheck()
+#else
+  #define SELFCHECK() ((void)0)
+#endif
+
+
 #endif // SMBASE_SM_MACROS_H
