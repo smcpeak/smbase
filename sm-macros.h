@@ -444,4 +444,9 @@ inline void pretendUsedFn(T const &) {}
 #endif
 
 
+// Compatiblity macro originally created to deal with compilers that
+// did not have the `explicit` keyword.  Obsolete.
+#define EXPLICIT explicit
+
+
 #endif // SMBASE_SM_MACROS_H
