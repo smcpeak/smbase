@@ -117,6 +117,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(strdict);
   RUN_TEST(strhash);
   RUN_TEST(string_utils);
+  RUN_TEST(stringf);
   RUN_TEST(stringset);
   RUN_TEST(strutil);
   RUN_TEST(svdict);

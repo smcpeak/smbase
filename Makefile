@@ -351,6 +351,7 @@ UNIT_TEST_OBJS += str-test.o
 UNIT_TEST_OBJS += strdict-test.o
 UNIT_TEST_OBJS += strhash-test.o
 UNIT_TEST_OBJS += string-utils-test.o
+UNIT_TEST_OBJS += stringf-test.o
 UNIT_TEST_OBJS += stringset-test.o
 UNIT_TEST_OBJS += strutil-test.o
 UNIT_TEST_OBJS += svdict-test.o

@@ -6,5 +6,11 @@ Most of smbase is *not* inside the `smbase` namespace, but I'm trying to
 gradually change that, at first just by putting new code into it.  The
 eventual goal is for all of smbase to be in that namespace.
 
+If I add `namespace smbase` to an exising header, I also put `using`
+declarations at the end that export the names to the global namespace
+for client code compatibility, guarded by a check for the
+SMBASE_NO_COMPAT_ALIASES preprocessor symbol being defined.  This at
+least marks where they are and would allow a client to turn them off.
+
 
 EOF
