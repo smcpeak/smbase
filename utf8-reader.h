@@ -70,6 +70,9 @@ public:      // methods
 
 
 // Manage process of reading from an array of char.
+//
+// TODO: This should just read from a 'std::istream', symmetric to how
+// UTFWriter works.
 class UTF8Reader {
 public:      // data
   // Start of the input being processed.  This is used to report
