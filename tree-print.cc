@@ -3,8 +3,6 @@
 
 #include "tree-print.h"                // this module
 
-#include "sm-macros.h"                 // RESTORER
-
 
 static std::ostream &printIndent(std::ostream &os, int ind)
 {

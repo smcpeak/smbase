@@ -303,9 +303,6 @@ void testConvertNumber()
 
 void test_overflow()
 {
-  // This test throws many exceptions.
-  RESTORER(bool, xBase::logExceptions, false);
-
   char const *selTest = getenv("TEST_OVERFLOW_SELTEST");
 
   #define RUNTEST(func)                              \
