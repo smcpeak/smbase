@@ -112,13 +112,11 @@ void x_assert_fail(char const *cond, char const *file, int line)
 
 // --------------- xFormat ------------------
 xFormat::xFormat(rostring cond)
-  : xBase(cond),
-    condition(cond)
+  : xBase(cond)
 {}
 
 xFormat::xFormat(xFormat const &obj)
-  : xBase(obj),
-    condition(obj.condition)
+  : xBase(obj)
 {}
 
 xFormat::~xFormat()

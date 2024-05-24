@@ -157,14 +157,12 @@ public:
 // in some input data; the program cannot process it, but it
 // is not a bug in the program
 class xFormat : public xBase {
-  string condition; // what is wrong with the input
-
-public:
+public:      // methods
   xFormat(rostring cond);
   xFormat(xFormat const &obj);
   ~xFormat();
 
-  rostring cond() const { return condition; }
+  rostring cond() const { return msg; }
 };
 
 // compact way to throw an xFormat
