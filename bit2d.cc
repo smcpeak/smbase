@@ -15,7 +15,7 @@ Bit2d::Bit2d(point const &aSize)
 {
   xassert(size.x > 0 && size.y > 0);
   stride = (size.x+7)/8;
-  data = new byte[datasize()];
+  data = new unsigned char[datasize()];
 }
 
 
@@ -31,7 +31,7 @@ Bit2d::Bit2d(Bit2d const &obj)
 {
   size = obj.size;
   stride = obj.stride;
-  data = new byte[datasize()];
+  data = new unsigned char[datasize()];
   owning = true;
   memcpy(data, obj.data, datasize());
 }
@@ -86,13 +86,13 @@ int Bit2d::get(point const &p) const
 void Bit2d::set(point const &p)
 {
   xassert(okpt(p));
-  *(byteptr(p)) |= (byte)  ( 1 << (p.x&7) ) ;
+  *(byteptr(p)) |= (unsigned char)  ( 1 << (p.x&7) ) ;
 }
 
 void Bit2d::reset(point const &p)
 {
   xassert(okpt(p));
-  *(byteptr(p)) &= (byte)(~( 1 << (p.x&7) ));
+  *(byteptr(p)) &= (unsigned char)(~( 1 << (p.x&7) ));
 }
 
 void Bit2d::setto(point const &p, int val)
@@ -103,20 +103,20 @@ void Bit2d::setto(point const &p, int val)
 
 int Bit2d::testAndSet(point const &p)
 {
-  byte *b = byteptr(p);
+  unsigned char *b = byteptr(p);
   int ret = (*b >> (p.x&7)) & 1;
-  *b |= (byte)( 1 << (p.x&7) );
+  *b |= (unsigned char)( 1 << (p.x&7) );
   return ret;
 }
 
 void Bit2d::toggle(point const &p)
 {
   xassert(okpt(p));
-  *(byteptr(p)) ^= (byte) ( 1 << (p.x&7) );
+  *(byteptr(p)) ^= (unsigned char) ( 1 << (p.x&7) );
 }
 
 
-void Bit2d::set8(point const &p, byte val)
+void Bit2d::set8(point const &p, unsigned char val)
 {
   xassert(okpt(p));
   xassert(p.x % 8 == 0);
@@ -125,19 +125,19 @@ void Bit2d::set8(point const &p, byte val)
 }
 
 
-byte Bit2d::get8(point const &p) const
+unsigned char Bit2d::get8(point const &p) const
 {
   xassert(okpt(p));
   xassert(p.x % 8 == 0);
 
-  byte ret = *(byteptrc(p));
+  unsigned char ret = *(byteptrc(p));
 
   // Zero any padding bits
   if (p.x + 8 > size.x) {
     int numPadBits = (p.x + 8) - size.x;
     xassert(0 < numPadBits && numPadBits < 8);
 
-    byte padMask = 0xFF << (8 - numPadBits);
+    unsigned char padMask = 0xFF << (8 - numPadBits);
     ret &= ~padMask;
   }
 
@@ -206,7 +206,7 @@ void Bit2d::print() const
 
 
 // hack
-Bit2d::Bit2d(byte * /*serf*/ d, point const &sz, int str)
+Bit2d::Bit2d(unsigned char * /*serf*/ d, point const &sz, int str)
   : data(d),
     owning(false),    // since it's a serf ptr
     size(sz),
@@ -214,10 +214,10 @@ Bit2d::Bit2d(byte * /*serf*/ d, point const &sz, int str)
 {}
 
 
-byte byteBitSwapLsbMsb(byte b)
+unsigned char byteBitSwapLsbMsb(unsigned char b)
 {
   // Map from [0,15] to the result of swapping the bit order.
-  static const byte swapMap[] = {
+  static const unsigned char swapMap[] = {
     // input   output   hex-output
     /* 0000    0000 */  0x0,
     /* 0001    1000 */  0x8,
@@ -239,8 +239,8 @@ byte byteBitSwapLsbMsb(byte b)
   ASSERT_TABLESIZE(swapMap, 16);
 
   // divide into two 4-bit nibbles
-  byte hi = b >> 4;
-  byte lo = b & 0xF;
+  unsigned char hi = b >> 4;
+  unsigned char lo = b & 0xF;
 
   // swap each nibble
   hi = swapMap[hi];

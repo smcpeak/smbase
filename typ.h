@@ -1,6 +1,5 @@
 // typ.h            see license.txt for copyright and terms of use
-// Some type definitions like byte and bool, plus a few utility macros.
-// Not clearly distinguished from sm-macros.h in purpose.
+// File that I am in the process of removing entirely.
 
 #ifndef SMBASE_TYP_H
 #define SMBASE_TYP_H
@@ -13,23 +12,6 @@
 #include <stdint.h>                    // uintptr_t
 
 #include <stddef.h>                    // NULL
-
-
-// byte
-typedef unsigned char byte;
-typedef signed char signed_byte;
-
-
-// int32 used to be here, but defined nonportably, and I don't use
-// it anyway, so I ripped it out
-
-
-// bool
-#ifdef LACKS_BOOL
-  typedef int bool;
-  bool const false=0;
-  bool const true=1;
-#endif // LACKS_BOOL
 
 
 // min, max

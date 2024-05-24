@@ -443,7 +443,7 @@ static void parseBoundingBox(char const *&p, BDFFont::GlyphMetrics &metrics)
 
 
 // Parse a single hex digit.
-static byte parseHexDigit(char const *&p)
+static unsigned char parseHexDigit(char const *&p)
 {
   if ('0' <= *p && *p <= '9') {
     return *(p++) - '0';
@@ -479,11 +479,11 @@ static void parseBitmap(char const *&p, Bit2d &bitmap)
 
     // Interpret pairs of hex bytes.
     for (int offset=0; offset < textLength; offset += 2) {
-      byte b1 = parseHexDigit(p);
-      byte b2 = parseHexDigit(p);
+      unsigned char b1 = parseHexDigit(p);
+      unsigned char b2 = parseHexDigit(p);
 
       // this has pixel 0 in the MSB
-      byte bits = (b1 << 4) | b2;
+      unsigned char bits = (b1 << 4) | b2;
 
       // Check that padding bits are 0.
       if (offset * 4 + 8 > bitmap.Size().x) {
@@ -846,7 +846,7 @@ static void writeBitmap(stringBuilder &dest, Bit2d const &bitmap)
   for (int y=0; y < bitmap.Size().y; y++) {
     for (int x=0; x < bitmap.Size().x; x += 8) {
       // should come back with 0s in padding bits
-      byte bits = bitmap.get8(point(x,y));
+      unsigned char bits = bitmap.get8(point(x,y));
 
       // flip order
       bits = byteBitSwapLsbMsb(bits);

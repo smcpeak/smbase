@@ -72,10 +72,10 @@ void test_bit2d()
 
   // test byteBitSwapLsbMsb (exhaustively)
   for (int i=0; i < 256; i++) {
-    byte input = i;
+    unsigned char input = i;
 
     // naively bit swap it
-    byte output = 0;
+    unsigned char output = 0;
     for (int bit = 0; bit < 8; bit++) {
       if (input & (1 << bit)) {
         output |= (1 << (7 - bit));
@@ -83,7 +83,7 @@ void test_bit2d()
     }
 
     // compare to the faster function
-    byte actual = byteBitSwapLsbMsb(input);
+    unsigned char actual = byteBitSwapLsbMsb(input);
     xassert(actual == output);
   }
 
