@@ -30,7 +30,7 @@ static void testSorting()
 {
   enum { ITERS=100, ITEMS=20 };
 
-  loopi(ITERS) {
+  smbase_loopi(ITERS) {
     // construct a list (and do it again if it ends up already sorted)
     VoidList list1;
     VoidList list3;     // this one will be constructed sorted one at a time
@@ -39,7 +39,7 @@ static void testSorting()
       list1.removeAll();    // clear them in case we have to build it more than once
       list3.removeAll();
       numItems = rand()%ITEMS;
-      loopj(numItems) {
+      smbase_loopj(numItems) {
         void *toInsert = (void*)(intptr_t)( (rand()%ITEMS) * 4 );
         list1.prepend(toInsert);
         list3.insertSorted(toInsert, VoidList::pointerAddressDiff);

@@ -15,10 +15,10 @@ void test_growbuf()
   size_t len = sizeof(str);
 
   GrowBuffer buf;
-  loopi(10) {
+  smbase_loopi(10) {
     buf.append(str, len);
   }
-  loopi(10) {
+  smbase_loopi(10) {
     if (0!=memcmp(str, buf.getData()+len*i, len)) {
       xfailure("buffer contents are wrong");
     }

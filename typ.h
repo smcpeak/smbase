@@ -14,12 +14,6 @@
 #include <stddef.h>                    // NULL
 
 
-// concise way to loop on an integer range
-#define loopi(end) for(int i=0; i<(int)(end); i++)
-#define loopj(end) for(int j=0; j<(int)(end); j++)
-#define loopk(end) for(int k=0; k<(int)(end); k++)
-
-
 // for using selfCheck methods
 // to explicitly check invariants in debug mode
 //

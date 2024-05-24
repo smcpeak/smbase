@@ -187,14 +187,14 @@ void Bit2d::print() const
 
   // column legend
   printf("%*s   ", rowLabelWidth, "");
-  loopi(size.x) {
+  smbase_loopi(size.x) {
     printf("%*d ", colLabelWidth, i);
   }
   printf("\n");
 
   for (int row=0; row<size.y; row++) {
     printf("%*d [ ", rowLabelWidth, row);
-    loopi(size.x) {
+    smbase_loopi(size.x) {
       printf("%*s ", colLabelWidth,
                      get(point(i, row))? "1" : ".");    // "." so easier to see patterns
     }

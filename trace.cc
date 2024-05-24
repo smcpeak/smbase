@@ -134,7 +134,7 @@ ostream &traceProgress(int level)
 void traceAddMultiSys(char const *systemNames)
 {
   StrtokParse tok(systemNames, ",");
-  loopi(tok) {
+  smbase_loopi(tok) {
     if (tok[i][0] == '-') {
       // treat a leading '-' as a signal to *remove*
       // a tracing flag, e.g. from some defaults specified

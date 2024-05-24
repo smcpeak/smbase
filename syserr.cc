@@ -259,7 +259,7 @@ STATICDEF xSysError::Reason xSysError::portablize(
     { ERROR_BUSY,              R_BUSY              },
   };
 
-  loopi(TABLESIZE(arr)) {
+  smbase_loopi(TABLESIZE(arr)) {
     if (arr[i].code == sysErrorCode) {
       // found it
       return arr[i].reason;
@@ -328,7 +328,7 @@ STATICDEF xSysError::Reason xSysError::portablize(
     { ENAMETOOLONG, R_INVALID_FILENAME  },
   };
 
-  loopi(TABLESIZE(arr)) {
+  smbase_loopi(TABLESIZE(arr)) {
     if (arr[i].code == sysErrorCode) {
       // found it
       return arr[i].reason;

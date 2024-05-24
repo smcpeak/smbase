@@ -18,7 +18,7 @@ char randChar()
 string randString(int len)
 {
   stringBuilder str;
-  loopj(len) {
+  smbase_loopj(len) {
     str << randChar();
   }
   return str.str();
@@ -52,7 +52,7 @@ void test_strdict()
   int size=0, collisions=0;
 
   int iters = 1000;
-  loopi(iters) {
+  smbase_loopi(iters) {
     switch (myrandom(6)) {
       case 0: {
         // insert a random element

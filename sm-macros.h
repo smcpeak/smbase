@@ -419,4 +419,10 @@ inline void pretendUsedFn(T const &) {}
 #endif
 
 
+// These provide a concise way to loop on an integer range.
+#define smbase_loopi(end) for(int i=0; i<(int)(end); i++)
+#define smbase_loopj(end) for(int j=0; j<(int)(end); j++)
+#define smbase_loopk(end) for(int k=0; k<(int)(end); k++)
+
+
 #endif // SMBASE_SM_MACROS_H

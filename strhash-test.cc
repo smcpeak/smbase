@@ -50,7 +50,7 @@ char const *id(void *p)
 char *randomString()
 {
   char *ret = new char[11];
-  loopi(10) {
+  smbase_loopi(10) {
     ret[i] = (rand()%26)+'a';
   }
   ret[10]=0;
@@ -60,7 +60,7 @@ char *randomString()
 // fill a table with random strings
 void makeRandomData(int numRandStrs) {
   dataArray = new StringArray(numRandStrs);
-  {loopi(dataArray->tableSize) {
+  {smbase_loopi(dataArray->tableSize) {
     dataArray->table[i] = randomString();
   }}
 }
@@ -94,7 +94,7 @@ void writeData(ostream &out) {
 // dsw: what is the point of this?
 // dealloc the test strings
 //  void deleteData() {
-//    {loopi(dataArray->tableSize) {
+//    {smbase_loopi(dataArray->tableSize) {
 //      delete[] dataArray->table[i];
 //    }}
 //  //    delete[] dataArray->table;
@@ -105,7 +105,7 @@ void correctnessTest() {
 
   // insert them all into a hash table
   StringHash hash(id);
-  {loopi(dataArray->tableSize) {
+  {smbase_loopi(dataArray->tableSize) {
     hash.add(dataArray->table[i], dataArray->table[i]);
     hash.selfCheck();
   }}
@@ -113,13 +113,13 @@ void correctnessTest() {
   xassert(hash.getNumEntries() == dataArray->tableSize);
 
   // verify that they are all mapped properly
-  {loopi(dataArray->tableSize) {
+  {smbase_loopi(dataArray->tableSize) {
     xassert(hash.get(dataArray->table[i]) == dataArray->table[i]);
   }}
   hash.selfCheck();
 
   // remove every other one
-  {loopi(dataArray->tableSize) {
+  {smbase_loopi(dataArray->tableSize) {
     if (i%2 == 0) {
       hash.remove(dataArray->table[i]);
       hash.selfCheck();
@@ -129,7 +129,7 @@ void correctnessTest() {
   xassert(hash.getNumEntries() == dataArray->tableSize / 2);
 
   // verify it
-  {loopi(dataArray->tableSize) {
+  {smbase_loopi(dataArray->tableSize) {
     if (i%2 == 0) {
       xassert(hash.get(dataArray->table[i]) == NULL);
     }
@@ -140,7 +140,7 @@ void correctnessTest() {
   hash.selfCheck();
 
   // remove the rest
-  {loopi(dataArray->tableSize) {
+  {smbase_loopi(dataArray->tableSize) {
     if (i%2 == 1) {
       hash.remove(dataArray->table[i]);
       hash.selfCheck();
@@ -157,8 +157,8 @@ void performanceTest(int numPerfRuns) {
   traceProgress() << "start of strhash performance testing\n";
 
   long startTime = getMilliseconds();
-  loopj(numPerfRuns) {
-    loopi(dataArray->tableSize) {
+  smbase_loopj(numPerfRuns) {
+    smbase_loopi(dataArray->tableSize) {
       StringHash::coreHash(dataArray->table[i]);
       //crc32((unsigned char*)dataArray->table[i], strlen(dataArray->table[i]));
       //crc32((unsigned char*)dataArray->table[i], 10);

@@ -73,12 +73,12 @@ void testSorting()
 {
   enum { ITERS=100, ITEMS=20 };
 
-  loopi(ITERS) {
+  smbase_loopi(ITERS) {
     // construct a list
     ObjList<Integer> list1;
     ObjList<Integer> list2;
     int items = rand()%ITEMS;
-    loopj(items) {
+    smbase_loopj(items) {
       int it = rand()%ITEMS;
       list1.prepend(new Integer(it));
       list2.prepend(new Integer(it));     // two lists with identical contents
