@@ -135,6 +135,9 @@ def getHeaderDescriptionHTML(headerFname):
       # Treat a comment with no text as a paragraph boundary.
       textHTML = "<br><br>"
 
+    # Translate backtick `symbol` into <code>symbol</code>.
+    textHTML = re.sub(r"`([^`]+)`", r"<code>\1</code>", textHTML);
+
     descriptionLinesHTML.append(f"  <!-- AUTO -->{textHTML}")
     lineNo += 1
 
