@@ -169,8 +169,6 @@ void test_bflatten()
     d3.xfer(flat);
   }
   d3.checkEqual(d1);
-
-  printf("bflatten works\n");
 }
 
 

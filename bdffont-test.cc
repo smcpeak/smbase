@@ -17,8 +17,6 @@ using std::endl;
 // Called from unit-tests.cc.
 void test_bdffont()
 {
-  cout << "bdffont tests" << endl;
-
   // parse a file
   //
   // Amusingly, the actual sample input in the spec is missing a
@@ -49,8 +47,6 @@ void test_bdffont()
     parseBDFFile(otherFont, otherTest);
     writeBDFFile("tmp.bdf", otherFont);
   }
-
-  cout << "bdffont ok\n";
 }
 
 

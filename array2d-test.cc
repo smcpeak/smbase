@@ -2,11 +2,14 @@
 // test array2d.h
 
 #include "array2d.h"         // module to test
-#include "sm-test.h"         // USUAL_MAIN
 
 #include "sm-iostream.h"     // cout
+#include "sm-test.h"         // USUAL_MAIN, DIAG
 
 #include <stdlib.h>          // exit
+
+
+static bool verbose = false;
 
 
 // Called from unit-tests.cc.
@@ -86,15 +89,15 @@ void test_array2d()
   arr1.eltRef(0,4) = 0;
 
   // Test out of bounds access.
-  #define SHOULD_FAIL(expr)                          \
-    try {                                            \
-      expr;                                          \
-                                                     \
-      cout << "should have failed: " #expr "\n";     \
-      exit(4);                                       \
-    }                                                \
-    catch (...) {                                    \
-      cout << "failed as expected: " #expr "\n";     \
+  #define SHOULD_FAIL(expr)                      \
+    try {                                        \
+      expr;                                      \
+                                                 \
+      cout << "should have failed: " #expr "\n"; \
+      exit(4);                                   \
+    }                                            \
+    catch (...) {                                \
+      DIAG("failed as expected: " #expr);        \
     }
 
   SHOULD_FAIL( arr1.eltRef(-1,0) );
@@ -108,8 +111,6 @@ void test_array2d()
 
   SHOULD_FAIL( arr1.eltRef(-1,4) );
   SHOULD_FAIL( arr1.eltRef(0,5) );
-
-  cout << "array2d seems to work\n";
 }
 
 

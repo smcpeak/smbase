@@ -7,7 +7,7 @@
 #include "compare-util.h"              // compare
 #include "objlist.h"                   // ObjList
 #include "sm-macros.h"                 // TABLESIZE
-#include "sm-test.h"                   // PVAL
+#include "sm-test.h"                   // PVAL, DIAG
 
 // libc++
 #include <algorithm>                   // std::sort
@@ -18,6 +18,9 @@
 #include <assert.h>                    // assert
 #include <stdio.h>                     // printf
 #include <stdlib.h>                    // exit
+
+
+static bool verbose = false;
 
 
 // Assert that 'ase' and 'vec' have the same sequence of elements.
@@ -313,12 +316,12 @@ static void testArrayNegativeLength()
   Array<char> arrZeroLength(0);
 
   try {
-    cout << "This should throw:" << endl;
+    DIAG("This should throw:");
     Array<char> arr(-700);
     assert(!"should have failed");
   }
   catch (XBase &x) {
-    cout << "as expected: " << x.why() << endl;
+    DIAG("as expected: " << x.why());
   }
 }
 
@@ -434,8 +437,6 @@ void test_array()
   testArrayNegativeLength();
   testApplyFilter();
   testSort();
-
-  printf("arrayStack appears to work; maxLength=%d\n", maxLength);
 }
 
 

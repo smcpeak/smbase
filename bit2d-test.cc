@@ -7,6 +7,9 @@
 #include "xassert.h"                   // xassert
 
 
+static bool verbose = false;
+
+
 // Called from unit-tests.cc.
 void test_bit2d()
 {
@@ -28,7 +31,9 @@ void test_bit2d()
   bits.toggle(point(3,2));
   xassert(bits.get(point(3,2)));
 
-  bits.print();
+  if (verbose) {
+    bits.print();
+  }
 
   // test read/write
   {
@@ -90,8 +95,6 @@ void test_bit2d()
   // one concrete vector to make sure the above test is not
   // totally borked
   xassert(byteBitSwapLsbMsb(0xC7) == 0xE3);
-
-  printf("bit2d works\n");
 }
 
 

@@ -179,8 +179,6 @@ void test_bitarray()
   testAnyEvenOddBitPair("1111", true);
   testAnyEvenOddBitPair("11110", true);
   testAnyEvenOddBitPair("01100", false);
-
-  cout << "bitarray is ok\n";
 }
 
 

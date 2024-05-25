@@ -3,11 +3,16 @@
 
 #include "autofile.h"                  // this module
 
+#include "sm-test.h"                   // DIAG
+
 #include <cstdlib>                     // std::getenv
 #include <iostream>                    // std::{cout, endl}
 
 using std::cout;
 using std::endl;
+
+
+static bool verbose = false;
 
 
 void test_autofile()
@@ -22,14 +27,14 @@ void test_autofile()
     mode = m;
   }
 
-  cout << "about to open " << fname << " with mode " << mode << endl;
+  DIAG("about to open " << fname << " with mode " << mode);
 
   {
     AutoFILE fp(fname, mode);
-    cout << fname << " is now open" << endl;
+    DIAG(fname << " is now open");
   }
 
-  cout << fname << " is now closed" << endl;
+  DIAG(fname << " is now closed");
 }
 
 
