@@ -39,8 +39,6 @@ void test_smregexp()
   matchVector("abc", "b$", false);
   matchVector("abc", "c$", true);
   matchVector("abc", "^d", false);
-
-  printf("regexp works\n");
 }
 
 

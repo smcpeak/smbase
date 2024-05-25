@@ -1,8 +1,15 @@
 // sobjlist-test.cc            see license.txt for copyright and terms of use
 // test of sobjlist.h
 
-#include "sobjlist.h"    // SObjList
-#include <stdio.h>       // printf
+#include "sobjlist.h"                  // module under test
+
+#include "sm-test.h"                   // dummy_printf
+
+#include <stdio.h>                     // printf
+
+
+// Silence the output when I'm not actively working on this test.
+#define printf dummy_printf
 
 
 // Called from unit-tests.cc.
