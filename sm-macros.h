@@ -29,11 +29,17 @@
     { return !operator<(obj); }
 
 
-// member copy in constructor initializer list
+// Member copy ("duplicate") in constructor initializer list.
 #define DMEMB(var) var(obj.var)
 
-// member copy in operator =
+// Member move in move constructor.  Caller must `#include <utility>`.
+#define MDMEMB(var) var(std::move(obj.var))
+
+// Member copy in copy assignment operator.
 #define CMEMB(var) (var = obj.var)
+
+// Member move in move assignment operator.
+#define MCMEMB(var) (var = std::move(obj.var))
 
 // member comparison in operator ==
 #define EMEMB(var) (var == obj.var)
