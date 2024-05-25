@@ -3,6 +3,7 @@
 
 #include "sm-rc-ptr.h"                 // module under test
 
+#include "sm-test.h"                   // DIAG
 #include "xassert.h"                   // xassert
 
 #include <iostream>                    // std::cout, etc.
@@ -12,11 +13,6 @@ OPEN_ANONYMOUS_NAMESPACE
 
 
 bool verbose = false;
-
-#define DIAG(stuff)                  \
-  if (verbose) {                     \
-    std::cout << stuff << std::endl; \
-  }
 
 
 class Foo : public RefCountObject {

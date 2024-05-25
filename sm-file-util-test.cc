@@ -11,17 +11,12 @@
 // smbase
 #include "nonport.h"                   // GetMillisecondsAccumulator, getFileModificationTime
 #include "run-process.h"               // RunProcess
-#include "sm-test.h"                   // VPVAL
+#include "sm-test.h"                   // VPVAL, DIAG
 #include "strutil.h"                   // compareStringPtrs
 #include "syserr.h"                    // XSysError
 
 
 static bool verbose = false;
-
-#define DIAG(stuff)        \
-  if (verbose) {           \
-    cout << stuff << endl; \
-  }
 
 
 // Run some checks on the 'fn' object directly.

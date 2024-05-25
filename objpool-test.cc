@@ -5,6 +5,7 @@
 
 #include "sm-iostream.h"               // cout
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
+#include "sm-test.h"                   // DIAG
 
 #include <stdlib.h>                    // rand
 
@@ -13,11 +14,6 @@ OPEN_ANONYMOUS_NAMESPACE
 
 
 bool verbose = false;
-
-#define DIAG(stuff)        \
-  if (verbose) {           \
-    cout << stuff << endl; \
-  }
 
 
 // class we're going to make a pool of

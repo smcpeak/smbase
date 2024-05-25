@@ -4,6 +4,7 @@
 #include "run-process.h"               // module under test
 
 #include "exc.h"                       // XBase
+#include "sm-test.h"                   // DIAG
 #include "sm-platform.h"               // PLATFORM_IS_POSIX
 #include "string-utils.h"              // splitNonEmpty
 #include "xassert.h"                   // xassert
@@ -12,11 +13,6 @@
 
 
 static bool verbose = false;
-
-#define DIAG(stuff)        \
-  if (verbose) {           \
-    cout << stuff << endl; \
-  }
 
 
 static void oneBwcl(string expect, char const **argv)

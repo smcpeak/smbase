@@ -7,7 +7,7 @@
 #include "save-restore.h"              // SET_RESTORE
 #include "sm-iostream.h"               // cout
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
-#include "sm-test.h"                   // PVAL
+#include "sm-test.h"                   // PVAL, DIAG
 #include "str.h"                       // streq
 
 #include <stdint.h>                    // int64_t, uint64_t, INT64_C
@@ -18,11 +18,6 @@ OPEN_ANONYMOUS_NAMESPACE
 
 
 bool verbose = false;
-
-#define DIAG(stuff)        \
-  if (verbose) {           \
-    cout << stuff << endl; \
-  }
 
 
 // Add, and expect success.

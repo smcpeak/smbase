@@ -106,6 +106,13 @@ int main(int argc, char *argv[])                \
     (void)stuff;                                            \
   }
 
+// Again if `verbose` exists, this will conditionally write a line of
+// diagnostic output.
+#define DIAG(stuff)                  \
+  if (verbose) {                     \
+    std::cout << stuff << std::endl; \
+  }
+
 
 // easy way to time a section of code
 class TimedSection {

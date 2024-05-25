@@ -6,6 +6,7 @@
 #include "autofile.h"                  // AutoFILE
 #include "exc.h"                       // xbase
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
+#include "sm-test.h"                   // DIAG
 #include "strtokp.h"                   // StrtokParse
 #include "strutil.h"                   // substring
 #include "trace.h"                     // traceProgress
@@ -17,11 +18,6 @@ OPEN_ANONYMOUS_NAMESPACE
 
 
 bool const verbose = false;
-
-#define DIAG(stuff)        \
-  if (verbose) {           \
-    cout << stuff << endl; \
-  }
 
 
 SourceLocManager mgr;
