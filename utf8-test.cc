@@ -9,7 +9,7 @@
 #include "sm-test.h"                   // EXPECT_EQ
 #include "vector-utils.h"              // operator<< (std::vector)
 
-#include <sstream>                     // std::ostringstream
+#include <sstream>                     // std::{istringstream, ostringstream}
 #include <vector>                      // std::vector
 
 using namespace smbase;
@@ -23,11 +23,18 @@ static std::vector<int> decodeVector(std::vector<int> const &input)
     inputBytes.push_back((char)(unsigned char)c);
   }
 
-  UTF8Reader reader(inputBytes.data(),
-                    inputBytes.data() + inputBytes.size());
+  // Set up a reader for `inputBytes`.
+  std::string inputBytesString(inputBytes.begin(), inputBytes.end());
+  std::istringstream iss(inputBytesString);
+  UTF8Reader reader(iss);
+
   std::vector<int> decoded;
-  while (reader.hasMore()) {
-    decoded.push_back(reader.readCodePoint());
+  while (true) {
+    int cp = reader.readCodePoint();
+    if (cp < 0) {
+      break;
+    }
+    decoded.push_back(cp);
   }
 
   return decoded;
@@ -135,8 +142,14 @@ static void testWriterFixed()
 static void testAllPointsRoundtrip()
 {
   // I've run this test incrementing by 1, but for normal use that is
-  // a bit too slow, so we go in semi-arbitrary jumps.
-  for (int i=0; i <= 0x10FFFF; i += 55) {
+  // a bit too slow, so we go in semi-arbitrary jumps by default.
+  int increment = 55;
+  if (char const *incStr = std::getenv("UTF8_TEST_RT_INC")) {
+    increment = std::atoi(incStr);
+    std::cout << "Using increment of " << increment << ".\n";
+  }
+
+  for (int i=0; i <= 0x10FFFF; i += increment) {
     if (0xD800 <= i && i <= 0xDFFF) {
       // Skip surrogate pair region.
     }
@@ -199,23 +212,12 @@ static void testErrors()
 }
 
 
-static void testStringReader()
-{
-  std::string input("\xE0\xA0\x80");
-  UTF8StringReader reader(input);
-  EXPECT_EQ(reader.readCodePoint(), 0x800);
-  xassert(!reader.hasMore());
-  EXPECT_EQ(reader.readCodePoint(), -1);
-
-}
-
 // Called from unit-tests.cc.
 void test_utf8()
 {
   testWriterFixed();
   testAllPointsRoundtrip();
   testErrors();
-  testStringReader();
 }
 
 

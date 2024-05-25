@@ -7,8 +7,10 @@
 #define SMBASE_UTF8_READER_H
 
 #include "exc.h"                       // XFormat
+#include "xassert.h"                   // xassert
 
-#include <cstddef>                     // std::ptrdiff_t
+#include <cstddef>                     // std::size_t
+#include <iostream>                    // std::istream
 #include <string>                      // std::string
 
 
@@ -20,6 +22,8 @@ static_assert(sizeof(int) >= 4);
 
 
 // Report an issue with UTF-8 input.
+//
+// TODO: Inherit from XBase instead of XFormat.
 class UTF8ReaderException : public XFormat {
 public:      // types
   enum Kind {
@@ -50,50 +54,43 @@ public:      // data
   std::string m_utf8Details;
 
   // Byte offset from `m_start` in the throwing reader.
-  std::ptrdiff_t m_byteOffset;
+  std::size_t m_byteOffset;
 
 private:     // methods
   // Create the `XFormat::condition` string.
   static std::string makeCondition(
     std::string const &utf8Details,
-    std::ptrdiff_t byteOffset);
+    std::size_t byteOffset);
 
 public:      // methods
   UTF8ReaderException(
     Kind kind,
     std::string const &utf8Details,
-    std::ptrdiff_t byteOffset);
+    std::size_t byteOffset);
 
   UTF8ReaderException(UTF8ReaderException const &obj) = default;
   UTF8ReaderException &operator=(UTF8ReaderException const &obj) = default;
 };
 
 
-// Manage process of reading from an array of char.
-//
-// TODO: This should just read from a 'std::istream', symmetric to how
-// UTFWriter works.
+// Manage process of reading from an input stream.
 class UTF8Reader {
 public:      // data
-  // Start of the input being processed.  This is used to report
-  // error location information.
-  char const *m_start;
+  // Data source.
+  std::istream &m_is;
 
-  // Beginning of the next UTF-8 character.
-  char const *m_current;
-
-  // One-past-the-end pointer to the string that `m_current` points to.
-  char const *m_end;
-
-  // Invariant: m_start <= m_current <= m_end
+  // How many bytes we have read from `m_is`.  This is used for error
+  // reporting.  The client can clear this if/when needed.
+  std::size_t m_curByteOffset;
 
 private:     // methods
   // Throw an exception due to malformed input.
+  //
+  // Adjust `m_curByteOffset` by subtracting `adjust` before putting it
+  // into the exception object.
   void err(UTF8ReaderException::Kind kind,
-           std::string const &utf8Details);
-
-  // Read the next byte of input, throwing if we run out.
-  unsigned char readNextByte();
+           std::size_t adjust,
+           std::string const &utf8Details) const;
 
   // Read the next byte and check it against the continuation byte
   // restrictions.
@@ -101,62 +98,35 @@ private:     // methods
 
   // Same as 'readCodePoint' but for the case where the value is not in
   // [0,127].
-  int readCodePointSlow();
+  int readCodePointSlow(unsigned char firstByte);
 
 public:      // methods
-  UTF8Reader(char const *start, char const *end)
-    : m_start(start),
-      m_current(start),
-      m_end(end)
-  {
-    selfCheck();
-  }
-
-  // True if there are more characters to read.
-  bool hasMore() const { return m_current < m_end; }
+  UTF8Reader(std::istream &is)
+    : m_is(is),
+      m_curByteOffset(0)
+  {}
 
   // Read the next Unicode code point from `m_current`, advancing it.
   // If there is an encoding error, throw UTF8Exception.  If the end of
   // the input reached, return -1.
   int readCodePoint()
   {
-    if (m_current < m_end) {
-      int c = (unsigned char)(*m_current);
-      if (c <= 127) {
-        // Inline fast path.
-        ++m_current;
-        return c;
-      }
-      else {
-        // Out of line slow path.
-        return readCodePointSlow();
-      }
-    }
-    else {
+    int c = m_is.get();
+    if (c == std::istream::traits_type::eof()) {
       return -1;
     }
+    ++m_curByteOffset;
+
+    if (c <= 127) {
+      // Inline fast path.
+      return c;
+    }
+    else {
+      // Out of line slow path.
+      xassert(128 <= c && c <= 255);
+      return readCodePointSlow((unsigned char)c);
+    }
   }
-
-  // Assert invariants.
-  void selfCheck() const;
-};
-
-
-// Read from a std::string.
-class UTF8StringReader {
-public:      // data
-  // The input to decode as a string.
-  std::string m_encodedInput;
-
-  // The inner reader.
-  UTF8Reader m_reader;
-
-public:
-  UTF8StringReader(std::string const &encodedInput);
-
-  bool hasMore() const { return m_reader.hasMore(); }
-  int readCodePoint() { return m_reader.readCodePoint(); }
-  void selfCheck() { m_reader.selfCheck(); }
 };
 
 
