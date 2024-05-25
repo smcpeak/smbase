@@ -238,13 +238,11 @@ inline void xbase(std::string const &msg) { xmessage(msg); }
 
 
 // ------------------------------ XAssert ------------------------------
-// TODO: Continue Revising below here.
-
-// thrown by x_assert_fail, declared in xassert.h
-// throwing this corresponds to detecting a bug in the program
-class XAssert : public XMessage {
-  string condition; // text of the failed condition
-  string filename;  // name of the source file
+// Thrown by `x_assert_fail`, which is declared in xassert.h.
+// Throwing this corresponds to detecting a bug in the program.
+class XAssert : public XBase {
+  string condition;          // text of the failed condition
+  string filename;           // name of the source file
   int lineno;                // line number
 
 public:
@@ -255,6 +253,9 @@ public:
   rostring cond() const { return condition; }
   rostring fname() const { return filename; }
   int line() const { return lineno; }
+
+  // XBase methods.
+  virtual std::string getConflict() const override;
 };
 
 

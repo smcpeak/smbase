@@ -137,15 +137,14 @@ void xmessage(std::string const &msg)
 
 // ------------------------------ XAssert ------------------------------
 XAssert::XAssert(rostring cond, rostring fname, int line)
-  : XMessage(stringb(
-      fname << ":" << line << ": assertion failed: " << cond)),
+  : XBase(),
     condition(cond),
     filename(fname),
     lineno(line)
 {}
 
 XAssert::XAssert(XAssert const &obj)
-  : XMessage(obj),
+  : XBase(obj),
     condition(obj.condition),
     filename(obj.filename),
     lineno(obj.lineno)
@@ -153,6 +152,13 @@ XAssert::XAssert(XAssert const &obj)
 
 XAssert::~XAssert()
 {}
+
+
+std::string XAssert::getConflict() const
+{
+  return stringb(
+    fname() << ":" << line() << ": assertion failed: " << cond());
+}
 
 
 // failure function, declared in xassert.h
