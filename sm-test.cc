@@ -39,7 +39,7 @@ void expectMatchesRegex(
 }
 
 
-int dummy_printf(char const * /*fmt*/, ...)
+extern "C" int dummy_printf(char const * /*fmt*/, ...)
 {
   return 0;
 }

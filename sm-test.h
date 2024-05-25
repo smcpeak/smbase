@@ -5,6 +5,7 @@
 #define SMBASE_SM_TEST_H
 
 #include "dev-warning.h"   // g_abortUponDevWarning
+#include "dummy-printf.h"  // dummy_printf (provided for clients)
 #include "exc.h"           // XBase
 #include "nonport.h"       // getMilliseconds
 #include "sm-iostream.h"   // cout
@@ -150,13 +151,6 @@ void expectMatchesRegex(
 
 #define EXPECT_MATCHES_REGEX(actual, expectRegex) \
   expectMatchesRegex(#actual, actual, expectRegex) /* user ; */
-
-
-// Function that has the same signature as `printf` but does nothing.
-// In test code, it can be useful to use a macro to map `printf` to this
-// to silence it by default.
-int dummy_printf(char const *fmt, ...)
-  SM_PRINTF_ANNOTATION(1, 2);
 
 
 #endif // SMBASE_SM_TEST_H
