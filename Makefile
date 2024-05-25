@@ -397,7 +397,12 @@ test/%.expect:
 	touch $@
 
 # Run one unit test and compare to expected output.
-out/%.unit.ok: test/%.expect unit-tests.exe
+#
+# This rule depends on `out/unit-tests.exe.ok` because I do not want to
+# run this until the unit tests have all passed, both because the unit
+# tests are more fundamental, and because I do not want the output of
+# both kinds of tests being interleaved during parallel `make`.
+out/%.unit.ok: test/%.expect out/unit-tests.exe.ok
 	$(CREATE_OUTPUT_DIRECTORY)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/$*.actual \
