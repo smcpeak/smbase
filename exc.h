@@ -192,10 +192,19 @@ void printUnhandled(XBase const &x);
 
 
 // ----------------------------- XMessage ------------------------------
-// Exception that just carries a conflict message.  It can be thrown
-// when there isn't a realistic possibility of automatic recovery, or
-// used as a base class for an exception class whose type conveys all
-// of the discriminating information.
+/* Exception that just carries a conflict message.  It can be thrown
+   when there isn't a realistic possibility of automatic recovery, or
+   used as a base class for an exception class whose type conveys all
+   of the discriminating information.
+
+   This is typically not a good class to inherit from when create a new
+   exception class if that new class carries any information beyond its
+   name because that information presumably should be reflected in the
+   message, but the message is constructed at the start, so later
+   changes to the other details will not be shown in that message.
+   Instead, when creating a new exception that does carry data, deriving
+   directly from `XBase` is usually better.
+*/
 class XMessage : public XBase {
 public:      // data
   // The conflict message.
@@ -259,10 +268,19 @@ public:
 };
 
 
-// ---------------------- XFormat -------------------
-// throwing this means a formatting error has been detected
-// in some input data; the program cannot process it, but it
-// is not a bug in the program
+// ------------------------------ XFormat ------------------------------
+/* Throwing this means a formatting error has been detected in some
+   input data; the program cannot process it, but it is not a bug in the
+   program.
+
+   Like `XMessage`, this is not a good exception class to inherit from
+   if you also are adding information, which you often do, for example
+   to include the source location.  Consequently, it cannot serve even
+   as a useful "marker" class, and in any case there is little purpose
+   in catching `XFormat` generically.  This class is really just a
+   slightly refined `XMessage` that is probably best to avoid using in
+   new code.
+*/
 class XFormat : public XMessage {
 public:      // methods
   XFormat(rostring cond);
@@ -293,9 +311,9 @@ void formatAssert_fail(char const *cond, char const *file, int line) NORETURN;
 // called XOpenEx.  These have been removed in favor of xSysError.
 
 
-// ------------------- XUnimp ---------------------
-// thrown in response to a condition that is in principle
-// allowed but not yet handled by the existing code
+// ------------------------------ XUnimp -------------------------------
+// Thrown in response to a condition that is in principle allowed but
+// not yet handled by the existing code.
 class XUnimp : public XMessage {
 public:
   XUnimp(rostring msg);
@@ -311,9 +329,9 @@ void throw_XUnimp(char const *msg, char const *file, int line) NORETURN;
 #define xunimp(msg) throw_XUnimp(msg, __FILE__, __LINE__)
 
 
-// ------------------- XFatal ---------------------
-// thrown in response to a user action that leads to an unrecoverable
-// error; it is not due to a bug in the program
+// ------------------------------ XFatal -------------------------------
+// Thrown in response to a user action that leads to an unrecoverable
+// error; it is not due to a bug in the program.
 class XFatal : public XMessage {
 public:
   XFatal(rostring msg);
