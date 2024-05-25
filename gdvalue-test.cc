@@ -704,6 +704,47 @@ static void testOneErrorRegex(
 }
 
 
+/* Invoke `testOneErrorRegex` on `input` followed by each character in
+   `nextChar`.  A character can be -1 to mean EOF.
+*/
+static void testMultiErrorRegex(
+  char const *inputPrefix,
+  std::vector<int> nextChar,
+  int expectLine,
+  int expectColumn,
+  char const *expectErrorRegexSuffix)
+{
+  for (int c : nextChar) {
+    try {
+      std::string input(inputPrefix);
+      if (c >= 0) {
+        input += (char)c;
+      }
+
+      std::string expectRegex;
+      if (c < 0) {
+        expectRegex = "end of file";
+      }
+      else {
+        expectRegex = stringb("'" << (char)c << "'");
+      }
+      expectRegex += ".*";
+      expectRegex += expectErrorRegexSuffix;
+
+      testOneErrorRegex(
+        input.c_str(),
+        expectLine,
+        expectColumn,
+        expectRegex.c_str());
+    }
+    catch (XBase &x) {
+      x.prependContext(stringb("c=" << c));
+      throw;
+    }
+  }
+}
+
+
 static void testSyntaxErrors()
 {
   // This test is meant to correspond to gdvalue-reader.cc, exercising
@@ -715,7 +756,24 @@ static void testSyntaxErrors()
   testOneErrorSubstr(";", 1, 1, "';'");
   testOneErrorSubstr("\001", 1, 1, "(0x01)");
 
-  // processExpectChar: TODO: Look for call sites.
+  // processExpectChar
+  testOneErrorRegex("{1", 1, 3, "end of file.*looking for ':' in map entry");
+  testOneErrorRegex("{1 3", 1, 4, "'3'.*looking for ':' in map entry");
+
+  // readNextSequence: readExpectChar
+  testMultiErrorRegex("[", {-1, '}'}, 1, 2, "looking for ']' at end of sequence");
+  testMultiErrorRegex("[1 ", {-1, '}'}, 1, 4, "looking for ']' at end of sequence");
+
+  // readNextSet: readExpectChar
+  testMultiErrorRegex("{{", {-1, ']'}, 1, 3, "looking for \"}}\" at end of set");
+  testMultiErrorRegex("{{1", {-1, ']'}, 1, 4, "looking for \"}}\" at end of set");
+  testMultiErrorRegex("{{1 2", {-1, ']'}, 1, 6, "looking for \"}}\" at end of set");
+  testMultiErrorRegex("{{}", {-1, ']'}, 1, 4, "looking for '}' immediately after '}'");
+  testOneErrorRegex("{{} }", 1, 4, "' '.*looking for '}' immediately after '}'");
+
+  // readNextMap: readExpectChar
+  testMultiErrorRegex("{ ", {-1, ']'}, 1, 3, "looking for '}' at end of map");
+  testMultiErrorRegex("{1:2", {-1, ']'}, 1, 5, "looking for '}' at end of map");
 
   // readCharNotEOF: TODO: Callers.
 
