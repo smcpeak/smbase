@@ -1,19 +1,35 @@
 ---- stdout ----
 ---- gdvalue ----
 null: null
-true: true
-false: false
-sym1: sym1
-0: 0
-str1: "str1"
-string begin/end const iteration: str1
-string iterable const iteration: str1
-string begin/end non-const iteration: tus2
+dTrue = true
+dFalse = false
+dSym1 = sym1
+d0 = 0
+dStr1 = "str1"
+string begin/end const iteration:
+s
+t
+r
+1
+string iterable const iteration:
+s
+t
+r
+1
+string begin/end non-const iteration:
+t
+u
+s
+2
 again: "tus2"
-string iterable non-const iteration: str1
+string iterable non-const iteration:
+s
+t
+r
+1
 empty seq: []
 three-element seq: [1 "b" 3]
-[-1 [1 "b" 3] null null 5]
+v1 = [-1 [1 "b" 3] null null 5]
 empty set: {{}}
 {{10 "x" [2 3 4]}}
 empty map: {}

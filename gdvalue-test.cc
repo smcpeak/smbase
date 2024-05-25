@@ -4,9 +4,10 @@
 #include "gdvalue.h"                   // module under test
 
 // this dir
+#include "counting-ostream.h"          // nullOStream
 #include "gdvsymbol.h"                 // gdv::GDVSymbol
 #include "gdvalue-reader-exception.h"  // GDValueReaderException
-#include "sm-test.h"                   // EXPECT_EQ, EXPECT_MATCHES_REGEX
+#include "sm-test.h"                   // EXPECT_EQ, EXPECT_MATCHES_REGEX, VPVAL
 #include "strutil.h"                   // hasSubstring
 #include "string-utils.h"              // doubleQuote
 #include "utf8-writer.h"               // smbase::utf8EncodeVector
@@ -21,6 +22,18 @@ using namespace smbase;
 using namespace gdv;
 
 using std::cout;
+
+
+static bool verbose = false;
+
+#define DIAG(stuff)        \
+  if (verbose) {           \
+    cout << stuff << endl; \
+  }
+
+
+// "test out", which by default goes nowhere.
+#define tout (verbose? cout : nullOStream)
 
 
 // Check that 'ser' deserializes to 'expect'.
@@ -66,7 +79,7 @@ static void testSerializeRoundtrip(GDValue const &value)
 static void testNull()
 {
   GDValue v;
-  cout << "null: " << v << "\n";
+  DIAG("null: " << v);
   assert(v.asString() == "null");
   assert(v.size() == 0);
   assert(v.empty());
@@ -100,7 +113,7 @@ static void testNull()
 static void testBool()
 {
   GDValue dTrue(GDValue::BoolTag, true);
-  cout << "true: " << dTrue << "\n";
+  VPVAL(dTrue);
   assert(dTrue.asString() == "true");
   assert(dTrue.size() == 1);
   assert(!dTrue.empty());
@@ -109,7 +122,7 @@ static void testBool()
   assert(dTrue.boolGet() == true);
 
   GDValue dFalse(GDValue::BoolTag, false);
-  cout << "false: " << dFalse << "\n";
+  VPVAL(dFalse);
   assert(dFalse.asString() == "false");
   assert(dFalse.size() == 1);
   assert(!dFalse.empty());
@@ -136,7 +149,7 @@ static void testBool()
 static void testSymbol()
 {
   GDValue dSym1(GDVSymbol("sym1"));
-  cout << "sym1: " << dSym1 << "\n";
+  VPVAL(dSym1);
   assert(dSym1.asString() == "sym1");
   assert(dSym1.size() == 1);
   assert(!dSym1.empty());
@@ -167,7 +180,7 @@ static void testSymbol()
 static void testInteger()
 {
   GDValue d0(0);
-  cout << "0: " << d0 << "\n";
+  VPVAL(d0);
   assert(d0.asString() == "0");
   assert(d0.size() == 1);
   assert(!d0.empty());
@@ -210,7 +223,7 @@ static void testString()
 
   GDValue dStr1(GDVString("str1"));
   CHECK_COUNTS(0, 1, 0, 1)
-  cout << "str1: " << dStr1 << "\n";
+  VPVAL(dStr1);
   assert(dStr1.asString() == "\"str1\"");
   assert(dStr1.size() == 1);
   assert(!dStr1.empty());
@@ -241,36 +254,32 @@ static void testString()
 
   {
     GDValue const &dv = dStr1;
-    cout << "string begin/end const iteration: ";
+    DIAG("string begin/end const iteration:");
     for (auto it = dv.stringBegin(); it != dv.stringEnd(); ++it) {
-      cout << *it;
+      DIAG(*it);
     }
-    cout << "\n";
 
-    cout << "string iterable const iteration: ";
+    DIAG("string iterable const iteration:");
     for (auto const &c : dStr1.stringIterable()) {
-      cout << c;
+      DIAG(c);
     }
-    cout << "\n";
   }
 
   {
     GDValue &dv = dStr1;
-    cout << "string begin/end non-const iteration: ";
+    DIAG("string begin/end non-const iteration:");
     for (auto it = dv.stringBegin(); it != dv.stringEnd(); ++it) {
       ++(*it);
-      cout << *it;
+      DIAG(*it);
     }
-    cout << "\n";
-    cout << "again: " << dStr1 << "\n";
+    DIAG("again: " << dStr1);
     assert(dStr1.stringGet() == "tus2");
 
-    cout << "string iterable non-const iteration: ";
+    DIAG("string iterable non-const iteration:");
     for (auto &c : dStr1.stringIterable()) {
       --c;
-      cout << c;
+      DIAG(c);
     }
-    cout << "\n";
     assert(dStr1.stringGet() == "str1");
   }
 
@@ -292,7 +301,7 @@ static void testString()
 static void testSequence()
 {
   GDValue v1(GDVK_SEQUENCE);
-  cout << "empty seq: " << v1 << "\n";
+  DIAG("empty seq: " << v1);
   assert(v1.asString() == "[]");
   assert(v1.size() == 0);
   assert(v1.empty());
@@ -307,7 +316,7 @@ static void testSequence()
 
   GDVSequence seq1b3{GDValue(1), GDValue("b"), GDValue(3)};
   GDValue v3(seq1b3);
-  cout << "three-element seq: " << v3 << "\n";
+  DIAG("three-element seq: " << v3);
   assert(v3.asString() == "[1 \"b\" 3]");
   assert(v3.size() == 3);
   assert(!v3.empty());
@@ -333,7 +342,7 @@ static void testSequence()
   assert(v1.asString() == R"([-1 [1 "b" 3] null])");
 
   v1.sequenceSetValueAt(4, GDValue(5));
-  cout << v1 << "\n";
+  VPVAL(v1);
   assert(v1.asString() == R"([-1 [1 "b" 3] null null 5])");
   testSerializeRoundtrip(v1);
 
@@ -364,7 +373,7 @@ static void testSequence()
 static void testSet()
 {
   GDValue v1((GDVSet()));
-  cout << "empty set: " << v1 << "\n";
+  DIAG("empty set: " << v1);
   assert(v1.asString() == "{{}}");
   assert(v1.size() == 0);
   assert(v1.empty());
@@ -402,7 +411,7 @@ static void testSet()
            GDValue(4),
          }),
        });
-  cout << v2 << "\n";
+  DIAG(v2);
   assert(v2.asString() == R"({{10 "x" [2 3 4]}})");
   testSerializeRoundtrip(v2);
 }
@@ -411,7 +420,7 @@ static void testSet()
 static void testMap()
 {
   GDValue v1((GDVMap()));
-  cout << "empty map: " << v1 << "\n";
+  DIAG("empty map: " << v1);
   assert(v1.asString() == "{}");
   assert(v1.size() == 0);
   assert(v1.empty());
@@ -426,7 +435,7 @@ static void testMap()
   v2.mapSetValueAt(GDValue("one"), GDValue(1));
   assert(v2.size() == 1);
   assert(v2.mapGetValueAt(GDValue("one")) == GDValue(1));
-  cout << v2 << "\n";
+  DIAG(v2);
   assert(v2.asString() == R"({"one":1})");
   assert(v2.mapContains(GDValue("one")));
   assert(v2 > v1);
@@ -462,7 +471,7 @@ static void testMap()
            GDValue(GDVSymbol("ten_eleven"))
          )
        });
-  cout << v2 << "\n";
+  DIAG(v2);
   assert(v2.asString() == "{2:3 \"a\":1 [10 11]:ten_eleven}");
   testSerializeRoundtrip(v2);
 
@@ -475,6 +484,10 @@ static void testMap()
 // Print a little ruler to help judge the behavior.
 static void printRuler(int width)
 {
+  if (!verbose) {
+    return;
+  }
+
   if (width <= 0) {
     return;
   }
@@ -495,18 +508,18 @@ static void printRuler(int width)
 // interactive experimentation and verification.
 static void testPrettyPrint(int width)
 {
-  cout << "pretty print target width: " << width << "\n";
+  DIAG("pretty print target width: " << width);
   printRuler(width);
 
   GDValue v(GDVSequence{1,2,3});
-  v.writeLines(cout, GDValueWriteOptions()
+  v.writeLines(tout, GDValueWriteOptions()
                        .setTargetLineWidth(width));
 
   GDValue m2(GDVMap{
                {GDVSymbol("a"), v},
                {v, v},
              });
-  m2.writeLines(cout, GDValueWriteOptions()
+  m2.writeLines(tout, GDValueWriteOptions()
                         .setTargetLineWidth(width));
 
   v = GDVSequence{
@@ -519,7 +532,7 @@ static void testPrettyPrint(int width)
       GDVSequence{2,3,4},
     }
   };
-  v.writeLines(cout, GDValueWriteOptions()
+  v.writeLines(tout, GDValueWriteOptions()
                       .setTargetLineWidth(width));
 
   GDValue m(GDVMap{
@@ -528,7 +541,7 @@ static void testPrettyPrint(int width)
               {12,13},
               {14,15},
             });
-  m.writeLines(cout, GDValueWriteOptions()
+  m.writeLines(tout, GDValueWriteOptions()
                       .setTargetLineWidth(width));
 
   GDValue s(GDVSet{"eins", "zwei", "drei"});
@@ -540,12 +553,12 @@ static void testPrettyPrint(int width)
         {m,                     m},
         {GDVSymbol("counting"), s},
       });
-  v.writeLines(cout, GDValueWriteOptions()
+  v.writeLines(tout, GDValueWriteOptions()
                       .setTargetLineWidth(width));
 
   v = GDValue(GDVMap{ {1,2} });
   v = GDValue(GDVMap{ {v,s} });
-  v.writeLines(cout, GDValueWriteOptions()
+  v.writeLines(tout, GDValueWriteOptions()
                       .setTargetLineWidth(width));
 
   printRuler(width);
@@ -566,9 +579,8 @@ static void checkLinesStringFor(
 {
   std::string actual = linesStringFor(value, targetWidth);
   if (actual != expect) {
-    cout << "expect:\n" << expect << "\n";
-    cout << "actual:\n" << actual << "\n";
-    cout.flush();
+    DIAG("expect:\n" << expect);
+    DIAG("actual:\n" << actual);
   }
   assert(actual == expect);
 }
@@ -968,6 +980,8 @@ static void testStringEscapes()
 // Called from unit-tests.cc.
 void test_gdvalue()
 {
+  verbose = !!std::getenv("VERBOSE");
+
   if (char const *widthStr = std::getenv("GDVALUE_TEST_WIDTH")) {
     // With envvar set, treat it as the target width for the
     // pretty-print tests so I can interactively experiment.
