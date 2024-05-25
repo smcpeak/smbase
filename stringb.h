@@ -9,9 +9,41 @@
 #include <sstream>                     // std::ostringstream
 
 
+/* Convert an rvalue reference to `ostream` into an lvalue reference to
+   the same object.
+
+   Why is this allowed?  I don't really know.  The compiler will not
+   just let me explicitly cast one to the other, but is happy to let the
+   conversion happen implicitly this way.
+
+   Why is this necessary?  For inscrutible reasons, without this, if I
+   try to insert a `std::vector` by using the `operator<<` defined in
+   `vector-utils.h`, overload resolution fails and the compiler spews
+   over 1000 lines of error messages.  But if I use this function to
+   wrap the temporary, then it works.
+
+   C++, amiright?
+*/
+inline std::ostream &ostreamR2LReference(std::ostream &&os)
+{
+  return os;
+}
+
 // Construct a string in-place using ostream operators.
-#define stringb(stuff) \
-  (static_cast<std::ostringstream const &>(std::ostringstream() << stuff).str())
+#define stringb(stuff)                                                   \
+  (                                                                      \
+    /* 4. After all insertions are done, convert the stream reference */ \
+    /* back to `ostringstream` so we can extract the string. */          \
+    static_cast<std::ostringstream const &>(                             \
+      /* 2. Convert the rvalue reference to an lvalue reference. */      \
+      ostreamR2LReference(                                               \
+        /* 1. Make a temporary `ostringstream`. */                       \
+        std::ostringstream()                                             \
+      /* 3. Insert arbitrary things into the stream. */                  \
+      ) << stuff                                                         \
+    /* 5. Extract the `std::string` result. */                           \
+    ).str()                                                              \
+  )
 
 // Do the same but yield a 'char const *' to the temporary string
 // object--this obviously should not be used after the termination of
