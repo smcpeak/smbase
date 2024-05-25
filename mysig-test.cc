@@ -12,8 +12,8 @@
 #include <string.h>                    // strcmp
 
 
-// Silence test.
-#define printf dummy_printf
+static bool verbose = false;
+#define printf (verbose? printf : dummy_printf)
 
 
 static void infiniteRecursion()

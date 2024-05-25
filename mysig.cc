@@ -76,7 +76,7 @@ jmp_buf sane_state;
 void jmpHandler(int signum)
 {
   //fprintf(stderr, "jmpHandler: I caught signal %d\n", signum);
-  psignal(signum, "jmpHandler: caught signal");
+  //psignal(signum, "jmpHandler: caught signal");
 
   // reset the signal handler to its default handler
   setHandler(signum, SIG_DFL);
