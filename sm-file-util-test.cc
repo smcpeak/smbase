@@ -11,7 +11,7 @@
 // smbase
 #include "nonport.h"                   // GetMillisecondsAccumulator, getFileModificationTime
 #include "run-process.h"               // RunProcess
-#include "sm-test.h"                   // PVAL
+#include "sm-test.h"                   // VPVAL
 #include "strutil.h"                   // compareStringPtrs
 #include "syserr.h"                    // XSysError
 
@@ -22,16 +22,6 @@ static bool verbose = false;
   if (verbose) {           \
     cout << stuff << endl; \
   }
-
-#define VPVAL(stuff)                                        \
-  if (verbose) {                                            \
-    PVAL(stuff);                                            \
-  }                                                         \
-  else {                                                    \
-    /* Evaluate it to ensure no crash, but do not print. */ \
-    (void)stuff;                                            \
-  }
-
 
 
 // Run some checks on the 'fn' object directly.

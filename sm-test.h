@@ -95,6 +95,17 @@ int main(int argc, char *argv[])                \
 #define PVAL_HEX(val) \
   cout << #val << " = " << "0x" << std::hex << (val) << std::dec << endl
 
+// If the test file has defined a variable called `verbose`, then this
+// will print only when it is true.
+#define VPVAL(stuff)                                        \
+  if (verbose) {                                            \
+    PVAL(stuff);                                            \
+  }                                                         \
+  else {                                                    \
+    /* Evaluate it to ensure no crash, but do not print. */ \
+    (void)stuff;                                            \
+  }
+
 
 // easy way to time a section of code
 class TimedSection {
