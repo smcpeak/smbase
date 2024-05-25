@@ -16,6 +16,24 @@
 #include "syserr.h"                    // XSysError
 
 
+static bool verbose = false;
+
+#define DIAG(stuff)        \
+  if (verbose) {           \
+    cout << stuff << endl; \
+  }
+
+#define VPVAL(stuff)                                        \
+  if (verbose) {                                            \
+    PVAL(stuff);                                            \
+  }                                                         \
+  else {                                                    \
+    /* Evaluate it to ensure no crash, but do not print. */ \
+    (void)stuff;                                            \
+  }
+
+
+
 // Run some checks on the 'fn' object directly.
 static void checkFNObject(SMFileName const &fn, SMFileName::Syntax syntax)
 {
@@ -249,38 +267,38 @@ static void printSomeStuff()
 {
   SMFileUtil sfu;
 
-  PVAL(sfu.windowsPathSemantics());
+  VPVAL(sfu.windowsPathSemantics());
 
-  PVAL(sfu.normalizePathSeparators("a/b\\c"));
-  PVAL(sfu.normalizePathSeparators("a/b/c/d/e/f/g/h"));
-  PVAL(sfu.normalizePathSeparators(sfu.getAbsolutePath("a/b/c/d/e/f/g/h")));
-  PVAL(sfu.normalizePathSeparators(sfu.getAbsolutePath("a/b/c/d/e/f/g/h")));
-  PVAL(sfu.normalizePathSeparators(sfu.getAbsolutePath("a/b/c/d/e/f/g/h")));
+  VPVAL(sfu.normalizePathSeparators("a/b\\c"));
+  VPVAL(sfu.normalizePathSeparators("a/b/c/d/e/f/g/h"));
+  VPVAL(sfu.normalizePathSeparators(sfu.getAbsolutePath("a/b/c/d/e/f/g/h")));
+  VPVAL(sfu.normalizePathSeparators(sfu.getAbsolutePath("a/b/c/d/e/f/g/h")));
+  VPVAL(sfu.normalizePathSeparators(sfu.getAbsolutePath("a/b/c/d/e/f/g/h")));
 
-  PVAL(sfu.currentDirectory());
+  VPVAL(sfu.currentDirectory());
 
-  PVAL(sfu.isDirectorySeparator('x'));
-  PVAL(sfu.isDirectorySeparator('/'));
-  PVAL(sfu.isDirectorySeparator('\\'));
+  VPVAL(sfu.isDirectorySeparator('x'));
+  VPVAL(sfu.isDirectorySeparator('/'));
+  VPVAL(sfu.isDirectorySeparator('\\'));
 
-  PVAL(sfu.isAbsolutePath("/a/b"));
-  PVAL(sfu.isAbsolutePath("/"));
-  PVAL(sfu.isAbsolutePath("d:/a/b"));
-  PVAL(sfu.isAbsolutePath("//server/share/a/b"));
-  PVAL(sfu.isAbsolutePath("\\a\\b"));
-  PVAL(sfu.isAbsolutePath("a/b"));
-  PVAL(sfu.isAbsolutePath("b"));
-  PVAL(sfu.isAbsolutePath("."));
-  PVAL(sfu.isAbsolutePath("./a"));
+  VPVAL(sfu.isAbsolutePath("/a/b"));
+  VPVAL(sfu.isAbsolutePath("/"));
+  VPVAL(sfu.isAbsolutePath("d:/a/b"));
+  VPVAL(sfu.isAbsolutePath("//server/share/a/b"));
+  VPVAL(sfu.isAbsolutePath("\\a\\b"));
+  VPVAL(sfu.isAbsolutePath("a/b"));
+  VPVAL(sfu.isAbsolutePath("b"));
+  VPVAL(sfu.isAbsolutePath("."));
+  VPVAL(sfu.isAbsolutePath("./a"));
 
-  PVAL(sfu.getAbsolutePath("a"));
-  PVAL(sfu.getAbsolutePath("/a"));
-  PVAL(sfu.getAbsolutePath("d:/a/b"));
+  VPVAL(sfu.getAbsolutePath("a"));
+  VPVAL(sfu.getAbsolutePath("/a"));
+  VPVAL(sfu.getAbsolutePath("d:/a/b"));
 
-  PVAL(sfu.absolutePathExists("d:/wrk/editor"));
-  PVAL(sfu.absoluteFileExists("d:/wrk/editor"));
-  PVAL(sfu.absolutePathExists("d:/wrk/editor/main.h"));
-  PVAL(sfu.absoluteFileExists("d:/wrk/editor/main.h"));
+  VPVAL(sfu.absolutePathExists("d:/wrk/editor"));
+  VPVAL(sfu.absoluteFileExists("d:/wrk/editor"));
+  VPVAL(sfu.absolutePathExists("d:/wrk/editor/main.h"));
+  VPVAL(sfu.absoluteFileExists("d:/wrk/editor/main.h"));
 }
 
 
@@ -291,12 +309,12 @@ static void testGetSortedDirectoryEntries()
   ArrayStack<SMFileUtil::DirEntryInfo> entries1;
   string wd = sfu.currentDirectory();
   sfu.getSortedDirectoryEntries(entries1, wd);
-  cout << wd << " has " << entries1.length() << " entries" << endl;
+  DIAG(wd << " has " << entries1.length() << " entries");
 
   // Disable printing the entries to cut down on the noise.
   if (false) {
     for (int i=0; i < entries1.length(); i++) {
-      cout << "  " << entries1[i].asString() << endl;
+      DIAG("  " << entries1[i].asString());
     }
   }
 
@@ -313,9 +331,9 @@ static void testGetSortedDirectoryEntries()
     // This failed once, seemingly randomly.  I couldn't reproduce it.
     // So I've added more diagnostics in case it happens again.
     if (entries1.length() != entries2.length()) {
-      cout << "Listing results changed based on adding '/'!\n";
-      PVAL(entries1.length());
-      PVAL(entries2.length());
+      DIAG("Listing results changed based on adding '/'!");
+      VPVAL(entries1.length());
+      VPVAL(entries2.length());
 
       int i1 = 0;
       int i2 = 0;
@@ -325,11 +343,11 @@ static void testGetSortedDirectoryEntries()
 
         int cmp = e1.compareTo(e2);
         if (cmp < 0) {
-          cout <<   "only in entries1: " << e1.asString() << "\n";
+          DIAG(  "only in entries1: " << e1.asString());
           ++i1;
         }
         else if (cmp > 0) {
-          cout <<   "only in entries2: " << e2.asString() << "\n";
+          DIAG(  "only in entries2: " << e2.asString());
           ++i2;
         }
         else {
@@ -339,12 +357,12 @@ static void testGetSortedDirectoryEntries()
       }
       while (i1 < entries1.length()) {
         SMFileUtil::DirEntryInfo const &e1 = entries1[i1];
-        cout <<   "only in entries1: " << e1.asString() << "\n";
+        DIAG(  "only in entries1: " << e1.asString());
         ++i1;
       }
       while (i2 < entries2.length()) {
         SMFileUtil::DirEntryInfo const &e2 = entries2[i2];
-        cout <<   "only in entries2: " << e2.asString() << "\n";
+        DIAG(  "only in entries2: " << e2.asString());
         ++i2;
       }
 
@@ -360,12 +378,12 @@ static void testGetDirectoryEntries()
   ArrayStack<SMFileUtil::DirEntryInfo> entries;
 
   try {
-    cout << "Should throw:" << endl;
+    DIAG("Should throw:");
     sfu.getDirectoryEntries(entries, "nonexist-dir");
-    cout << "nonexist-dir exists?!" << endl;
+    xfailure("nonexist-dir exists?!");
   }
   catch (XBase &x) {
-    cout << "Attempting to read nonexist-dir: " << x.why() << endl;
+    DIAG("Attempting to read nonexist-dir: " << x.why());
   }
 }
 
@@ -441,12 +459,12 @@ static void testAbsolutePathExists()
 
   // Just print these since the result depends on platform.
   SMFileUtil sfu;
-  PVAL(sfu.absolutePathExists("c:/"));
-  PVAL(sfu.absolutePathExists("c:/Windows"));
-  PVAL(sfu.absolutePathExists("c:/something-nonexistent"));
-  PVAL(sfu.absolutePathExists("/"));
-  PVAL(sfu.absolutePathExists("/home"));
-  PVAL(sfu.absolutePathExists("/something-nonexistent"));
+  VPVAL(sfu.absolutePathExists("c:/"));
+  VPVAL(sfu.absolutePathExists("c:/Windows"));
+  VPVAL(sfu.absolutePathExists("c:/something-nonexistent"));
+  VPVAL(sfu.absolutePathExists("/"));
+  VPVAL(sfu.absolutePathExists("/home"));
+  VPVAL(sfu.absolutePathExists("/something-nonexistent"));
 }
 
 
@@ -467,7 +485,7 @@ static void expectSplit(SMFileUtil &sfu,
   char const *expectBase,
   char const *inputPath)
 {
-  PVAL(inputPath);
+  VPVAL(inputPath);
 
   // Make sure 'splitPath' changes these.
   string actualDir = "---";
@@ -569,7 +587,7 @@ static void testStripTrailing()
 
 static void expectDE(SMFileUtil &sfu, string const &path, bool expect)
 {
-  PVAL(path);
+  VPVAL(path);
   bool actual = sfu.directoryExists(path);
   EXPECT_EQ(actual, expect);
 }
@@ -585,7 +603,7 @@ static void testDirectoryExists()
   if (sfu.windowsPathSemantics()) {
     expectDE(sfu, "c:/", true);
     expectDE(sfu, "c:/nonexistent-directory", false);
-    PVAL(sfu.directoryExists("c:/Windows"));
+    VPVAL(sfu.directoryExists("c:/Windows"));
   }
   else {
     expectDE(sfu, "/tmp", true);
@@ -652,7 +670,7 @@ static void testCollapseDots()
 static void expectGFK(SMFileUtil &sfu,
                       string fname, SMFileUtil::FileKind expect)
 {
-  cout << "expectGFK: " << fname << endl;
+  DIAG("expectGFK: " << fname);
   SMFileUtil::FileKind actual = sfu.getFileKind(fname);
   EXPECT_EQ(actual, expect);
 }
@@ -711,8 +729,8 @@ static void testAtomicallyRenameFile()
     xfailure("that should have failed!");
   }
   catch (XFatal &x) {
-    cout << "atomicallyRenameFile refused to move directory, as expected:\n"
-         << x.why() << endl;
+    DIAG("atomicallyRenameFile refused to move directory, as expected:\n"
+         << x.why());
   }
 }
 
@@ -802,7 +820,7 @@ static void testTouchFile()
   xassert(getFileModificationTime(fname.c_str(), ts1 /*OUT*/));
 
   // Touch the empty file.
-  cout << "testTouchFile: sleep 1 ...\n";
+  DIAG("testTouchFile: sleep 1 ...");
   portableSleep(1);
   sfu.touchFile(fname);
   int64_t ts2;
@@ -815,7 +833,7 @@ static void testTouchFile()
   xassert(getFileModificationTime(fname.c_str(), ts3 /*OUT*/));
 
   // Touch that.
-  cout << "testTouchFile: sleep 1 ...\n";
+  DIAG("testTouchFile: sleep 1 ...");
   portableSleep(1);
   sfu.touchFile(fname);
   int64_t ts4;
@@ -853,8 +871,8 @@ void test_sm_file_util()
   bool useProbe = !!std::getenv("SM_FILE_UTIL_TEST_PROBE");
 
   if (char const *scanDir = std::getenv("SM_FILE_UTIL_TEST_SCAN")) {
-    PVAL(scanDir);
-    PVAL(useProbe);
+    VPVAL(scanDir);
+    VPVAL(useProbe);
 
     string directory(scanDir);
 
@@ -879,9 +897,9 @@ void test_sm_file_util()
     }
 
     for (int i=0; i < entries.length(); i++) {
-      cout << entries[i].m_name << ": " << entries[i].m_kind << endl;
+      DIAG(entries[i].m_name << ": " << entries[i].m_kind);
     }
-    PVAL(elapsed);
+    VPVAL(elapsed);
     return;
   }
 
@@ -909,8 +927,6 @@ void test_sm_file_util()
   if (getenv("SM_FILE_UTIL_TEST_TOUCH")) {
     testTouchFile();
   }
-
-  cout << "test-sm-file-util ok" << endl;
 }
 
 
