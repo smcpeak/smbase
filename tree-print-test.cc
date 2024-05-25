@@ -3,18 +3,30 @@
 
 #include "tree-print.h"                // module under test
 
+#include <cstdlib>                     // std::getenv
+
+
+// True to print various things.
+static bool verbose = false;
+
 
 static void debugPrint(TreePrint &tp)
 {
   // So the debug print will include lengths.
   tp.m_root.scan();
-  tp.debugPrintCout();
+  if (verbose) {
+    tp.debugPrintCout();
+  }
 }
 
 
 static void printWithRuler(TreePrint &tp, int margin)
 {
   xassert(tp.allSequencesClosed());
+
+  if (!verbose) {
+    return;
+  }
 
   cout << '|';
   for (int i=0; i < margin-2; i++) {
@@ -115,13 +127,17 @@ static void testUnclosedSeq()
   tp.begin(0);
   tp << "hi" << tp.br;
   xassert(!tp.allSequencesClosed());
-  tp.prettyPrint(cout);
+  if (verbose) {
+    tp.prettyPrint(cout);
+  }
 
   tp.clear();
   tp.begin(0);
   tp << "hi" << tp.br;
   xassert(!tp.allSequencesClosed());
-  tp.prettyPrint(cout);
+  if (verbose) {
+    tp.prettyPrint(cout);
+  }
 }
 
 
@@ -423,6 +439,8 @@ static void testEmptySequence()
 // Called by unit-tests.cc.
 void test_tree_print()
 {
+  verbose = !!std::getenv("VERBOSE");
+
   test1();
   test2();
   test3();

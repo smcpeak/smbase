@@ -29,8 +29,6 @@ void test_vdtllist()
 
   list.removeAll();
   list.selfCheck();
-
-  printf("vdtllist works\n");
 }
 
 

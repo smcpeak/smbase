@@ -401,7 +401,7 @@ out/%.unit.ok: test/%.expect unit-tests.exe
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/$*.actual \
 	  --expect test/$*.expect \
-	  ./unit-tests.exe $*
+	  env VERBOSE=1 ./unit-tests.exe $*
 	touch $@
 
 check: out/boxprint.unit.ok

@@ -84,8 +84,6 @@ void test_vector_utils()
   testVecErase();
   testMapElements();
   testConvertElements();
-
-  cout << "test_vector_utils passed\n";
 }
 
 

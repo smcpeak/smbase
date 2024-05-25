@@ -4,9 +4,15 @@
 #include "voidlist.h"                  // module under test
 
 #include "sm-stdint.h"                 // intptr_t
+#include "sm-test.h"                   // dummy_printf
 
 #include <stdio.h>                     // printf
 #include <stdlib.h>                    // rand
+
+
+// Silence the output when I'm not actively working on this test.
+//#define PRINT(lst) printf("%s: ", #lst); lst.debugPrint(); printf("\n") /* user ; */
+#define PRINT(lst) ((void)0)
 
 
 // assumes we're using pointerAddressDiff as the comparison fn
@@ -23,8 +29,6 @@ static void verifySorted(VoidList const &list)
   }
 }
 
-
-#define PRINT(lst) printf("%s: ", #lst); lst.debugPrint(); printf("\n") /* user ; */
 
 static void testSorting()
 {
@@ -204,8 +208,6 @@ void test_voidlist()
   // this hits most of the remaining code
   // (a decent code coverage tool for C++ would be nice!)
   testSorting();
-
-  printf("voidlist ok\n");
 }
 
 
