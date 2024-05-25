@@ -235,4 +235,17 @@ long vec_find_index(std::vector<T> const &vec, T const &value)
 }
 
 
+// Return a new vector with the same elements as `vec` but in reverse
+// order.
+template <class T>
+std::vector<T> vectorReverseOf(std::vector<T> const &vec)
+{
+  std::vector<T> ret;
+  for (auto it = vec.crbegin(); it != vec.crend(); ++it) {
+    ret.push_back(*it);
+  }
+  return ret;
+}
+
+
 #endif // SMBASE_VECTOR_UTILS_H
