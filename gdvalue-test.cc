@@ -803,10 +803,10 @@ static void testSyntaxErrors()
   // readNextMap
   {
     // readCharOrErr('}', "looking for '}' at end of map");
+    testOneErrorRegex("{", 1, 2, "after '\\{'");
     testOneErrorRegex("{]", 1, 2, "']'.*looking for '}'");
-    testOneErrorSubstr("{", 1, 2, "Unexpected end of file after '{'");
-    testOneErrorRegex("{1:2", 1, 5, "end of file.*looking for '}'");
-    testOneErrorRegex("{1:2]", 1, 5, "']'.*looking for '}'");
+    testMultiErrorRegex("{ ", {-1, ']'}, 1, 3, "looking for '\\}' at end of map");
+    testMultiErrorRegex("{1:2", {-1, ']'}, 1, 5, "looking for '\\}' at end of map");
 
     // processCharOrErr(colon, ':', "looking for ':' in map entry");
     testOneErrorRegex("{1", 1, 3, "end of file.*looking for ':'");
@@ -873,54 +873,40 @@ static void testSyntaxErrors()
     //   "looking for digit after minus sign that starts an integer");
     testMultiErrorRegex("-", {-1, ' ', 'x', ']', '['}, 1, 2, "looking for digit after minus");
 
-
-    // readNextInteger: putbackAfterValue.
-    testOneErrorRegex("1a", 1, 2,
-      "'a'.*after a value");
+    // putbackAfterValueOrErr(c);
+    testMultiErrorRegex("1", {'a', '[', '(', '-'}, 1, 2, "after a value");
 
     // For reference, the maximum uint64_t is 18446744073709551615.
 
-    // readNextInteger: value too large.
-    testOneErrorSubstr("12345678901234567890", 1, 20,
-      "too large");
+    // err(stringb("Value denoted by integer is too large."));
+    testOneErrorSubstr("12345678901234567890", 1, 20, "too large");
   }
 
-  // errUnexpectedChar
-  testOneErrorSubstr("", 1, 1, "end of file");
-  testOneErrorSubstr(";", 1, 1, "';'");
-  testOneErrorSubstr("\001", 1, 1, "(0x01)");
+  // readNextSymbolOrSpecial
+  {
+    // putbackAfterValueOrErr(c);       // Could be EOF, fine.
+    testOneErrorSubstr("true[", 1, 5, "'[' after a value");
+    testOneErrorSubstr("x{", 1, 2, "'{' after a value");
+  }
 
-  // processExpectChar
-  testOneErrorRegex("{1", 1, 3, "end of file.*looking for ':' in map entry");
-  testOneErrorRegex("{1 3", 1, 4, "'3'.*looking for ':' in map entry");
+  // readNextValue
+  {
+    // inCtxUnexpectedCharErr(c, "after '{'");
+    testOneErrorSubstr("{", 1, 2, "end of file after '{'");
 
-  // readNextMap: readExpectChar
-  testMultiErrorRegex("{ ", {-1, ']'}, 1, 3, "looking for '}' at end of map");
-  testMultiErrorRegex("{1:2", {-1, ']'}, 1, 5, "looking for '}' at end of map");
+    // unexpectedCharErr(c, "looking for the start of a value");
+    testOneErrorSubstr("(", 1, 1, "'(' while looking for the start of a value");
+  }
 
-  // readCharNotEOF: TODO: Callers.
+  // readExactlyOneValue
+  {
+    // unexpectedCharErr(readChar(), "looking for the start of a value");
+    testMultiErrorRegex("", {-1, ']', '}', ';'}, 1, 1, "looking for the start of a value");
+    testOneErrorSubstr("\001", 1, 1, "(0x01)");
 
-  // readExpectEOF
-  testOneErrorSubstr("1 2", 1, 3, "only have one value");
-
-
-  // readNextSymbolOrSpecial: after value.
-  testOneErrorSubstr("true[", 1, 5,
-    "'[' after a value");
-
-  // readNextValue: EOF after '{'.
-  testOneErrorSubstr("{", 1, 2,
-    "end of file after '{'");
-
-  // readNextValue: Bad character at start of value.
-  testOneErrorSubstr("(", 1, 1,
-    "'(' while looking for the start of a value");
-
-  // readExactlyOneValue: EOF or bad at start.
-  testOneErrorSubstr("", 1, 1,
-    "end of file while looking for the start of a value");
-  testOneErrorSubstr("]", 1, 1,
-    "']' while looking for the start of a value");
+    // readEOFOrErr();
+    testOneErrorSubstr("1 2", 1, 3, "only have one value");
+  }
 }
 
 
