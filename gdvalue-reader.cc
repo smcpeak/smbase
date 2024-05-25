@@ -39,12 +39,12 @@ STATICDEF constexpr int GDValueReader::eofCode()
 
 void GDValueReader::err(string const &syntaxError) const
 {
-  errAt(m_location, syntaxError);
+  locErr(m_location, syntaxError);
 }
 
 
-void GDValueReader::errAt(FileLineCol const &loc,
-                          string const &syntaxError) const
+void GDValueReader::locErr(FileLineCol const &loc,
+                           string const &syntaxError) const
 {
   // Generally, we read a character, advancing the location in the
   // process, then check for an error.  Consequently, when we report an
@@ -58,13 +58,13 @@ void GDValueReader::errAt(FileLineCol const &loc,
 }
 
 
-void GDValueReader::errUnexpectedChar(int c, char const *lookingFor) const
+void GDValueReader::unexpectedCharErr(int c, char const *lookingFor) const
 {
-  errUnexpectedCharInCtx(c, stringbc("while " << lookingFor));
+  inCtxUnexpectedCharErr(c, stringbc("while " << lookingFor));
 }
 
 
-void GDValueReader::errUnexpectedCharInCtx(int c, char const *context) const
+void GDValueReader::inCtxUnexpectedCharErr(int c, char const *context) const
 {
   if (c == eofCode()) {
     err(stringb("Unexpected end of file " <<
@@ -98,36 +98,36 @@ int GDValueReader::readChar()
 }
 
 
-void GDValueReader::readExpectChar(int expectChar, char const *lookingFor)
+void GDValueReader::readCharOrErr(int expectChar, char const *lookingFor)
 {
-  processExpectChar(readChar(), expectChar, lookingFor);
+  processCharOrErr(readChar(), expectChar, lookingFor);
 }
 
 
-void GDValueReader::processExpectChar(int actualChar, int expectChar,
-                                      char const *lookingFor)
+void GDValueReader::processCharOrErr(int actualChar, int expectChar,
+                                     char const *lookingFor)
 {
   if (actualChar != expectChar) {
-    errUnexpectedChar(actualChar, lookingFor);
+    unexpectedCharErr(actualChar, lookingFor);
   }
 }
 
 
-int GDValueReader::readCharNotEOF(char const *lookingFor)
+int GDValueReader::readNotEOFCharOrErr(char const *lookingFor)
 {
   int c = readChar();
   if (c == eofCode()) {
-    errUnexpectedChar(c, lookingFor);
+    unexpectedCharErr(c, lookingFor);
   }
   return c;
 }
 
 
-void GDValueReader::readExpectEOF()
+void GDValueReader::readEOFOrErr()
 {
   int c = skipWhitespaceAndComments();
   if (c != eofCode()) {
-    errUnexpectedChar(c, "looking for the end of a file that should only have one value");
+    unexpectedCharErr(c, "looking for the end of a file that should only have one value");
   }
 }
 
@@ -174,19 +174,19 @@ bool GDValueReader::isAllowedAfterValue(int c)
 }
 
 
-void GDValueReader::checkAllowedAfterValue(int c)
+void GDValueReader::checkAfterValueOrErr(int c)
 {
   if (!isAllowedAfterValue(c)) {
-    errUnexpectedCharInCtx(c,
+    inCtxUnexpectedCharErr(c,
       "after a value; every value must be followed by EOF, whitespace, "
       "',', ':', ']', or '}'");
   }
 }
 
 
-void GDValueReader::putbackAfterValue(int c)
+void GDValueReader::putbackAfterValueOrErr(int c)
 {
-  checkAllowedAfterValue(c);
+  checkAfterValueOrErr(c);
   putback(c);
 }
 
@@ -229,7 +229,7 @@ int GDValueReader::skipWhitespaceAndComments()
           skipCStyleComment(0 /*nestingDepth*/);
         }
         else {
-          errUnexpectedChar(c, "looking for character after '/'");
+          unexpectedCharErr(c, "looking for character after '/'");
         }
         break;
 
@@ -250,7 +250,7 @@ void GDValueReader::skipCStyleComment(int nestingDepth)
 
   // Read a character and bail on EOF, reporting the current nesting
   // depth and child comment count.
-  auto readCommentCharNoEOF = [&]() -> int {
+  auto readCommentCharNoEOFOrErr = [&]() -> int {
     int c = readChar();
     if (c == eofCode()) {
       std::ostringstream oss;
@@ -264,16 +264,16 @@ void GDValueReader::skipCStyleComment(int nestingDepth)
       }
       oss << "looking for corresponding \"*/\"";
 
-      errUnexpectedChar(c, oss.str().c_str());
+      unexpectedCharErr(c, oss.str().c_str());
     }
     return c;
   };
 
   while (true) {
-    int c = readCommentCharNoEOF();
+    int c = readCommentCharNoEOFOrErr();
     switch (c) {
       case '/':
-        c = readCommentCharNoEOF();
+        c = readCommentCharNoEOFOrErr();
         if (c == '*') {
           // Recursively skip a nested comment.
           ++childComments;
@@ -287,7 +287,7 @@ void GDValueReader::skipCStyleComment(int nestingDepth)
 
       case '*':
       checkAfterStar:
-        c = readCommentCharNoEOF();
+        c = readCommentCharNoEOFOrErr();
         if (c == '/') {
           // Done with this comment.
           return;
@@ -316,7 +316,7 @@ GDValue GDValueReader::readNextSequence()
   while (true) {
     std::optional<GDValue> next = readNextValue();
     if (!next) {
-      readExpectChar(']', "looking for ']' at end of sequence");
+      readCharOrErr(']', "looking for ']' at end of sequence");
       return ret;
     }
 
@@ -332,8 +332,8 @@ GDValue GDValueReader::readNextSet()
   while (true) {
     std::optional<GDValue> next = readNextValue();
     if (!next) {
-      readExpectChar('}', "looking for \"}}\" at end of set");
-      readExpectChar('}', "looking for '}' immediately after '}' at end of set");
+      readCharOrErr('}', "looking for \"}}\" at end of set");
+      readCharOrErr('}', "looking for '}' immediately after '}' at end of set");
       return ret;
     }
 
@@ -360,18 +360,18 @@ GDValue GDValueReader::readNextMap()
     // Read the key.
     std::optional<GDValue> key = readNextValue();
     if (!key) {
-      readExpectChar('}', "looking for '}' at end of map");
+      readCharOrErr('}', "looking for '}' at end of map");
       return ret;
     }
 
     int colon = skipWhitespaceAndComments();
 
-    processExpectChar(colon, ':', "looking for ':' in map entry");
+    processCharOrErr(colon, ':', "looking for ':' in map entry");
 
     // Read the value.
     std::optional<GDValue> value = readNextValue();
     if (!value) {
-      errUnexpectedChar(readChar(), "looking for value after ':' in map entry");
+      unexpectedCharErr(readChar(), "looking for value after ':' in map entry");
     }
 
     if (ret.mapContains(*key)) {
@@ -384,7 +384,7 @@ GDValue GDValueReader::readNextMap()
       FileLineCol loc(m_location);
       loc.setLineCol(keyLC);
 
-      errAt(loc, stringb("Duplicate map key: " << keyAsString));
+      locErr(loc, stringb("Duplicate map key: " << keyAsString));
     }
 
     ret.mapSetValueAt(std::move(*key), std::move(*value));
@@ -398,14 +398,14 @@ GDValue GDValueReader::readNextDQString()
   UTF8Writer utf8Writer(oss);
 
   while (true) {
-    int c = readCharNotEOF("looking for closing '\"' in double-quoted string");
+    int c = readNotEOFCharOrErr("looking for closing '\"' in double-quoted string");
 
     if (c == '"') {
       break;
     }
 
     if (c == '\\') {
-      c = readCharNotEOF("looking for character after '\\' in double-quoted string");
+      c = readNotEOFCharOrErr("looking for character after '\\' in double-quoted string");
 
       // Interpret what follows the backslash.
       switch (c) {
@@ -444,8 +444,8 @@ GDValue GDValueReader::readNextDQString()
             try {
               // This should be followed by the other half of a surrogate
               // pair.
-              readExpectChar('\\', "expecting '\\'");
-              readExpectChar('u', "expecting 'u' after '\\'");
+              readCharOrErr('\\', "expecting '\\'");
+              readCharOrErr('u', "expecting 'u' after '\\'");
               int decoded2 = readNextU4Escape();
 
               if (isLowSurrogate(decoded2)) {
@@ -479,7 +479,7 @@ GDValue GDValueReader::readNextDQString()
         }
 
         default:
-          errUnexpectedChar(c, "looking for the character after a '\\' in a double-quoted string");
+          unexpectedCharErr(c, "looking for the character after a '\\' in a double-quoted string");
           break;
       } // switch(c) after backslash
     } // if(backslash)
@@ -503,7 +503,7 @@ int GDValueReader::readNextU4Escape()
       decoded = decoded*16 + decodeASCIIHexDigit(c);
     }
     else {
-      errUnexpectedChar(c, "looking for digits in \"\\u\" escape sequence in double-quoted string");
+      unexpectedCharErr(c, "looking for digits in \"\\u\" escape sequence in double-quoted string");
     }
   }
 
@@ -518,7 +518,7 @@ GDValue GDValueReader::readNextInteger(int firstChar)
     isNegative = true;
 
     // Prepare to consume digits.
-    firstChar = readCharNotEOF(
+    firstChar = readNotEOFCharOrErr(
       "looing for digit after minus sign that starts an integer");
   }
 
@@ -528,7 +528,7 @@ GDValue GDValueReader::readNextInteger(int firstChar)
     while (true) {
       int c = readChar();
       if (!isASCIIDigit(c)) {
-        putbackAfterValue(c);
+        putbackAfterValueOrErr(c);
         break;
       }
 
@@ -568,7 +568,7 @@ GDValue GDValueReader::readNextSymbolOrSpecial(int firstChar)
   while (true) {
     int c = readChar();
     if (!isCIdentifierCharacter(c)) {
-      putbackAfterValue(c);       // Could be EOF, fine.
+      putbackAfterValueOrErr(c);       // Could be EOF, fine.
       break;
     }
 
@@ -611,7 +611,7 @@ std::optional<GDValue> GDValueReader::readNextValue()
       case '{': {
         c = readChar();
         if (c == eofCode()) {
-          errUnexpectedCharInCtx(c, "after '{'");
+          inCtxUnexpectedCharErr(c, "after '{'");
           return std::nullopt;    // Not reached.
         }
         else if (c == '{') {
@@ -644,7 +644,7 @@ std::optional<GDValue> GDValueReader::readNextValue()
           return std::make_optional(readNextSymbolOrSpecial(c));
         }
         else {
-          errUnexpectedChar(c, "looking for the start of a value");
+          unexpectedCharErr(c, "looking for the start of a value");
         }
         return std::nullopt;      // Not reached.
     }
@@ -660,11 +660,11 @@ GDValue GDValueReader::readExactlyOneValue()
   if (!ret) {
     // Either EOF or a closing delimiter.  We need to re-read the
     // character to determine which.
-    errUnexpectedChar(readChar(), "looking for the start of a value");
+    unexpectedCharErr(readChar(), "looking for the start of a value");
   }
 
   // Consume text after the value.
-  readExpectEOF();
+  readEOFOrErr();
 
   return std::move(*ret);
 }

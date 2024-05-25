@@ -29,21 +29,27 @@ protected:   // methods
   static constexpr int eofCode();
 
   // Throw GDValueReaderException with 'm_location'-1 and 'syntaxError'.
+  //
+  // Naming convention: Any method that can call `err` in a fairly
+  // direct way has an name that ends in "Err".  That way, it is easy to
+  // find the places that need to be tested for syntax error detection
+  // and reporting by searching for "err(" case-insensitively.
+  //
   void err(std::string const &syntaxError) const;
 
   // Throw with 'loc-1' and 'syntaxError'.
-  void errAt(FileLineCol const &loc,
-             std::string const &syntaxError) const;
+  void locErr(FileLineCol const &loc,
+              std::string const &syntaxError) const;
 
   // Report error: 'c' is unexpected.  'c' can be 'eofCode()', and the
   // message will be tailored accordingly.  'lookingFor' is a phrase
   // describing what the parser was looking for when 'c' was
   // encountered.
-  void errUnexpectedChar(int c, char const *lookingFor) const;
+  void unexpectedCharErr(int c, char const *lookingFor) const;
 
   // Slightly more general version that does not insert the word
   // "while".
-  void errUnexpectedCharInCtx(int c, char const *context) const;
+  void inCtxUnexpectedCharErr(int c, char const *context) const;
 
   // Read a single character from 'm_is', updating 'm_location' so it
   // refers to the *next* character.  (Thus, when we report an error, we
@@ -52,20 +58,20 @@ protected:   // methods
   int readChar();
 
   // Read the next character.  If it is not 'expectChar', call
-  // 'errUnexpectedChar'.
-  void readExpectChar(int expectChar, char const *lookingFor);
+  // 'unexpectedCharErr'.
+  void readCharOrErr(int expectChar, char const *lookingFor);
 
   // Same, except we already read the character and it is 'actualChar'.
   // Compare it to 'expectChar', etc.
-  void processExpectChar(int actualChar, int expectChar,
-                         char const *lookingFor);
+  void processCharOrErr(int actualChar, int expectChar,
+                        char const *lookingFor);
 
-  // Read the next character.  If it is EOF, call 'errUnexpectedChar'.
-  int readCharNotEOF(char const *lookingFor);
+  // Read the next character.  If it is EOF, call 'unexpectedCharErr'.
+  int readNotEOFCharOrErr(char const *lookingFor);
 
   // Read the remainder of the stream until EOF.  If anything besides
   // whitespace and comments are present, throw a syntax error.
-  void readExpectEOF();
+  void readEOFOrErr();
 
   // Put 'c' back into 'm_is'.  It should be the same character as was
   // just read.  It is not possible to put back more than one character
@@ -78,10 +84,10 @@ protected:   // methods
   bool isAllowedAfterValue(int c);
 
   // If 'c' is not allowed after a value, throw an error.
-  void checkAllowedAfterValue(int c);
+  void checkAfterValueOrErr(int c);
 
   // Check that 'c' is allowed after a value and put it back.
-  void putbackAfterValue(int c);
+  void putbackAfterValueOrErr(int c);
 
   // Skip whitespace and comments, returning the first character after
   // them, or 'eofCode()'.
