@@ -749,7 +749,141 @@ static void testSyntaxErrors()
 {
   // This test is meant to correspond to gdvalue-reader.cc, exercising
   // each of the error paths evident in each function.  Basically, I
-  // search for "err" and then target each occurrence.
+  // search for "err(" (case-insensitively) and then target each
+  // occurrence.
+
+
+  // skipWhitespaceAndComments
+  {
+    // unexpectedCharErr(c, "looking for character after '/'");
+    testOneErrorRegex(" /", 1, 3, "end of file.*after '/'");
+    testOneErrorRegex("/-", 1, 2, "'-'.*after '/'");
+  }
+
+  // skipCStyleComment
+  {
+    // First `readCommentCharNoEOFOrErr()`, just inside the loop.
+    testOneErrorSubstr("/*/1", 1, 5,
+      R"(inside "/*" comment, looking for corresponding "*/")");
+    testOneErrorSubstr("/*/**/", 1, 7,
+      R"(inside "/*" comment, which contains 1 child comments, looking for corresponding "*/")");
+    testOneErrorSubstr("/*/**//**/", 1, 11,
+      R"(inside "/*" comment, which contains 2 child comments, looking for corresponding "*/")");
+    testOneErrorSubstr("/*/*/**//**/", 1, 13,
+      R"(inside "/*" comment, nested inside 1 other comments of the same kind, which contains 2 child comments, looking for corresponding "*/")");
+
+    // Second `readCommentCharNoEOFOrErr()`, after seeing '/'.
+    testOneErrorSubstr("/*/", 1, 4,
+      R"(inside "/*" comment, looking for corresponding "*/")");
+
+    // Third `readCommentCharNoEOFOrErr()`, after seeing '*'.
+    testOneErrorSubstr("/*/*", 1, 5,
+      R"(inside "/*" comment, nested inside 1 other comments of the same kind, looking for corresponding "*/")");
+  }
+
+  // readNextSequence
+  {
+    // readCharOrErr(']', "looking for ']' at end of sequence");
+    testMultiErrorRegex("[", {-1, '}'}, 1, 2, "looking for ']' at end of sequence");
+    testMultiErrorRegex("[1 ", {-1, '}'}, 1, 4, "looking for ']' at end of sequence");
+  }
+
+  // readNextSet
+  {
+    // readCharOrErr('}', "looking for \"}}\" at end of set");
+    testMultiErrorRegex("{{", {-1, ']'}, 1, 3, "looking for \"}}\" at end of set");
+    testMultiErrorRegex("{{1", {-1, ']'}, 1, 4, "looking for \"}}\" at end of set");
+    testMultiErrorRegex("{{1 2", {-1, ']'}, 1, 6, "looking for \"}}\" at end of set");
+
+    // readCharOrErr('}', "looking for '}' immediately after '}' at end of set");
+    testMultiErrorRegex("{{}", {-1, ']'}, 1, 4, "looking for '}' immediately after '}'");
+    testOneErrorRegex("{{} }", 1, 4, "' '.*looking for '}' immediately after '}'");
+  }
+
+  // readNextMap
+  {
+    // readCharOrErr('}', "looking for '}' at end of map");
+    testOneErrorRegex("{]", 1, 2, "']'.*looking for '}'");
+    testOneErrorSubstr("{", 1, 2, "Unexpected end of file after '{'");
+    testOneErrorRegex("{1:2", 1, 5, "end of file.*looking for '}'");
+    testOneErrorRegex("{1:2]", 1, 5, "']'.*looking for '}'");
+
+    // processCharOrErr(colon, ':', "looking for ':' in map entry");
+    testOneErrorRegex("{1", 1, 3, "end of file.*looking for ':'");
+    testOneErrorRegex("{1}", 1, 3, "'}'.*looking for ':'");
+    testOneErrorRegex("{1]", 1, 3, "']'.*looking for ':'");
+    testOneErrorRegex("{1-", 1, 3, "'-' after a value");
+    testOneErrorRegex("{1 2", 1, 4, "'2'.*looking for ':'");
+
+    // unexpectedCharErr(readChar(), "looking for value after ':' in map entry");
+    testOneErrorRegex("{1:", 1, 4, "end of file.*after ':'");
+    testOneErrorRegex("{1 : ", 1, 6, "end of file.*after ':'");
+    testOneErrorRegex("{1:]", 1, 4, "']'.*after ':'");
+    testOneErrorRegex("{1:}", 1, 4, "'}'.*after ':'");
+    testOneErrorRegex("{1::", 1, 4, "':'.*start of a value");
+    testOneErrorRegex("{1: }", 1, 5, "'}'.*after ':'");
+
+    // locErr(loc, stringb("Duplicate map key: " << keyAsString));
+    testOneErrorSubstr("{1:2 1:2}", 1, 6, "Duplicate map key: 1");
+    testOneErrorSubstr("{1:2 3:4 1:2}", 1, 10, "Duplicate map key: 1");
+    testOneErrorSubstr("{1:2 {4:4}:4 11:2 {4:4}:5}", 1, 19, "Duplicate map key: {4:4}");
+  }
+
+  // readNextDQString
+  {
+    // int c = readNotEOFCharOrErr("looking for closing '\"' in double-quoted string");
+    testOneErrorRegex("\"", 1, 2, "end of file.*looking for closing '\"'");
+    testOneErrorRegex("\"\\\"", 1, 4, "end of file.*looking for closing '\"'");
+    testOneErrorRegex("\"\n", 2, 1, "end of file.*looking for closing '\"'");
+
+    // c = readNotEOFCharOrErr("looking for character after '\\' in double-quoted string");
+    testOneErrorRegex("\"\\", 1, 3, "end of file.*looking for character after '\\\\'");
+
+    // readCharOrErr('\\', "expecting '\\'");
+    testOneErrorRegex("\"\\ud800", 1, 8, "After high surrogate.*uD800.*end of file.*expecting '\\\\'");
+    testOneErrorRegex("\"\\ud8000", 1, 8, "After high surrogate.*uD800.*'0'.*expecting '\\\\'");
+
+    // readCharOrErr('u', "expecting 'u' after '\\'");
+    testOneErrorRegex("\"\\ud800\\", 1, 9, "After high surrogate.*uD800.*end of file.*expecting 'u'");
+    testOneErrorRegex("\"\\ud800\\n", 1, 9, "After high surrogate.*uD800.*'n'.*expecting 'u'");
+
+    // err(stringf(
+    //   "Expected low surrogate in [U+DC00,U+DFFF], "
+    testOneErrorRegex("\"\\uDABC\\uDbad", 1, 13, "After high surrogate.*uDABC.*Expected low surrogate.*DBAD");
+
+    // err(stringf(
+    //   "Found low surrogate \"\\u%04X\" that is not preceded by "
+    testOneErrorRegex("\"\\uDEAD", 1, 7, "Found low surrogate.*uDEAD.*not preceded");
+
+    // unexpectedCharErr(c, "looking for the character after a '\\' in a double-quoted string");
+    testOneErrorRegex("\"\\z", 1, 3, "'z'.*looking for the character after a '\\\\'");
+  }
+
+  // readNextU4Escape
+  {
+    // unexpectedCharErr(c, "looking for digits in \"\\u\" escape sequence in double-quoted string");
+    testMultiErrorRegex("\"\\u", {-1, 'x', ' '}, 1, 4, "looking for digits");
+    testMultiErrorRegex("\"\\u1", {-1, 'x', ' '}, 1, 5, "looking for digits");
+    testMultiErrorRegex("\"\\u123", {-1, 'x', ' '}, 1, 7, "looking for digits");
+  }
+
+  // readNextInteger
+  {
+    // firstChar = readNotEOFCharOrErr(
+    //   "looking for digit after minus sign that starts an integer");
+    testMultiErrorRegex("-", {-1}, 1, 2, "looking for digit after minus");
+
+
+    // readNextInteger: putbackAfterValue.
+    testOneErrorRegex("1a", 1, 2,
+      "'a'.*after a value");
+
+    // For reference, the maximum uint64_t is 18446744073709551615.
+
+    // readNextInteger: value too large.
+    testOneErrorSubstr("12345678901234567890", 1, 20,
+      "too large");
+  }
 
   // errUnexpectedChar
   testOneErrorSubstr("", 1, 1, "end of file");
@@ -760,17 +894,6 @@ static void testSyntaxErrors()
   testOneErrorRegex("{1", 1, 3, "end of file.*looking for ':' in map entry");
   testOneErrorRegex("{1 3", 1, 4, "'3'.*looking for ':' in map entry");
 
-  // readNextSequence: readExpectChar
-  testMultiErrorRegex("[", {-1, '}'}, 1, 2, "looking for ']' at end of sequence");
-  testMultiErrorRegex("[1 ", {-1, '}'}, 1, 4, "looking for ']' at end of sequence");
-
-  // readNextSet: readExpectChar
-  testMultiErrorRegex("{{", {-1, ']'}, 1, 3, "looking for \"}}\" at end of set");
-  testMultiErrorRegex("{{1", {-1, ']'}, 1, 4, "looking for \"}}\" at end of set");
-  testMultiErrorRegex("{{1 2", {-1, ']'}, 1, 6, "looking for \"}}\" at end of set");
-  testMultiErrorRegex("{{}", {-1, ']'}, 1, 4, "looking for '}' immediately after '}'");
-  testOneErrorRegex("{{} }", 1, 4, "' '.*looking for '}' immediately after '}'");
-
   // readNextMap: readExpectChar
   testMultiErrorRegex("{ ", {-1, ']'}, 1, 3, "looking for '}' at end of map");
   testMultiErrorRegex("{1:2", {-1, ']'}, 1, 5, "looking for '}' at end of map");
@@ -780,111 +903,6 @@ static void testSyntaxErrors()
   // readExpectEOF
   testOneErrorSubstr("1 2", 1, 3, "only have one value");
 
-  // skipWhitespaceAndComments
-  testOneErrorRegex(" /", 1, 3, "end of file.*after '/'");
-  testOneErrorRegex("/-", 1, 2, "'-'.*after '/'");
-
-  // skipCStyleComment
-  testOneErrorSubstr("/*/1", 1, 5,
-    R"(inside "/*" comment, looking for corresponding "*/")");
-  testOneErrorSubstr("/*/*", 1, 5,
-    R"(inside "/*" comment, nested inside 1 other comments of the same kind, looking for corresponding "*/")");
-  testOneErrorSubstr("/*/**/", 1, 7,
-    R"(inside "/*" comment, which contains 1 child comments, looking for corresponding "*/")");
-  testOneErrorSubstr("/*/**//**/", 1, 11,
-    R"(inside "/*" comment, which contains 2 child comments, looking for corresponding "*/")");
-  testOneErrorSubstr("/*/*/**//**/", 1, 13,
-    R"(inside "/*" comment, nested inside 1 other comments of the same kind, which contains 2 child comments, looking for corresponding "*/")");
-
-  // readNextMap: looking for '}'.
-  testOneErrorRegex("{]", 1, 2,
-    "']'.*looking for '}'");
-  testOneErrorSubstr("{", 1, 2,
-    "Unexpected end of file after '{'");
-  testOneErrorRegex("{1:2", 1, 5,
-    "end of file.*looking for '}'");
-  testOneErrorRegex("{1:2]", 1, 5,
-    "']'.*looking for '}'");
-
-  // readNextMap: looking for ':'.
-  testOneErrorRegex("{1", 1, 3,
-    "end of file.*looking for ':'");
-  testOneErrorRegex("{1}", 1, 3,
-    "'}'.*looking for ':'");
-  testOneErrorRegex("{1]", 1, 3,
-    "']'.*looking for ':'");
-  testOneErrorRegex("{1-", 1, 3,
-    "'-' after a value");
-  testOneErrorRegex("{1 2", 1, 4,
-    "'2'.*looking for ':'");
-
-  // readNextMap: looking for value after ':'.
-  testOneErrorRegex("{1:", 1, 4,
-    "end of file.*after ':'");
-  testOneErrorRegex("{1 : ", 1, 6,
-    "end of file.*after ':'");
-  testOneErrorRegex("{1:]", 1, 4,
-    "']'.*after ':'");
-  testOneErrorRegex("{1:}", 1, 4,
-    "'}'.*after ':'");
-  testOneErrorRegex("{1::", 1, 4,
-    "':'.*start of a value");
-  testOneErrorRegex("{1: }", 1, 5,
-    "'}'.*after ':'");
-
-  // readNextMap: Duplicate map key.
-  testOneErrorSubstr("{1:2 1:2}", 1, 6,
-    "Duplicate map key: 1");
-  testOneErrorSubstr("{1:2 3:4 1:2}", 1, 10,
-    "Duplicate map key: 1");
-  testOneErrorSubstr("{1:2 {4:4}:4 11:2 {4:4}:5}", 1, 19,
-    "Duplicate map key: {4:4}");
-
-  // readNextDQString: looking for closing '"'.
-  testOneErrorRegex("\"", 1, 2,
-    "end of file.*looking for closing '\"'");
-  testOneErrorRegex("\"\\\"", 1, 4,
-    "end of file.*looking for closing '\"'");
-  testOneErrorRegex("\"\n", 2, 1,
-    "end of file.*looking for closing '\"'");
-
-  // readNextDQString: looking for character after backslash (1).
-  testOneErrorRegex("\"\\", 1, 3,
-    "end of file.*looking for character after '\\\\'");
-
-  // readNextDQString: after high surrogate, backslash.
-  testOneErrorRegex("\"\\ud800", 1, 8,
-    "After high surrogate.*uD800.*end of file.*expecting '\\\\'");
-  testOneErrorRegex("\"\\ud8000", 1, 8,
-    "After high surrogate.*uD800.*'0'.*expecting '\\\\'");
-
-  // readNextDQString: after high surrogate and backslash, 'u'.
-  testOneErrorRegex("\"\\ud800\\", 1, 9,
-    "After high surrogate.*uD800.*end of file.*expecting 'u'");
-  testOneErrorRegex("\"\\ud800\\n", 1, 9,
-    "After high surrogate.*uD800.*'n'.*expecting 'u'");
-
-  // readNextDQString: after high surrogate, not a low surrogate.
-  testOneErrorRegex("\"\\uDABC\\uDbad", 1, 13,
-    "After high surrogate.*uDABC.*Expected low surrogate.*DBAD");
-
-  // readNextDQString: unpaired low surrogate.
-  testOneErrorRegex("\"\\uDEAD", 1, 7,
-    "Found low surrogate.*uDEAD.*not preceded");
-
-  // readNextDQString: looking for character after backslash (2).
-  testOneErrorRegex("\"\\z", 1, 3,
-    "'z'.*looking for the character after a '\\\\'");
-
-  // readNextInteger: putbackAfterValue.
-  testOneErrorRegex("1a", 1, 2,
-    "'a'.*after a value");
-
-  // For reference, the maximum uint64_t is 18446744073709551615.
-
-  // readNextInteger: value too large.
-  testOneErrorSubstr("12345678901234567890", 1, 20,
-    "too large");
 
   // readNextSymbolOrSpecial: after value.
   testOneErrorSubstr("true[", 1, 5,
