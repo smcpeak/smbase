@@ -3,12 +3,18 @@
 
 #include "mypopen.h"         // module unde test
 
+#include "dummy-printf.h"    // dummy_printf
+
 #include <stdlib.h>          // exit, perror
 #include <stdio.h>           // printf
 #include <string.h>          // memcmp
 
 // POSIX
 #include <unistd.h>          // read, write
+
+
+// Silence test.
+#define printf dummy_printf
 
 
 static void die(char const *fn)

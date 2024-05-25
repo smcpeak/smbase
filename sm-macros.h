@@ -128,9 +128,11 @@ void T::insertOstream(ostream &os) const
 
 
 // for silencing variable-not-used warnings
+#ifdef __cplusplus
 template <class T>
 inline void pretendUsedFn(T const &) {}
 #define PRETEND_USED(arg) pretendUsedFn(arg) /* user ; */
+#endif // __cplusplus
 
 
 // For use with a function call when the return value is ignored, and I
