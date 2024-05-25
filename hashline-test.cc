@@ -68,7 +68,6 @@ void test_hashline()
   // ...
 
   // printf("unique filenames: %d\n", hl.numUniqueFilenames());
-  printf("hashline seems to work\n");
 }
 
 

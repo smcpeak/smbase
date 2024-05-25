@@ -23,7 +23,6 @@ void test_growbuf()
       xfailure("buffer contents are wrong");
     }
   }
-  cout << "growbuf ok\n";
 }
 
 

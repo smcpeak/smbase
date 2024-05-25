@@ -92,8 +92,6 @@ static void vector(char const *format, ...)
 /* Called from unit-tests.cc. */
 void test_gprintf()
 {
-  printf("testing gprintf...\n");
-
   /* test against libc */
   vector("simple");
   vector("a %s more", "little");
@@ -110,8 +108,6 @@ void test_gprintf()
   /* expect_vector("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "%.31f", 3.4); */
 
   /* TODO: add more tests */
-
-  printf("gprintf works\n");
 }
 
 
