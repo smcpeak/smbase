@@ -3,9 +3,17 @@
 
 #include "functional-set.h"            // module under test
 
+#include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
+#include "sm-test.h"                   // DIAG
 #include "xassert.h"                   // xassert
 
 #include <iostream>                    // std::cout
+
+
+OPEN_ANONYMOUS_NAMESPACE
+
+
+bool verbose = false;
 
 
 class FSEInteger : public FSElement {
@@ -41,35 +49,35 @@ static void testBasics()
   FunctionalSetManager fsm;
 
   RCPtr<FunctionalSet> empty = fsm.emptySet();
-  std::cout << "empty: " << *empty << "\n";
+  DIAG("empty: " << *empty);
   fsm.checkInvariants();
 
   RCPtr<FunctionalSet> s1 = fsm.singleton(rcptr(new FSEInteger(1)));
-  std::cout << "s1: " << *s1 << "\n";
+  DIAG("s1: " << *s1);
   fsm.checkInvariants();
 
   RCPtr<FunctionalSet> s2 = fsm.singleton(rcptr(new FSEInteger(2)));
-  std::cout << "s2: " << *s2 << "\n";
+  DIAG("s2: " << *s2);
   fsm.checkInvariants();
 
   RCPtr<FunctionalSet> s12 = fsm.unionSet(s1, s2);
-  std::cout << "s12: " << *s12 << "\n";
+  DIAG("s12: " << *s12);
   fsm.checkInvariants();
 
   auto s3 = fsm.singleton(rcptr(new FSEInteger(3)));
-  std::cout << "s3: " << *s3 << "\n";
+  DIAG("s3: " << *s3);
   fsm.checkInvariants();
 
   RCPtr<FunctionalSet> s23 = fsm.unionSet(s2, s3);
-  std::cout << "s23: " << *s23 << "\n";
+  DIAG("s23: " << *s23);
   fsm.checkInvariants();
 
   RCPtr<FunctionalSet> s123a = fsm.unionSet(s1, s23);
-  std::cout << "s123a: " << *s123a << "\n";
+  DIAG("s123a: " << *s123a);
   fsm.checkInvariants();
 
   RCPtr<FunctionalSet> s123b = fsm.unionSet(s3, s12);
-  std::cout << "s123b: " << *s123a << "\n";
+  DIAG("s123b: " << *s123a);
   fsm.checkInvariants();
 
   xassert(s123a == s123b);
@@ -83,6 +91,10 @@ static void testBasics()
 }
 
 
+CLOSE_ANONYMOUS_NAMESPACE
+
+
+// Called by unit-tests.cc.
 void test_functional_set()
 {
   testBasics();

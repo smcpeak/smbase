@@ -10,11 +10,15 @@
 #include "strsobjdict.h"               // StringSObjDict
 
 #include "sm-iostream.h"               // cout
+#include "sm-test.h"                   // DIAG
+
+
+static bool verbose = false;
 
 
 static bool printIntKV(string const &key, intptr_t value, void *)
 {
-  cout << "key=" << key << " value=" << value << endl;
+  DIAG("key=" << key << " value=" << value);
   return false;
 }
 
@@ -45,7 +49,7 @@ static void testStringIntDict()
 
 static bool printObjKV(string const &key, int *value, void *)
 {
-  cout << "key=" << key << " value=" << *value << endl;
+  DIAG("key=" << key << " value=" << *value);
   return false;
 }
 
