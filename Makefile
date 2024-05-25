@@ -226,6 +226,7 @@ SRCS += bitarray.cc
 SRCS += boxprint.cc
 SRCS += breaker.cc
 SRCS += codepoint.cc
+SRCS += counting-ostream.cc
 SRCS += crc.cc
 SRCS += cycles.c
 SRCS += d2vector.c

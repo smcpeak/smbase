@@ -104,4 +104,8 @@ public:      // methods
 };
 
 
+// Declare a global instance that I can use as a null sink in tests.
+extern CountingOStream nullOStream;
+
+
 #endif // COUNTING_OSTREAM_H
