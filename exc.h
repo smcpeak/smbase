@@ -72,9 +72,15 @@ protected:   // data
   std::vector<std::string> m_contexts;
 
 public:      // methods
+  // The `XBase` constructor does not take any arguments.  In the past
+  // it accepted a `string` argument.  If you are porting older code
+  // that relied on that, you probably want to inherit `XMessage`
+  // instead.
   XBase() noexcept;
+
   XBase(XBase const &m) noexcept;
   XBase &operator=(XBase const &m) noexcept;
+
   virtual ~XBase();
 
   // `std::exception` overrides.  This is not meant to be further
@@ -195,6 +201,7 @@ public:      // methods
 void xmessage(std::string const &msg) NORETURN;
 
 // For compatibility with older code, define this alias.
+inline void xbase(std::string const &msg) NORETURN;
 inline void xbase(std::string const &msg) { xmessage(msg); }
 
 
@@ -246,6 +253,9 @@ public:      // methods
   XFormat(rostring cond);
   XFormat(XFormat const &obj);
   ~XFormat();
+
+  // Compatibility alias.
+  std::string cond() const { return getMessage(); }
 };
 
 // compact way to throw an XFormat
