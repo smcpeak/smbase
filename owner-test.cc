@@ -4,10 +4,15 @@
 #include "owner.h"                     // module to test
 
 #include "sm-macros.h"                 // PRETEND_USED, OPEN_ANONYMOUS_NAMESPACE
+#include "sm-test.h"                   // dummy_printf
 #include "xassert.h"                   // xassert
 
 #include <stdio.h>                     // printf
 #include <stdlib.h>                    // exit
+
+
+// Silence test.
+#define printf dummy_printf
 
 
 OPEN_ANONYMOUS_NAMESPACE

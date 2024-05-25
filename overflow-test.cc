@@ -4,6 +4,7 @@
 #include "overflow.h"                  // this module
 
 #include "exc.h"                       // xassert
+#include "save-restore.h"              // SET_RESTORE
 #include "sm-iostream.h"               // cout
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
 #include "sm-test.h"                   // PVAL
@@ -14,6 +15,14 @@
 
 
 OPEN_ANONYMOUS_NAMESPACE
+
+
+bool verbose = false;
+
+#define DIAG(stuff)        \
+  if (verbose) {           \
+    cout << stuff << endl; \
+  }
 
 
 // Add, and expect success.
@@ -36,7 +45,7 @@ ostream& insertAsDigits(ostream &os, NUM n)
 
 // Add, and expect overflow.
 template <class NUM>
-void testOneAddOv(NUM a, NUM b, int verbose = 1)
+void testOneAddOv(NUM a, NUM b)
 {
   try {
     addWithOverflowCheck(a, b);
@@ -66,7 +75,7 @@ void testOneMultiply(NUM a, NUM b, NUM expect)
 
 // Multiply, and expect overflow.
 template <class NUM>
-void testOneMultiplyOv(NUM a, NUM b, int verbose = 1)
+void testOneMultiplyOv(NUM a, NUM b)
 {
   try {
     multiplyWithOverflowCheck(a, b);
@@ -88,7 +97,7 @@ void testOneMultiplyOv(NUM a, NUM b, int verbose = 1)
 // Test what happens with 'a+b' using int64_t, which must be able
 // to represent all the possible values.
 template <class SMALL_NUM>
-void testOneAddSmallUsingInt64(SMALL_NUM a, SMALL_NUM b, int verbose = 1)
+void testOneAddSmallUsingInt64(SMALL_NUM a, SMALL_NUM b)
 {
   int64_t largeA(a);
   int64_t largeB(b);
@@ -106,14 +115,14 @@ void testOneAddSmallUsingInt64(SMALL_NUM a, SMALL_NUM b, int verbose = 1)
     xassert(largeActual == result);
   }
   else {
-    testOneAddOv(a, b, verbose);
+    testOneAddOv(a, b);
   }
 }
 
 
 // Same but for multiplication.
 template <class SMALL_NUM>
-void testOneMultiplySmallUsingInt64(SMALL_NUM a, SMALL_NUM b, int verbose = 1)
+void testOneMultiplySmallUsingInt64(SMALL_NUM a, SMALL_NUM b)
 {
   int64_t largeA(a);
   int64_t largeB(b);
@@ -131,7 +140,7 @@ void testOneMultiplySmallUsingInt64(SMALL_NUM a, SMALL_NUM b, int verbose = 1)
     xassert(largeActual == result);
   }
   else {
-    testOneMultiplyOv(a, b, verbose);
+    testOneMultiplyOv(a, b);
   }
 }
 
@@ -145,8 +154,9 @@ void testAddMultiplyAllSmallUsingInt64()
 
   for (int64_t a = minValue; a <= maxValue; a++) {
     for (int64_t b = minValue; b <= maxValue; b++) {
-      testOneAddSmallUsingInt64((SMALL_NUM)a, (SMALL_NUM)b, 0 /*verbose*/);
-      testOneMultiplySmallUsingInt64((SMALL_NUM)a, (SMALL_NUM)b, 0 /*verbose*/);
+      SET_RESTORE(verbose, false);
+      testOneAddSmallUsingInt64((SMALL_NUM)a, (SMALL_NUM)b);
+      testOneMultiplySmallUsingInt64((SMALL_NUM)a, (SMALL_NUM)b);
     }
   }
 }
@@ -181,10 +191,10 @@ void testAddAndMultiply()
 
   // These are slow.
   if (false) {
-    cout << "int8_t exhaustive" << endl;
+    DIAG("int8_t exhaustive");
     testAddMultiplyAllSmallUsingInt64<int8_t>();
 
-    cout << "uint8_t exhaustive" << endl;
+    DIAG("uint8_t exhaustive");
     testAddMultiplyAllSmallUsingInt64<uint8_t>();
   }
 
@@ -234,7 +244,7 @@ void cwlFail(SRC src)
     xfailure("should have failed");
   }
   catch (XOverflow &x) {
-    cout << "as expected: " << x.why() << "\n";
+    DIAG("as expected: " << x);
   }
 }
 
@@ -285,7 +295,7 @@ void cnFail(SRC src)
     xfailure("should have failed");
   }
   catch (XOverflow &x) {
-    cout << "as expected: " << x.why() << "\n";
+    DIAG("as expected: " << x);
   }
 }
 
@@ -308,7 +318,7 @@ void test_overflow()
 
   #define RUNTEST(func)                              \
     if (selTest==nullptr || streq(selTest, #func)) { \
-      cout << #func << "\n";                         \
+      DIAG(#func);                                   \
       func();                                        \
     }
 
@@ -317,8 +327,6 @@ void test_overflow()
   RUNTEST(testConvertNumber);
 
   #undef RUNTEST
-
-  cout << "overflow-test: PASSED" << endl;
 }
 
 

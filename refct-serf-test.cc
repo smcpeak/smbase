@@ -16,6 +16,14 @@
 OPEN_ANONYMOUS_NAMESPACE
 
 
+bool verbose = false;
+
+#define DIAG(stuff)        \
+  if (verbose) {           \
+    cout << stuff << endl; \
+  }
+
+
 // Placeholder data class.  This one does not explicitly call any of
 // the SerfRefCount methods.
 class Integer : public SerfRefCount {
@@ -569,7 +577,7 @@ static void testListSuccess()
   EXPECT_EQ(list.indexOf(&o4), 0);
 
   try {
-    cout << "should throw:" << endl;
+    DIAG("should throw:");
     list.appendNewItem(&o4);
     cout << "should have failed" << endl;
     abort();
@@ -578,7 +586,7 @@ static void testListSuccess()
   {}
 
   try {
-    cout << "should throw:" << endl;
+    DIAG("should throw:");
     list.removeItem(NULL);
     cout << "should have failed" << endl;
     abort();
@@ -753,8 +761,6 @@ void test_refct_serf()
   testLongList(LL_FAILURE);
   testMultipleInheritance(false /*failure*/);
   testMultipleInheritance(true /*failure*/);
-
-  cout << "test-refct-serf ok" << endl;
 }
 
 

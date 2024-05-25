@@ -80,8 +80,6 @@ void test_parsestring()
   testParse1();
   testFailParse1();
   testParsingCText();
-
-  cout << "test_parsestring PASSED" << endl;
 }
 
 

@@ -8,6 +8,8 @@
 using std::cout;
 
 
+static bool verbose = false;
+
 static PPrintToString pp;
 
 
@@ -17,8 +19,10 @@ void test_pprint()
   pp.margin = 30;
   pp.startText = "; ";
 
-  cout << "         1    1    2    2    3\n";
-  cout << "1---5----0----5----0----5----0\n";
+  if (verbose) {
+    cout << "         1    1    2    2    3\n";
+    cout << "1---5----0----5----0----5----0\n";
+  }
 
   pp << "int foo()\n"
         "{\n"
@@ -40,7 +44,9 @@ void test_pprint()
   pp.ind(-2);
   pp << "}\n";
 
-  cout << pp.sb;
+  if (verbose) {
+    cout << pp.sb;
+  }
 }
 
 
