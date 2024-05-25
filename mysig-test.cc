@@ -3,11 +3,17 @@
 
 #include "mysig.h"                     // module under test
 
+#include "sm-test.h"                   // dummy_printf
+
 #include <setjmp.h>                    // setjmp
 #include <stdint.h>                    // uintptr_t
 #include <stdio.h>                     // printf
 #include <stdlib.h>                    // strtoul, exit
 #include <string.h>                    // strcmp
+
+
+// Silence test.
+#define printf dummy_printf
 
 
 static void infiniteRecursion()

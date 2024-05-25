@@ -12,6 +12,14 @@
 OPEN_ANONYMOUS_NAMESPACE
 
 
+bool verbose = false;
+
+#define DIAG(stuff)        \
+  if (verbose) {           \
+    cout << stuff << endl; \
+  }
+
+
 // class we're going to make a pool of
 class Foo {
 public:
@@ -63,7 +71,7 @@ void test_objpool()
   }
 
   // start allocating at random
-  cout << "allocating/deallocating " << ITERS << " times..\n";
+  DIAG("allocating/deallocating " << ITERS << " times...");
   for (i=0; i<ITERS; i++) {
     int index = rand()%BIG;
     Foo *&f = allocated[index];
@@ -88,7 +96,7 @@ void test_objpool()
   int finalNumAllocd = numAllocated;
 
   // deallocate all that remain
-  cout << "freeing remaining " << numAllocated << " stragglers\n";
+  DIAG("freeing remaining " << numAllocated << " stragglers");
   for (i=0; i<BIG; i++) {
     if (allocated[i]) {
       Foo *&f = allocated[i];
@@ -103,8 +111,8 @@ void test_objpool()
   // verify that the # of objects freed is the # that became available
   xassert(finalNumAllocd == (pool.freeObjectsInPool() - startSize));
 
-  cout << "pool capacity at end: " << pool.freeObjectsInPool() << endl;
-  cout << "tobjpool works!\n";
+  DIAG("pool capacity at end: " << pool.freeObjectsInPool());
+  DIAG("tobjpool works!");
 }
 
 

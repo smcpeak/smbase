@@ -1,11 +1,21 @@
 // objlist-test.cc            see license.txt for copyright and terms of use
 // test code for objlist.h
 
-#include "objlist.h"    // this module
-#include "breaker.h"    // breaker
+#include "objlist.h"                   // module under test
 
-#include <stdlib.h>     // rand()
-#include <stdio.h>      // printf()
+#include "breaker.h"                   // breaker
+#include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
+#include "sm-test.h"                   // dummy_printf
+
+#include <stdlib.h>                    // rand()
+#include <stdio.h>                     // printf()
+
+
+// Silence test.
+#define printf dummy_printf
+
+
+OPEN_ANONYMOUS_NAMESPACE
 
 
 // ------------ object class --------------------
@@ -113,6 +123,9 @@ void testSorting()
     // but highly unlikely, in my judgment
   }
 }
+
+
+CLOSE_ANONYMOUS_NAMESPACE
 
 
 // Called from unit-tests.cc.
