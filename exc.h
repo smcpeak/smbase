@@ -131,18 +131,18 @@ void printUnhandled(XBase const &x);
   } /* user ; */
 
 
-// -------------------- x_assert -----------------------
+// -------------------- XAssert -----------------------
 // thrown by _xassert_fail, declared in xassert.h
 // throwing this corresponds to detecting a bug in the program
-class x_assert : public XBase {
+class XAssert : public XBase {
   string condition; // text of the failed condition
   string filename;  // name of the source file
   int lineno;                // line number
 
 public:
-  x_assert(rostring cond, rostring fname, int line);
-  x_assert(x_assert const &obj);
-  ~x_assert();
+  XAssert(rostring cond, rostring fname, int line);
+  XAssert(XAssert const &obj);
+  ~XAssert();
 
   rostring cond() const { return condition; }
   rostring fname() const { return filename; }

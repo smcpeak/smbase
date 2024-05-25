@@ -17,7 +17,7 @@ static void testAddUnique()
     ss.addUnique("b");
     xbase("That should have failed!");
   }
-  catch (x_assert&) {
+  catch (XAssert&) {
     // as expected
   }
   ss.addUnique("c");

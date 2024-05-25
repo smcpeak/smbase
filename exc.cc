@@ -83,8 +83,8 @@ void XBase::prependContext(rostring context)
 }
 
 
-// ------------------- x_assert -----------------
-x_assert::x_assert(rostring cond, rostring fname, int line)
+// ------------------- XAssert -----------------
+XAssert::XAssert(rostring cond, rostring fname, int line)
   : XBase(stringb(
       fname << ":" << line << ": assertion failed: " << cond)),
     condition(cond),
@@ -92,21 +92,21 @@ x_assert::x_assert(rostring cond, rostring fname, int line)
     lineno(line)
 {}
 
-x_assert::x_assert(x_assert const &obj)
+XAssert::XAssert(XAssert const &obj)
   : XBase(obj),
     condition(obj.condition),
     filename(obj.filename),
     lineno(obj.lineno)
 {}
 
-x_assert::~x_assert()
+XAssert::~XAssert()
 {}
 
 
 // failure function, declared in xassert.h
 void x_assert_fail(char const *cond, char const *file, int line)
 {
-  THROW(x_assert(cond, file, line));
+  THROW(XAssert(cond, file, line));
 }
 
 
