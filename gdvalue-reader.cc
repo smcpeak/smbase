@@ -519,7 +519,7 @@ GDValue GDValueReader::readNextInteger(int firstChar)
 
     // Prepare to consume digits.
     firstChar = readNotEOFCharOrErr(
-      "looing for digit after minus sign that starts an integer");
+      "looking for digit after minus sign that starts an integer");
   }
 
   GDVInteger integerValue(firstChar - '0');
