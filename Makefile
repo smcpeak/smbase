@@ -356,6 +356,7 @@ UNIT_TEST_OBJS += stringf-test.o
 UNIT_TEST_OBJS += stringset-test.o
 UNIT_TEST_OBJS += strutil-test.o
 UNIT_TEST_OBJS += svdict-test.o
+UNIT_TEST_OBJS += syserr-test.o
 UNIT_TEST_OBJS += taillist-test.o
 UNIT_TEST_OBJS += trdelete-test.o
 UNIT_TEST_OBJS += tree-print-test.o

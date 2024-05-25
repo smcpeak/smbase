@@ -21,7 +21,7 @@ public:     // data
   //   platforms, that this list will be extended as necessary
   enum Reason {
     R_NO_ERROR,          // no error occurred
-    R_FILE_NOT_FOUND,
+    R_FILE_NOT_FOUND,    // We sometimes get this when R_PATH_NOT_FOUND might be expected...
     R_PATH_NOT_FOUND,
     R_ACCESS_DENIED,
     R_OUT_OF_MEMORY,

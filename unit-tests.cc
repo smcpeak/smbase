@@ -121,6 +121,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(stringset);
   RUN_TEST(strutil);
   RUN_TEST(svdict);
+  RUN_TEST(syserr);
   RUN_TEST(taillist);
   RUN_TEST(trdelete);
   RUN_TEST(tree_print);

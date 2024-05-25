@@ -27,6 +27,22 @@ bool isSubsetOf(std::set<T> const &subset, std::set<T> const &superset)
 }
 
 
+// Call 'func' on every element in 'input' and return the set of all of
+// the results.
+template <typename OELT, typename IELT, typename FUNC>
+std::set<OELT> setMapElements(std::set<IELT> const &input,
+                              FUNC const &func)
+{
+  std::set<OELT> output;
+
+  for (IELT const &ielt : input) {
+    output.insert(func(ielt));
+  }
+
+  return output;
+}
+
+
 template <class T>
 std::ostream& operator<< (std::ostream &os, std::set<T> const &s)
 {
