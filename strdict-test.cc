@@ -3,12 +3,14 @@
 
 #include "strdict.h"                   // module under test
 
+#include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
+
 #include <stdlib.h>                    // rand
 
 #define myrandom(n) (rand()%(n))
 
 
-namespace {
+OPEN_ANONYMOUS_NAMESPACE
 
 char randChar()
 {
@@ -42,7 +44,7 @@ string randKey(StringDict const &dict)
   return entry.key();
 }
 
-} // anonymous namespace
+CLOSE_ANONYMOUS_NAMESPACE
 
 
 // Called from unit-tests.cc.

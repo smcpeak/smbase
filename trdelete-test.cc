@@ -1,14 +1,16 @@
 // trdelete-test.cc
 // Tests for trdelete.
 
-#include "trdelete.h"   // module under test
+#include "trdelete.h"                  // module under test
 
-#include <assert.h>     // assert
-#include <stdio.h>      // printf
-#include <stdlib.h>     // malloc, exit
+#include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
+
+#include <assert.h>                    // assert
+#include <stdio.h>                     // printf
+#include <stdlib.h>                    // malloc, exit
 
 
-namespace {
+OPEN_ANONYMOUS_NAMESPACE
 
 
 class Foo {
@@ -34,7 +36,7 @@ public:
 int volatile * volatile fieldptr;
 
 
-} // anonymous namespace
+CLOSE_ANONYMOUS_NAMESPACE
 
 
 // Called from unit-tests.cc.

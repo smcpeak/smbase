@@ -5,6 +5,7 @@
 
 #include "autofile.h"                  // AutoFILE
 #include "exc.h"                       // xbase
+#include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
 #include "strtokp.h"                   // StrtokParse
 #include "strutil.h"                   // substring
 #include "trace.h"                     // traceProgress
@@ -12,7 +13,7 @@
 #include <stdlib.h>                    // rand, exit, system, getenv
 
 
-namespace {
+OPEN_ANONYMOUS_NAMESPACE
 
 
 SourceLocManager mgr;
@@ -286,7 +287,7 @@ void testHashMap2()
 }
 
 
-} // anonymous namespace
+CLOSE_ANONYMOUS_NAMESPACE
 
 
 // Called from unit-tests.cc.

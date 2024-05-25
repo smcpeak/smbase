@@ -4,9 +4,10 @@
 #include "bitarray.h"                  // module under test
 
 #include "exc.h"                       // xbase
+#include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
 
 
-namespace {
+OPEN_ANONYMOUS_NAMESPACE
 
 
 string toStringViaIter(BitArray const &b)
@@ -118,7 +119,7 @@ void testAnyEvenOddBitPair(char const *s, bool expect)
 }
 
 
-} // anonymous namespace
+CLOSE_ANONYMOUS_NAMESPACE
 
 
 // Called from unit-tests.cc.

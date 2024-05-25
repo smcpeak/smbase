@@ -1,22 +1,23 @@
 // strhash-test.cc
 // Tests for strhash.
 
-#include "strhash.h"     // module under test
+#include "strhash.h"                   // module under test
 
-#include "array.h"       // GrowArray
-#include "crc.h"         // crc32
-#include "nonport.h"     // getMilliseconds
-#include "sm-iostream.h" // cout
-#include "str.h"         // string
-#include "trace.h"       // traceProgress
-#include "xassert.h"     // xassert
+#include "array.h"                     // GrowArray
+#include "crc.h"                       // crc32
+#include "nonport.h"                   // getMilliseconds
+#include "sm-iostream.h"               // cout
+#include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
+#include "str.h"                       // string
+#include "trace.h"                     // traceProgress
+#include "xassert.h"                   // xassert
 
-#include <fstream>       // filebuf
-#include <iostream>      // istream
-#include <stdlib.h>      // rand
+#include <fstream>                     // filebuf
+#include <iostream>                    // istream
+#include <stdlib.h>                    // rand
 
 
-namespace {
+OPEN_ANONYMOUS_NAMESPACE
 
 
 // pair a GrowArray with its size
@@ -266,7 +267,7 @@ void initFromFlags(int &argc, char const **&argv) {
 }
 
 
-} // anonymous namespace
+CLOSE_ANONYMOUS_NAMESPACE
 
 
 // Called from unit-tests.cc.

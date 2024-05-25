@@ -5,12 +5,13 @@
 
 #include "array.h"                     // ObjArrayStack
 #include "ptrmap.h"                    // PtrMap
+#include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
 
 #include <stdlib.h>                    // rand, qsort
 #include <stdio.h>                     // printf
 
 
-namespace {
+OPEN_ANONYMOUS_NAMESPACE
 
 
 class Node {
@@ -183,7 +184,7 @@ void test2()
 }
 
 
-} // anonymous namespace
+CLOSE_ANONYMOUS_NAMESPACE
 
 
 // Called from unit-tests.cc.

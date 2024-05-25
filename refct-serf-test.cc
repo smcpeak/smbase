@@ -9,10 +9,11 @@
 #include "objlist.h"                   // ObjList
 #include "owner.h"                     // Owner
 #include "sm-iostream.h"               // cout, etc.
+#include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
 #include "sm-test.h"                   // EXPECT_EQ
 
 
-namespace {
+OPEN_ANONYMOUS_NAMESPACE
 
 
 // Placeholder data class.  This one does not explicitly call any of
@@ -720,7 +721,7 @@ static void testMultipleInheritance(int failure)
 }
 
 
-} // anonymous namespace
+CLOSE_ANONYMOUS_NAMESPACE
 
 
 // Called from unit-tests.cc.

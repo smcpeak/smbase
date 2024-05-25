@@ -4,6 +4,7 @@
 #include "strutil.h"                   // module under test
 
 #include "sm-fstream.h"                // ofstream
+#include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
 #include "sm-test.h"                   // EXPECT_EQ
 
 #include <assert.h>                    // assert
@@ -11,7 +12,7 @@
 #include <stdio.h>                     // printf, remove
 
 
-namespace {
+OPEN_ANONYMOUS_NAMESPACE
 
 
 void expRangeVector(char const *in, char const *out)
@@ -208,7 +209,7 @@ static void testReadLinesFromFile()
 }
 
 
-} // anonymous namespace
+CLOSE_ANONYMOUS_NAMESPACE
 
 
 // Called from unit-tests.cc.

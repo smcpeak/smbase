@@ -3,6 +3,7 @@
 
 #include "svdict.h"                    // module under test
 
+#include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
 #include "sm-stdint.h"                 // intptr_t
 
 #include <stdlib.h>                    // rand
@@ -10,7 +11,7 @@
 #define myrandom(n) (rand()%(n))
 
 
-namespace {
+OPEN_ANONYMOUS_NAMESPACE
 
 char randChar()
 {
@@ -49,7 +50,7 @@ void *randVoidPtr()
   return (void*)(intptr_t)(myrandom(100) * 8);
 }
 
-} // anonymous namespace
+CLOSE_ANONYMOUS_NAMESPACE
 
 
 // Called from unit-tests.cc.

@@ -1,13 +1,15 @@
 // objpool-test.cc            see license.txt for copyright and terms of use
 // test ObjectPool
 
-#include "objpool.h"     // ObjectPool
+#include "objpool.h"                   // ObjectPool
 
-#include <stdlib.h>      // rand
-#include "sm-iostream.h" // cout
+#include "sm-iostream.h"               // cout
+#include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
+
+#include <stdlib.h>                    // rand
 
 
-namespace {
+OPEN_ANONYMOUS_NAMESPACE
 
 
 // class we're going to make a pool of
@@ -44,7 +46,7 @@ void Foo::checkInvariant(int index) const
 enum { SMALL=30, BIG=100, ITERS=10000 };
 
 
-} // anonymous namespace
+CLOSE_ANONYMOUS_NAMESPACE
 
 
 // Called from unit-tests.cc.

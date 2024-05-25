@@ -3,13 +3,15 @@
 
 #include "nonport.h"                   // module under test
 
+#include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
+
 #include <errno.h>                     // errno
 #include <stdarg.h>                    // va_list
 #include <stdio.h>                     // printf
 #include <stdlib.h>                    // exit, getenv
 #include <string.h>                    // strcmp
 
-namespace {
+OPEN_ANONYMOUS_NAMESPACE
 
 
 // helper for testing applyToCwdFiles
@@ -80,7 +82,7 @@ void nprintfVector(char const *format, ...)
 }
 
 
-} // anonymous namespace
+CLOSE_ANONYMOUS_NAMESPACE
 
 
 // Called from unit-tests.cc.

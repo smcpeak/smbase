@@ -3,14 +3,14 @@
 
 #include "owner.h"                     // module to test
 
-#include "sm-macros.h"                 // PRETEND_USED
+#include "sm-macros.h"                 // PRETEND_USED, OPEN_ANONYMOUS_NAMESPACE
 #include "xassert.h"                   // xassert
 
 #include <stdio.h>                     // printf
 #include <stdlib.h>                    // exit
 
 
-namespace {
+OPEN_ANONYMOUS_NAMESPACE
 
 
 // a simple class to play with
@@ -126,7 +126,7 @@ void test4()
 }
 
 
-} // anonymous namespace
+CLOSE_ANONYMOUS_NAMESPACE
 
 
 // Called from unit-tests.cc.

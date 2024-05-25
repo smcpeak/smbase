@@ -5,6 +5,7 @@
 
 #include "exc.h"                       // xassert
 #include "sm-iostream.h"               // cout
+#include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
 #include "sm-test.h"                   // PVAL
 #include "str.h"                       // streq
 
@@ -12,7 +13,7 @@
 #include <limits.h>                    // INT_MIN, INT_MIN
 
 
-namespace { // anonymous namespace for test code
+OPEN_ANONYMOUS_NAMESPACE
 
 
 // Add, and expect success.
@@ -298,7 +299,7 @@ void testConvertNumber()
 }
 
 
-} // end anonymous namespace for test code
+CLOSE_ANONYMOUS_NAMESPACE
 
 
 void test_overflow()
