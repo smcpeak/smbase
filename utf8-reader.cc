@@ -13,25 +13,23 @@ OPEN_NAMESPACE(smbase)
 
 
 // ------------------------ UTF8ReaderException ------------------------
-STATICDEF std::string UTF8ReaderException::makeCondition(
-  std::string const &utf8Details,
-  std::size_t byteOffset)
-{
-  return stringb(
-    "Invalid UTF-8 encoding at byte offset " << byteOffset <<
-    ": " << utf8Details);
-}
-
-
 UTF8ReaderException::UTF8ReaderException(
   Kind kind,
   std::string const &utf8Details,
   std::size_t byteOffset)
-  : XFormat(makeCondition(utf8Details, byteOffset)),
+  : XBase(),
     m_kind(kind),
     m_utf8Details(utf8Details),
     m_byteOffset(byteOffset)
 {}
+
+
+std::string UTF8ReaderException::getConflict() const
+{
+  return stringb(
+    "Invalid UTF-8 encoding at byte offset " << m_byteOffset <<
+    ": " << m_utf8Details);
+}
 
 
 // ---------------------------- UTF8Reader -----------------------------

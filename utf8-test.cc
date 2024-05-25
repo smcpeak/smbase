@@ -174,7 +174,7 @@ static void testOneError(
   }
   catch (UTF8ReaderException &e) {
     EXPECT_EQ(e.m_kind, kind);
-    EXPECT_MATCHES_REGEX(e.why(), regex);
+    EXPECT_MATCHES_REGEX(e.getMessage(), regex);
   }
 }
 

@@ -6,7 +6,7 @@
 #ifndef SMBASE_UTF8_READER_H
 #define SMBASE_UTF8_READER_H
 
-#include "exc.h"                       // XFormat
+#include "exc.h"                       // XBase
 #include "xassert.h"                   // xassert
 
 #include <cstddef>                     // std::size_t
@@ -22,9 +22,7 @@ static_assert(sizeof(int) >= 4);
 
 
 // Report an issue with UTF-8 input.
-//
-// TODO: Inherit from XBase instead of XFormat.
-class UTF8ReaderException : public XFormat {
+class UTF8ReaderException : public XBase {
 public:      // types
   enum Kind {
     K_UNKNOWN,
@@ -56,12 +54,6 @@ public:      // data
   // Byte offset from `m_start` in the throwing reader.
   std::size_t m_byteOffset;
 
-private:     // methods
-  // Create the `XFormat::condition` string.
-  static std::string makeCondition(
-    std::string const &utf8Details,
-    std::size_t byteOffset);
-
 public:      // methods
   UTF8ReaderException(
     Kind kind,
@@ -70,6 +62,9 @@ public:      // methods
 
   UTF8ReaderException(UTF8ReaderException const &obj) = default;
   UTF8ReaderException &operator=(UTF8ReaderException const &obj) = default;
+
+  // XBase methods.
+  virtual std::string getConflict() const override;
 };
 
 
