@@ -39,4 +39,8 @@ void expectMatchesRegex(
 }
 
 
+void dummy_printf(char const * /*fmt*/, ...)
+{}
+
+
 // EOF

@@ -6,9 +6,14 @@
 #include "array.h"                     // ObjArrayStack
 #include "ptrmap.h"                    // PtrMap
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
+#include "sm-test.h"                   // dummy_printf
 
 #include <stdlib.h>                    // rand, qsort
 #include <stdio.h>                     // printf
+
+
+// Silence the output when I'm not actively working on this test.
+#define printf dummy_printf
 
 
 OPEN_ANONYMOUS_NAMESPACE

@@ -8,6 +8,7 @@
 #include "exc.h"           // XBase
 #include "nonport.h"       // getMilliseconds
 #include "sm-iostream.h"   // cout
+#include "sm-macros.h"     // SM_PRINTF_ANNOTATION
 #include "str.h"           // stringb, string
 #include "xassert.h"       // xassert
 
@@ -149,6 +150,13 @@ void expectMatchesRegex(
 
 #define EXPECT_MATCHES_REGEX(actual, expectRegex) \
   expectMatchesRegex(#actual, actual, expectRegex) /* user ; */
+
+
+// Function that has the same signature as `printf` but does nothing.
+// In test code, it can be useful to use a macro to map `printf` to this
+// to silence it by default.
+void dummy_printf(char const *fmt, ...)
+  SM_PRINTF_ANNOTATION(1, 2);
 
 
 #endif // SMBASE_SM_TEST_H
