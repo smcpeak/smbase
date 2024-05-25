@@ -3,11 +3,17 @@
 
 #include "crc.h"                       // module under test
 
+#include "dummy-printf.h"              // dummy_printf
+
 #include <errno.h>                     // errno
 #include <stdint.h>                    // uint32_t
 #include <stdio.h>                     // printf, FILE, etc.
 #include <stdlib.h>                    // malloc, exit
 #include <string.h>                    // strerror
+
+
+static bool verbose = false;
+#define printf (verbose? printf : dummy_printf)
 
 
 static int errors=0;

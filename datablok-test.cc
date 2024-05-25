@@ -10,6 +10,9 @@
 #include <stdio.h>                     // printf
 
 
+static bool verbose = false;
+
+
 static bool detectedCorruption = false;
 
 static void corruptionHandler()
@@ -47,7 +50,9 @@ void test_datablok()
         b.getData()[i] = (unsigned char)i;
       }
       b.setDataLen(260);
-      b.print("all bytes plus 4 extra");
+      if (verbose) {
+        b.print("all bytes plus 4 extra");
+      }
     }
 
     DataBlock block("yadda smacker");
@@ -88,8 +93,6 @@ void test_datablok()
       testMemoryCorruption();
     }
   }
-
-  printf("test_datablok: PASSED\n");
 }
 
 

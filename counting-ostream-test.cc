@@ -10,6 +10,9 @@ using std::cout;
 using std::endl;
 
 
+static bool verbose = false;
+
+
 // Run a single test.  'writeOperands' is a chain of things to be
 // written using 'operator<<'.
 #define TEST_WITH(writeOperands)                        \
@@ -24,11 +27,13 @@ using std::endl;
   size_t expect = oss.str().size();                     \
                                                         \
   /* Print each test case and flush before checking. */ \
-  cout                                                  \
-    << "actual=" << actual                              \
-    << " expect=" << expect                             \
-    << " string: " << oss.str()                         \
-    << endl;                                            \
+  if (verbose) {                                        \
+    cout                                                \
+      << "actual=" << actual                            \
+      << " expect=" << expect                           \
+      << " string: " << oss.str()                       \
+      << endl;                                          \
+  }                                                     \
   assert(actual == expect);                             \
 }
 
@@ -57,9 +62,11 @@ void test_counting_ostream()
     size_t actual = cos.getCount();
     size_t expect = oss.str().size();
 
-    cout << "larger: actual=" << actual
-         << " expect=" << expect
-         << endl;
+    if (verbose) {
+      cout << "larger: actual=" << actual
+           << " expect=" << expect
+           << endl;
+    }
     assert(actual == expect);
   }
 }

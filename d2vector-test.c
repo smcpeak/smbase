@@ -3,7 +3,17 @@
 
 #include "d2vector.h"                  // module under test
 
+#include "dummy-printf.h"              // dummy_printf
+
 #include <stdio.h>                     // printf
+
+
+static int verbose = 0;
+#define printf (verbose? printf : dummy_printf)
+
+// TODO: These do not respond to `verbose`.
+#define printD2Point(p) ((void)(p))
+#define printD2Line(p) ((void)(p))
 
 
 static void runIntersect(double px, double py, double vx, double vy,

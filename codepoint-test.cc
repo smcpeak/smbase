@@ -40,8 +40,6 @@ void test_codepoint()
   xassert(isASCIIOctDigit('0'));
   xassert(isASCIIOctDigit('7'));
   xassert(!isASCIIOctDigit('8'));
-
-  std::cout << "test-codepoint passed" << std::endl;
 }
 
 

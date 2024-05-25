@@ -3,7 +3,14 @@
 
 #include "cycles.h"                    // module under test
 
+#include "dummy-printf.h"              // dummy_printf
+
 #include <stdio.h>                     // printf
+
+
+// Silence test.
+static int verbose = 0;
+#define printf (verbose? printf : dummy_printf)
 
 
 // Called from unit-tests.cc.

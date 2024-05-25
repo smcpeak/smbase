@@ -3,12 +3,19 @@
 
 #include "boxprint.h"                  // module under test
 
+#include "sm-test.h"                   // DIAG
+
 #include <stdlib.h>                    // atoi, getenv
+
+
+static bool verbose = false;
 
 
 // Called from unit-tests.cc.
 void test_boxprint()
 {
+  verbose = !!getenv("VERBOSE");
+
   BoxPrint bp;
 
   bp << "int foo()" << bp.br
@@ -116,14 +123,17 @@ void test_boxprint()
   if (char const *marginStr = getenv("BOXPRINT_TEST_MARGIN")) {
     ren.margin = atoi(marginStr);
   }
-  cout << "margin: " << ren.margin << "\n";
+  DIAG("margin: " << ren.margin);
 
   tree->render(ren);
   delete tree;
 
-  cout << "         1    1    2    2    3    3    4    4    5    5    6    6    7\n";
-  cout << "1---5----0----5----0----5----0----5----0----5----0----5----0----5----0\n";
-  cout << ren.takeString();
+  DIAG("         1    1    2    2    3    3    4    4    5    5    6    6    7");
+  DIAG("1---5----0----5----0----5----0----5----0----5----0----5----0----5----0");
+  if (verbose) {
+    // Print without an additional newline.
+    cout << ren.takeString();
+  }
 }
 
 

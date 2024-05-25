@@ -4,8 +4,11 @@
 #include "datetime.h"                  // module to test
 
 #include "sm-iostream.h"               // cout, endl
-#include "sm-test.h"                   // PVAL
+#include "sm-test.h"                   // PVAL, DIAG
 #include "xassert.h"                   // xassert
+
+
+static bool verbose = false;
 
 
 static struct UnixTimeAndISO {
@@ -57,14 +60,14 @@ void test_datetime()
   testFromUnixTime();
 
   DateTimeSeconds d;
-  cout << "Default-constructed: " << d << endl;
+  DIAG("Default-constructed: " << d);
 
   d.fromCurrentTime();
-  cout << "Now: " << d << endl;
-  cout << "  dateTimeString: " << d.dateTimeString() << endl;
-  cout << "  dateString    : " << d.dateString() << endl;
-  cout << "  timeString    : " << d.timeString() << endl;
-  cout << "  zoneString    : " << d.zoneString() << endl;
+  DIAG("Now: " << d);
+  DIAG("  dateTimeString: " << d.dateTimeString());
+  DIAG("  dateString    : " << d.dateString());
+  DIAG("  timeString    : " << d.timeString());
+  DIAG("  zoneString    : " << d.zoneString());
 
   FixedDateTimeProvider fdtp(1000000000 + 83*60, -(1*60 + 23));
   d.fromCurrentTime(&fdtp);
@@ -81,7 +84,7 @@ void test_datetime()
 
   d.month = 13;
   try {
-    cout << "Expecting an exception here:" << endl;
+    DIAG("Expecting an exception here:");
     d.validateFields();
     xfailure("that should have failed!");
   }
@@ -89,9 +92,7 @@ void test_datetime()
     // As expected.
   }
 
-  cout << "localTimeString: " << localTimeString() << endl;
-
-  cout << "test-datetime PASSED\n";
+  DIAG("localTimeString: " << localTimeString());
 }
 
 
