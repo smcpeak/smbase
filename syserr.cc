@@ -51,7 +51,7 @@ STATICDEF char const *xSysError::
 
 xSysError::xSysError(xSysError::Reason r, int sysCode, rostring sysReason,
                      rostring syscall, rostring ctx)
-  : XBase(constructWhyString(r, sysReason, syscall, ctx)),
+  : XBase(),
     reason(r),
     reasonString(getReasonString(r)),
     sysErrorCode(sysCode),
@@ -106,6 +106,13 @@ xSysError::xSysError(xSysError const &obj)
 
 xSysError::~xSysError()
 {}
+
+
+std::string xSysError::getConflict() const
+{
+  return constructWhyString(reason, sysReasonString,
+                            syscallName, context);
+}
 
 
 STATICDEF void xSysError::

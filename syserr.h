@@ -8,8 +8,10 @@
 #ifndef SMBASE_SYSERR_H
 #define SMBASE_SYSERR_H
 
-#include "exc.h"       // XBase
+#include "exc.h"                       // XBase
 
+
+// TODO: Rename this class.
 class xSysError : public XBase {
 private:    // data
   // error strings for Reasons
@@ -58,6 +60,9 @@ public:    // funcs
             rostring syscall, rostring ctx);
   xSysError(xSysError const &obj);
   ~xSysError();
+
+  // XBase methods.
+  virtual std::string getConflict() const override;
 
   // mapping functions used internally
   static int getSystemErrorCode();

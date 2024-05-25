@@ -89,6 +89,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(datablok);
   RUN_TEST(datetime);
   RUN_TEST(dict);
+  RUN_TEST(exc);
   RUN_TEST(functional_set);
   RUN_TEST(gcc_options);
   RUN_TEST(gdvalue);

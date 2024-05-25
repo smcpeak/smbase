@@ -290,13 +290,6 @@ static void testOneMatchesRegex(
       "  re : " << doubleQuote(re) << "\n"
       "  e  : " << e.what()));
   }
-  catch (XBase &e) {
-    xfailure(stringbc(
-      "testOneMatchesRegex failed:\n"
-      "  str: " << doubleQuote(str) << "\n"
-      "  re : " << doubleQuote(re) << "\n"
-      "  e  : " << e.why()));
-  }
 }
 
 

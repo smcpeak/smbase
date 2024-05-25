@@ -7,27 +7,21 @@
 namespace gdv {
 
 
-static std::string makeExceptionMessage(
+GDValueReaderException::GDValueReaderException(
   FileLineCol const &location,
   std::string const &syntaxError) noexcept
+  : XBase(),
+    m_location(location),
+    m_syntaxError(syntaxError)
 {
   std::ostringstream oss;
   if (location.m_fileName) {
     oss << *location.m_fileName << ":";
   }
   oss << location.m_lc.m_line << ":" << location.m_lc.m_column << ": "
-      << "GDV syntax error: " << syntaxError;
-  return oss.str();
+      << "GDV syntax error";
+  prependContext(oss.str());
 }
-
-
-GDValueReaderException::GDValueReaderException(
-  FileLineCol const &location,
-  std::string const &syntaxError) noexcept
-  : XFormat(makeExceptionMessage(location, syntaxError)),
-    m_location(location),
-    m_syntaxError(syntaxError)
-{}
 
 
 GDValueReaderException::~GDValueReaderException()
@@ -37,10 +31,12 @@ GDValueReaderException::~GDValueReaderException()
 void GDValueReaderException::prependGDVNContext(std::string const &context)
 {
   m_syntaxError = stringb(context << ": " << m_syntaxError);
+}
 
-  // Recreate the message rather than calling `XBase::prependContext`
-  // so `context` ends up in the right place.
-  this->msg = makeExceptionMessage(m_location, m_syntaxError);
+
+std::string GDValueReaderException::getConflict() const
+{
+  return m_syntaxError;
 }
 
 

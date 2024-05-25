@@ -4,20 +4,17 @@
 // be assured no exception will propagate out of the program (or any
 // other unit of granularity you want).
 
-// TODO: 'XBase' should inherit 'std::exception'.
-
-// I apologize for the inconsistent naming in this module.  It is
-// the product of an extended period of experimenting with naming
-// conventions for exception-related concepts.  The names near the
-// end of the file reflect my current preferences.
-
 #ifndef SMBASE_EXC_H
 #define SMBASE_EXC_H
 
-#include "breaker.h"     // breaker
-#include "str.h"         // string
-#include "stringb.h"     // stringb
-#include "sm-iostream.h" // ostream
+#include "breaker.h"                   // breaker
+#include "str.h"                       // string
+#include "stringb.h"                   // stringb
+
+#include <exception>                   // std::exception
+#include <iosfwd>                      // std::ostream
+#include <string>                      // std::string
+#include <vector>                      // std::vector
 
 
 // by using this macro, the debugger gets a shot before the stack is unwound
@@ -44,49 +41,102 @@
 // propagate out of destructors.
 
 
-// -------------------- XBase ------------------
-// intent is to derive all exception objects from this
-class XBase {
-protected:
-  // the human-readable description of the exception
-  string msg;
+// ------------------------------- XBase -------------------------------
+/* This is the base class for all exceptions in smbase and the other
+   projects of mine that use it.
 
-public:
-  // Initially false.  When true, we write a record of the thrown
-  // exception to clog for debug assistance.
-  static bool logExceptions;
+   One service it provides is implementing `std::exception::what()`,
+   which has an annoying signature due to not returning `std::string`.
+   Derived classes of `XBase` instead override `getConflict()` (and
+   optionally a few others), which returns a `std::string`, and this
+   class saves the result in order to return it from `what()`.
 
-  // current # of XBases running about; used to support unrolling()
-  static int creationCount;
+   Another service is storing a sequence of context strings to make it
+   easy to augment the exception object with useful information about
+   the program state as it propagates up the stack toward the catch
+   site.  (This is not a substitute for a stack trace; that is an
+   entirely different concern.)
 
-public:
-  XBase(rostring m);       // create exception object with message 'm'
-  XBase(XBase const &m);   // copy ctor
+   TODO: It would be nice to have the ability to collect and store a
+   stack trace here.
+*/
+class XBase : public std::exception {
+private:     // data
+  // This is what the `what()` function points at.  It is only populated
+  // when that function is called.
+  mutable std::string m_whatStorage;
+
+protected:   // data
+  // A sequence of English context phrases describing where an issue
+  // arose or what the program was trying to do at the time.
+  std::vector<std::string> m_contexts;
+
+public:      // methods
+  XBase() noexcept;
+  XBase(XBase const &m) noexcept;
+  XBase &operator=(XBase const &m) noexcept;
   virtual ~XBase();
 
-  rostring why() const
-    { return msg; }
+  // `std::exception` overrides.  This is not meant to be further
+  // overridden by subclasses.  It populates `m_whatStorage` with
+  // `getMessage()` and returns `m_whatStorage.c_str()`.
+  virtual char const *what() const noexcept override;
 
-  // print why
-  void insert(ostream &os) const;
-  friend ostream& operator << (ostream &os, XBase const &obj)
+  // Construct a message suitable to be delivered to a human user in the
+  // event that this exception is the cause of a user-visible error
+  // (which may or may not be fatal).
+  //
+  // Default: Returns `getContext()` + ": =" + `getConflict()`, unless
+  // the context is the empty string, in which case it returns only the
+  // conflict.
+  //
+  virtual std::string getMessage() const;
+
+  // Return a properly punctuated English sentence that explains the
+  // conflict, i.e., what was expected and what was observed.
+  virtual std::string getConflict() const = 0;
+
+  // Return a context string for this exception, or the empty string if
+  // there is no context available.
+  //
+  // Default: Return the strings in `m_contexts` separated by ": ".
+  //
+  virtual std::string getContext() const;
+
+  // This is meant to be called from within a `catch` block that ends
+  // with `throw;` in order to augment the exception object with
+  // additional context.  It should be called with the innermost context
+  // first and outermost context last so the final result begins with
+  // the outermost context.
+  //
+  // Context strings can be simple nouns like file names, line:col
+  // locations, etc.  They can also be phrases that describe what user
+  // request or intermediate task was being performed.  The context is
+  // *not* meant to be a tool for debugging--it should only contain
+  // information that is meaningful and useful to the end user.  (Of
+  // course, if the exception arises in a context where only a developer
+  // could see it, like in unit tests, then debug information can be
+  // appropriate.)
+  //
+  // Default: Prepend `context` to `m_contexts`.
+  //
+  virtual void prependContext(std::string const &context);
+
+  // Although unusual, there may be cases where some piece of context
+  // should be inserted as the new innermost context.
+  //
+  // Default: Append `context` to `m_contexts`.
+  virtual void appendContext(std::string const &context);
+
+  // This is a legacy alias for `getMessage()`.
+  std::string why() const
+    { return getMessage(); }
+
+  // Print `getMessage()`.
+  void insert(std::ostream &os) const;
+  friend std::ostream& operator << (std::ostream &os, XBase const &obj)
     { obj.insert(os); return os; }
-
-  // add a string describing what was going on at the time the
-  // exception was thrown; this should be called with the innermost
-  // context string first, i.e., in the normal unwind order
-  void addContext(rostring context);
-  // dsw: sometimes I want the context to be, say a "file:line" number
-  // on the left
-  void addContextLeft(rostring context);
-
-  // Like 'addContextLeft', except it also puts ": " between 'context'
-  // and the existing 'msg'.
-  void prependContext(rostring context);
 };
-
-// equivalent to THROW(XBase(msg))
-void xbase(rostring msg) NORETURN;
 
 
 // This is used when we do not expect an exception to be thrown, and
@@ -121,20 +171,57 @@ void printUnhandled(XBase const &x);
   }
 
 
-// Define a subclass of XBase.  All methods are inline.
-#define DEFINE_XBASE_SUBCLASS(SubclassName)                          \
-  class SubclassName : public XBase {                                \
-  public:                                                            \
-    SubclassName(char const *p) : XBase(p) {}                        \
-    SubclassName(string const &s) : XBase(s) {}             \
-    SubclassName(SubclassName const &obj) : XBase(obj) {}            \
+// ----------------------------- XMessage ------------------------------
+// Exception that just carries a conflict message.  It can be thrown
+// when there isn't a realistic possibility of automatic recovery, or
+// used as a base class for an exception class whose type conveys all
+// of the discriminating information.
+class XMessage : public XBase {
+public:      // data
+  // The conflict message.
+  std::string m_message;
+
+public:      // methods
+  XMessage(std::string const &message) noexcept;
+  XMessage(XMessage const &obj) noexcept;
+  XMessage &operator=(XMessage const &obj) noexcept;
+
+  // Returns `m_message`.
+  virtual std::string getConflict() const override;
+};
+
+
+// Equivalent to THROW(XMessage(msg)).
+void xmessage(std::string const &msg) NORETURN;
+
+// For compatibility with older code, define this alias.
+inline void xbase(std::string const &msg) { xmessage(msg); }
+
+
+// Define a subclass of XMessage.  All methods are inline.
+#define DEFINE_XMESSAGE_SUBCLASS(SubclassName)                           \
+  class SubclassName : public XMessage {                                 \
+  public:                                                                \
+    SubclassName(std::string const &message) noexcept                    \
+      : XMessage(message) {}                                             \
+    SubclassName(SubclassName const &obj) noexcept = default;            \
+    SubclassName &operator=(SubclassName const &obj) noexcept = default; \
   } /* user ; */
 
 
-// -------------------- XAssert -----------------------
+// In the original definition of `XBase`, it carried a conflict message,
+// and some exceptions used this macro to derive from it.  For now I am
+// keeping this macro but redirecting it to `XMessage`.
+#define DEFINE_XBASE_SUBCLASS(SubclassName) \
+  DEFINE_XMESSAGE_SUBCLASS(SubclassName)
+
+
+// ------------------------------ XAssert ------------------------------
+// TODO: Continue Revising below here.
+
 // thrown by x_assert_fail, declared in xassert.h
 // throwing this corresponds to detecting a bug in the program
-class XAssert : public XBase {
+class XAssert : public XMessage {
   string condition; // text of the failed condition
   string filename;  // name of the source file
   int lineno;                // line number
@@ -154,13 +241,11 @@ public:
 // throwing this means a formatting error has been detected
 // in some input data; the program cannot process it, but it
 // is not a bug in the program
-class XFormat : public XBase {
+class XFormat : public XMessage {
 public:      // methods
   XFormat(rostring cond);
   XFormat(XFormat const &obj);
   ~XFormat();
-
-  rostring cond() const { return msg; }
 };
 
 // compact way to throw an XFormat
@@ -186,7 +271,7 @@ void formatAssert_fail(char const *cond, char const *file, int line) NORETURN;
 // ------------------- XUnimp ---------------------
 // thrown in response to a condition that is in principle
 // allowed but not yet handled by the existing code
-class XUnimp : public XBase {
+class XUnimp : public XMessage {
 public:
   XUnimp(rostring msg);
   XUnimp(XUnimp const &obj);
@@ -204,7 +289,7 @@ void throw_XUnimp(char const *msg, char const *file, int line) NORETURN;
 // ------------------- XFatal ---------------------
 // thrown in response to a user action that leads to an unrecoverable
 // error; it is not due to a bug in the program
-class XFatal : public XBase {
+class XFatal : public XMessage {
 public:
   XFatal(rostring msg);
   XFatal(XFatal const &obj);

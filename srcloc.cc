@@ -339,7 +339,7 @@ int SourceLocManager::File::lineToChar(int lineNum)
       erroredNumLines = true;
       return 0;
     } else {
-      throw XBase("Invalid hashline numbers found (use '-tr tolerateHashlineErrors' to ignore).");
+      throw XMessage("Invalid hashline numbers found (use '-tr tolerateHashlineErrors' to ignore).");
     }
   }
 

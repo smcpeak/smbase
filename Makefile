@@ -324,6 +324,7 @@ UNIT_TEST_OBJS += d2vector-test.o
 UNIT_TEST_OBJS += datablok-test.o
 UNIT_TEST_OBJS += datetime-test.o
 UNIT_TEST_OBJS += dict-test.o
+UNIT_TEST_OBJS += exc-test.o
 UNIT_TEST_OBJS += functional-set-test.o
 UNIT_TEST_OBJS += gcc-options-test.o
 UNIT_TEST_OBJS += gdvalue-test.o

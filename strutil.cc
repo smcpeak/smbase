@@ -572,7 +572,7 @@ void writeStringToFile(rostring str, rostring fname)
   AutoFILE fp(toCStr(fname), "w");
 
   if (fputs(toCStr(str), fp) < 0) {
-    xbase("fputs: EOF");
+    xmessage("fputs: EOF");
   }
 }
 
@@ -587,7 +587,7 @@ string readStringFromFile(rostring fname)
   for (;;) {
     int len = fread(buf, 1, 4096, fp);
     if (len < 0) {
-      xbase("fread failed");
+      xmessage("fread failed");
     }
     if (len == 0) {
       break;

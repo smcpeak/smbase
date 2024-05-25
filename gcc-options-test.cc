@@ -832,7 +832,7 @@ static void testGetDefaultDependencyTarget()
     }
     catch (XBase &x) {
       x.prependContext(stringb(__func__ << ": " << toString(t.m_input)));
-      throw x;
+      throw;
     }
   }
 }
@@ -887,7 +887,7 @@ static void testNumSourceFiles()
     }
     catch (XBase &x) {
       x.prependContext(stringb(__func__ << ": " << toString(t.m_input)));
-      throw x;
+      throw;
     }
   }
 }

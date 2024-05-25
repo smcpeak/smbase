@@ -14,7 +14,7 @@ namespace gdv {
 
 
 // Exception used to report a syntax error.
-class GDValueReaderException : public XFormat {
+class GDValueReaderException : public XBase {
 public:      // data
   // Where the error occurred.
   FileLineCol m_location;
@@ -27,9 +27,11 @@ public:      // methods
                          std::string const &syntaxError) noexcept;
   ~GDValueReaderException();
 
-  // Prepend "context: " to `m_syntaxError`.  Also insert it into
-  // the `XBase::msg` member by recomputing that member.
+  // Prepend "context: " to `m_syntaxError`.
   void prependGDVNContext(std::string const &context);
+
+  // XBase methods
+  virtual std::string getConflict() const override;
 };
 
 

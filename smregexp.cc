@@ -3,7 +3,7 @@
 
 #include "smregexp.h"     // this module
 #include "str.h"          // string
-#include "exc.h"          // xbase
+#include "exc.h"          // xmessage
 #include "array.h"        // Array
 
 #include <stddef.h>       // size_t
@@ -51,7 +51,7 @@ static string regexpErrorString(regex_t const *pat, int code)
 static void regexpError(regex_t const *pat, int code) NORETURN;
 static void regexpError(regex_t const *pat, int code)
 {
-  xbase(regexpErrorString(pat, code));
+  xmessage(regexpErrorString(pat, code));
 }
 
 
@@ -84,7 +84,7 @@ Regexp::Regexp(rostring exp, CFlags flags)
     // deallocate the pattern buffer before throwing the exception
     string msg = regexpErrorString(PAT, code);
     delete PAT;
-    xbase(msg);
+    xmessage(msg);
   }
 }
 
