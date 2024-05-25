@@ -11,6 +11,14 @@
 #include <cstdlib>                     // std::exit
 
 
+static bool verbose = false;
+
+#define DIAG(stuff)        \
+  if (verbose) {           \
+    cout << stuff << endl; \
+  }
+
+
 static void oneBwcl(string expect, char const **argv)
 {
   std::vector<string> command;
@@ -23,8 +31,8 @@ static void oneBwcl(string expect, char const **argv)
   string actual(actualVec.data(), actualVec.size() - 1);
 
   if (actual != expect) {
-    cout << "actual: " << actual << endl;
-    cout << "expect: " << expect << endl;
+    DIAG("actual: " << actual);
+    DIAG("expect: " << expect);
     xfailure("actual and expect disagree");
   }
 
@@ -34,9 +42,9 @@ static void oneBwcl(string expect, char const **argv)
   if (validate) {
     command[0] = string(validate);
 
-    cout << "Passing arguments:\n";
+    DIAG("Passing arguments:");
     for (size_t i=0; i < command.size(); i++) {
-      cout << "  [" << i << "]: " << command[i] << endl;
+      DIAG("  [" << i << "]: " << command[i]);
     }
 
     RunProcess rproc;
@@ -48,7 +56,7 @@ static void oneBwcl(string expect, char const **argv)
 
 static void testBuildWindowsCommandLine()
 {
-  cout << "-- testBuildWindowsCommandLine --\n";
+  DIAG("-- testBuildWindowsCommandLine --");
 
   #define ONE_BWCL(expect, ...)              \
   {                                          \
@@ -101,30 +109,36 @@ static void testBuildWindowsCommandLine()
     xfailure("should have failed!");
   }
   catch (XFormat &x) {
-    cout << "as expected: " << x.why() << endl;
+    DIAG("as expected: " << x);
   }
 }
 
 
 static void runOne(string expect, char const **argv)
 {
-  cout << "command:";
+  if (verbose) {
+    cout << "command:";
+  }
   std::vector<string> command;
   for (; *argv; argv++) {
-    cout << " " << *argv;
+    if (verbose) {
+      cout << " " << *argv;
+    }
     command.push_back(string(*argv));
   }
-  cout << endl;
+  if (verbose) {
+    cout << endl;
+  }
 
   RunProcess rproc;
   rproc.setCommand(command);
   rproc.runAndWait();
 
   string actual = rproc.exitDescription();
-  cout << "actual: " << actual << endl;
+  DIAG("actual: " << actual);
 
   if (actual != expect) {
-    cout << "expect: " << expect << endl;
+    DIAG("expect: " << expect);
     xfailure("actual and expect disagree");
   }
 }
@@ -132,7 +146,7 @@ static void runOne(string expect, char const **argv)
 
 static void testRun()
 {
-  cout << "-- testRun --\n";
+  DIAG("-- testRun --");
 
   #define RUN_ONE(expect, ...)               \
   {                                          \
@@ -146,7 +160,7 @@ static void testRun()
   if (PLATFORM_IS_POSIX) {
     // Only run this on POSIX since Windows behavior is probably
     // unspecified.
-    RUN_ONE("Signal 15", "sh", "-c", "echo hi; kill $$");
+    RUN_ONE("Signal 15", "sh", "-c", "kill $$");
   }
 
   RunProcess::check_run(std::vector<string>{"true"});
@@ -155,14 +169,14 @@ static void testRun()
     xfailure("should have failed");
   }
   catch (XFatal &x) {
-    cout << "as expected: " << x.why() << endl;
+    DIAG("as expected: " << x);
   }
 }
 
 
 static void testAborted()
 {
-  cout << "-- testAborted --\n";
+  DIAG("-- testAborted --");
   RunProcess rproc;
   rproc.setCommand(std::vector<string>{"./call-abort.exe"});
 
@@ -198,14 +212,14 @@ void test_run_process()
       RunProcess rproc;
       rproc.setCommand(command);
       rproc.runAndWait();
-      cout << rproc.exitDescription() << endl;
+      DIAG(rproc.exitDescription());
     }
     else {
       unit_test();
     }
   }
   catch (XBase &x) {
-    cout << "exception: " << x.why() << endl;
+    cout << "exception: " << x << endl;
     std::exit(4);
   }
 }
