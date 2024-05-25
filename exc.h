@@ -68,7 +68,11 @@ private:     // data
 
 protected:   // data
   // A sequence of English context phrases describing where an issue
-  // arose or what the program was trying to do at the time.
+  // arose or what the program was trying to do at the time.  The
+  // phrases should be meaningful to the *user*, not only the programmer
+  // (this is not a stack trace!).  It is ordered from outermost
+  // (furthest from the conflict) to innermost (nearest to the
+  // conflict).  It can be empty.
   std::vector<std::string> m_contexts;
 
 public:      // methods
@@ -98,8 +102,18 @@ public:      // methods
   //
   virtual std::string getMessage() const;
 
-  // Return a properly punctuated English sentence that explains the
-  // conflict, i.e., what was expected and what was observed.
+  /* Return a properly punctuated English sentence that explains the
+     conflict, i.e., what was expected and what was observed.
+
+     Beware: This is generally called at the location that an exception
+     is caught, which might be many levels above where it was thrown.
+     There could be resources destroyed during unwinding that this
+     method might naively want to use (for example, `SourceLocManager`
+     if a `SourceLoc` is stored).  That might motivate inheriting from
+     `XMessage` (below) instead of directly from `XBase` since the
+     former creates and stores the exception message eagerly near the
+     throw site.
+  */
   virtual std::string getConflict() const = 0;
 
   // Return a context string for this exception, or the empty string if
