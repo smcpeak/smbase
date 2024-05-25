@@ -344,6 +344,7 @@ UNIT_TEST_OBJS += parsestring-test.o
 UNIT_TEST_OBJS += pprint-test.o
 UNIT_TEST_OBJS += refct-serf-test.o
 UNIT_TEST_OBJS += run-process-test.o
+UNIT_TEST_OBJS += sm-ap-uint-test.o
 UNIT_TEST_OBJS += sm-file-util-test.o
 UNIT_TEST_OBJS += sm-pp-util-test.o
 UNIT_TEST_OBJS += sm-rc-ptr-test.o
