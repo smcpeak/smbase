@@ -93,4 +93,9 @@ std::string possiblyTruncatedWithEllipsis(
 //
 bool matchesRegex(std::string const &str, std::string const &regex);
 
+// Turn `s` into a regex that will match `s` only, escaping any regex
+// metacharacters it contains.
+std::string escapeForRegex(std::string const &s);
+
+
 #endif // STRING_UTILS_H

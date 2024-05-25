@@ -317,6 +317,12 @@ static void testSingleQuoteChar()
 }
 
 
+static void testEscapeForRegex()
+{
+  EXPECT_EQ(escapeForRegex("["), "\\[");
+  EXPECT_EQ(escapeForRegex("(*hello*)"), "\\(\\*hello\\*\\)");
+}
+
 
 void test_string_utils()
 {
@@ -333,6 +339,7 @@ void test_string_utils()
   testMatchesRegex();
   testInsertPossiblyEscapedChar();
   testSingleQuoteChar();
+  testEscapeForRegex();
 }
 
 

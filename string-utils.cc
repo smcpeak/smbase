@@ -9,7 +9,7 @@
 #include "xassert.h"                   // xassertdb
 
 #include <algorithm>                   // std::binary_search
-#include <cstring>                     // std::strrchr
+#include <cstring>                     // std::{strchr, strrchr}
 #include <sstream>                     // std::ostringstream
 #include <regex>                       // std::regex
 
@@ -277,6 +277,23 @@ bool matchesRegex(std::string const &str, std::string const &regex)
 {
   std::regex re(regex);
   return std::regex_search(str, re);
+}
+
+
+// Based on https://stackoverflow.com/a/39237913/2659307 .
+std::string escapeForRegex(std::string const &s)
+{
+  static const char metacharacters[] = R"(\.^$-+()[]{}|?*)";
+  std::string out;
+  out.reserve(s.size());
+  for (char ch : s) {
+    if (std::strchr(metacharacters, ch)) {
+      // Put a backslash before each metacharacter.
+      out.push_back('\\');
+    }
+    out.push_back(ch);
+  }
+  return out;
 }
 
 
