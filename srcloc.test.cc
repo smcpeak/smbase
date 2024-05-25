@@ -950,7 +950,6 @@ void testHashMap()
 
 void entry(int argc, char ** /*argv*/)
 {
-  traceAddSys("progress");
   traceProgress() << "begin" << endl;
 
   if (argc >= 2) {
