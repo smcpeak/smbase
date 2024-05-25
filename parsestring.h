@@ -4,13 +4,13 @@
 #ifndef PARSESTRING_H
 #define PARSESTRING_H
 
-#include "exc.h"                       // xFormat
+#include "exc.h"                       // XFormat
 #include "str.h"                       // string
 
 
 // Thrown by ParseString when the string being parsed deviates from the
 // expected format.
-class XParseString : public xFormat {
+class XParseString : public XFormat {
 public:      // data
   // String we were trying to parse.
   string m_str;

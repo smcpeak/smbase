@@ -19,7 +19,7 @@ static string formatCondition(string const &str, int offset,
 
 XParseString::XParseString(string const &str, int offset,
                            string const &conflict)
-  : xFormat(formatCondition(str, offset, conflict)),
+  : XFormat(formatCondition(str, offset, conflict)),
     m_str(str),
     m_offset(offset),
     m_conflict(conflict)
@@ -27,7 +27,7 @@ XParseString::XParseString(string const &str, int offset,
 
 
 XParseString::XParseString(XParseString const &obj)
-  : xFormat(obj),
+  : XFormat(obj),
     DMEMB(m_str),
     DMEMB(m_offset),
     DMEMB(m_conflict)

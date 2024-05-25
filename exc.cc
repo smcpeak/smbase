@@ -110,28 +110,28 @@ void x_assert_fail(char const *cond, char const *file, int line)
 }
 
 
-// --------------- xFormat ------------------
-xFormat::xFormat(rostring cond)
+// --------------- XFormat ------------------
+XFormat::XFormat(rostring cond)
   : XBase(cond)
 {}
 
-xFormat::xFormat(xFormat const &obj)
+XFormat::XFormat(XFormat const &obj)
   : XBase(obj)
 {}
 
-xFormat::~xFormat()
+XFormat::~XFormat()
 {}
 
 
 void xformat(rostring condition)
 {
-  xFormat x(condition);
+  XFormat x(condition);
   THROW(x);
 }
 
 void formatAssert_fail(char const *cond, char const *file, int line)
 {
-  xFormat x(stringb("format assertion failed, "
+  XFormat x(stringb("format assertion failed, "
                     << file << ":" << line << ": "
                     << cond));
   THROW(x);

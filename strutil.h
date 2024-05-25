@@ -59,7 +59,7 @@ string encodeWithEscapes(rostring src);
 string quoted(rostring src);
 
 
-// decode an escaped string; throw xFormat if there is a problem
+// decode an escaped string; throw XFormat if there is a problem
 // with the escape syntax; if 'delim' is specified, it will also
 // make sure there are no unescaped instances of that
 void decodeEscapes(ArrayStack<char> &dest, rostring src,

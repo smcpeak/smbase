@@ -268,11 +268,11 @@ public:      // funcs
 
 
 // Parse an in-memory string containing the BDF file format.  Throws
-// xFormat if it encounters a format violation.
+// XFormat if it encounters a format violation.
 void parseBDFString(BDFFont &destFont, char const *bdfSourceData);
 
 // Parse an on-disk file in BDF file format.  Throws xSysError if the
-// file cannot be read, and xFormat if there is a format violation.
+// file cannot be read, and XFormat if there is a format violation.
 void parseBDFFile(BDFFont &destFont, char const *bdfFileName);
 
 

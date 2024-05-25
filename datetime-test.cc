@@ -85,7 +85,7 @@ void test_datetime()
     d.validateFields();
     xfailure("that should have failed!");
   }
-  catch (xFormat &x) {
+  catch (XFormat &x) {
     // As expected.
   }
 

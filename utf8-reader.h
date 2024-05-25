@@ -6,7 +6,7 @@
 #ifndef SMBASE_UTF8_READER_H
 #define SMBASE_UTF8_READER_H
 
-#include "exc.h"                       // xFormat
+#include "exc.h"                       // XFormat
 
 #include <cstddef>                     // std::ptrdiff_t
 #include <string>                      // std::string
@@ -20,7 +20,7 @@ static_assert(sizeof(int) >= 4);
 
 
 // Report an issue with UTF-8 input.
-class UTF8ReaderException : public xFormat {
+class UTF8ReaderException : public XFormat {
 public:      // types
   enum Kind {
     K_UNKNOWN,
@@ -45,7 +45,7 @@ public:      // data
   Kind m_kind;
 
   // The specific complaint about the UTF-8 input.  (In contrast,
-  // `xFormat::condition` combines all of the information into one
+  // `XFormat::condition` combines all of the information into one
   // string.)
   std::string m_utf8Details;
 
@@ -53,7 +53,7 @@ public:      // data
   std::ptrdiff_t m_byteOffset;
 
 private:     // methods
-  // Create the `xFormat::condition` string.
+  // Create the `XFormat::condition` string.
   static std::string makeCondition(
     std::string const &utf8Details,
     std::ptrdiff_t byteOffset);

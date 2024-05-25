@@ -24,7 +24,7 @@ static std::string makeExceptionMessage(
 GDValueReaderException::GDValueReaderException(
   FileLineCol const &location,
   std::string const &syntaxError) noexcept
-  : xFormat(makeExceptionMessage(location, syntaxError)),
+  : XFormat(makeExceptionMessage(location, syntaxError)),
     m_location(location),
     m_syntaxError(syntaxError)
 {}

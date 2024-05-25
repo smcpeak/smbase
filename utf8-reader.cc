@@ -27,7 +27,7 @@ UTF8ReaderException::UTF8ReaderException(
   Kind kind,
   std::string const &utf8Details,
   std::ptrdiff_t byteOffset)
-  : xFormat(makeCondition(utf8Details, byteOffset)),
+  : XFormat(makeCondition(utf8Details, byteOffset)),
     m_kind(kind),
     m_utf8Details(utf8Details),
     m_byteOffset(byteOffset)

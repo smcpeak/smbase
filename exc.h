@@ -132,7 +132,7 @@ void printUnhandled(XBase const &x);
 
 
 // -------------------- XAssert -----------------------
-// thrown by _xassert_fail, declared in xassert.h
+// thrown by x_assert_fail, declared in xassert.h
 // throwing this corresponds to detecting a bug in the program
 class XAssert : public XBase {
   string condition; // text of the failed condition
@@ -150,20 +150,20 @@ public:
 };
 
 
-// ---------------------- xFormat -------------------
+// ---------------------- XFormat -------------------
 // throwing this means a formatting error has been detected
 // in some input data; the program cannot process it, but it
 // is not a bug in the program
-class xFormat : public XBase {
+class XFormat : public XBase {
 public:      // methods
-  xFormat(rostring cond);
-  xFormat(xFormat const &obj);
-  ~xFormat();
+  XFormat(rostring cond);
+  XFormat(XFormat const &obj);
+  ~XFormat();
 
   rostring cond() const { return msg; }
 };
 
-// compact way to throw an xFormat
+// compact way to throw an XFormat
 void xformat(rostring condition) NORETURN;
 
 #define xformatsb(msg) xformat(stringb(msg))
@@ -172,7 +172,7 @@ void xformat(rostring condition) NORETURN;
 #define checkFormat(cond, message) \
   ((cond)? (void)0 : xformat(message))
 
-// assert-like interface to xFormat
+// assert-like interface to XFormat
 void formatAssert_fail(char const *cond, char const *file, int line) NORETURN;
 
 #define formatAssert(cond) \

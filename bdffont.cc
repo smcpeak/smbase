@@ -145,7 +145,7 @@ int BDFFont::glyphIndexLimit() const
 #define XFORMAT(stuff) xformat(stringb(stuff))
 
 // Expect 'expected' to appear next, and skip it.  Otherwise,
-// throw xFormat.
+// throw XFormat.
 static void expect(char const *&p, char const *expected)
 {
   char const *origP = p;

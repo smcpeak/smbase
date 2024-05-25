@@ -100,7 +100,7 @@ static void testBuildWindowsCommandLine()
     ONE_BWCL("", "program with \" quote");
     xfailure("should have failed!");
   }
-  catch (xFormat &x) {
+  catch (XFormat &x) {
     cout << "as expected: " << x.why() << endl;
   }
 }

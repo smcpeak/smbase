@@ -6,7 +6,7 @@
 
 #include "gdvalue-reader-exception-fwd.h"        // fwds for this module
 
-#include "exc.h"                                 // xFormat
+#include "exc.h"                                 // XFormat
 #include "file-line-col.h"                       // FileLineCol
 
 
@@ -14,7 +14,7 @@ namespace gdv {
 
 
 // Exception used to report a syntax error.
-class GDValueReaderException : public xFormat {
+class GDValueReaderException : public XFormat {
 public:      // data
   // Where the error occurred.
   FileLineCol m_location;
