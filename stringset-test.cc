@@ -4,7 +4,6 @@
 #include "stringset.h"                 // module to test
 
 #include "exc.h"                       // xbase
-#include "sm-iostream.h"               // cout
 
 
 static void testAddUnique()
@@ -13,7 +12,6 @@ static void testAddUnique()
   ss.addUnique("a");
   ss.addUnique("b");
   try {
-    cout << "This should throw:" << endl;
     ss.addUnique("b");
     xbase("That should have failed!");
   }
@@ -30,8 +28,6 @@ void test_stringset()
 {
   // This is not thorough at all right now.
   testAddUnique();
-
-  cout << "test-stringset passed\n";
 }
 
 

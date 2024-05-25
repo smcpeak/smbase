@@ -142,11 +142,11 @@ void test_svdict()
     }
   }
 
-  cout << "final size: " << size
-       << "\ncollisions: " << collisions
-       << "\n";
-
-  cout << "all tests passed\n";
+  if (false) {
+    cout << "final size: " << size
+         << "\ncollisions: " << collisions
+         << "\n";
+  }
 }
 
 

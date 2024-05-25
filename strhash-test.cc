@@ -20,6 +20,9 @@
 OPEN_ANONYMOUS_NAMESPACE
 
 
+static bool const silent = true;
+
+
 // pair a GrowArray with its size
 struct StringArray {
   int tableSize;
@@ -167,7 +170,9 @@ void performanceTest(int numPerfRuns) {
   }
   long stopTime = getMilliseconds();
   long duration = stopTime - startTime;
-  cout << "milliseconds to hash: " << duration << endl;
+  if (!silent) {
+    cout << "milliseconds to hash: " << duration << endl;
+  }
 
   traceProgress() << "end of strhash performance testing\n";
 }
@@ -279,20 +284,22 @@ void test_strhash()
   char const *argvArray[2] = {"strhash-test", nullptr};
   char const **argv = argvArray;
 
-  traceAddSys("progress");
+  //traceAddSys("progress");
 
-  switch (strhashAlgorithmCode) {
-    case 1:
-      cout << "hash function 1: Nelson" << endl;
-      break;
+  if (false) {
+    switch (strhashAlgorithmCode) {
+      case 1:
+        cout << "hash function 1: Nelson" << endl;
+        break;
 
-    case 2:
-      cout << "hash function 2: word-rotate/final-mix" << endl;
-      break;
+      case 2:
+        cout << "hash function 2: word-rotate/final-mix" << endl;
+        break;
 
-    default:
-      cout << "invalid hash function code!" << endl;
-      break;
+      default:
+        cout << "invalid hash function code!" << endl;
+        break;
+    }
   }
 
   // read command line flags
@@ -334,8 +341,6 @@ void test_strhash()
 
   // delete data
 //    deleteData();
-
-  cout << "strhash tests finished\n";
 }
 
 

@@ -5,11 +5,15 @@
 
 #include "sm-fstream.h"                // ofstream
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
-#include "sm-test.h"                   // EXPECT_EQ
+#include "sm-test.h"                   // EXPECT_EQ, dummy_printf
 
 #include <assert.h>                    // assert
 #include <stdlib.h>                    // getenv
 #include <stdio.h>                     // printf, remove
+
+
+// Silence the output when I'm not actively working on this test.
+#define printf dummy_printf
 
 
 OPEN_ANONYMOUS_NAMESPACE
@@ -132,7 +136,6 @@ static void expectIndexOfSubstring(string const &haystack,
 
 static void testIndexOfSubstring()
 {
-  cout << "testIndexOfSubstring" << endl;
   expectIndexOfSubstring("", "", 0);
   expectIndexOfSubstring("", "x", -1);
   expectIndexOfSubstring("x", "", 0);
@@ -261,8 +264,6 @@ void test_strutil()
   testIndexOfSubstring();
   testQuoteCharacter();
   testReadLinesFromFile();
-
-  cout << "strutil ok" << endl;
 }
 
 

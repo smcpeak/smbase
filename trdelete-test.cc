@@ -4,10 +4,15 @@
 #include "trdelete.h"                  // module under test
 
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
+#include "sm-test.h"                   // dummy_printf
 
 #include <assert.h>                    // assert
 #include <stdio.h>                     // printf
 #include <stdlib.h>                    // malloc, exit
+
+
+// Silence the output when I'm not actively working on this test.
+#define printf dummy_printf
 
 
 OPEN_ANONYMOUS_NAMESPACE

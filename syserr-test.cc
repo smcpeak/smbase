@@ -77,10 +77,7 @@ void test_syserr()
   TRY_FAIL(isDirectory("doesnt.exist"),
            XSysError::R_FILE_NOT_FOUND);
 
-  if (errors == 0) {
-    cout << "success!\n";
-  }
-  else {
+  if (errors > 0) {
     cout << errors << " error(s)\n";
     std::exit(2);
   }
