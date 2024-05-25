@@ -726,7 +726,7 @@ static void testMultiErrorRegex(
         expectRegex = "end of file";
       }
       else {
-        expectRegex = stringb("'" << (char)c << "'");
+        expectRegex = escapeForRegex(stringb("'" << (char)c << "'"));
       }
       expectRegex += ".*";
       expectRegex += expectErrorRegexSuffix;
@@ -869,9 +869,9 @@ static void testSyntaxErrors()
 
   // readNextInteger
   {
-    // firstChar = readNotEOFCharOrErr(
+    // unexpectedCharErr(firstChar,
     //   "looking for digit after minus sign that starts an integer");
-    testMultiErrorRegex("-", {-1}, 1, 2, "looking for digit after minus");
+    testMultiErrorRegex("-", {-1, ' ', 'x', ']', '['}, 1, 2, "looking for digit after minus");
 
 
     // readNextInteger: putbackAfterValue.

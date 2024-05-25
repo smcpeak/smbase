@@ -518,10 +518,14 @@ GDValue GDValueReader::readNextInteger(int firstChar)
     isNegative = true;
 
     // Prepare to consume digits.
-    firstChar = readNotEOFCharOrErr(
-      "looking for digit after minus sign that starts an integer");
+    firstChar = readChar();
+    if (!isASCIIDigit(firstChar)) {
+      unexpectedCharErr(firstChar,
+        "looking for digit after minus sign that starts an integer");
+    }
   }
 
+  xassert(isASCIIDigit(firstChar));
   GDVInteger integerValue(firstChar - '0');
 
   try {
