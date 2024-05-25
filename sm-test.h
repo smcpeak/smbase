@@ -155,7 +155,7 @@ void expectMatchesRegex(
 // Function that has the same signature as `printf` but does nothing.
 // In test code, it can be useful to use a macro to map `printf` to this
 // to silence it by default.
-void dummy_printf(char const *fmt, ...)
+int dummy_printf(char const *fmt, ...)
   SM_PRINTF_ANNOTATION(1, 2);
 
 

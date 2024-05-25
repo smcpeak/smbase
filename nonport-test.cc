@@ -3,7 +3,9 @@
 
 #include "nonport.h"                   // module under test
 
+#include "save-restore.h"              // SET_RESTORE
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
+#include "sm-test.h"                   // dummy_printf
 
 #include <errno.h>                     // errno
 #include <stdarg.h>                    // va_list
@@ -12,6 +14,11 @@
 #include <string.h>                    // strcmp
 
 OPEN_ANONYMOUS_NAMESPACE
+
+
+bool verbose = false;
+
+#define printf (verbose? printf : dummy_printf)
 
 
 // helper for testing applyToCwdFiles
@@ -88,7 +95,9 @@ CLOSE_ANONYMOUS_NAMESPACE
 // Called from unit-tests.cc.
 void test_nonport()
 {
-  nonportFail = testingFail;
+  SET_RESTORE(nonportFail, testingFail);
+
+  verbose = !!getenv("NONPORT_TEST_VERBOSE");
 
   char s[4];
   s[0] = '-';
