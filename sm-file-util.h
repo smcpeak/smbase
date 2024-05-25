@@ -260,21 +260,21 @@ public:      // funcs
   virtual string getAbsolutePath(string const &path);
 
   // Return true if 'path' is absolute and names an existing entity
-  // (file, directory, etc.) on disk.  Throws xSysError on permission
+  // (file, directory, etc.) on disk.  Throws XSysError on permission
   // errors or the like.
   virtual bool absolutePathExists(string const &path);
 
   // Like above, except it specifically has to be an ordinary file.
-  // Throws xSysError on permission errors or the like.
+  // Throws XSysError on permission errors or the like.
   virtual bool absoluteFileExists(string const &path);
 
   // True if 'path' names a directory.  Relative paths are relative to
-  // the current working directory.  Throws xSysError on permission
+  // the current working directory.  Throws XSysError on permission
   // errors or the like.
   virtual bool directoryExists(string const &path);
 
   // Get the file kind, or FK_NONE if it does not exist.  Relative paths
-  // are relative to the current working directory.  Throws xSysError on
+  // are relative to the current working directory.  Throws XSysError on
   // permission errors or the like.
   virtual FileKind getFileKind(string const &path);
 
@@ -284,8 +284,8 @@ public:      // funcs
 
   // Create 'path' and any needed parents if it does not already exist.
   // If it, or any parent, already exists but is not a directory, throw
-  // 'xSysError' with reason R_ALREADY_EXISTS.  Any other problem also
-  // causes 'xSysError' to be thrown.  If no exception is thrown, then
+  // 'XSysError' with reason R_ALREADY_EXISTS.  Any other problem also
+  // causes 'XSysError' to be thrown.  If no exception is thrown, then
   // after this call, the directory exists.  A trailing directory
   // separator on 'path' is ignored.
   virtual void createDirectoryAndParents(string const &path);
@@ -308,16 +308,16 @@ public:      // funcs
                                          string const &suffix);
 
   // Read the contents of 'fname' in binary mode, returning the entire
-  // thing as a vector.  Throw xSysError on error.
+  // thing as a vector.  Throw XSysError on error.
   virtual std::vector<unsigned char> readFile(string const &fname);
 
-  // Write 'bytes' into 'fname' in binary mode.  Throw xSysError on
+  // Write 'bytes' into 'fname' in binary mode.  Throw XSysError on
   // error.
   virtual void writeFile(string const &fname,
                          std::vector<unsigned char> const &bytes);
 
   // Get the names of entries in 'directory'.  If an error is
-  // encountered, throw xSysError (syserr.h).  The entries are not
+  // encountered, throw XSysError (syserr.h).  The entries are not
   // guaranteed to be returned in any particular order.  They may
   // include "." and ".." if they exist in the given directory.
   virtual void getDirectoryNames(ArrayStack<string> /*OUT*/ &entries,

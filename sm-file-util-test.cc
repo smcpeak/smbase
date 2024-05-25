@@ -13,7 +13,7 @@
 #include "run-process.h"               // RunProcess
 #include "sm-test.h"                   // PVAL
 #include "strutil.h"                   // compareStringPtrs
-#include "syserr.h"                    // xSysError
+#include "syserr.h"                    // XSysError
 
 
 // Run some checks on the 'fn' object directly.
@@ -755,8 +755,8 @@ static void testCreateDirectoryAndParents()
     sfu.createDirectoryAndParents("tmpdir/a/b/c");
     xfailure("that should have failed");
   }
-  catch (xSysError &x) {
-    xassert(x.reason == xSysError::R_ALREADY_EXISTS);
+  catch (XSysError &x) {
+    xassert(x.reason == XSysError::R_ALREADY_EXISTS);
   }
 
   // Clean up.

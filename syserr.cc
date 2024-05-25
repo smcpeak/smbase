@@ -9,7 +9,7 @@
 
 
 // ---------------- portable code ----------------
-char const * const xSysError::reasonStrings[] = {
+char const * const XSysError::reasonStrings[] = {
   "No error occurred",
   "File not found",
   "Path not found",
@@ -28,8 +28,8 @@ char const * const xSysError::reasonStrings[] = {
 };
 
 
-STATICDEF char const *xSysError::
-  getReasonString(xSysError::Reason r)
+STATICDEF char const *XSysError::
+  getReasonString(XSysError::Reason r)
 {
   // at compile-time, verify consistency between enumeration and string array
   // (it's in here because, at least on Borland, the preprocessor respects
@@ -49,7 +49,7 @@ STATICDEF char const *xSysError::
 }
 
 
-xSysError::xSysError(xSysError::Reason r, int sysCode, rostring sysReason,
+XSysError::XSysError(XSysError::Reason r, int sysCode, rostring sysReason,
                      rostring syscall, rostring ctx)
   : XBase(),
     reason(r),
@@ -61,8 +61,8 @@ xSysError::xSysError(xSysError::Reason r, int sysCode, rostring sysReason,
 {}
 
 
-STATICDEF string xSysError::
-  constructWhyString(xSysError::Reason r, rostring sysReason,
+STATICDEF string XSysError::
+  constructWhyString(XSysError::Reason r, rostring sysReason,
                      rostring syscall, rostring ctx)
 {
   // build string; start with syscall that failed
@@ -93,7 +93,7 @@ STATICDEF string xSysError::
 }
 
 
-xSysError::xSysError(xSysError const &obj)
+XSysError::XSysError(XSysError const &obj)
   : XBase(obj),
     reason(obj.reason),
     reasonString(obj.reasonString),
@@ -104,18 +104,18 @@ xSysError::xSysError(xSysError const &obj)
 {}
 
 
-xSysError::~xSysError()
+XSysError::~XSysError()
 {}
 
 
-std::string xSysError::getConflict() const
+std::string XSysError::getConflict() const
 {
   return constructWhyString(reason, sysReasonString,
                             syscallName, context);
 }
 
 
-STATICDEF void xSysError::
+STATICDEF void XSysError::
   xsyserror(rostring syscallName, rostring context)
 {
   // retrieve system error code
@@ -126,7 +126,7 @@ STATICDEF void xSysError::
   Reason r = portablize(code, sysMsg);
 
   // construct an object to throw
-  xSysError obj(r, code, sysMsg, syscallName, context);
+  XSysError obj(r, code, sysMsg, syscallName, context);
 
   // toss it
   THROW(obj);
@@ -134,12 +134,12 @@ STATICDEF void xSysError::
 
 void xsyserror(char const *syscallName)
 {
-  xSysError::xsyserror(syscallName, string(""));
+  XSysError::xsyserror(syscallName, string(""));
 }
 
 void xsyserror(rostring syscallName, rostring context)
 {
-  xSysError::xsyserror(syscallName, context);
+  XSysError::xsyserror(syscallName, context);
 }
 
 
@@ -148,8 +148,8 @@ string sysErrorCodeString(int systemErrorCode,
                                    rostring context)
 {
   string sysMsg;
-  xSysError::Reason r = xSysError::portablize(systemErrorCode, sysMsg);
-  return xSysError::constructWhyString(
+  XSysError::Reason r = XSysError::portablize(systemErrorCode, sysMsg);
+  return XSysError::constructWhyString(
            r, sysMsg,
            syscallName, context);
 }
@@ -157,7 +157,7 @@ string sysErrorCodeString(int systemErrorCode,
 string sysErrorString(char const *syscallName,
                                char const *context)
 {
-  return sysErrorCodeString(xSysError::getSystemErrorCode(),
+  return sysErrorCodeString(XSysError::getSystemErrorCode(),
                             syscallName, context);
 }
 
@@ -179,7 +179,7 @@ void devWarningSysError(char const *file, int line,
 #endif
 #include <errno.h>      // errno
 
-STATICDEF int xSysError::getSystemErrorCode()
+STATICDEF int XSysError::getSystemErrorCode()
 {
   int ret = GetLastError();
 
@@ -211,11 +211,11 @@ STATICDEF int xSysError::getSystemErrorCode()
 }
 
 
-STATICDEF xSysError::Reason xSysError::portablize(
+STATICDEF XSysError::Reason XSysError::portablize(
   int sysErrorCode, string &sysMsg)
 {
   // I'd like to put this into a static class member, but then
-  // the table would have to prepend R_ constants with xSysError::,
+  // the table would have to prepend R_ constants with XSysError::,
   // which is a pain.
 
   // method to translate an error code into a string on win32; this
@@ -304,13 +304,13 @@ STATICDEF xSysError::Reason xSysError::portablize(
 #endif
 
 
-STATICDEF int xSysError::getSystemErrorCode()
+STATICDEF int XSysError::getSystemErrorCode()
 {
   return errno;          // why was this "errno()"??
 }
 
 
-STATICDEF xSysError::Reason xSysError::portablize(
+STATICDEF XSysError::Reason XSysError::portablize(
   int sysErrorCode, string &sysMsg)
 {
   sysMsg = strerror(sysErrorCode);

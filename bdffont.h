@@ -271,7 +271,7 @@ public:      // funcs
 // XFormat if it encounters a format violation.
 void parseBDFString(BDFFont &destFont, char const *bdfSourceData);
 
-// Parse an on-disk file in BDF file format.  Throws xSysError if the
+// Parse an on-disk file in BDF file format.  Throws XSysError if the
 // file cannot be read, and XFormat if there is a format violation.
 void parseBDFFile(BDFFont &destFont, char const *bdfFileName);
 

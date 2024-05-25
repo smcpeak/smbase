@@ -308,7 +308,7 @@ void formatAssert_fail(char const *cond, char const *file, int line) NORETURN;
 
 
 // 2022-07-18: There was previously a class called XOpen, and another
-// called XOpenEx.  These have been removed in favor of xSysError.
+// called XOpenEx.  These have been removed in favor of XSysError.
 
 
 // ------------------------------ XUnimp -------------------------------

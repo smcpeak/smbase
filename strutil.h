@@ -142,7 +142,7 @@ string readStringFromFile(rostring fname);
 // Append to 'dest' all of the lines in 'fname'.  If 'chomp' is true,
 // each line has no newline terminator; otherwise, all but the last have
 // newlines, and the last may or may not depending on how the file ends.
-// Throws an exception on error, including xSysError for file-not-found.
+// Throws an exception on error, including XSysError for file-not-found.
 void readLinesFromFile(ArrayStack<string> /*INOUT*/ &dest,
                        rostring fname,
                        bool chomp = true);

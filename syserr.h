@@ -11,8 +11,8 @@
 #include "exc.h"                       // XBase
 
 
-// TODO: Rename this class.
-class xSysError : public XBase {
+// Thrown in response to a system call failure.
+class XSysError : public XBase {
 private:    // data
   // error strings for Reasons
   static char const * const reasonStrings[];
@@ -56,10 +56,10 @@ public:     // data
   string context;
 
 public:    // funcs
-  xSysError(Reason r, int sysCode, rostring sysReason,
+  XSysError(Reason r, int sysCode, rostring sysReason,
             rostring syscall, rostring ctx);
-  xSysError(xSysError const &obj);
-  ~xSysError();
+  XSysError(XSysError const &obj);
+  ~XSysError();
 
   // XBase methods.
   virtual std::string getConflict() const override;

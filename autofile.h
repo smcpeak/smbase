@@ -11,7 +11,7 @@
 #include <stdio.h>      // FILE
 
 
-// Like 'fopen', but throw an xSysError exception (see syserr.h) on
+// Like 'fopen', but throw an XSysError exception (see syserr.h) on
 // failure instead of returning NULL.
 FILE *xfopen(char const *fname, char const *mode);
 
@@ -37,7 +37,7 @@ public:
 // simple wrapper on FILE*
 class AutoFILE : private AutoFclose {
 public:
-  // Open, throwing xSysError on failure.
+  // Open, throwing XSysError on failure.
   AutoFILE(char const *fname, char const *mode);
 
   // close the file

@@ -17,7 +17,7 @@
 // called when a syscall fails, *in addition* to whatever error behavior
 // is documented here (e.g., a fn might call this, and then return false).
 // The default behavior is to do nothing.  In sftpc and sftpd, I plan to
-// point this at xSysError::xsyserror (see syserr.h).
+// point this at XSysError::xsyserror (see syserr.h).
 typedef void (*NonportFailFunc)(char const *syscallName, char const *context);
   // syscallName  - name of failing system call
   // context      - current activity (maybe just calling fn's name) or NULL

@@ -182,7 +182,7 @@ void StreamFlatten::xferSimple(void *var, size_t len)
 
 // ---------------------------- BFlatten -------------------------------
 // Attempt to open an ifstream or ofstream for 'fname', throwing
-// xSysError if the attempt fails.
+// XSysError if the attempt fails.
 template <class T>
 T *tryOpen(char const *fname)
 {

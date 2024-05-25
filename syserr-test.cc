@@ -23,7 +23,7 @@
 // be added to the count of failed tests.
 static int tryFail(std::function<bool ()> failingCall,
                    char const *failingCallText,
-                   std::set<xSysError::Reason> const &reasons)
+                   std::set<XSysError::Reason> const &reasons)
 {
   try {
     if (failingCall()) {
@@ -35,13 +35,13 @@ static int tryFail(std::function<bool ()> failingCall,
       xsyserror(failingCallText);
     }
   }
-  catch (xSysError &x) {
+  catch (XSysError &x) {
     if (!contains(reasons, x.reason)) {
       // Convert the expected reasons into strings.
       std::set<std::string> reasonStrings =
         setMapElements<std::string>(reasons,
-          [](xSysError::Reason r) -> std::string {
-            return xSysError::getReasonString(r);
+          [](XSysError::Reason r) -> std::string {
+            return XSysError::getReasonString(r);
           });
 
       cout << "ERROR: " << failingCallText << " returned '"
@@ -68,14 +68,14 @@ void test_syserr()
 
 
   TRY_FAIL(changeDirectory("some.strange.name/yadda"),
-           xSysError::R_PATH_NOT_FOUND,
-           xSysError::R_FILE_NOT_FOUND);
+           XSysError::R_PATH_NOT_FOUND,
+           XSysError::R_FILE_NOT_FOUND);
 
   TRY_FAIL(createDirectory("test"),
-           xSysError::R_ALREADY_EXISTS);
+           XSysError::R_ALREADY_EXISTS);
 
   TRY_FAIL(isDirectory("doesnt.exist"),
-           xSysError::R_FILE_NOT_FOUND);
+           XSysError::R_FILE_NOT_FOUND);
 
   if (errors == 0) {
     cout << "success!\n";
