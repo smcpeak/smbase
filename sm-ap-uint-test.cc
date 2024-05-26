@@ -6,7 +6,7 @@
 #include "sm-ap-uint.h"                // module under test
 
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE, smbase_loopi
-#include "sm-test.h"                   // VPVAL, EXPECT_EQ
+#include "sm-test.h"                   // VPVAL, EXPECT_EQ, EXPECT_MATCHES_REGEX
 #include "stringb.h"                   // stringb
 #include "vector-utils.h"              // operator<< (std::vector), vectorReverseOf
 
@@ -490,31 +490,82 @@ static void testReadWriteAsHex()
 }
 
 
+template <typename PRIM>
+static void expectFailConvert(
+  Integer const &n,
+  char const *expectRegex)
+{
+  bool failed = true;
+  try {
+    n.getAs<PRIM>();
+    failed = false;
+  }
+  catch (XBase &x) {
+    DIAG(x);
+    EXPECT_MATCHES_REGEX(x.getMessage(), expectRegex);
+  }
+
+  if (!failed) {
+    xfailure("should have failed!");
+  }
+}
+
+
 static void testConstructFromPrim()
 {
   Integer n(0);
   EXPECT_EQ(n, Integer());
+  EXPECT_EQ(n.getAs<int>(), 0);
 
   Integer three;
   three.setWord(0, 3);
   EXPECT_EQ(Integer(3), three);
+  EXPECT_EQ(three.getAs<int>(), 3);
+  EXPECT_EQ(three.getAs<uint8_t>(), (uint8_t)3);
 
   Integer h1234;
   h1234.setWord(1, 0x12);
   h1234.setWord(0, 0x34);
   EXPECT_EQ(Integer(0x1234), h1234);
+  EXPECT_EQ(h1234.getAs<int>(), 0x1234);
 
   Integer h12345678(h1234);
   h12345678.leftShiftByWords(2);
   h12345678.setWord(1, 0x56);
   h12345678.setWord(0, 0x78);
   EXPECT_EQ(Integer(0x12345678), h12345678);
+  EXPECT_EQ(h12345678.getAs<int>(), 0x12345678);
 
-  Integer big(UINT64_C(0x1234567812345678));
+  uint64_t big64 = UINT64_C(0x1234567812345678);
+  Integer big(big64);
   EXPECT_EQ(big, Integer::fromDigits("0x1234567812345678"));
+  EXPECT_EQ(big.getAs<uint64_t>(), big64);
 
-  Integer small((uint8_t)0xFF);
+  uint64_t biggest64 = UINT64_C(0xFFFFFFFFFFFFFFFF);
+  Integer biggest(biggest64);
+  EXPECT_EQ(biggest, Integer::fromDigits("0xFFFFFFFFFFFFFFFF"));
+  EXPECT_EQ(biggest.getAs<uint64_t>(), biggest64);
+
+  xassert(biggest.getAsOpt<int64_t>() == std::nullopt);
+
+  expectFailConvert<int64_t>(biggest,
+    "value 0xFFFF.* to a signed 64-bit integer");
+  expectFailConvert<uint8_t>(biggest,
+    "value 0xFFFF.* to an unsigned 8-bit integer");
+
+  try {
+    Integer n(-1);
+    xfailure("should have failed");
+  }
+  catch (XBase &x) {
+    EXPECT_MATCHES_REGEX(x.getMessage(),
+      "from negative value -1");
+  }
+
+  uint8_t hff = 0xFF;
+  Integer small(hff);
   EXPECT_EQ(small, Integer::fromDigits("0xFF"));
+  EXPECT_EQ(small.getAs<uint8_t>(), hff);
 }
 
 

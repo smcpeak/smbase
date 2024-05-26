@@ -18,8 +18,9 @@
 #include <algorithm>                   // std::max
 #include <cstddef>                     // std::ptrdiff_t
 #include <iostream>                    // std::ostream
+#include <optional>                    // std::optional
 #include <string_view>                 // std::string_view
-#include <type_traits>                 // std::is_unsigned
+#include <type_traits>                 // std::{is_integral, is_signed, is_unsigned}
 #include <vector>                      // std::vector
 
 
@@ -48,7 +49,12 @@ private:     // data
 
      where N is one larger than the largest value of Word.
 
-     This can be empty for the case of zero.
+     This can be empty for the case of zero, but is not required to be.
+
+     The reason I do not insist on a normal form currently is it would
+     potentially make the sequence-of-words (`setWord`, etc.) and
+     sequence-of bits (`setBit`, etc.) interfaces awkward due to perhaps
+     doing needless trimming.  But this is a decision I might revisit.
   */
   std::vector<Word> m_vec;
 
@@ -214,7 +220,11 @@ public:      // methods
   // Zero.
   APUInteger()
     : m_vec()
-  {}
+  {
+    // May as well check this here.
+    static_assert(std::is_integral<Word>::value);
+    static_assert(std::is_unsigned<Word>::value);
+  }
 
   APUInteger(APUInteger const &obj)
     : DMEMB(m_vec)
@@ -231,7 +241,11 @@ public:      // methods
   APUInteger(PRIM n)
     : m_vec()
   {
-    xassert(n >= 0);
+    if (n < 0) {
+      xmessage(stringb(
+        "Attempted to create an APUInteger from negative value " <<
+        n << "."));
+    }
 
     if (sizeof(Word) >= sizeof(PRIM)) {
       setWord(0, (Word)n);
@@ -283,6 +297,93 @@ public:      // methods
   void setZero()
   {
     m_vec.clear();
+  }
+
+  // ---------- Convert to primitive ----------
+  // Get as a primitive type, or `nullopt` if it will not fit.  That
+  // includes the case where `PRIM` is a signed type and the value would
+  // naively set its high bit; the result of this call is always
+  // non-negative if it is not `nullopt`.
+  template <typename PRIM>
+  std::optional<PRIM> getAsOpt() const
+  {
+    static_assert(std::is_integral<PRIM>::value);
+
+    Index maxWIndex = maxWordIndex();
+    if (maxWIndex == -1) {
+      return PRIM();         // Zero.
+    }
+
+    Index bitsPerPrim = sizeof(PRIM) * 8;
+    if (std::is_signed<PRIM>::value) {
+      bool highBit = getBit(bitsPerPrim - 1);
+      if (highBit) {
+        // The high bit is set, does not fit in a signed integer.
+        return std::nullopt;
+      }
+    }
+
+    if (sizeof(Word) >= sizeof(PRIM)) {
+      if (maxWIndex > 0) {
+        // Too many words, does not fit.
+        return std::nullopt;
+      }
+
+      Word w = getWord(0);
+
+      if (sizeof(Word) > sizeof(PRIM)) {
+        Word primMask = (1 << bitsPerPrim) - 1;
+        Word masked = w & primMask;
+
+        if (masked != w) {
+          // There are bits in `w` that are beyond what `PRIM` can
+          // store.
+          return std::nullopt;
+        }
+
+        return PRIM(masked);
+      }
+      else {
+        return PRIM(w);
+      }
+    }
+
+    else /* sizeof(Word) < sizeof(PRIM) */ {
+      // I assume that `PRIM` is an integer multiple of the word size.
+      static_assert(sizeof(PRIM) % sizeof(Word) == 0);
+
+      Index wordsPerPrim = sizeof(PRIM) / sizeof(Word);
+      if (maxWIndex >= wordsPerPrim) {
+        // Too many words, does not fit.
+        return std::nullopt;
+      }
+
+      PRIM ret = PRIM();
+
+      // Populate `ret` from least to most significant word.
+      for (Index i = 0; i <= maxWIndex; ++i) {
+        PRIM v(getWord(i));
+        v <<= i * bitsPerWord();
+        ret |= v;
+      }
+
+      return ret;
+    }
+  }
+
+  // Same as `getAsOpt()`, but throwing an exception if it does not fit.
+  template <typename PRIM>
+  PRIM getAs() const
+  {
+    std::optional<PRIM> res = getAsOpt<PRIM>();
+    if (!res.has_value()) {
+      xmessage(stringb(
+        "Attempted to convert the APUInteger value " << *this <<
+        " to " <<
+        (std::is_signed<PRIM>::value? "a signed " : "an unsigned ") <<
+        (sizeof(PRIM)*8) << "-bit integer type, but it does not fit."));
+    }
+    return res.value();
   }
 
   // ---------- Treat as a sequence of Words ----------
