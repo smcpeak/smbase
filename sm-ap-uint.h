@@ -6,9 +6,11 @@
 #ifndef SMBASE_SM_AP_UINT_H
 #define SMBASE_SM_AP_UINT_H
 
+#include "compare-util.h"              // DEFINE_FRIEND_RELATIONAL_OPERATORS
 #include "sm-macros.h"                 // OPEN_NAMESPACE, DMEMB, CMEMB
 #include "xassert.h"                   // xassert
 
+#include <cstddef>                     // std::ptrdiff_t
 #include <vector>                      // std::vector
 
 
@@ -20,8 +22,10 @@ OPEN_NAMESPACE(smbase)
 template <typename Word>
 class APUInteger {
 public:      // types
-  // An index used to access elements of `m_vec`.
-  typedef std::size_t Index;
+  // An index used to access elements of `m_vec`.  This is a signed
+  // quantity so that downward iteration is more convenient since we can
+  // stop when it's negative rather than using other contorted tests.
+  typedef std::ptrdiff_t Index;
 
 private:     // data
   /* The magnitude of the integer, from least significant to most
@@ -116,20 +120,15 @@ public:      // methods
   // be redundantly zero, but this method does not check for that.
   Index size() const
   {
-    return m_vec.size();
-  }
-
-  // Get the underlying vector.  This can be useful for debug printing.
-  std::vector<Word> const &getVector() const
-  {
-    return m_vec;
+    return static_cast<Index>(m_vec.size());
   }
 
   // Get the `i`th digit, where the 0th is the least significant.
   // Return 0 if that digit is not currently stored.
   Word getDigit(Index i) const
   {
-    if (i < m_vec.size()) {
+    xassert(i >= 0);
+    if (i < size()) {
       return m_vec[i];
     }
     else {
@@ -141,7 +140,8 @@ public:      // methods
   // vector size, do nothing.
   void setDigit(Index i, Word d)
   {
-    if (i < m_vec.size()) {
+    xassert(i >= 0);
+    if (i < size()) {
       m_vec[i] = d;
     }
     else if (d == 0) {
@@ -150,7 +150,7 @@ public:      // methods
     }
     else {
       // Add zeroes until we can place `d`.
-      while (i >= m_vec.size()) {
+      while (i >= size()) {
         m_vec.push_back(0);
       }
 
@@ -158,15 +158,44 @@ public:      // methods
     }
   }
 
-  APUInteger<Word> &operator+=(APUInteger<Word> const &other)
+  // Maximum index that contains a non-zero digit.  If the value is zero
+  // then this is -1.
+  Index maxIndex() const
+  {
+    Index i = size() - 1;
+    while (i >= 0 && m_vec[i] == 0) {
+      --i;
+    }
+    return i;
+  }
+
+  // Return <0 if a<b, 0 if a==b, >0 if a>b.
+  friend int compare(APUInteger const &a,
+                     APUInteger const &b)
+  {
+    Index aMaxIndex = a.maxIndex();
+    Index bMaxIndex = b.maxIndex();
+
+    RET_IF_COMPARE(aMaxIndex, bMaxIndex);
+
+    for (Index i = aMaxIndex; i >= 0; --i) {
+      RET_IF_COMPARE(a.getDigit(i), b.getDigit(i));
+    }
+
+    return 0;
+  }
+
+  DEFINE_FRIEND_RELATIONAL_OPERATORS(APUInteger)
+
+  APUInteger &operator+=(APUInteger const &other)
   {
     this->add(other);
     return *this;
   }
 
-  APUInteger<Word> operator+(APUInteger<Word> const &other) const
+  APUInteger operator+(APUInteger const &other) const
   {
-    APUInteger<Word> ret(*this);
+    APUInteger ret(*this);
     return ret += other;
   }
 };

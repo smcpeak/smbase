@@ -776,8 +776,12 @@ All of these are obsolete:
 <!-- begin header: sm-compare.h -->
   <!-- AUTO --><dt><a href="sm-compare.h">sm-compare.h</a>
   <!-- AUTO --><dd>
-  <!-- AUTO -->  StrongOrdering enum, similar to standard &lt;compare&gt;, but without
+  <!-- AUTO -->  StrongOrdering enum, similar to standard <code>&lt;compare&gt;</code>, but without
   <!-- AUTO -->  requiring C++20.
+  <!-- AUTO --><br><br>
+  <!-- AUTO -->  This is the same idea as <code>compare-util.h</code>, except with an enum class
+  <!-- AUTO -->  as the result instead of <code>int</code>.  I'm not sure which I want to commit
+  <!-- AUTO -->  to, but at the moment I'm leaning toward plain <code>int</code>.
 <!-- end header -->
 
 <!-- begin header: strictly-sorted.h -->

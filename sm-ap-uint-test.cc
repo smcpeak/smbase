@@ -82,6 +82,11 @@ void checkOneAdd(std::vector<int> const &a,
   APUInteger<unsigned char> apA = digitsToAP(a);
   APUInteger<unsigned char> apB = digitsToAP(b);
   APUInteger<unsigned char> apS = apA + apB;
+
+  xassert(apS >= apA);
+  xassert(apS >= apB);
+  xassert(apS == apS);
+
   std::vector<int> actual = apToDigits(apS);
   try {
     EXPECT_EQ(actual, expect);
@@ -97,17 +102,22 @@ void testSpecificAdd()
 {
   APUInteger<unsigned char> zero;
   checkDigits(zero, "[]");
+  xassert(zero == zero);
 
   APUInteger<unsigned char> one(1);
   checkDigits(one, "[1]");
+  xassert(zero < one);
 
   APUInteger<unsigned char> n(one);
   checkDigits(n, "[1]");
   n += one;
   checkDigits(n, "[2]");
+  xassert(zero < one);
+  xassert(one < n);
 
   APUInteger<unsigned char> two = one+one;
   checkDigits(two, "[2]");
+  xassert(two == n);
 
   APUInteger<unsigned char> n128(128);
   checkDigits(n128, "[128]");
@@ -115,16 +125,24 @@ void testSpecificAdd()
   APUInteger<unsigned char> n256 = n128+n128;
   checkDigits(n256, "[1 0]");
 
+  xassert(n256 > n128);
+  xassert(n128 > two);
+  xassert(n256 == n128+n128);
+
   APUInteger<unsigned char> big1;
   big1.setDigit(0, 0xFF);
   big1.setDigit(1, 0xFF);
   big1.setDigit(2, 0xFF);
   checkDigits(big1, "[255 255 255]");
 
+  xassert(big1 > n256);
+
   APUInteger<unsigned char> big2 = big1+one;
   checkDigits(big2, "[1 0 0 0]");
   big2 = one+big1;
   checkDigits(big2, "[1 0 0 0]");
+
+  xassert(big2 > big1);
 
   checkDigits(big1+big2, "[1 255 255 255]");
   checkDigits(big1+big2+one, "[2 0 0 0]");
@@ -133,9 +151,17 @@ void testSpecificAdd()
               {     1,   1, 0,   3},
               {1,   1,   0, 1,   2});
 
+  checkOneAdd({   255, 255, 0, 255},
+              {0,   1,   1, 0,   3},
+              {1,   1,   0, 1,   2});
+
+  // Make an integer with a redundant leading zero.
+  APUInteger<unsigned char> oneWithLeading = digitsToAP({0, 1});
+  xassert(oneWithLeading == one);
+
   // Check that we trim the redundant leading digit when converting back
   // to a vector.
-  EXPECT_EQ(apToDigits(digitsToAP({0, 1})), std::vector<int>{1});
+  EXPECT_EQ(apToDigits(oneWithLeading), std::vector<int>{1});
 }
 
 
