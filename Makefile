@@ -101,6 +101,14 @@ PYTHON3 = python3
 # How to invoke run-compare-expect.py.
 RUN_COMPARE_EXPECT = $(PYTHON3) ./run-compare-expect.py
 
+# Run whatever command follows with a timeout.  This is used for the
+# unit tests, where it's not uncommon for me to have an infinite loop,
+# which is slightly annoying to kill when the test is run from within
+# my editor.
+TIMEOUT_PROGRAM = timeout
+TIMEOUT_VALUE = 5
+RUN_WITH_TIMEOUT = $(TIMEOUT_PROGRAM) $(TIMEOUT_VALUE)
+
 # This invokes a script called 'mygcov', which is a personal wrapper
 # around 'gcov' that filters out some common false positives.  You
 # could just replace this with 'gcov' if you don't have that script.
@@ -143,6 +151,13 @@ ifeq ($(COVERAGE),1)
   CFLAGS += $(COVERAGE_CFLAGS)
   CXXFLAGS += $(COVERAGE_CXXFLAGS)
   OPTIMIZATION_FLAGS = $(COVERAGE_OPTIMIZATION_FLAGS)
+endif
+
+
+# Check if the timeout program can be found.
+ifneq ($(shell which $(TIMEOUT_PROGRAM) >$(DEV_NULL) 2>&1 && echo yes),yes)
+  # Program not found so do not try to use it.
+  RUN_WITH_TIMEOUT=
 endif
 
 
@@ -495,7 +510,7 @@ check: check-gdvn
 # -------------------------- run unit tests ----------------------------
 out/unit-tests.exe.ok: unit-tests.exe call-abort.exe test.dir/read-only.txt
 	$(CREATE_OUTPUT_DIRECTORY)
-	./unit-tests.exe
+	$(RUN_WITH_TIMEOUT) ./unit-tests.exe
 	touch $@
 
 check: out/unit-tests.exe.ok
