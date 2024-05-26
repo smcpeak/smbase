@@ -7,6 +7,7 @@
 #define SMBASE_SM_AP_UINT_H
 
 #include "compare-util.h"              // DEFINE_FRIEND_RELATIONAL_OPERATORS
+#include "double-width-type.h"         // smbase::DoubleWidthType
 #include "sm-macros.h"                 // OPEN_NAMESPACE, DMEMB, CMEMB
 #include "xassert.h"                   // xassert
 
@@ -26,6 +27,9 @@ public:      // types
   // quantity so that downward iteration is more convenient since we can
   // stop when it's negative rather than using other contorted tests.
   typedef std::ptrdiff_t Index;
+
+  // I currently assume I have access to a double-word type.
+  typedef typename DoubleWidthType<Word>::DWT DWord;
 
 private:     // data
   /* The magnitude of the integer, from least significant to most
@@ -114,6 +118,21 @@ private:     // methods
 
     // Otherwise, `other` was larger.
     xassert(borrow == 0);
+  }
+
+  // Return `a*b` in two words.
+  static void multiplyWords(
+    Word &lowProd,
+    Word &highProd,
+    Word a,
+    Word b)
+  {
+    // For now, assume we have access to a double-word type.
+    DWord da = a;
+    DWord db = b;
+    DWord prod = da*db;
+    lowProd = (Word)prod;
+    highProd = (Word)(prod >> (sizeof(Word)*8));
   }
 
 public:      // methods
@@ -207,6 +226,12 @@ public:      // methods
     return i;
   }
 
+  // True if this object represents zero.
+  bool isZero() const
+  {
+    return maxIndex() == -1;
+  }
+
   // Return <0 if a<b, 0 if a==b, >0 if a>b.
   friend int compare(APUInteger const &a,
                      APUInteger const &b)
@@ -262,6 +287,40 @@ public:      // methods
     APUInteger ret(*this);
     return ret -= other;
   }
+
+  // Set `*this` to the product of its original value and `w`.
+  void multiplyWord(Word w)
+  {
+    // Amount to add from the previous iteration.
+    Word carry = 0;
+
+    for (Index i = 0; i < size() || carry; ++i) {
+      Word d = this->getDigit(i);
+
+      Word lowProd, highProd;
+      multiplyWords(lowProd, highProd, d, w);
+
+      // The low digit of the product goes into the `i`th slot.
+      d = lowProd;
+
+      // Plus whatever carries from the previous digit.
+      Word carry1 = addWithCarry(d, carry);
+      this->setDigit(i, d);
+
+      // Then that carry combines with the high digit.
+      Word carry2 = addWithCarry(highProd, carry1);
+
+      // It should not be possible for the second addition to overflow.
+      xassert(carry2 == 0);
+
+      // What is in `highProd` is what carries to the next digit.
+      carry = highProd;
+    }
+  }
+
+
+
+
 };
 
 

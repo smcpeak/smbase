@@ -12,7 +12,11 @@
 
 #include <cstdlib>                     // std::rand
 
+#include <cstdint>                     // std::uint8_t
+
 using namespace smbase;
+
+using std::uint8_t;
 
 
 OPEN_ANONYMOUS_NAMESPACE
@@ -25,11 +29,17 @@ bool verbose = true;
 #define myrandom(n) (std::rand()%(n))
 
 
+typedef uint8_t Word;
+typedef APUInteger<Word> Integer;
+typedef Integer::Index Index;
+typedef std::vector<int> DigitVector;
+
+
 // Convert a digit sequence with most significant first into an AP
 // integer.
-APUInteger<unsigned char> digitsToAP(std::vector<int> const &digits)
+Integer digitsToAP(DigitVector const &digits)
 {
-  APUInteger<unsigned char> ap;
+  Integer ap;
   for (std::size_t i=0; i < digits.size(); ++i) {
     ap.setDigit(i, digits[digits.size() - i - 1]);
   }
@@ -38,11 +48,11 @@ APUInteger<unsigned char> digitsToAP(std::vector<int> const &digits)
 
 
 // Convert an AP integer to digits with most significant first.
-std::vector<int> apToDigits(APUInteger<unsigned char> const &n)
+DigitVector apToDigits(Integer const &n)
 {
-  std::vector<int> ret;
+  DigitVector ret;
 
-  int i = n.size()-1;
+  Index i = n.size()-1;
 
   // Skip high zeroes.
   while (i >= 0 && n.getDigit(i) == 0) {
@@ -60,14 +70,14 @@ std::vector<int> apToDigits(APUInteger<unsigned char> const &n)
 
 
 // Get the digits of `n` with most significant first.
-std::string digitString(APUInteger<unsigned char> const &n)
+std::string digitString(Integer const &n)
 {
   return stringb(apToDigits(n));
 }
 
 
 // Check that the vector of `n` is `expect`.
-void checkDigits(APUInteger<unsigned char> const &n, char const *expect)
+void checkDigits(Integer const &n, char const *expect)
 {
   std::string s = digitString(n);
   VPVAL(s);
@@ -75,26 +85,42 @@ void checkDigits(APUInteger<unsigned char> const &n, char const *expect)
 }
 
 
-void checkOneAdd(std::vector<int> const &a,
-                 std::vector<int> const &b,
-                 std::vector<int> const &expect)
+// Check that `n` equals `expecr64`.
+void checkEquals(Integer const &n, uint64_t expect64)
+{
+  for (Index i=0; i < 8; ++i) {
+    try {
+      Word expectWord = (expect64 >> (8*i)) & 0xFF;
+      EXPECT_EQ((int)n.getDigit(i), (int)expectWord);
+    }
+    catch (XBase &x) {
+      x.prependContext(stringb("i=" << i));
+      throw;
+    }
+  }
+}
+
+
+void checkOneAdd(DigitVector const &a,
+                 DigitVector const &b,
+                 DigitVector const &expect)
 {
   try {
-    APUInteger<unsigned char> apA = digitsToAP(a);
-    APUInteger<unsigned char> apB = digitsToAP(b);
-    APUInteger<unsigned char> apS = apA + apB;
+    Integer apA = digitsToAP(a);
+    Integer apB = digitsToAP(b);
+    Integer apS = apA + apB;
 
     xassert(apS >= apA);
     xassert(apS >= apB);
     xassert(apS == apS);
 
-    std::vector<int> actual = apToDigits(apS);
+    DigitVector actual = apToDigits(apS);
     EXPECT_EQ(actual, expect);
 
     xassert(apS - apA == apB);
     xassert(apS - apB == apA);
 
-    APUInteger<unsigned char> zero;
+    Integer zero;
     xassert(apA - apS == zero);
     xassert(apB - apS == zero);
   }
@@ -107,32 +133,32 @@ void checkOneAdd(std::vector<int> const &a,
 
 void testSpecificAddSub()
 {
-  APUInteger<unsigned char> zero;
+  Integer zero;
   checkDigits(zero, "[]");
   xassert(zero == zero);
   xassert(zero+zero == zero);
   xassert(zero-zero == zero);
 
-  APUInteger<unsigned char> one(1);
+  Integer one(1);
   checkDigits(one, "[1]");
   xassert(zero < one);
 
-  APUInteger<unsigned char> n(one);
+  Integer n(one);
   checkDigits(n, "[1]");
   n += one;
   checkDigits(n, "[2]");
   xassert(zero < one);
   xassert(one < n);
 
-  APUInteger<unsigned char> two = one+one;
+  Integer two = one+one;
   checkDigits(two, "[2]");
   xassert(two == n);
   xassert(two - one == one);
 
-  APUInteger<unsigned char> n128(128);
+  Integer n128(128);
   checkDigits(n128, "[128]");
 
-  APUInteger<unsigned char> n256 = n128+n128;
+  Integer n256 = n128+n128;
   checkDigits(n256, "[1 0]");
 
   xassert(n256 > n128);
@@ -140,7 +166,7 @@ void testSpecificAddSub()
   xassert(n256 == n128+n128);
   xassert(n256-n128 == n128);
 
-  APUInteger<unsigned char> big1;
+  Integer big1;
   big1.setDigit(0, 0xFF);
   big1.setDigit(1, 0xFF);
   big1.setDigit(2, 0xFF);
@@ -148,7 +174,7 @@ void testSpecificAddSub()
 
   xassert(big1 > n256);
 
-  APUInteger<unsigned char> big2 = big1+one;
+  Integer big2 = big1+one;
   checkDigits(big2, "[1 0 0 0]");
   big2 = one+big1;
   checkDigits(big2, "[1 0 0 0]");
@@ -168,18 +194,18 @@ void testSpecificAddSub()
               {1,   1,   0, 1,   2});
 
   // Make an integer with a redundant leading zero.
-  APUInteger<unsigned char> oneWithLeading = digitsToAP({0, 1});
+  Integer oneWithLeading = digitsToAP({0, 1});
   xassert(oneWithLeading == one);
 
   // Check that we trim the redundant leading digit when converting back
   // to a vector.
-  EXPECT_EQ(apToDigits(oneWithLeading), std::vector<int>{1});
+  EXPECT_EQ(apToDigits(oneWithLeading), DigitVector{1});
 }
 
 
 // This is not a very thorough test because it only lightly tests the
 // carry mechanism.  The specific tests above are a bit better.
-void testRandomizedAddSub()
+void testRandomizedAddSubMult()
 {
   smbase_loopi(1000) {
     // Get two random 3-byte integers.
@@ -194,41 +220,94 @@ void testRandomizedAddSub()
     int a = (a2 << 16) + (a1 << 8) + a0;
     int b = (b2 << 16) + (b1 << 8) + b0;
 
-    // Add them.
-    APUInteger<unsigned char> apA;
-    apA.setDigit(0, a0);
-    apA.setDigit(1, a1);
-    apA.setDigit(2, a2);
+    try {
+      Integer apA;
+      apA.setDigit(0, a0);
+      apA.setDigit(1, a1);
+      apA.setDigit(2, a2);
+      checkEquals(apA, a);
 
-    APUInteger<unsigned char> apB;
-    apB.setDigit(0, b0);
-    apB.setDigit(1, b1);
-    apB.setDigit(2, b2);
+      Integer apB;
+      apB.setDigit(0, b0);
+      apB.setDigit(1, b1);
+      apB.setDigit(2, b2);
+      checkEquals(apB, b);
 
-    APUInteger<unsigned char> apS = apA + apB;
+      // Add and subtract them.
+      {
+        Integer apS = apA + apB;
 
-    int s = a+b;
+        int s = a+b;
 
-    int s0 = s & 0xFF;
-    int s1 = (s >> 8) & 0xFF;
-    int s2 = (s >> 16) & 0xFF;
-    int s3 = (s >> 24) & 0xFF;
+        int s0 = s & 0xFF;
+        int s1 = (s >> 8) & 0xFF;
+        int s2 = (s >> 16) & 0xFF;
+        int s3 = (s >> 24) & 0xFF;
 
-    // Check the result digits.
-    EXPECT_EQ((int)apS.getDigit(0), s0);
-    EXPECT_EQ((int)apS.getDigit(1), s1);
-    EXPECT_EQ((int)apS.getDigit(2), s2);
-    EXPECT_EQ((int)apS.getDigit(3), s3);
+        // Check the result digits.
+        EXPECT_EQ((int)apS.getDigit(0), s0);
+        EXPECT_EQ((int)apS.getDigit(1), s1);
+        EXPECT_EQ((int)apS.getDigit(2), s2);
+        EXPECT_EQ((int)apS.getDigit(3), s3);
 
-    xassert(apS.size() <= 4);
+        xassert(apS.size() <= 4);
+        checkEquals(apS, s);
 
-    xassert(apS - apA == apB);
-    xassert(apS - apB == apA);
+        xassert(apS - apA == apB);
+        xassert(apS - apB == apA);
 
-    APUInteger<unsigned char> zero;
-    xassert(apA - apS == zero);
-    xassert(apB - apS == zero);
+        Integer zero;
+        xassert(apA - apS == zero);
+        xassert(apB - apS == zero);
+      }
+
+      // Calculate `a * b0`.
+      {
+        Integer oneDigitProd(apA);
+        oneDigitProd.multiplyWord(b0);
+
+        uint64_t p = (uint64_t)a * b0;
+
+        checkEquals(oneDigitProd, p);
+      }
+    }
+
+    catch (XBase &x) {
+      x.prependContext(stringb(
+        "a0=" << a0 <<
+        " a1=" << a1 <<
+        " a2=" << a2 <<
+        " a=" << a <<
+        " b0=" << b0 <<
+        " b1=" << b1 <<
+        " b2=" << b2 <<
+        " b=" << b <<
+        " iter=" << i <<
+        ""));
+      throw;
+    }
   }
+}
+
+
+static void testSpecificMult()
+{
+  Integer n;
+  n.multiplyWord(0);
+  xassert(n.isZero());
+
+  n.multiplyWord(4);
+  xassert(n.isZero());
+
+  n += 1;
+  checkDigits(n, "[1]");
+
+  n.multiplyWord(100);
+  checkDigits(n, "[100]");
+
+  n.multiplyWord(16);
+  n.multiplyWord(16);
+  checkDigits(n, "[100 0]");
 }
 
 
@@ -239,7 +318,8 @@ CLOSE_ANONYMOUS_NAMESPACE
 void test_sm_ap_uint()
 {
   testSpecificAddSub();
-  testRandomizedAddSub();
+  testSpecificMult();
+  testRandomizedAddSubMult();
 }
 
 
