@@ -8,7 +8,6 @@
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE, smbase_loopi
 #include "sm-test.h"                   // VPVAL, EXPECT_EQ, EXPECT_MATCHES_REGEX
 #include "stringb.h"                   // stringb
-#include "vector-utils.h"              // operator<< (std::vector), vectorReverseOf
 
 #include <cstdlib>                     // std::rand
 
@@ -32,7 +31,7 @@ bool verbose = true;
 typedef uint8_t Word;
 typedef APUInteger<Word> Integer;
 typedef Integer::Index Index;
-typedef std::vector<int> WordVector;
+typedef std::vector<Word> WordVector;
 
 
 // Convert a word sequence with most significant first into an AP
@@ -52,14 +51,8 @@ WordVector apToWords(Integer const &n)
 {
   WordVector ret;
 
-  Index i = n.size()-1;
+  Index i = n.maxWordIndex();
 
-  // Skip high zeroes.
-  while (i >= 0 && n.getWord(i) == 0) {
-    --i;
-  }
-
-  // Copy what's left.
   while (i >= 0) {
     ret.push_back(n.getWord(i));
     --i;
@@ -69,10 +62,38 @@ WordVector apToWords(Integer const &n)
 }
 
 
+// Render `vec` as a string.  This does not use the `operator<<` on
+// vectors declared in `vector-utils.h` because that would mishandle
+// one-byte words in this context.
+std::string wordVectorString(WordVector const &vec)
+{
+  std::ostringstream oss;
+  oss << '[';
+
+  int ct=0;
+  for (Word w : vec) {
+    if (ct++ > 0) {
+      oss << ' ';
+    }
+    if (sizeof(Word) == 1) {
+      // Print as integer not character.
+      oss << (int)w;
+    }
+    else {
+      oss << w;
+    }
+  }
+
+
+  oss << ']';
+  return oss.str();
+}
+
+
 // Get the words of `n` with most significant first.
 std::string wordsString(Integer const &n)
 {
-  return stringb(apToWords(n));
+  return wordVectorString(apToWords(n));
 }
 
 
@@ -132,7 +153,7 @@ void checkOneAdd(WordVector const &a,
     xassert(apS == apS);
 
     WordVector actual = apToWords(apS);
-    EXPECT_EQ(actual, expect);
+    xassert(actual == expect);
 
     xassert(apS - apA == apB);
     xassert(apS - apB == apA);
@@ -142,7 +163,8 @@ void checkOneAdd(WordVector const &a,
     xassert(apB - apS == zero);
   }
   catch (XBase &x) {
-    x.prependContext(stringb("a=" << a << ", b=" << b));
+    x.prependContext(stringb("a=" << wordVectorString(a) <<
+                             ", b=" << wordVectorString(b)));
     throw;
   }
 }
@@ -274,7 +296,7 @@ void testSpecificAddSub()
 
   // Check that we trim the redundant leading word when converting back
   // to a vector.
-  EXPECT_EQ(apToWords(oneWithLeading), WordVector{1});
+  xassert(apToWords(oneWithLeading) == WordVector{1});
 }
 
 
