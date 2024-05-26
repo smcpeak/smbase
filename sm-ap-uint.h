@@ -13,6 +13,7 @@
 #include "exc.h"                       // xformatsb
 #include "sm-macros.h"                 // OPEN_NAMESPACE, DMEMB, CMEMB
 #include "string-utils.h"              // singleQuoteChar
+#include "vector-utils.h"              // vectorReverseOf
 #include "xassert.h"                   // xassert
 
 #include <algorithm>                   // std::max
@@ -213,6 +214,27 @@ private:     // methods
     }
 
     return w;
+  }
+
+  /* Return `value` as a digit in base `radix`.  For a radix larger than
+     10, digit 11 is 'A', digit 12 is 'B', and so on up to digit 36 as
+     'Z'.  When the result is a letter, it is always uppercase.
+
+     Preconditions:
+       2 <= radix <= 36
+       0 <= value < radix
+  */
+  static char getAsRadixDigit(int value, int radix)
+  {
+    xassert(2 <= radix && radix <= 36);
+    xassert(0 <= value && value < radix);
+
+    if (value < 10) {
+      return '0' + value;
+    }
+    else {
+      return 'A' + (value - 10);
+    }
   }
 
 public:      // methods
@@ -603,6 +625,13 @@ public:      // methods
     return stringb(*this);
   }
 
+  // Return a string of hex digits without the "0x" prefix.
+  std::string getAsHexDigits() const
+  {
+    std::ostringstream oss;
+    writeAsHex(oss, false /*writeRadixMarker*/);
+    return oss.str();
+  }
 
   // ---------- Convert from sequence of hexadecimal digits ----------
   // Interpret `digits` as a sequence of hexadecimal digits, *without*
@@ -679,6 +708,56 @@ public:      // methods
   // There is no `operator>>` because I regard C++ `istream` formatted
   // input as completely inadequate as a parsing framework.  Something
   // else should parse, then hand this class a string (view).
+
+  // ---------- Convert to sequence of arbitrary-radix digits ----------
+  /* Return a string containing the digits of `*this` using `radix`,
+     which must be in [2,36].  No indicator of the radix is returned.
+
+     This is a fairly slow procedure since it uses repeated division.
+
+     This does not do any fast-path optimization for the case of radix
+     16 or other powers of 2.  In part, that lets me use this code to
+     test the dedicated hex printing code and vice-versa.
+  */
+  std::string getAsRadixDigits(int radix) const
+  {
+    xassert(2 <= radix && radix <= 36);
+
+    if (isZero()) {
+      return "0";
+    }
+
+    // Accumulate the digits, least significant first.
+    std::vector<char> digits;
+
+    APUInteger apRadix(radix);
+
+    // Remaining value to print.
+    APUInteger n(*this);
+    while (!n.isZero()) {
+      // Divide by the radix.
+      APUInteger quotient, remainder;
+      divide(quotient, remainder, n, apRadix);
+
+      // The remainder is the digit to print this time.
+      digits.push_back(
+        getAsRadixDigit(remainder.template getAs<int>(), radix));
+
+      // The quotient is what remains to be printed.
+      n = std::move(quotient);
+    }
+
+    // Reverse the digits to get the most significant first.
+    std::vector revDigits = vectorReverseOf(digits);
+
+    return std::string(revDigits.begin(), revDigits.end());
+  }
+
+  // Return `*this` as a string of decimal rights.
+  std::string getAsDecimalDigits() const
+  {
+    return getAsRadixDigits(10);
+  }
 
   // ---------- Addition ----------
   // Add `other` to `*this`.

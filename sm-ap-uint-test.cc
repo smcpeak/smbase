@@ -671,6 +671,53 @@ public:      // methods
   }
 
 
+  // Return a random value of type `PRIM`, approximately uniformly
+  // distributed.
+  template <typename PRIM>
+  PRIM randomPrim()
+  {
+    PRIM v = 0;
+
+    for (int i=0; i < (int)sizeof(PRIM); ++i) {
+      v <<= 8;
+      v += myrandom(256);
+    }
+
+    return v;
+  }
+
+
+  void testGetAsRadixDigits()
+  {
+    Integer n;
+    for (int r=2; r <= 36; ++r) {
+      EXPECT_EQ(n.getAsRadixDigits(r), "0");
+    }
+
+    n = 123;
+    EXPECT_EQ(n.getAsRadixDigits(2), "1111011");
+    EXPECT_EQ(n.getAsRadixDigits(8), "173");
+    EXPECT_EQ(n.getAsRadixDigits(10), "123");
+    EXPECT_EQ(n.getAsDecimalDigits(), "123");
+    EXPECT_EQ(n.getAsRadixDigits(16), "7B");
+    EXPECT_EQ(n.getAsRadixDigits(36), "3F");
+
+    // Just to see a 'Z' pop out.
+    EXPECT_EQ(Integer(107).getAsRadixDigits(36), "2Z");
+
+    smbase_loopi(10) {
+      uint64_t val = randomPrim<uint64_t>();
+      Integer apVal(val);
+
+      std::string digits1 = apVal.getAsRadixDigits(16);
+      std::string digits2 = apVal.getAsHexDigits();
+
+      VPVAL(digits1);
+      EXPECT_EQ(digits1, digits2);
+    }
+  }
+
+
   void testAll()
   {
     testSpecificAddSub();
@@ -679,6 +726,7 @@ public:      // methods
     testLeftShift();
     testReadWriteAsHex();
     testConstructFromPrim();
+    testGetAsRadixDigits();
   }
 }; // APUintTest
 
