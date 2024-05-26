@@ -44,7 +44,7 @@ private:     // methods
   // Add `other` into `w`, returning the carry bit.
   static Word addWithCarry(Word &w, Word other)
   {
-    w += other;
+    w += other;    // May wrap.
     return w < other;
   }
 
@@ -76,6 +76,44 @@ private:     // methods
       // second addition yields `other.digit(i)` with no carry.
       xassert(carry <= 1);
     }
+  }
+
+  // Subtract `b` from `a`, returning 1 if that requires borrowing one
+  // unit from the next-highest digit.
+  static Word subtractWithBorrow(Word &a, Word b)
+  {
+    Word origA = a;
+    a -= b;        // May wrap.
+    return a > origA;
+  }
+
+  // Subtract `other` from `this`.  `this` must be at least as large.
+  void subtract(APUInteger const &other)
+  {
+    // Amount to borrow from the current digit in order to supply the
+    // previous iteration's digit.
+    Word borrow = 0;
+
+    for (Index i = 0; i < other.size() ||
+                      (i < this->size() && borrow != 0); ++i) {
+      Word d = this->getDigit(i);
+
+      Word borrow1 = subtractWithBorrow(d, borrow);
+      Word borrow2 = subtractWithBorrow(d, other.getDigit(i));
+
+      this->setDigit(i, d);
+
+      borrow = borrow1 + borrow2;
+
+      // It is not possible for both operations to yield a borrow
+      // because if the first does, then it leaves `d` as the maximum
+      // value of a Word, so the second subtraction cannot require a
+      // borrow.
+      xassert(borrow <= 1);
+    }
+
+    // Otherwise, `other` was larger.
+    xassert(borrow == 0);
   }
 
 public:      // methods
@@ -187,6 +225,13 @@ public:      // methods
 
   DEFINE_FRIEND_RELATIONAL_OPERATORS(APUInteger)
 
+  // Set the value of this object to zero.
+  void setZero()
+  {
+    m_vec.clear();
+  }
+
+  // Add `other` to `*this`.
   APUInteger &operator+=(APUInteger const &other)
   {
     this->add(other);
@@ -197,6 +242,25 @@ public:      // methods
   {
     APUInteger ret(*this);
     return ret += other;
+  }
+
+  // Subtract `other` from `*this`.  If `other` is larger, then set
+  // `*this` to zero.
+  APUInteger &operator-=(APUInteger const &other)
+  {
+    if (*this >= other) {
+      this->subtract(other);
+    }
+    else {
+      this->setZero();
+    }
+    return *this;
+  }
+
+  APUInteger operator-(APUInteger const &other) const
+  {
+    APUInteger ret(*this);
+    return ret -= other;
   }
 };
 

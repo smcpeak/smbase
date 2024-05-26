@@ -79,17 +79,24 @@ void checkOneAdd(std::vector<int> const &a,
                  std::vector<int> const &b,
                  std::vector<int> const &expect)
 {
-  APUInteger<unsigned char> apA = digitsToAP(a);
-  APUInteger<unsigned char> apB = digitsToAP(b);
-  APUInteger<unsigned char> apS = apA + apB;
-
-  xassert(apS >= apA);
-  xassert(apS >= apB);
-  xassert(apS == apS);
-
-  std::vector<int> actual = apToDigits(apS);
   try {
+    APUInteger<unsigned char> apA = digitsToAP(a);
+    APUInteger<unsigned char> apB = digitsToAP(b);
+    APUInteger<unsigned char> apS = apA + apB;
+
+    xassert(apS >= apA);
+    xassert(apS >= apB);
+    xassert(apS == apS);
+
+    std::vector<int> actual = apToDigits(apS);
     EXPECT_EQ(actual, expect);
+
+    xassert(apS - apA == apB);
+    xassert(apS - apB == apA);
+
+    APUInteger<unsigned char> zero;
+    xassert(apA - apS == zero);
+    xassert(apB - apS == zero);
   }
   catch (XBase &x) {
     x.prependContext(stringb("a=" << a << ", b=" << b));
@@ -98,11 +105,13 @@ void checkOneAdd(std::vector<int> const &a,
 }
 
 
-void testSpecificAdd()
+void testSpecificAddSub()
 {
   APUInteger<unsigned char> zero;
   checkDigits(zero, "[]");
   xassert(zero == zero);
+  xassert(zero+zero == zero);
+  xassert(zero-zero == zero);
 
   APUInteger<unsigned char> one(1);
   checkDigits(one, "[1]");
@@ -118,6 +127,7 @@ void testSpecificAdd()
   APUInteger<unsigned char> two = one+one;
   checkDigits(two, "[2]");
   xassert(two == n);
+  xassert(two - one == one);
 
   APUInteger<unsigned char> n128(128);
   checkDigits(n128, "[128]");
@@ -128,6 +138,7 @@ void testSpecificAdd()
   xassert(n256 > n128);
   xassert(n128 > two);
   xassert(n256 == n128+n128);
+  xassert(n256-n128 == n128);
 
   APUInteger<unsigned char> big1;
   big1.setDigit(0, 0xFF);
@@ -143,6 +154,7 @@ void testSpecificAdd()
   checkDigits(big2, "[1 0 0 0]");
 
   xassert(big2 > big1);
+  xassert(big2-one == big1);
 
   checkDigits(big1+big2, "[1 255 255 255]");
   checkDigits(big1+big2+one, "[2 0 0 0]");
@@ -167,7 +179,7 @@ void testSpecificAdd()
 
 // This is not a very thorough test because it only lightly tests the
 // carry mechanism.  The specific tests above are a bit better.
-void testRandomizedAdd()
+void testRandomizedAddSub()
 {
   smbase_loopi(1000) {
     // Get two random 3-byte integers.
@@ -209,6 +221,13 @@ void testRandomizedAdd()
     EXPECT_EQ((int)apS.getDigit(3), s3);
 
     xassert(apS.size() <= 4);
+
+    xassert(apS - apA == apB);
+    xassert(apS - apB == apA);
+
+    APUInteger<unsigned char> zero;
+    xassert(apA - apS == zero);
+    xassert(apB - apS == zero);
   }
 }
 
@@ -219,8 +238,8 @@ CLOSE_ANONYMOUS_NAMESPACE
 // Called from unit-tests.cc.
 void test_sm_ap_uint()
 {
-  testSpecificAdd();
-  testRandomizedAdd();
+  testSpecificAddSub();
+  testRandomizedAddSub();
 }
 
 
