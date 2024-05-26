@@ -223,13 +223,10 @@ public:      // methods
     : MDMEMB(m_vec)
   {}
 
-  // Represent `smallMagnitude`.
-  //
-  // This allows implicit conversion because it is safe (no external
-  // side effects, etc.) and preserves information.
-  /*implicit*/ APUInteger(Word smallMagnitude)
-    : m_vec(1, smallMagnitude)
-  {}
+  // There is no constructor from a Word value.  It's error-prone
+  // because a larger value gets truncated if the Word is small.
+  // Instead, one should use `setWord` which is more explicitly
+  // interacting with the integer as a sequence of words.
 
   // ---------- Assignment ----------
   APUInteger &operator=(APUInteger const &obj)

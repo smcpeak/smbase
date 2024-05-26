@@ -159,7 +159,8 @@ void testSpecificAddSub()
   EXPECT_EQ(zero.maxBitIndex(), (Index)-1);
   checkBits(zero, "");
 
-  Integer one(1);
+  Integer one;
+  one.setWord(0, 1);
   checkWords(one, "[1]");
   xassert(zero < one);
   xassert(!one.isZero());
@@ -180,7 +181,8 @@ void testSpecificAddSub()
   EXPECT_EQ(two.maxBitIndex(), (Index)1);
   checkBits(two, "10");
 
-  Integer n128(128);
+  Integer n128;
+  n128.setWord(0, 128);
   checkWords(n128, "[128]");
   EXPECT_EQ(n128.maxBitIndex(), (Index)7);
   checkBits(n128, "10000000");
@@ -376,8 +378,8 @@ void testRandomizedAddSubMult()
         checkEquals(apQ, q);
         checkEquals(apR, r);
 
-        xassert(0 <= apR);
-        xassert(     apR < apB);
+        xassert(Integer() <= apR);
+        xassert(             apR < apB);
 
         xassert(apB * apQ + apR == apA);
 
@@ -420,7 +422,9 @@ static void testSpecificMult()
   n.multiplyWord(4);
   xassert(n.isZero());
 
-  n += 1;
+  Integer one;
+  one.setWord(0, 1);
+  n += one;
   checkWords(n, "[1]");
 
   n.multiplyWord(100);
@@ -442,7 +446,9 @@ static void testLeftShift()
   n.leftShiftByWords(3);
   checkWords(n, "[1 2 3 0 0 0]");
 
-  n += 1;
+  Integer one;
+  one.setWord(0, 1);
+  n += one;
   checkWords(n, "[1 2 3 0 0 1]");
 
   n.leftShiftByWords(1);
@@ -452,16 +458,19 @@ static void testLeftShift()
 
 static void testReadWriteAsHex()
 {
-  Integer n(0xF);
+  Integer n;
+  n.setWord(0, 0xF);
   DIAG(n);
   std::string digits = stringb(n);
   EXPECT_EQ(digits, "0xF");
   EXPECT_EQ(Integer::fromDigits(digits), n);
 
-  DIAG(Integer(0x12));
-  digits = stringb(Integer(0x12));
+  Integer h12;
+  h12.setWord(0, 0x12);
+  DIAG(h12);
+  digits = stringb(h12);
   EXPECT_EQ(digits, "0x12");
-  EXPECT_EQ(Integer::fromDigits(digits), Integer(0x12));
+  EXPECT_EQ(Integer::fromDigits(digits), h12);
 
   // Leading zero for those after the first (here, "0F").
   n.setWord(1, 0x45);
