@@ -187,7 +187,7 @@ private:     // methods
   // Interpret the hexadecimal digits in [start,end) as denoting a Word
   // value.  There must not be more digits than could fit in a Word.
   // Throws XFormat if a character is not hexadecimal.
-  static Word wordFromHex(std::string_view digits)
+  static Word wordFromHexDigit(std::string_view digits)
   {
     Index digitsPerWord = sizeof(Word)*2;
     Index numDigits = digits.size();
@@ -203,7 +203,7 @@ private:     // methods
     for (Index i = numDigits-1; i >= 0; --i) {
       int c = digits[i];
       if (!isASCIIHexDigit(c)) {
-        xformatsb("Expecting hexadecimal digit, found " <<
+        xformatsb("Expecting hexadecimal digit, instead found " <<
                   singleQuoteChar(c));
       }
       Word v = decodeASCIIHexDigit(c);
@@ -235,6 +235,37 @@ private:     // methods
     else {
       return 'A' + (value - 10);
     }
+  }
+
+  /* Regard `digit` as a digit in base `radix` and return its numeric
+     value.  `radix` must be in [2,36].
+
+     If `digit` is not valid for the radix, throw `XFormat`.
+  */
+  static Word wordFromRadixDigit(int digit, int radix)
+  {
+    xassert(2 <= radix && radix <= 36);
+
+    // First try to map the digit to a value without regard for radix.
+    int dv = -1;
+    if ('0' <= digit && digit <= '9') {
+      dv = digit - '0';
+    }
+    else if ('A' <= digit && digit <= 'Z') {
+      dv = digit - 'A' + 10;
+    }
+    else if ('a' <= digit && digit <= 'z') {
+      dv = digit - 'a' + 10;
+    }
+
+    // If it was not a digit or letter, or was but the denoted value is
+    // too large, complain.
+    if (dv < 0 || dv >= radix) {
+      xformatsb("Expecting a base-" << radix <<
+                " digit, instead found " << singleQuoteChar(digit));
+    }
+
+    return (Word)dv;
   }
 
 public:      // methods
@@ -634,10 +665,14 @@ public:      // methods
   }
 
   // ---------- Convert from sequence of hexadecimal digits ----------
-  // Interpret `digits` as a sequence of hexadecimal digits, *without*
-  // any radix marker, and return the value they denote.  Throw
-  // `XFormat` if there is a problem.
-  static APUInteger fromHex(std::string_view digits)
+  /* Interpret `digits` as a sequence of hexadecimal digits, *without*
+     any radix marker, and return the value they denote.
+
+     If `digits` is empty, return zero.
+
+     Throw `XFormat` if there is a problem.
+  */
+  static APUInteger fromHexDigits(std::string_view digits)
   {
     APUInteger ret;
 
@@ -681,7 +716,7 @@ public:      // methods
       //   When i=1, this is 0x23.
       //   When i=2, this is 0x01.
       //
-      Word w = wordFromHex(
+      Word w = wordFromHexDigit(
         digits.substr(digitBlockStart, digitBlockSize));
 
       // Store that.
@@ -698,7 +733,7 @@ public:      // methods
     if (digits.size() >= 3 &&
         digits[0] == '0' &&
         (digits[1] == 'x' || digits[1] == 'X')) {
-      return fromHex(digits.substr(2));
+      return fromHexDigits(digits.substr(2));
     }
     else {
       xunimp("decimal conversion");
@@ -757,6 +792,42 @@ public:      // methods
   std::string getAsDecimalDigits() const
   {
     return getAsRadixDigits(10);
+  }
+
+  // --------- Convert from sequence of arbitrary-radix digits ---------
+  /* Treat `digits` as a sequence of digits in base `radix` and return
+     the value they denote.  `radix` must be in [2,36].
+
+     If `digits` is empty, return zero.
+
+     If any digit is invalid, throw `XFormat`.
+  */
+  static APUInteger fromRadixDigits(std::string_view digits, int radix)
+  {
+    APUInteger ret;
+
+    Word radixWord = (Word)radix;
+    xassert((int)radixWord == radix);
+
+    // Object into which I store successive digit values in order to add
+    // them into `ret`.  This avoids creating and destroying an object
+    // for each digit.
+    APUInteger apDigit;
+
+    // Work left to right.
+    for (char digit : digits) {
+      apDigit.setWord(0, wordFromRadixDigit(digit, radix));
+
+      ret.multiplyWord(radixWord);
+      ret.add(apDigit);
+    }
+
+    return ret;
+  }
+
+  static APUInteger fromDecimalDigits(std::string_view digits)
+  {
+    return fromRadixDigits(digits, 10);
   }
 
   // ---------- Addition ----------

@@ -714,6 +714,18 @@ public:      // methods
 
       VPVAL(digits1);
       EXPECT_EQ(digits1, digits2);
+
+      digits1 = apVal.getAsDecimalDigits();
+      Integer val2 = Integer::fromDecimalDigits(digits1);
+      EXPECT_EQ(val2, apVal);
+
+      smbase_loopj(3) {
+        int radix = myrandom(35) + 2;
+
+        digits1 = apVal.getAsRadixDigits(radix);
+        val2 = Integer::fromRadixDigits(digits1, radix);
+        EXPECT_EQ(val2, apVal);
+      }
     }
   }
 
