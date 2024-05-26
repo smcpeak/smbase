@@ -55,35 +55,35 @@ private:     // methods
   // Add `other` into `this`.
   void add(APUInteger const &other)
   {
-    // Carry value from the previous digit.
+    // Carry value from the previous word.
     Word carry = 0;
 
-    // Process all of the digits in `other`, then keep going as long as
+    // Process all of the words in `other`, then keep going as long as
     // we have a carry to propagate.
     Index i = 0;
     for (; i < other.size() || carry != 0; ++i) {
-      // Get current digit.
-      Word d = this->getDigit(i);
+      // Get current word.
+      Word d = this->getWord(i);
 
-      // Add the carry and the other number's digit.
+      // Add the carry and the other number's word.
       Word carry1 = addWithCarry(d, carry);
-      Word carry2 = addWithCarry(d, other.getDigit(i));
+      Word carry2 = addWithCarry(d, other.getWord(i));
 
-      // Update the digit.
-      this->setDigit(i, d);
+      // Update the word.
+      this->setWord(i, d);
 
       // Compute the carry to use in the next iteration.
       carry = carry1 + carry2;
 
       // It is not possible for both additions to yield a carry because
       // if the first does, then the resulting `d` is zero, so the
-      // second addition yields `other.digit(i)` with no carry.
+      // second addition yields `other.getWord(i)` with no carry.
       xassert(carry <= 1);
     }
   }
 
   // Subtract `b` from `a`, returning 1 if that requires borrowing one
-  // unit from the next-highest digit.
+  // unit from the next-highest word.
   static Word subtractWithBorrow(Word &a, Word b)
   {
     Word origA = a;
@@ -94,18 +94,18 @@ private:     // methods
   // Subtract `other` from `this`.  `this` must be at least as large.
   void subtract(APUInteger const &other)
   {
-    // Amount to borrow from the current digit in order to supply the
-    // previous iteration's digit.
+    // Amount to borrow from the current word in order to supply the
+    // previous iteration's word.
     Word borrow = 0;
 
     for (Index i = 0; i < other.size() ||
                       (i < this->size() && borrow != 0); ++i) {
-      Word d = this->getDigit(i);
+      Word d = this->getWord(i);
 
       Word borrow1 = subtractWithBorrow(d, borrow);
-      Word borrow2 = subtractWithBorrow(d, other.getDigit(i));
+      Word borrow2 = subtractWithBorrow(d, other.getWord(i));
 
-      this->setDigit(i, d);
+      this->setWord(i, d);
 
       borrow = borrow1 + borrow2;
 
@@ -132,7 +132,7 @@ private:     // methods
     DWord db = b;
     DWord prod = da*db;
     lowProd = (Word)prod;
-    highProd = (Word)(prod >> (sizeof(Word)*8));
+    highProd = (Word)(prod >> bitsPerWord());
   }
 
 public:      // methods
@@ -173,16 +173,16 @@ public:      // methods
     : m_vec(1, smallMagnitude)
   {}
 
-  // Return the number of stored digits.  Some of the high digits may
+  // Return the number of stored words.  Some of the high words may
   // be redundantly zero, but this method does not check for that.
   Index size() const
   {
     return static_cast<Index>(m_vec.size());
   }
 
-  // Get the `i`th digit, where the 0th is the least significant.
-  // Return 0 if that digit is not currently stored.
-  Word getDigit(Index i) const
+  // Get the `i`th word, where the 0th is the least significant.
+  // Return 0 if that word is not currently stored.
+  Word getWord(Index i) const
   {
     xassert(i >= 0);
     if (i < size()) {
@@ -193,16 +193,16 @@ public:      // methods
     }
   }
 
-  // Set digit `i` to `d`.  If `d` is zero and `i` is beyond the current
+  // Set word `i` to `d`.  If `d` is zero and `i` is beyond the current
   // vector size, do nothing.
-  void setDigit(Index i, Word d)
+  void setWord(Index i, Word d)
   {
     xassert(i >= 0);
     if (i < size()) {
       m_vec[i] = d;
     }
     else if (d == 0) {
-      // There is no need to explicitly set a zero digit beyond the
+      // There is no need to explicitly set a zero word beyond the
       // current size.
     }
     else {
@@ -215,9 +215,9 @@ public:      // methods
     }
   }
 
-  // Maximum index that contains a non-zero digit.  If the value is zero
+  // Maximum index that contains a non-zero word.  If the value is zero
   // then this is -1.
-  Index maxIndex() const
+  Index maxWordIndex() const
   {
     Index i = size() - 1;
     while (i >= 0 && m_vec[i] == 0) {
@@ -229,20 +229,20 @@ public:      // methods
   // True if this object represents zero.
   bool isZero() const
   {
-    return maxIndex() == -1;
+    return maxWordIndex() == -1;
   }
 
   // Return <0 if a<b, 0 if a==b, >0 if a>b.
   friend int compare(APUInteger const &a,
                      APUInteger const &b)
   {
-    Index aMaxIndex = a.maxIndex();
-    Index bMaxIndex = b.maxIndex();
+    Index aMaxIndex = a.maxWordIndex();
+    Index bMaxIndex = b.maxWordIndex();
 
     RET_IF_COMPARE(aMaxIndex, bMaxIndex);
 
     for (Index i = aMaxIndex; i >= 0; --i) {
-      RET_IF_COMPARE(a.getDigit(i), b.getDigit(i));
+      RET_IF_COMPARE(a.getWord(i), b.getWord(i));
     }
 
     return 0;
@@ -295,25 +295,25 @@ public:      // methods
     Word carry = 0;
 
     for (Index i = 0; i < size() || carry; ++i) {
-      Word d = this->getDigit(i);
+      Word d = this->getWord(i);
 
       Word lowProd, highProd;
       multiplyWords(lowProd, highProd, d, w);
 
-      // The low digit of the product goes into the `i`th slot.
+      // The low word of the product goes into the `i`th slot.
       d = lowProd;
 
-      // Plus whatever carries from the previous digit.
+      // Plus whatever carries from the previous word.
       Word carry1 = addWithCarry(d, carry);
-      this->setDigit(i, d);
+      this->setWord(i, d);
 
-      // Then that carry combines with the high digit.
+      // Then that carry combines with the high word.
       Word carry2 = addWithCarry(highProd, carry1);
 
       // It should not be possible for the second addition to overflow.
       xassert(carry2 == 0);
 
-      // What is in `highProd` is what carries to the next digit.
+      // What is in `highProd` is what carries to the next word.
       carry = highProd;
     }
   }
@@ -334,7 +334,7 @@ public:      // methods
       // Compute `*this * (N**i) * other[i]`.
       APUInteger partialSum(*this);
       partialSum.leftShiftByWords(i);
-      partialSum.multiplyWord(other.getDigit(i));
+      partialSum.multiplyWord(other.getWord(i));
 
       // Add it to the running total.
       acc += partialSum;
@@ -346,11 +346,191 @@ public:      // methods
   APUInteger &operator*=(APUInteger const &other)
   {
     APUInteger prod = *this * other;
-    *this = prod;
+    return *this = prod;
   }
 
+  // Index of the highest bit set to 1.  Returns -1 if the value of
+  // `*this` is zero.
+  Index maxBitIndex() const
+  {
+    Index i = (maxWordIndex()+1) * bitsPerWord() - 1;
+    while (i >= 0) {
+      if (getBit(i)) {
+        return i;
+      }
+      --i;
+    }
+    return i;
+  }
 
+  // True if bit `i` is set, where bit 0 is the least significant.
+  bool getBit(Index i) const
+  {
+    xassert(i >= 0);
 
+    Index wordIndex = i / bitsPerWord();
+    Index bitIndexWithinWord = i % bitsPerWord();
+
+    Word w = getWord(wordIndex);
+    return ((w >> bitIndexWithinWord) & 1) == 1;
+  }
+
+  // Set the bit at `i` to `b`.
+  void setBit(Index i, bool b)
+  {
+    xassert(i >= 0);
+
+    Index wordIndex = i / bitsPerWord();
+    Index bitIndexWithinWord = i % bitsPerWord();
+
+    Word w = getWord(wordIndex);
+    Word bit = (Word)1 << bitIndexWithinWord;
+    if (b) {
+      w |= bit;
+    }
+    else {
+      w &= ~bit;
+    }
+    setWord(wordIndex, w);
+  }
+
+  // Return the number of bits in each word.
+  static Index bitsPerWord()
+  {
+    return sizeof(Word) * 8;
+  }
+
+  // Multiply `*this` by `2**amt`.
+  void leftShiftByBits(Index amt)
+  {
+    xassert(amt >= 0);
+    Index wordShiftAmt = amt / bitsPerWord();
+    Index bitShiftAmt = amt % bitsPerWord();
+
+    leftShiftByWords(wordShiftAmt);
+
+    if (bitShiftAmt == 0) {
+      return;
+    }
+
+    Index complementedBitShiftAmt = bitsPerWord() - bitShiftAmt;
+    xassert(0 <= complementedBitShiftAmt &&
+                 complementedBitShiftAmt < bitsPerWord());
+
+    for (Index i = maxWordIndex()+1; i >= 0; --i) {
+      // Compute the new word at `i` by shifting its current contents
+      // left, then bringing in upper bits of the next word down.
+      Word w = getWord(i);
+      Word next = (i>0? getWord(i-1) : 0);
+
+      Word wNew = (w << bitShiftAmt) | (next >> complementedBitShiftAmt);
+      setWord(i, wNew);
+    }
+  }
+
+  // Divide `*this` by two.
+  void rightShiftOneBit()
+  {
+    Index complementedBitShiftAmt = bitsPerWord() - 1;
+
+    for (Index i=0; i <= maxWordIndex(); ++i) {
+      // Compute the new word at `i` by right shifting it one place,
+      // then bringing in the low bit from the next word up.
+      Word w = getWord(i);
+      Word next = getWord(i+1);
+
+      Word wNew = (w >> 1) | (next << complementedBitShiftAmt);
+      setWord(i, wNew);
+    }
+  }
+
+  /* Compute `quotient`, the maximum number of times that `divisor`
+     goes into `dividend`, and `remainder`, what is left over after
+     taking that many divisors out.
+
+     Precondition:
+
+       divisor > 0
+
+     Postcondition:
+
+        0 <= remainder < divisor
+        divisor * quotient + remainder = dividend
+  */
+  static void divide(
+    APUInteger &quotient,
+    APUInteger &remainder,
+    APUInteger const &dividend,        // aka numerator
+    APUInteger const &divisor)         // aka denominator
+  {
+    // TODO: Throw a better exception.
+    xassert(!divisor.isZero());
+
+    // We will set bits in the quotient as we go.
+    quotient.setZero();
+
+    // Work with the dividend as it will exist after the divisor takes
+    // chunks out of it.
+    remainder = dividend;
+
+    if (dividend.isZero()) {
+      return;
+    }
+
+    // We will work one bit at a time.  This is slow but simple.
+    Index s = dividend.maxBitIndex();
+
+    // Work with a divisor shifted left by `s` bits.
+    APUInteger shiftedDivisor(divisor);
+    shiftedDivisor.leftShiftByBits(s);
+
+    while (s >= 0) {
+      // Can `shiftedDivisor` go into what remains?
+      if (shiftedDivisor <= remainder) {
+        // Yes, take another chunk out of it.
+        remainder -= shiftedDivisor;
+        quotient.setBit(s, true);
+      }
+      else {
+        // No, remainder stays.
+        //
+        // We do not actually need to call `setBit(false)` since the
+        // quotient started as all zeroes.
+        //quotient.setBit(s, false);
+      }
+
+      // Move on to the next smaller divisor and a correspondingly less
+      // significant quotient bit.
+      shiftedDivisor.rightShiftOneBit();
+      --s;
+    }
+  }
+
+  APUInteger operator/(APUInteger const &divisor) const
+  {
+    APUInteger quotient, remainder;
+    divide(quotient, remainder, *this, divisor);
+    return quotient;
+  }
+
+  APUInteger operator%(APUInteger const &divisor) const
+  {
+    APUInteger quotient, remainder;
+    divide(quotient, remainder, *this, divisor);
+    return remainder;
+  }
+
+  APUInteger &operator/=(APUInteger const &divisor)
+  {
+    APUInteger q = *this / divisor;
+    return *this = q;
+  }
+
+  APUInteger &operator%=(APUInteger const &divisor)
+  {
+    APUInteger r = *this % divisor;
+    return *this = r;
+  }
 };
 
 
