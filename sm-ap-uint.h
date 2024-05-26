@@ -6,13 +6,19 @@
 #ifndef SMBASE_SM_AP_UINT_H
 #define SMBASE_SM_AP_UINT_H
 
+#include "codepoint.h"                 // isASCIIHexDigit, decodeASCIIHexDigit
 #include "compare-util.h"              // DEFINE_FRIEND_RELATIONAL_OPERATORS
+#include "div-up.h"                    // div_up
 #include "double-width-type.h"         // smbase::DoubleWidthType
+#include "exc.h"                       // xformatsb
 #include "sm-macros.h"                 // OPEN_NAMESPACE, DMEMB, CMEMB
+#include "string-utils.h"              // singleQuoteChar
 #include "xassert.h"                   // xassert
 
+#include <algorithm>                   // std::max
 #include <cstddef>                     // std::ptrdiff_t
 #include <iostream>                    // std::ostream
+#include <string_view>                 // std::string_view
 #include <vector>                      // std::vector
 
 
@@ -139,6 +145,7 @@ private:     // methods
   }
 
   // ---------- Serialization helpers ----------
+  // Write `w` to `os` as hexadecimal, possibly with `leadingZeroes`.
   static void writeWordAsHex(std::ostream &os, Word w, bool leadingZeroes)
   {
     // In order to avoid altering the formatting state of `os`, use a
@@ -167,6 +174,38 @@ private:     // methods
     else {
       tmpOS << w;
     }
+  }
+
+  // Interpret the hexadecimal digits in [start,end) as denoting a Word
+  // value.  There must not be more digits than could fit in a Word.
+  // Throws XFormat if a character is not hexadecimal.
+  static Word wordFromHex(std::string_view digits)
+  {
+    Index digitsPerWord = sizeof(Word)*2;
+    Index numDigits = digits.size();
+    xassert(numDigits <= digitsPerWord);
+
+    // Value computed so far.
+    Word w = 0;
+
+    // Left shift amount to apply to the next digit to place.
+    int shiftAmount = 0;
+
+    // Work from least to most significant digit.
+    for (Index i = numDigits-1; i >= 0; --i) {
+      int c = digits[i];
+      if (!isASCIIHexDigit(c)) {
+        xformatsb("Expecting hexadecimal digit, found " <<
+                  singleQuoteChar(c));
+      }
+      Word v = decodeASCIIHexDigit(c);
+
+      w |= v << shiftAmount;
+
+      shiftAmount += 4;
+    }
+
+    return w;
   }
 
 public:      // methods
@@ -429,6 +468,82 @@ public:      // methods
     n.writeAsHex(os);
     return os;
   }
+
+  // ---------- Convert from sequence of hexadecimal digits ----------
+  // Interpret `digits` as a sequence of hexadecimal digits, *without*
+  // any radix marker, and return the value they denote.  Throw
+  // `XFormat` if there is a problem.
+  static APUInteger fromHex(std::string_view digits)
+  {
+    APUInteger ret;
+
+    // Running example (RE):
+    //
+    //   `Word` is `uint8_t`
+    //   `digits` is "12345"
+
+    Index numDigits = digits.size();                       // RE: 5
+    Index digitsPerWord = sizeof(Word) * 2;                // RE: 2
+    Index numWords = div_up(numDigits, digitsPerWord);     // RE: 3
+
+    // Go from least to most significant word.
+    for (Index i = 0; i < numWords; ++i) {                 // RE: i from 0 to 2 (inclusive)
+      // Index one past the last digit in the block corresponding to
+      // word `i`.  For the RE:
+      //
+      //   When i=0, this is 5.
+      //   When i=1, this is 3.
+      //   When i=2, this is 1.
+      //
+      Index digitBlockEnd = numDigits - i*digitsPerWord;
+
+      // Index of the first digit in the block.  For the RE:
+      //
+      //   When i=0, this is 3.
+      //   When i=1, this is 1.
+      //   When i=2, this is 0.
+      //
+      Index digitBlockStart = std::max(digitBlockEnd - digitsPerWord,
+                                       (Index)0);
+
+      // For the RE, this is 2, 2, then 1.
+      Index digitBlockSize = digitBlockEnd - digitBlockStart;
+      xassert(0 < digitBlockSize &&
+                  digitBlockSize <= digitsPerWord);
+
+      // Decode the block of digits.  For the RE:
+      //
+      //   When i=0, this is 0x45.
+      //   When i=1, this is 0x23.
+      //   When i=2, this is 0x01.
+      //
+      Word w = wordFromHex(
+        digits.substr(digitBlockStart, digitBlockSize));
+
+      // Store that.
+      ret.setWord(i, w);
+    }
+
+    return ret;
+  }
+
+  // Convert `digits` to an integer.  If it has a radix marker, use
+  // that; otherwise, treat it as decimal.
+  static APUInteger fromDigits(std::string_view digits)
+  {
+    if (digits.size() >= 3 &&
+        digits[0] == '0' &&
+        (digits[1] == 'x' || digits[1] == 'X')) {
+      return fromHex(digits.substr(2));
+    }
+    else {
+      xunimp("decimal conversion");
+    }
+  }
+
+  // There is no `operator>>` because I regard C++ `istream` formatted
+  // input as completely inadequate as a parsing framework.  Something
+  // else should parse, then hand this class a string (view).
 
   // ---------- Addition ----------
   // Add `other` to `*this`.
