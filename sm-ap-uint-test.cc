@@ -11,7 +11,7 @@
 
 #include <cstdlib>                     // std::rand
 
-#include <cstdint>                     // std::uint8_t, UINT64_C
+#include <cstdint>                     // std::uint8_t, etc.; UINT64_C, etc.
 
 using namespace smbase;
 
@@ -131,16 +131,8 @@ public:      // methods
   // Check that `n` equals `expecr64`.
   void checkEquals(Integer const &n, uint64_t expect64)
   {
-    for (Index i=0; i < 8; ++i) {
-      try {
-        Word expectWord = (expect64 >> (8*i)) & 0xFF;
-        EXPECT_EQ((int)n.getWord(i), (int)expectWord);
-      }
-      catch (XBase &x) {
-        x.prependContext(stringb("i=" << i));
-        throw;
-      }
-    }
+    // This was more complicated before I had `getAs`.
+    EXPECT_EQ(n.template getAs<uint64_t>(), expect64);
   }
 
 
@@ -215,7 +207,7 @@ public:      // methods
     checkBits(n128, "10000000");
 
     Integer n256 = n128+n128;
-    checkWords(n256, "[1 0]");
+    checkWords(n256, sizeof(Word)==1? "[1 0]" : "[256]");
     EXPECT_EQ(n256.maxBitIndex(), (Index)8);
     checkBits(n256, "100000000");
 
@@ -223,6 +215,11 @@ public:      // methods
     xassert(n128 > two);
     xassert(n256 == n128+n128);
     xassert(n256-n128 == n128);
+
+    if (sizeof(Word) > 1) {
+      // The rest of this test assumes a word size of 1.
+      return;
+    }
 
     Integer big1;
     big1.setWord(0, 0xFF);
@@ -323,16 +320,10 @@ public:      // methods
       uint64_t b = (b2 << 16) + (b1 << 8) + b0;
 
       try {
-        Integer apA;
-        apA.setWord(0, a0);
-        apA.setWord(1, a1);
-        apA.setWord(2, a2);
+        Integer apA(a);
         checkEquals(apA, a);
 
-        Integer apB;
-        apB.setWord(0, b0);
-        apB.setWord(1, b1);
-        apB.setWord(2, b2);
+        Integer apB(b);
         checkEquals(apB, b);
 
         // Add and subtract them.
@@ -340,20 +331,11 @@ public:      // methods
           Integer apS = apA + apB;
 
           uint64_t s = a+b;
-
-          int s0 = s & 0xFF;
-          int s1 = (s >> 8) & 0xFF;
-          int s2 = (s >> 16) & 0xFF;
-          int s3 = (s >> 24) & 0xFF;
-
-          // Check the result words.
-          EXPECT_EQ((int)apS.getWord(0), s0);
-          EXPECT_EQ((int)apS.getWord(1), s1);
-          EXPECT_EQ((int)apS.getWord(2), s2);
-          EXPECT_EQ((int)apS.getWord(3), s3);
-
-          xassert(apS.size() <= 4);
           checkEquals(apS, s);
+
+          // Even with `uint8_t` words, there should never be more than
+          // four of them in the result.
+          xassert(apS.size() <= 4);
 
           xassert(apS - apA == apB);
           xassert(apS - apB == apA);
@@ -459,7 +441,7 @@ public:      // methods
 
     n.multiplyWord(16);
     n.multiplyWord(16);
-    checkWords(n, "[100 0]");
+    checkWords(n, sizeof(Word)==1? "[100 0]" : "[25600]");
   }
 
 
@@ -483,6 +465,16 @@ public:      // methods
   }
 
 
+  // Verify that reading and writing a hex string gets the same thing
+  // that we started with.  Note that that assumes the letters are
+  // uppercase.
+  void testHexRoundtrip(char const *origDigits)
+  {
+    std::string actual = Integer::fromDigits(origDigits).toString();
+    EXPECT_EQ(actual, origDigits);
+  }
+
+
   void testReadWriteAsHex()
   {
     Integer n;
@@ -492,6 +484,9 @@ public:      // methods
     EXPECT_EQ(digits, "0xF");
     EXPECT_EQ(Integer::fromDigits(digits), n);
 
+    // Check parsing lowercase hex.
+    EXPECT_EQ(Integer::fromDigits("0xf"), n);
+
     Integer h12;
     h12.setWord(0, 0x12);
     DIAG(h12);
@@ -499,21 +494,39 @@ public:      // methods
     EXPECT_EQ(digits, "0x12");
     EXPECT_EQ(Integer::fromDigits(digits), h12);
 
-    // Leading zero for those after the first (here, "0F").
-    n.setWord(1, 0x45);
-    digits = stringb(n);
-    EXPECT_EQ(digits, "0x450F");
-    EXPECT_EQ(Integer::fromDigits(digits), n);
+    // This part of the test assumes the word size is 1.
+    if (sizeof(Word) == 1) {
+      // Leading zero for those after the first (here, "0F").
+      n.setWord(1, 0x45);
+      digits = stringb(n);
+      EXPECT_EQ(digits, "0x450F");
+      EXPECT_EQ(Integer::fromDigits(digits), n);
 
-    // No leading zero for the first.
-    n.setWord(2, 0x3);
-    digits = stringb(n);
-    EXPECT_EQ(digits, "0x3450F");
-    EXPECT_EQ(Integer::fromDigits(digits), n);
+      // No leading zero for the first.
+      n.setWord(2, 0x3);
+      digits = stringb(n);
+      EXPECT_EQ(digits, "0x3450F");
+      EXPECT_EQ(Integer::fromDigits(digits), n);
 
-    digits = stringb(Integer());
-    EXPECT_EQ(digits, "0x0");
-    EXPECT_EQ(Integer::fromDigits(digits), Integer());
+      digits = stringb(Integer());
+      EXPECT_EQ(digits, "0x0");
+      EXPECT_EQ(Integer::fromDigits(digits), Integer());
+    }
+
+    testHexRoundtrip("0x0");
+    testHexRoundtrip("0x1");
+    testHexRoundtrip("0xF");
+    testHexRoundtrip("0x10");
+    testHexRoundtrip("0xFF");
+    testHexRoundtrip("0x100");
+    testHexRoundtrip("0xFFF");
+    testHexRoundtrip("0x1000");
+    testHexRoundtrip("0xFFFF");
+    testHexRoundtrip("0x10000");
+    testHexRoundtrip("0xFFFFF");
+    testHexRoundtrip("0x1000000000000000000000000000000000000000000");
+    testHexRoundtrip("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+    testHexRoundtrip("0x4A934432EBC89321A12387DEFF3899210988BBBB238");
   }
 
 
@@ -538,6 +551,16 @@ public:      // methods
   }
 
 
+  // Convert `origValue` to `Integer` and back.
+  template <typename PRIM>
+  void testRoundtripPrim(PRIM origValue)
+  {
+    Integer n(origValue);
+    PRIM actual = n.template getAs<PRIM>();
+    EXPECT_EQ(actual, origValue);
+  }
+
+
   void testConstructFromPrim()
   {
     Integer n(0);
@@ -550,18 +573,20 @@ public:      // methods
     EXPECT_EQ(three.template getAs<int>(), 3);
     EXPECT_EQ(three.template getAs<uint8_t>(), (uint8_t)3);
 
-    Integer h1234;
-    h1234.setWord(1, 0x12);
-    h1234.setWord(0, 0x34);
-    EXPECT_EQ(Integer(0x1234), h1234);
-    EXPECT_EQ(h1234.template getAs<int>(), 0x1234);
+    if (sizeof(Word) == 1) {
+      Integer h1234;
+      h1234.setWord(1, 0x12);
+      h1234.setWord(0, 0x34);
+      EXPECT_EQ(Integer(0x1234), h1234);
+      EXPECT_EQ(h1234.template getAs<int>(), 0x1234);
 
-    Integer h12345678(h1234);
-    h12345678.leftShiftByWords(2);
-    h12345678.setWord(1, 0x56);
-    h12345678.setWord(0, 0x78);
-    EXPECT_EQ(Integer(0x12345678), h12345678);
-    EXPECT_EQ(h12345678.template getAs<int>(), 0x12345678);
+      Integer h12345678(h1234);
+      h12345678.leftShiftByWords(2);
+      h12345678.setWord(1, 0x56);
+      h12345678.setWord(0, 0x78);
+      EXPECT_EQ(Integer(0x12345678), h12345678);
+      EXPECT_EQ(h12345678.template getAs<int>(), 0x12345678);
+    }
 
     uint64_t big64 = UINT64_C(0x1234567812345678);
     Integer big(big64);
@@ -593,6 +618,56 @@ public:      // methods
     Integer small(hff);
     EXPECT_EQ(small, Integer::fromDigits("0xFF"));
     EXPECT_EQ(small.template getAs<uint8_t>(), hff);
+
+    testRoundtripPrim<int8_t>(0);
+    testRoundtripPrim<int8_t>(1);
+    testRoundtripPrim<int8_t>(127);
+
+    testRoundtripPrim<uint8_t>(0);
+    testRoundtripPrim<uint8_t>(1);
+    testRoundtripPrim<uint8_t>(127);
+    testRoundtripPrim<uint8_t>(128);
+    testRoundtripPrim<uint8_t>(255);
+
+    testRoundtripPrim<int16_t>(0);
+    testRoundtripPrim<int16_t>(1);
+    testRoundtripPrim<int16_t>(127);
+    testRoundtripPrim<int16_t>(128);
+    testRoundtripPrim<int16_t>(255);
+    testRoundtripPrim<int16_t>(256);
+    testRoundtripPrim<int16_t>(0x7FFF);
+
+    testRoundtripPrim<uint16_t>(0);
+    testRoundtripPrim<uint16_t>(1);
+    testRoundtripPrim<uint16_t>(127);
+    testRoundtripPrim<uint16_t>(128);
+    testRoundtripPrim<uint16_t>(255);
+    testRoundtripPrim<uint16_t>(256);
+    testRoundtripPrim<uint16_t>(0x7FFF);
+    testRoundtripPrim<uint16_t>(0x8000);
+    testRoundtripPrim<uint16_t>(0xFFFF);
+
+    testRoundtripPrim<uint32_t>(0);
+    testRoundtripPrim<uint32_t>(1);
+    testRoundtripPrim<uint32_t>(127);
+    testRoundtripPrim<uint32_t>(128);
+    testRoundtripPrim<uint32_t>(255);
+    testRoundtripPrim<uint32_t>(256);
+    testRoundtripPrim<uint32_t>(0xFFFF);
+    testRoundtripPrim<uint32_t>(0x10000);
+    testRoundtripPrim<uint32_t>(UINT32_C(0xFFFFFFFF));
+
+    testRoundtripPrim<uint64_t>(0);
+    testRoundtripPrim<uint64_t>(1);
+    testRoundtripPrim<uint64_t>(127);
+    testRoundtripPrim<uint64_t>(128);
+    testRoundtripPrim<uint64_t>(255);
+    testRoundtripPrim<uint64_t>(256);
+    testRoundtripPrim<uint64_t>(0xFFFF);
+    testRoundtripPrim<uint64_t>(0x10000);
+    testRoundtripPrim<uint64_t>(UINT64_C(0xFFFFFFFF));
+    testRoundtripPrim<uint64_t>(UINT64_C(0x100000000));
+    testRoundtripPrim<uint64_t>(UINT64_C(0xFFFFFFFFFFFFFFFF));
   }
 
 
@@ -614,8 +689,12 @@ CLOSE_ANONYMOUS_NAMESPACE
 // Called from unit-tests.cc.
 void test_sm_ap_uint()
 {
-  APUIntegerTest<uint8_t> ait;
-  ait.testAll();
+  APUIntegerTest<uint8_t>().testAll();
+  APUIntegerTest<uint16_t>().testAll();
+  APUIntegerTest<uint32_t>().testAll();
+
+  // Note that we cannot use `uint64_t` because I currently require a
+  // double-word type, and do not want to rely on `uint128_t` existing.
 }
 
 
