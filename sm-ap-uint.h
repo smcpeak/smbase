@@ -19,6 +19,7 @@
 #include <cstddef>                     // std::ptrdiff_t
 #include <iostream>                    // std::ostream
 #include <string_view>                 // std::string_view
+#include <type_traits>                 // std::is_unsigned
 #include <vector>                      // std::vector
 
 
@@ -223,10 +224,30 @@ public:      // methods
     : MDMEMB(m_vec)
   {}
 
-  // There is no constructor from a Word value.  It's error-prone
-  // because a larger value gets truncated if the Word is small.
-  // Instead, one should use `setWord` which is more explicitly
-  // interacting with the integer as a sequence of words.
+  // Construct from `PRIM`, presumed to be a primitive type.  The
+  // argument must be non-negative.  As this preserves information, it
+  // is allowed to be invoked implicitly.
+  template <typename PRIM>
+  APUInteger(PRIM n)
+    : m_vec()
+  {
+    xassert(n >= 0);
+
+    if (sizeof(Word) >= sizeof(PRIM)) {
+      setWord(0, (Word)n);
+    }
+    else {
+      // `PRIM` is larger, so we need to divide it into word-sized
+      // pieces.  Set words from least to most significant.
+      for (Index i = 0; n != 0; ++i) {
+        // Store the low bits of `n`.
+        setWord(i, (Word)n);
+
+        // Reduce its value correspondingly.
+        n >>= bitsPerWord();
+      }
+    }
+  }
 
   // ---------- Assignment ----------
   APUInteger &operator=(APUInteger const &obj)

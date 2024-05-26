@@ -12,7 +12,7 @@
 
 #include <cstdlib>                     // std::rand
 
-#include <cstdint>                     // std::uint8_t
+#include <cstdint>                     // std::uint8_t, UINT64_C
 
 using namespace smbase;
 
@@ -490,6 +490,34 @@ static void testReadWriteAsHex()
 }
 
 
+static void testConstructFromPrim()
+{
+  Integer n(0);
+  EXPECT_EQ(n, Integer());
+
+  Integer three;
+  three.setWord(0, 3);
+  EXPECT_EQ(Integer(3), three);
+
+  Integer h1234;
+  h1234.setWord(1, 0x12);
+  h1234.setWord(0, 0x34);
+  EXPECT_EQ(Integer(0x1234), h1234);
+
+  Integer h12345678(h1234);
+  h12345678.leftShiftByWords(2);
+  h12345678.setWord(1, 0x56);
+  h12345678.setWord(0, 0x78);
+  EXPECT_EQ(Integer(0x12345678), h12345678);
+
+  Integer big(UINT64_C(0x1234567812345678));
+  EXPECT_EQ(big, Integer::fromDigits("0x1234567812345678"));
+
+  Integer small((uint8_t)0xFF);
+  EXPECT_EQ(small, Integer::fromDigits("0xFF"));
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -501,6 +529,7 @@ void test_sm_ap_uint()
   testRandomizedAddSubMult();
   testLeftShift();
   testReadWriteAsHex();
+  testConstructFromPrim();
 }
 
 
