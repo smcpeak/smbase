@@ -323,6 +323,11 @@ public:      // methods
       }
     }
 
+    // I assume that `PRIM` is smaller than `Word`, or its size is an
+    // integer multiple of the word size.
+    static_assert(sizeof(PRIM) < sizeof(Word) ||
+                  sizeof(PRIM) % sizeof(Word) == 0);
+
     if (sizeof(Word) >= sizeof(PRIM)) {
       if (maxWIndex > 0) {
         // Too many words, does not fit.
@@ -349,9 +354,8 @@ public:      // methods
     }
 
     else /* sizeof(Word) < sizeof(PRIM) */ {
-      // I assume that `PRIM` is an integer multiple of the word size.
-      static_assert(sizeof(PRIM) % sizeof(Word) == 0);
-
+      // Note that the `static_assert` above ensures that this division
+      // produces no remainder.
       Index wordsPerPrim = sizeof(PRIM) / sizeof(Word);
       if (maxWIndex >= wordsPerPrim) {
         // Too many words, does not fit.
