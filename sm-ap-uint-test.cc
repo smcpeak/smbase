@@ -217,8 +217,8 @@ void testRandomizedAddSubMult()
     int b1 = myrandom(256);
     int b2 = myrandom(256);
 
-    int a = (a2 << 16) + (a1 << 8) + a0;
-    int b = (b2 << 16) + (b1 << 8) + b0;
+    uint64_t a = (a2 << 16) + (a1 << 8) + a0;
+    uint64_t b = (b2 << 16) + (b1 << 8) + b0;
 
     try {
       Integer apA;
@@ -237,7 +237,7 @@ void testRandomizedAddSubMult()
       {
         Integer apS = apA + apB;
 
-        int s = a+b;
+        uint64_t s = a+b;
 
         int s0 = s & 0xFF;
         int s1 = (s >> 8) & 0xFF;
@@ -266,9 +266,15 @@ void testRandomizedAddSubMult()
         Integer oneDigitProd(apA);
         oneDigitProd.multiplyWord(b0);
 
-        uint64_t p = (uint64_t)a * b0;
+        uint64_t p = a * b0;
 
         checkEquals(oneDigitProd, p);
+      }
+
+      // Calculate `a * b`.
+      {
+        Integer prod = apA * apB;
+        checkEquals(prod, a * b);
       }
     }
 
@@ -311,6 +317,24 @@ static void testSpecificMult()
 }
 
 
+static void testLeftShift()
+{
+  Integer n = digitsToAP({1,2,3});
+
+  n.leftShiftByWords(0);
+  checkDigits(n, "[1 2 3]");
+
+  n.leftShiftByWords(3);
+  checkDigits(n, "[1 2 3 0 0 0]");
+
+  n += 1;
+  checkDigits(n, "[1 2 3 0 0 1]");
+
+  n.leftShiftByWords(1);
+  checkDigits(n, "[1 2 3 0 0 1 0]");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -320,6 +344,7 @@ void test_sm_ap_uint()
   testSpecificAddSub();
   testSpecificMult();
   testRandomizedAddSubMult();
+  testLeftShift();
 }
 
 

@@ -318,6 +318,36 @@ public:      // methods
     }
   }
 
+  // Multiply `*this` by `N ** amount`.
+  void leftShiftByWords(Index amount)
+  {
+    xassert(amount >= 0);
+    m_vec.insert(m_vec.begin(), amount, 0);
+  }
+
+  // Return the product of `*this` and `other`.
+  APUInteger operator*(APUInteger const &other) const
+  {
+    APUInteger acc;
+
+    for (Index i = 0; i < other.size(); ++i) {
+      // Compute `*this * (N**i) * other[i]`.
+      APUInteger partialSum(*this);
+      partialSum.leftShiftByWords(i);
+      partialSum.multiplyWord(other.getDigit(i));
+
+      // Add it to the running total.
+      acc += partialSum;
+    }
+
+    return acc;
+  }
+
+  APUInteger &operator*=(APUInteger const &other)
+  {
+    APUInteger prod = *this * other;
+    *this = prod;
+  }
 
 
 
