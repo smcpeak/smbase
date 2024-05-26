@@ -45,6 +45,7 @@ private:     // data
   std::vector<Word> m_vec;
 
 private:     // methods
+  // ---------- Operations on Words ----------
   // Add `other` into `w`, returning the carry bit.
   static Word addWithCarry(Word &w, Word other)
   {
@@ -52,6 +53,31 @@ private:     // methods
     return w < other;
   }
 
+  // Subtract `b` from `a`, returning 1 if that requires borrowing one
+  // unit from the next-highest word.
+  static Word subtractWithBorrow(Word &a, Word b)
+  {
+    Word origA = a;
+    a -= b;        // May wrap.
+    return a > origA;
+  }
+
+  // Return `a*b` in two words.
+  static void multiplyWords(
+    Word &lowProd,
+    Word &highProd,
+    Word a,
+    Word b)
+  {
+    // For now, assume we have access to a double-word type.
+    DWord da = a;
+    DWord db = b;
+    DWord prod = da*db;
+    lowProd = (Word)prod;
+    highProd = (Word)(prod >> bitsPerWord());
+  }
+
+  // ---------- Arithmetic helpers ----------
   // Add `other` into `this`.
   void add(APUInteger const &other)
   {
@@ -80,15 +106,6 @@ private:     // methods
       // second addition yields `other.getWord(i)` with no carry.
       xassert(carry <= 1);
     }
-  }
-
-  // Subtract `b` from `a`, returning 1 if that requires borrowing one
-  // unit from the next-highest word.
-  static Word subtractWithBorrow(Word &a, Word b)
-  {
-    Word origA = a;
-    a -= b;        // May wrap.
-    return a > origA;
   }
 
   // Subtract `other` from `this`.  `this` must be at least as large.
@@ -120,22 +137,8 @@ private:     // methods
     xassert(borrow == 0);
   }
 
-  // Return `a*b` in two words.
-  static void multiplyWords(
-    Word &lowProd,
-    Word &highProd,
-    Word a,
-    Word b)
-  {
-    // For now, assume we have access to a double-word type.
-    DWord da = a;
-    DWord db = b;
-    DWord prod = da*db;
-    lowProd = (Word)prod;
-    highProd = (Word)(prod >> bitsPerWord());
-  }
-
 public:      // methods
+  // ---------- Constructors ----------
   // Zero.
   APUInteger()
     : m_vec()
@@ -149,6 +152,15 @@ public:      // methods
     : MDMEMB(m_vec)
   {}
 
+  // Represent `smallMagnitude`.
+  //
+  // This allows implicit conversion because it is safe (no external
+  // side effects, etc.) and preserves information.
+  /*implicit*/ APUInteger(Word smallMagnitude)
+    : m_vec(1, smallMagnitude)
+  {}
+
+  // ---------- Assignment ----------
   APUInteger &operator=(APUInteger const &obj)
   {
     if (this != &obj) {
@@ -165,19 +177,42 @@ public:      // methods
     return *this;
   }
 
-  // Represent `smallMagnitude`.
-  //
-  // This allows implicit conversion because it is safe (no external
-  // side effects, etc.) and preserves information.
-  /*implicit*/ APUInteger(Word smallMagnitude)
-    : m_vec(1, smallMagnitude)
-  {}
+  // ---------- General ----------
+  // Return the number of bits in each word.
+  static constexpr Index bitsPerWord()
+  {
+    return sizeof(Word) * 8;
+  }
 
+  // True if this object represents zero.
+  bool isZero() const
+  {
+    return maxWordIndex() == -1;
+  }
+
+  // Set the value of this object to zero.
+  void setZero()
+  {
+    m_vec.clear();
+  }
+
+  // ---------- Treat as a sequence of Words ----------
   // Return the number of stored words.  Some of the high words may
   // be redundantly zero, but this method does not check for that.
   Index size() const
   {
     return static_cast<Index>(m_vec.size());
+  }
+
+  // Maximum index that contains a non-zero word.  If the value is zero
+  // then this is -1.
+  Index maxWordIndex() const
+  {
+    Index i = size() - 1;
+    while (i >= 0 && m_vec[i] == 0) {
+      --i;
+    }
+    return i;
   }
 
   // Get the `i`th word, where the 0th is the least significant.
@@ -215,109 +250,6 @@ public:      // methods
     }
   }
 
-  // Maximum index that contains a non-zero word.  If the value is zero
-  // then this is -1.
-  Index maxWordIndex() const
-  {
-    Index i = size() - 1;
-    while (i >= 0 && m_vec[i] == 0) {
-      --i;
-    }
-    return i;
-  }
-
-  // True if this object represents zero.
-  bool isZero() const
-  {
-    return maxWordIndex() == -1;
-  }
-
-  // Return <0 if a<b, 0 if a==b, >0 if a>b.
-  friend int compare(APUInteger const &a,
-                     APUInteger const &b)
-  {
-    Index aMaxIndex = a.maxWordIndex();
-    Index bMaxIndex = b.maxWordIndex();
-
-    RET_IF_COMPARE(aMaxIndex, bMaxIndex);
-
-    for (Index i = aMaxIndex; i >= 0; --i) {
-      RET_IF_COMPARE(a.getWord(i), b.getWord(i));
-    }
-
-    return 0;
-  }
-
-  DEFINE_FRIEND_RELATIONAL_OPERATORS(APUInteger)
-
-  // Set the value of this object to zero.
-  void setZero()
-  {
-    m_vec.clear();
-  }
-
-  // Add `other` to `*this`.
-  APUInteger &operator+=(APUInteger const &other)
-  {
-    this->add(other);
-    return *this;
-  }
-
-  APUInteger operator+(APUInteger const &other) const
-  {
-    APUInteger ret(*this);
-    return ret += other;
-  }
-
-  // Subtract `other` from `*this`.  If `other` is larger, then set
-  // `*this` to zero.
-  APUInteger &operator-=(APUInteger const &other)
-  {
-    if (*this >= other) {
-      this->subtract(other);
-    }
-    else {
-      this->setZero();
-    }
-    return *this;
-  }
-
-  APUInteger operator-(APUInteger const &other) const
-  {
-    APUInteger ret(*this);
-    return ret -= other;
-  }
-
-  // Set `*this` to the product of its original value and `w`.
-  void multiplyWord(Word w)
-  {
-    // Amount to add from the previous iteration.
-    Word carry = 0;
-
-    for (Index i = 0; i < size() || carry; ++i) {
-      Word d = this->getWord(i);
-
-      Word lowProd, highProd;
-      multiplyWords(lowProd, highProd, d, w);
-
-      // The low word of the product goes into the `i`th slot.
-      d = lowProd;
-
-      // Plus whatever carries from the previous word.
-      Word carry1 = addWithCarry(d, carry);
-      this->setWord(i, d);
-
-      // Then that carry combines with the high word.
-      Word carry2 = addWithCarry(highProd, carry1);
-
-      // It should not be possible for the second addition to overflow.
-      xassert(carry2 == 0);
-
-      // What is in `highProd` is what carries to the next word.
-      carry = highProd;
-    }
-  }
-
   // Multiply `*this` by `N ** amount`.
   void leftShiftByWords(Index amount)
   {
@@ -325,30 +257,7 @@ public:      // methods
     m_vec.insert(m_vec.begin(), amount, 0);
   }
 
-  // Return the product of `*this` and `other`.
-  APUInteger operator*(APUInteger const &other) const
-  {
-    APUInteger acc;
-
-    for (Index i = 0; i < other.size(); ++i) {
-      // Compute `*this * (N**i) * other[i]`.
-      APUInteger partialSum(*this);
-      partialSum.leftShiftByWords(i);
-      partialSum.multiplyWord(other.getWord(i));
-
-      // Add it to the running total.
-      acc += partialSum;
-    }
-
-    return acc;
-  }
-
-  APUInteger &operator*=(APUInteger const &other)
-  {
-    APUInteger prod = *this * other;
-    return *this = prod;
-  }
-
+  // ---------- Treat as a sequence of bits ----------
   // Index of the highest bit set to 1.  Returns -1 if the value of
   // `*this` is zero.
   Index maxBitIndex() const
@@ -392,12 +301,6 @@ public:      // methods
       w &= ~bit;
     }
     setWord(wordIndex, w);
-  }
-
-  // Return the number of bits in each word.
-  static Index bitsPerWord()
-  {
-    return sizeof(Word) * 8;
   }
 
   // Multiply `*this` by `2**amt`.
@@ -444,6 +347,115 @@ public:      // methods
     }
   }
 
+  // ---------- Relational comparison ----------
+  // Return <0 if a<b, 0 if a==b, >0 if a>b.
+  friend int compare(APUInteger const &a,
+                     APUInteger const &b)
+  {
+    Index aMaxIndex = a.maxWordIndex();
+    Index bMaxIndex = b.maxWordIndex();
+
+    RET_IF_COMPARE(aMaxIndex, bMaxIndex);
+
+    for (Index i = aMaxIndex; i >= 0; --i) {
+      RET_IF_COMPARE(a.getWord(i), b.getWord(i));
+    }
+
+    return 0;
+  }
+
+  DEFINE_FRIEND_RELATIONAL_OPERATORS(APUInteger)
+
+  // ---------- Addition ----------
+  // Add `other` to `*this`.
+  APUInteger &operator+=(APUInteger const &other)
+  {
+    this->add(other);
+    return *this;
+  }
+
+  APUInteger operator+(APUInteger const &other) const
+  {
+    APUInteger ret(*this);
+    return ret += other;
+  }
+
+  // ---------- Subtraction ----------
+  // Subtract `other` from `*this`.  If `other` is larger, then set
+  // `*this` to zero.
+  APUInteger &operator-=(APUInteger const &other)
+  {
+    if (*this >= other) {
+      this->subtract(other);
+    }
+    else {
+      this->setZero();
+    }
+    return *this;
+  }
+
+  APUInteger operator-(APUInteger const &other) const
+  {
+    APUInteger ret(*this);
+    return ret -= other;
+  }
+
+  // ---------- Multiplication ----------
+  // Set `*this` to the product of its original value and `w`.
+  void multiplyWord(Word w)
+  {
+    // Amount to add from the previous iteration.
+    Word carry = 0;
+
+    for (Index i = 0; i < size() || carry; ++i) {
+      Word d = this->getWord(i);
+
+      Word lowProd, highProd;
+      multiplyWords(lowProd, highProd, d, w);
+
+      // The low word of the product goes into the `i`th slot.
+      d = lowProd;
+
+      // Plus whatever carries from the previous word.
+      Word carry1 = addWithCarry(d, carry);
+      this->setWord(i, d);
+
+      // Then that carry combines with the high word.
+      Word carry2 = addWithCarry(highProd, carry1);
+
+      // It should not be possible for the second addition to overflow.
+      xassert(carry2 == 0);
+
+      // What is in `highProd` is what carries to the next word.
+      carry = highProd;
+    }
+  }
+
+  // Return the product of `*this` and `other`.
+  APUInteger operator*(APUInteger const &other) const
+  {
+    APUInteger acc;
+
+    for (Index i = 0; i < other.size(); ++i) {
+      // Compute `*this * (N**i) * other[i]`.
+      APUInteger partialSum(*this);
+      partialSum.leftShiftByWords(i);
+      partialSum.multiplyWord(other.getWord(i));
+
+      // Add it to the running total.
+      acc += partialSum;
+    }
+
+    return acc;
+  }
+
+  APUInteger &operator*=(APUInteger const &other)
+  {
+    APUInteger prod = *this * other;
+    return *this = prod;
+  }
+
+  // ---------- Division ----------
   /* Compute `quotient`, the maximum number of times that `divisor`
      goes into `dividend`, and `remainder`, what is left over after
      taking that many divisors out.
