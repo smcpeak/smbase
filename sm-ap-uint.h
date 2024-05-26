@@ -585,12 +585,24 @@ public:      // methods
 
   // The ordinary format for writing is hex because then we do not have
   // to do the complicated and expensive process of converting to
-  // decimal.
+  // decimal.  It includes a leading "0x" radix marker.
+  //
+  // It does not currently respond to any formatting configuration of
+  // the stream.  Maybe it should?  But then I would be writing decimal
+  // by default, which I do not want.
+  //
   friend std::ostream &operator<<(std::ostream &os, APUInteger const &n)
   {
     n.writeAsHex(os);
     return os;
   }
+
+  // Return the same string that `operator<<` would produce.
+  std::string toString() const
+  {
+    return stringb(*this);
+  }
+
 
   // ---------- Convert from sequence of hexadecimal digits ----------
   // Interpret `digits` as a sequence of hexadecimal digits, *without*
