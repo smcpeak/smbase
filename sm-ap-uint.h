@@ -12,6 +12,7 @@
 #include "xassert.h"                   // xassert
 
 #include <cstddef>                     // std::ptrdiff_t
+#include <iostream>                    // std::ostream
 #include <vector>                      // std::vector
 
 
@@ -135,6 +136,37 @@ private:     // methods
 
     // Otherwise, `other` was larger.
     xassert(borrow == 0);
+  }
+
+  // ---------- Serialization helpers ----------
+  static void writeWordAsHex(std::ostream &os, Word w, bool leadingZeroes)
+  {
+    // In order to avoid altering the formatting state of `os`, use a
+    // temporary stream object to write to the same stream buffer.
+    // https://stackoverflow.com/a/43771309/2659307
+    std::ostream tmpOS(os.rdbuf());
+
+    // The `setf` interface is quite awkward because you have to both
+    // say what bits you want and also specify a mask designating which
+    // parts of the existing flags to alter.
+    tmpOS.setf(
+      std::ios_base::hex       | std::ios_base::uppercase | std::ios_base::right,
+      std::ios_base::basefield | std::ios_base::uppercase | std::ios_base::adjustfield);
+
+    if (leadingZeroes) {
+      // Two digits per byte.
+      tmpOS.width(sizeof(Word)*2);
+      tmpOS.fill('0');
+    }
+
+    if (sizeof(Word) == 1) {
+      // The `char` types need to be treated as integer here to get
+      // digits rather than a single character.
+      tmpOS << (int)w;
+    }
+    else {
+      tmpOS << w;
+    }
   }
 
 public:      // methods
@@ -365,6 +397,38 @@ public:      // methods
   }
 
   DEFINE_FRIEND_RELATIONAL_OPERATORS(APUInteger)
+
+  // ---------- Convert to sequence of hexadecimal digits ----------
+  // Write to `os` the hexadecimal digits of this number.  If
+  // `withRadixMarker` is true then also print a leading "0x".
+  void writeAsHex(std::ostream &os, bool withRadixMarker = true) const
+  {
+    if (withRadixMarker) {
+      os << "0x";
+    }
+
+    Index maxIndex = maxWordIndex();
+    if (maxIndex < 0) {
+      os << '0';
+      return;
+    }
+
+    for (Index i = maxIndex; i >= 0; --i) {
+      // The first word does not get leading zeroes.
+      bool leadingZeroes = i < maxIndex;
+
+      writeWordAsHex(os, getWord(i), leadingZeroes);
+    }
+  }
+
+  // The ordinary format for writing is hex because then we do not have
+  // to do the complicated and expensive process of converting to
+  // decimal.
+  friend std::ostream &operator<<(std::ostream &os, APUInteger const &n)
+  {
+    n.writeAsHex(os);
+    return os;
+  }
 
   // ---------- Addition ----------
   // Add `other` to `*this`.

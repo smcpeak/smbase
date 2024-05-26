@@ -450,6 +450,27 @@ static void testLeftShift()
 }
 
 
+static void testWriteAsHex()
+{
+  Integer n(0xF);
+  DIAG(n);
+  EXPECT_EQ(stringb(n), "0xF");
+
+  DIAG(Integer(0x12));
+  EXPECT_EQ(stringb(Integer(0x12)), "0x12");
+
+  // Leading zero for those after the first (here, "0F").
+  n.setWord(1, 0x45);
+  EXPECT_EQ(stringb(n), "0x450F");
+
+  // No leading zero for the first.
+  n.setWord(2, 0x3);
+  EXPECT_EQ(stringb(n), "0x3450F");
+
+  EXPECT_EQ(stringb(Integer()), "0x0");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -460,6 +481,7 @@ void test_sm_ap_uint()
   testSpecificMult();
   testRandomizedAddSubMult();
   testLeftShift();
+  testWriteAsHex();
 }
 
 
