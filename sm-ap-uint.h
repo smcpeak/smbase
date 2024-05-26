@@ -268,6 +268,42 @@ private:     // methods
     return (Word)dv;
   }
 
+  /* If `c` is one of the letters that can follow a leading '0' to
+     indicate the radix, return the denoted radix.  Otherwise return 0.
+  */
+  static int decodeRadixIndicatorLetter(char c)
+  {
+    switch (c) {
+      case 'b':
+      case 'B':
+        return 2;
+
+      case 'o':
+      case 'O':
+        return 8;
+
+      case 'x':
+      case 'X':
+        return 16;
+
+      default:
+        return 0;
+    }
+  }
+
+  /* If `radix` is one of those for which there is a special radix
+     prefix code letter, return that letter.  Otherwise return 0.
+  */
+  static char encodeRadixIndicatorLetter(int radix)
+  {
+    switch (radix) {
+      case 2:      return 'b';
+      case 8:      return 'o';
+      case 16:     return 'x';
+      default:     return 0;
+    }
+  }
+
 public:      // methods
   // ---------- Constructors ----------
   // Zero.
@@ -726,17 +762,58 @@ public:      // methods
     return ret;
   }
 
-  // Convert `digits` to an integer.  If it has a radix marker, use
-  // that; otherwise, treat it as decimal.
-  static APUInteger fromDigits(std::string_view digits)
+  /* Check for one of the recognized radix prefixes in `digits`.  If one
+     is found, return its associated radix as one of {2, 8, 16}.
+     Otherwise, return 0.
+
+     This does not return 10 for the case of no prefix because the
+     caller needs to handle an actual prefix differently by skipping it
+     before interpreting the digits.
+  */
+  static int detectRadixPrefix(std::string_view digits)
   {
-    if (digits.size() >= 3 &&
-        digits[0] == '0' &&
-        (digits[1] == 'x' || digits[1] == 'X')) {
-      return fromHexDigits(digits.substr(2));
+    if (digits.size() >= 3 && digits[0] == '0') {
+      if (int radix = decodeRadixIndicatorLetter(digits[1])) {
+        return radix;
+      }
+    }
+    return 0;
+  }
+
+  /* Convert `digits` to an integer.  It is expected to be prefixed with
+     a radix indicator, from among:
+
+       0b   - binary
+       0o   - octal
+       0x   - hex
+       else - decimal
+
+     The 'b', 'o', and 'x' are case-insensitive.
+
+     An empty string is treated as zero.
+
+     If it does not have any of those forms, throw `XFormat`.  That
+     includes the case where "0b", "Oo", or "0x" is not followed by
+     anything.
+
+     Note: The "Oo" syntax is not what C or C++ uses, although some
+     other languages do.  Thus, the "radix prefix" used by this class is
+     not compatible with C/C++ lexical convention.
+
+     Why does this prefix interpretation stuff even belong in this
+     class?  Well, I want sensible behavior from `operator<<`, hex is
+     better for basic printing due to vastly simpler logic, I consider
+     unprefixed hex too potentially confusing, and if I write a prefix
+     then I should be able to read it too.  So here we are.
+  */
+  static APUInteger fromRadixPrefixedDigits(std::string_view digits)
+  {
+    if (int radix = detectRadixPrefix(digits)) {
+      return fromRadixDigits(digits.substr(2), radix);
     }
     else {
-      xunimp("decimal conversion");
+      // No recognized radix indicator, use decimal.
+      return fromDecimalDigits(digits);
     }
   }
 
@@ -792,6 +869,27 @@ public:      // methods
   std::string getAsDecimalDigits() const
   {
     return getAsRadixDigits(10);
+  }
+
+  // Return a string of digits with the radix and its associated prefix.
+  // `radix` must be 2, 8, 10, or 16.
+  std::string getAsRadixPrefixedDigits(int radix) const
+  {
+    // Determine what prefix to use, if any.
+    char letter = encodeRadixIndicatorLetter(radix);
+
+    // Write the prefix.
+    std::ostringstream oss;
+    if (letter == 0) {
+      xassert(radix == 10);
+    }
+    else {
+      oss << '0' << letter;
+    }
+
+    // Write the rest.
+    oss << getAsRadixDigits(radix);
+    return oss.str();
   }
 
   // --------- Convert from sequence of arbitrary-radix digits ---------

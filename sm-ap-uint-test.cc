@@ -470,7 +470,8 @@ public:      // methods
   // uppercase.
   void testHexRoundtrip(char const *origDigits)
   {
-    std::string actual = Integer::fromDigits(origDigits).toString();
+    std::string actual =
+      Integer::fromRadixPrefixedDigits(origDigits).toString();
     EXPECT_EQ(actual, origDigits);
   }
 
@@ -482,17 +483,17 @@ public:      // methods
     DIAG(n);
     std::string digits = stringb(n);
     EXPECT_EQ(digits, "0xF");
-    EXPECT_EQ(Integer::fromDigits(digits), n);
+    EXPECT_EQ(Integer::fromRadixPrefixedDigits(digits), n);
 
     // Check parsing lowercase hex.
-    EXPECT_EQ(Integer::fromDigits("0xf"), n);
+    EXPECT_EQ(Integer::fromRadixPrefixedDigits("0xf"), n);
 
     Integer h12;
     h12.setWord(0, 0x12);
     DIAG(h12);
     digits = stringb(h12);
     EXPECT_EQ(digits, "0x12");
-    EXPECT_EQ(Integer::fromDigits(digits), h12);
+    EXPECT_EQ(Integer::fromRadixPrefixedDigits(digits), h12);
 
     // This part of the test assumes the word size is 1.
     if (sizeof(Word) == 1) {
@@ -500,17 +501,17 @@ public:      // methods
       n.setWord(1, 0x45);
       digits = stringb(n);
       EXPECT_EQ(digits, "0x450F");
-      EXPECT_EQ(Integer::fromDigits(digits), n);
+      EXPECT_EQ(Integer::fromRadixPrefixedDigits(digits), n);
 
       // No leading zero for the first.
       n.setWord(2, 0x3);
       digits = stringb(n);
       EXPECT_EQ(digits, "0x3450F");
-      EXPECT_EQ(Integer::fromDigits(digits), n);
+      EXPECT_EQ(Integer::fromRadixPrefixedDigits(digits), n);
 
       digits = stringb(Integer());
       EXPECT_EQ(digits, "0x0");
-      EXPECT_EQ(Integer::fromDigits(digits), Integer());
+      EXPECT_EQ(Integer::fromRadixPrefixedDigits(digits), Integer());
     }
 
     testHexRoundtrip("0x0");
@@ -590,12 +591,12 @@ public:      // methods
 
     uint64_t big64 = UINT64_C(0x1234567812345678);
     Integer big(big64);
-    EXPECT_EQ(big, Integer::fromDigits("0x1234567812345678"));
+    EXPECT_EQ(big, Integer::fromRadixPrefixedDigits("0x1234567812345678"));
     EXPECT_EQ(big.template getAs<uint64_t>(), big64);
 
     uint64_t biggest64 = UINT64_C(0xFFFFFFFFFFFFFFFF);
     Integer biggest(biggest64);
-    EXPECT_EQ(biggest, Integer::fromDigits("0xFFFFFFFFFFFFFFFF"));
+    EXPECT_EQ(biggest, Integer::fromRadixPrefixedDigits("0xFFFFFFFFFFFFFFFF"));
     EXPECT_EQ(biggest.template getAs<uint64_t>(), biggest64);
 
     xassert(biggest.template getAsOpt<int64_t>() == std::nullopt);
@@ -616,7 +617,7 @@ public:      // methods
 
     uint8_t hff = 0xFF;
     Integer small(hff);
-    EXPECT_EQ(small, Integer::fromDigits("0xFF"));
+    EXPECT_EQ(small, Integer::fromRadixPrefixedDigits("0xFF"));
     EXPECT_EQ(small.template getAs<uint8_t>(), hff);
 
     testRoundtripPrim<int8_t>(0);
@@ -729,6 +730,44 @@ public:      // methods
     }
   }
 
+  /* Like `testRadixPrefixedRoundtrip` except that a round trip produces
+    `normalDigits`, which might be different from `origDigits`.
+  */
+  void testRadixPrefixedNonNormal(
+    int radix,
+    char const *origDigits,
+    char const *normalDigits)
+  {
+    EXPECT_EQ(Integer::detectRadixPrefix(origDigits), radix);
+
+    Integer n = Integer::fromRadixPrefixedDigits(origDigits);
+    std::string newDigits = n.getAsRadixPrefixedDigits(radix? radix : 10);
+
+    EXPECT_EQ(newDigits, normalDigits);
+  }
+
+  /* Decode `origDigits`, which is expected to be prefixed with a code
+     for `radix`, or none if `radix` is 0.  Then turn it back into
+     digits and check that the result matches.
+  */
+  void testRadixPrefixedRoundtrip(int radix, char const *origDigits)
+  {
+    testRadixPrefixedNonNormal(radix, origDigits, origDigits);
+  }
+
+  void testFromRadixPrefixedDigits()
+  {
+    testRadixPrefixedRoundtrip(0, "0");
+    testRadixPrefixedRoundtrip(2, "0b101");
+    testRadixPrefixedNonNormal(2, "0b0101", "0b101");
+    testRadixPrefixedRoundtrip(8, "0o7654321");
+    testRadixPrefixedRoundtrip(16, "0x7654321");
+    testRadixPrefixedNonNormal(16, "0X7654321", "0x7654321");
+    testRadixPrefixedRoundtrip(16, "0x7654321FEDCBA");
+    testRadixPrefixedNonNormal(0, "07654321", "7654321");
+    testRadixPrefixedNonNormal(0, "076543219", "76543219");
+    testRadixPrefixedRoundtrip(0, "76543219");
+  }
 
   void testAll()
   {
@@ -739,6 +778,7 @@ public:      // methods
     testReadWriteAsHex();
     testConstructFromPrim();
     testGetAsRadixDigits();
+    testFromRadixPrefixedDigits();
   }
 }; // APUintTest
 
