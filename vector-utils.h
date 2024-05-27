@@ -5,7 +5,6 @@
 #define SMBASE_VECTOR_UTILS_H
 
 #include "container-utils.h"           // CONTAINER_FOREACH
-#include "dev-warning.h"               // DEV_WARNING
 #include "overflow.h"                  // convertNumber
 #include "sm-macros.h"                 // NO_OBJECT_COPIES
 #include "xassert.h"                   // xfailure
@@ -118,35 +117,6 @@ std::string toString(std::vector<T> const &vec)
   oss << vec;
   return oss.str();
 }
-
-
-// Push an element onto a vector in the constructor, then pop an element
-// (prsumably the same one, but that is not checked) in the destructor.
-template <class T>
-class VectorPushPop {
-  NO_OBJECT_COPIES(VectorPushPop);
-
-public:      // data
-  // The vector to push onto and pop off of.
-  std::vector<T> &m_vector;
-
-public:      // methods
-  VectorPushPop(std::vector<T> &vector, T const &element)
-    : m_vector(vector)
-  {
-    m_vector.push_back(element);
-  }
-
-  ~VectorPushPop()
-  {
-    if (m_vector.empty()) {
-      DEV_WARNING("vector to pop is empty");
-    }
-    else {
-      m_vector.pop_back();
-    }
-  }
-};
 
 
 // Return the back element of 'vec', or 'value' if it is empty.

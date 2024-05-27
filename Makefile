@@ -381,6 +381,7 @@ UNIT_TEST_OBJS += trdelete-test.o
 UNIT_TEST_OBJS += tree-print-test.o
 UNIT_TEST_OBJS += utf8-test.o
 UNIT_TEST_OBJS += vdtllist-test.o
+UNIT_TEST_OBJS += vector-push-pop-test.o
 UNIT_TEST_OBJS += vector-utils-test.o
 UNIT_TEST_OBJS += voidlist-test.o
 UNIT_TEST_OBJS += vptrmap-test.o
