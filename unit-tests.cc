@@ -108,6 +108,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(pprint);
   RUN_TEST(refct_serf);
   RUN_TEST(run_process);
+  RUN_TEST(sm_ap_int);
   RUN_TEST(sm_ap_uint);
   RUN_TEST(sm_file_util);
   RUN_TEST(sm_pp_util);
