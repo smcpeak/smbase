@@ -1,5 +1,8 @@
 // sm-ap-uint.h
-// Arbitrary-precision unsigned integer arithmetic.
+// `APUInteger`, an arbitrary-precision unsigned integer class.
+//
+// This is primarily meant to be used as part of the implementation of
+// `APInteger` defined in `sm-ap-int.h`.
 
 // This file is in the public domain.
 
@@ -28,8 +31,15 @@
 OPEN_NAMESPACE(smbase)
 
 
-// Arbitrary-precision unsigned integer represented as a sequence of
-// `Word`, which must be an unsigned type.
+/* Arbitrary-precision unsigned integer represented as a sequence of
+   `Word`, which must be an unsigned type.
+
+   The main reasin this is a template with the choice of word type
+   abstract is so I can easily test the code using a small word size and
+   then use a larger one in production.  I'm thinking I will wrap this
+   class with another that hides all the template stuff and fixes the
+   choice of word, presumably to `uint32_t`.
+*/
 template <typename Word>
 class APUInteger {
 public:      // types
@@ -762,6 +772,7 @@ public:      // methods
     return ret;
   }
 
+  // TODO: This and the next method are in the wrong section.
   /* Check for one of the recognized radix prefixes in `digits`.  If one
      is found, return its associated radix as one of {2, 8, 16}.
      Otherwise, return 0.
@@ -830,6 +841,8 @@ public:      // methods
      This does not do any fast-path optimization for the case of radix
      16 or other powers of 2.  In part, that lets me use this code to
      test the dedicated hex printing code and vice-versa.
+
+     TODO: Add a variant that does fast-path.
   */
   std::string getAsRadixDigits(int radix) const
   {
