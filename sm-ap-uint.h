@@ -242,8 +242,8 @@ private:     // methods
   */
   static char getAsRadixDigit(int value, int radix)
   {
-    xassert(2 <= radix && radix <= 36);
-    xassert(0 <= value && value < radix);
+    xassertPrecondition(2 <= radix && radix <= 36);
+    xassertPrecondition(0 <= value && value < radix);
 
     if (value < 10) {
       return '0' + value;
@@ -260,7 +260,7 @@ private:     // methods
   */
   static Word wordFromRadixDigit(int digit, int radix)
   {
-    xassert(2 <= radix && radix <= 36);
+    xassertPrecondition(2 <= radix && radix <= 36);
 
     // First try to map the digit to a value without regard for radix.
     int dv = -1;
@@ -523,7 +523,7 @@ public:      // methods
   // Return 0 if that word is not currently stored.
   Word getWord(Index i) const
   {
-    xassert(i >= 0);
+    xassertPrecondition(i >= 0);
     if (i < size()) {
       return m_vec[i];
     }
@@ -536,7 +536,7 @@ public:      // methods
   // vector size, do nothing.
   void setWord(Index i, Word d)
   {
-    xassert(i >= 0);
+    xassertPrecondition(i >= 0);
     if (i < size()) {
       m_vec[i] = d;
     }
@@ -557,7 +557,7 @@ public:      // methods
   // Multiply `*this` by `N ** amount`.
   void leftShiftByWords(Index amount)
   {
-    xassert(amount >= 0);
+    xassertPrecondition(amount >= 0);
     m_vec.insert(m_vec.begin(), amount, 0);
   }
 
@@ -579,7 +579,7 @@ public:      // methods
   // True if bit `i` is set, where bit 0 is the least significant.
   bool getBit(Index i) const
   {
-    xassert(i >= 0);
+    xassertPrecondition(i >= 0);
 
     Index wordIndex = i / bitsPerWord();
     Index bitIndexWithinWord = i % bitsPerWord();
@@ -591,7 +591,7 @@ public:      // methods
   // Set the bit at `i` to `b`.
   void setBit(Index i, bool b)
   {
-    xassert(i >= 0);
+    xassertPrecondition(i >= 0);
 
     Index wordIndex = i / bitsPerWord();
     Index bitIndexWithinWord = i % bitsPerWord();
@@ -610,7 +610,7 @@ public:      // methods
   // Multiply `*this` by `2**amt`.
   void leftShiftByBits(Index amt)
   {
-    xassert(amt >= 0);
+    xassertPrecondition(amt >= 0);
     Index wordShiftAmt = amt / bitsPerWord();
     Index bitShiftAmt = amt % bitsPerWord();
 
@@ -804,7 +804,7 @@ public:      // methods
   // `getAsHexDigits()` in the unit tests.
   std::string getAsRadixDigits_noFastPath(int radix) const
   {
-    xassert(2 <= radix && radix <= 36);
+    xassertPrecondition(2 <= radix && radix <= 36);
 
     if (isZero()) {
       return "0";
@@ -846,6 +846,8 @@ public:      // methods
   // `radix` must be 2, 8, 10, or 16.
   std::string getAsRadixPrefixedDigits(int radix) const
   {
+    xassertPrecondition(radix==2 || radix==8 || radix==10 || radix==16);
+
     // Determine what prefix to use, if any.
     char letter = encodeRadixIndicatorLetter(radix);
 
@@ -873,9 +875,13 @@ public:      // methods
   */
   static APUInteger fromRadixDigits(std::string_view digits, int radix)
   {
+    xassertPrecondition(2 <= radix && radix <= 36);
+
     APUInteger ret;
 
     Word radixWord = (Word)radix;
+
+    // Make sure the conversion to `Word` did not lose information.
     xassert((int)radixWord == radix);
 
     // Object into which I store successive digit values in order to add
@@ -1072,7 +1078,7 @@ public:      // methods
     APUInteger const &divisor)         // aka denominator
   {
     // TODO: Throw a better exception.
-    xassert(!divisor.isZero());
+    xassertPrecondition(!divisor.isZero());
 
     // We will set bits in the quotient as we go.
     quotient.setZero();

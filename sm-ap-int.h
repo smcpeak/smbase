@@ -140,7 +140,7 @@ public:      // methods
   // Assert invariants.
   void selfCheck() const
   {
-    xassert(!( m_negative && m_magnitude.isZero() ));
+    xassertInvariant(!( m_negative && m_magnitude.isZero() ));
   }
 
   // ---------- Zero ----------
@@ -361,7 +361,7 @@ public:      // methods
   // Calls `fromPossiblyRadixPrefixedDigits` with non-negative `radix`.
   static APInteger fromRadixDigits(std::string_view digits, int radix)
   {
-    xassert(2 <= radix && radix <= 36);
+    xassertPrecondition(2 <= radix && radix <= 36);
     return fromPossiblyRadixPrefixedDigits(digits, radix);
   }
 
@@ -470,7 +470,7 @@ public:      // methods
     APInteger const &divisor)          // aka denominator
   {
     // TODO: Throw a better exception.
-    xassert(!divisor.isZero());
+    xassertPrecondition(!divisor.isZero());
 
     // Clear the sign bits.
     quotient.setZero();

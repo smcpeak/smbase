@@ -72,6 +72,34 @@ void x_assert_fail(char const *cond, char const *file, int line) NORETURN;
 #endif
 
 
+/* Assert a condition that, at the call site, is the caller's
+   responsibility to ensure.
+
+   The idea is to use `xassertPrecondition` at the top of a function,
+   after which point ordinary `xassert` checks things that should be
+   logical consequences of the preconditions.  That is, if
+   `xassertPrecondition` fails, the bug is in the calling code, while if
+   `xassert` fails, it is in the code containing the assertion.
+
+   This is an experimental idea that I've only begun to pursue, so the
+   above convention is not widespread.
+
+   If this works well I might create a dedicated class to carry the
+   exception, and/or modify the message, but for now I think it's enough
+   to have a clear indication in the code of which ones are checking
+   preconditions.
+*/
+#define xassertPrecondition(cond) xassert(cond)
+
+
+/* Assert a condition that should be a data structure invariant.
+
+   This is meant to be used in `selfCheck()` methods that check
+   invariants.
+*/
+#define xassertInvariant(cond) xassert(cond)
+
+
 // Quick note: one prominent book on writing code recommends that
 // assertions *not* include the failure condition, since the file
 // and line number are sufficient, and the condition string uses
