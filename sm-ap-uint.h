@@ -783,66 +783,6 @@ public:      // methods
     return ret;
   }
 
-  // TODO: This and the next method are in the wrong section.
-  /* Check for one of the recognized radix prefixes in `digits`.  If one
-     is found, return its associated radix as one of {2, 8, 16}.
-     Otherwise, return 0.
-
-     This does not return 10 for the case of no prefix because the
-     caller needs to handle an actual prefix differently by skipping it
-     before interpreting the digits.
-  */
-  static int detectRadixPrefix(std::string_view digits)
-  {
-    if (digits.size() >= 3 && digits[0] == '0') {
-      if (int radix = decodeRadixIndicatorLetter(digits[1])) {
-        return radix;
-      }
-    }
-    return 0;
-  }
-
-  /* Convert `digits` to an integer.  It is expected to be prefixed with
-     a radix indicator, from among:
-
-       0b   - binary
-       0o   - octal
-       0x   - hex
-       else - decimal
-
-     The 'b', 'o', and 'x' are case-insensitive.
-
-     An empty string is treated as zero.
-
-     If it does not have any of those forms, throw `XFormat`.  That
-     includes the case where "0b", "Oo", or "0x" is not followed by
-     anything.
-
-     Note: The "Oo" syntax is not what C or C++ uses, although some
-     other languages do.  Thus, the "radix prefix" used by this class is
-     not compatible with C/C++ lexical convention.
-
-     Why does this prefix interpretation stuff even belong in this
-     class?  Well, I want sensible behavior from `operator<<`, hex is
-     better for basic printing due to vastly simpler logic, I consider
-     unprefixed hex too potentially confusing, and if I write a prefix
-     then I should be able to read it too.  So here we are.
-  */
-  static APUInteger fromRadixPrefixedDigits(std::string_view digits)
-  {
-    if (int radix = detectRadixPrefix(digits)) {
-      return fromRadixDigits(digits.substr(2), radix);
-    }
-    else {
-      // No recognized radix indicator, use decimal.
-      return fromDecimalDigits(digits);
-    }
-  }
-
-  // There is no `operator>>` because I regard C++ `istream` formatted
-  // input as completely inadequate as a parsing framework.  Something
-  // else should parse, then hand this class a string (view).
-
   // ---------- Convert to sequence of arbitrary-radix digits ----------
   /* Return a string containing the digits of `*this` using `radix`,
      which must be in [2,36].  No indicator of the radix is returned.
@@ -951,6 +891,65 @@ public:      // methods
   {
     return fromRadixDigits(digits, 10);
   }
+
+  /* Check for one of the recognized radix prefixes in `digits`.  If one
+     is found, return its associated radix as one of {2, 8, 16}.
+     Otherwise, return 0.
+
+     This does not return 10 for the case of no prefix because the
+     caller needs to handle an actual prefix differently by skipping it
+     before interpreting the digits.
+  */
+  static int detectRadixPrefix(std::string_view digits)
+  {
+    if (digits.size() >= 3 && digits[0] == '0') {
+      if (int radix = decodeRadixIndicatorLetter(digits[1])) {
+        return radix;
+      }
+    }
+    return 0;
+  }
+
+  /* Convert `digits` to an integer.  It is expected to be prefixed with
+     a radix indicator, from among:
+
+       0b   - binary
+       0o   - octal
+       0x   - hex
+       else - decimal
+
+     The 'b', 'o', and 'x' are case-insensitive.
+
+     An empty string is treated as zero.
+
+     If it does not have any of those forms, throw `XFormat`.  That
+     includes the case where "0b", "Oo", or "0x" is not followed by
+     anything.
+
+     Note: The "Oo" syntax is not what C or C++ uses, although some
+     other languages do.  Thus, the "radix prefix" used by this class is
+     not compatible with C/C++ lexical convention.
+
+     Why does this prefix interpretation stuff even belong in this
+     class?  Well, I want sensible behavior from `operator<<`, hex is
+     better for basic printing due to vastly simpler logic, I consider
+     unprefixed hex too potentially confusing, and if I write a prefix
+     then I should be able to read it too.  So here we are.
+  */
+  static APUInteger fromRadixPrefixedDigits(std::string_view digits)
+  {
+    if (int radix = detectRadixPrefix(digits)) {
+      return fromRadixDigits(digits.substr(2), radix);
+    }
+    else {
+      // No recognized radix indicator, use decimal.
+      return fromDecimalDigits(digits);
+    }
+  }
+
+  // There is no `operator>>` because I regard C++ `istream` formatted
+  // input as completely inadequate as a parsing framework.  Something
+  // else should parse, then hand this class a string (view).
 
   // ---------- Addition ----------
   // Add `other` to `*this`.
