@@ -5,6 +5,7 @@
 
 #include "sm-ap-int.h"                 // module under test
 
+#include "exc.h"                       // EXN_CONTEXT_CALL
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE, smbase_loopi
 #include "sm-random.h"                 // sm_randomPrim
 #include "sm-test.h"                   // VPVAL, EXPECT_EQ, verbose
@@ -168,6 +169,37 @@ public:      // methods
     }
   }
 
+  void testOneUnary(
+    Integer const &input,
+    bool isPlus,
+    Integer const &expect)
+  {
+    EXN_CONTEXT_CALL(testOneUnary, (input, isPlus));
+
+    Integer actual;
+    if (isPlus) {
+      actual = +input;
+    }
+    else {
+      actual = -input;
+    }
+    EXPECT_EQ(actual, expect);
+  }
+
+  void testUnaryOps()
+  {
+    bool isPlus = true;
+    testOneUnary(0, isPlus, 0);
+    testOneUnary(1, isPlus, 1);
+    testOneUnary(100, isPlus, 100);
+
+    isPlus = false;
+    testOneUnary(0, isPlus, 0);
+    testOneUnary(1, isPlus, -1);
+    testOneUnary(100, isPlus, -100);
+  }
+
+
   void testRandomArithmetic()
   {
     int iters = 100;
@@ -192,6 +224,7 @@ public:      // methods
   {
     testSimple();
     testDivide();
+    testUnaryOps();
     testRandomArithmetic();
   }
 };

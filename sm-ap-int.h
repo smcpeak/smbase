@@ -413,6 +413,11 @@ public:      // methods
     }
   }
 
+  APInteger const &operator+() const
+  {
+    return *this;
+  }
+
   // ---------- Subtraction ----------
   APInteger &operator-=(APInteger const &other)
   {
@@ -422,6 +427,13 @@ public:      // methods
   APInteger operator-(APInteger const &other) const
   {
     return sumOrDifference(other, false /*isSum*/);
+  }
+
+  APInteger operator-() const
+  {
+    APInteger ret(*this);
+    ret.flipSign();
+    return ret;
   }
 
   // ---------- Multiplication ----------
