@@ -71,6 +71,12 @@ private:     // data
 
 private:     // methods
   // ---------- Operations on Words ----------
+  // Return the number of bits in each word.
+  static constexpr Index bitsPerWord()
+  {
+    return sizeof(Word) * 8;
+  }
+
   // Add `other` into `w`, returning the carry bit.
   static Word addWithCarry(Word &w, Word other)
   {
@@ -379,17 +385,11 @@ public:      // methods
     return *this;
   }
 
-  // ---------- General ----------
-  // Return the number of bits in each word.
-  static constexpr Index bitsPerWord()
-  {
-    return sizeof(Word) * 8;
-  }
-
+  // ---------- Zero ----------
   // True if this object represents zero.
   bool isZero() const
   {
-    return maxWordIndex() == -1;
+    return this->maxWordIndex() == -1;
   }
 
   // Set the value of this object to zero.
@@ -408,14 +408,14 @@ public:      // methods
   {
     static_assert(std::is_integral<PRIM>::value);
 
-    Index maxWIndex = maxWordIndex();
+    Index maxWIndex = this->maxWordIndex();
     if (maxWIndex == -1) {
       return PRIM();         // Zero.
     }
 
     Index bitsPerPrim = sizeof(PRIM) * 8;
     if (std::is_signed<PRIM>::value) {
-      bool highBit = getBit(bitsPerPrim - 1);
+      bool highBit = this->getBit(bitsPerPrim - 1);
       if (highBit) {
         // The high bit is set, does not fit in a signed integer.
         return std::nullopt;
@@ -433,7 +433,7 @@ public:      // methods
         return std::nullopt;
       }
 
-      Word w = getWord(0);
+      Word w = this->getWord(0);
 
       if (sizeof(Word) > sizeof(PRIM)) {
         Word primMask = (1 << bitsPerPrim) - 1;
@@ -465,7 +465,7 @@ public:      // methods
 
       // Populate `ret` from least to most significant word.
       for (Index i = 0; i <= maxWIndex; ++i) {
-        PRIM v(getWord(i));
+        PRIM v(this->getWord(i));
         v <<= i * bitsPerWord();
         ret |= v;
       }
@@ -480,13 +480,24 @@ public:      // methods
   {
     std::optional<PRIM> res = getAsOpt<PRIM>();
     if (!res.has_value()) {
-      xmessage(stringb(
-        "Attempted to convert the APUInteger value " << *this <<
-        " to " <<
-        (std::is_signed<PRIM>::value? "a signed " : "an unsigned ") <<
-        (sizeof(PRIM)*8) << "-bit integer type, but it does not fit."));
+      throwDoesNotFitException<PRIM>("APUInteger", this->toString());
     }
     return res.value();
+  }
+
+  // Throw an exception complaining about the inability to convert a
+  // value to `PRIM`.  The class name is a parameter so this can be used
+  // by `APInteger` too.
+  template <typename PRIM>
+  static void throwDoesNotFitException(
+    char const *className,
+    std::string const &valueAsString)
+  {
+    xmessage(stringb(
+      "Attempted to convert the " << className <<
+      " value " << valueAsString << " to " <<
+      (std::is_signed<PRIM>::value? "a signed " : "an unsigned ") <<
+      (sizeof(PRIM)*8) << "-bit integer type, but it does not fit."));
   }
 
   // ---------- Treat as a sequence of Words ----------
@@ -557,7 +568,7 @@ public:      // methods
   {
     Index i = (maxWordIndex()+1) * bitsPerWord() - 1;
     while (i >= 0) {
-      if (getBit(i)) {
+      if (this->getBit(i)) {
         return i;
       }
       --i;
