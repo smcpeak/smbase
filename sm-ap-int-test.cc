@@ -33,7 +33,6 @@ public:      // types
   typedef APInteger<Word> Integer;
 
 public:      // methods
-
   void testSimple()
   {
     Integer zero;
@@ -50,6 +49,31 @@ public:      // methods
     xassert(!negOne.isZero());
     xassert(negOne.isNegative());
     VPVAL(negOne);
+  }
+
+  void testOneDivide(
+    int dividend,
+    int divisor,
+    int expectQuotient,
+    int expectRemainder)
+  {
+    Integer actualQuotient, actualRemainder;
+    Integer::divide(
+      actualQuotient,
+      actualRemainder,
+      dividend,
+      divisor);
+    EXPECT_EQ(actualQuotient, Integer(expectQuotient));
+    EXPECT_EQ(actualRemainder, Integer(expectRemainder));
+  }
+
+  // Test division using the examples in the spec.
+  void testDivide()
+  {
+    testOneDivide( 5,  3,  1,  2);
+    testOneDivide(-5,  3, -1, -2);
+    testOneDivide( 5, -3, -1,  2);
+    testOneDivide(-5, -3,  1, -2);
   }
 
   template <typename PRIM>
@@ -100,6 +124,31 @@ public:      // methods
         "computing a*b for a=" << apA << " b=" << apB));
       throw;
     }
+
+    try {
+      PRIM quot, rem;
+      divideWithOverflowCheck(quot, rem, a, b);
+
+      Integer apQuot, apRem;
+      Integer::divide(
+        apQuot,
+        apRem,
+        apA,
+        apB);
+
+      EXPECT_EQ(apQuot, Integer(quot));
+      EXPECT_EQ(apRem, Integer(rem));
+
+      ++nonOverflowCount;
+    }
+    catch (XOverflow &x) {
+      ++overflowCount;
+    }
+    catch (XBase &x) {
+      x.prependContext(stringb(
+        "computing a/b for a=" << apA << " b=" << apB));
+      throw;
+    }
   }
 
   void testRandomArithmetic()
@@ -125,9 +174,9 @@ public:      // methods
   void testAll()
   {
     testSimple();
+    testDivide();
     testRandomArithmetic();
   }
-
 };
 
 

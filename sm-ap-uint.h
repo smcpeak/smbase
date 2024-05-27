@@ -1046,14 +1046,18 @@ public:      // methods
      goes into `dividend`, and `remainder`, what is left over after
      taking that many divisors out.
 
+     The operands must all be distinct objects, except that `dividend`
+     and `divisor` could be the same.
+
      Precondition:
 
        divisor > 0
+       distinct(&quotient, &remainder, {&dividend, &divisor})
 
      Postcondition:
 
-        0 <= remainder < divisor
-        divisor * quotient + remainder = dividend
+       0 <= remainder < divisor
+       divisor * quotient + remainder = dividend
   */
   static void divide(
     APUInteger &quotient,

@@ -153,7 +153,7 @@ public:      // methods
   // Set the value of this object to zero.
   void setZero()
   {
-    m_magnitude.clear();
+    m_magnitude.setZero();
     m_negative = false;
   }
 
@@ -430,9 +430,67 @@ public:      // methods
   }
 
   // ---------- Division ----------
-  // TODO
+  /* Compute `quotient`, the maximum number of times that `divisor`
+     goes into `dividend`, and `remainder`, what is left over after
+     taking that many divisors out.
 
+     The operands must all be distinct objects, except that `dividend`
+     and `divisor` could be the same.
 
+     Following the C++ rules in [expr.mul], the quotient is "the
+     algebraic quotient with any fractional part discarded", i.e. it is
+     rounded toward *zero*, not negative infinity.  This in turn has the
+     consequence that if the remainder if not zero, its sign is the same
+     as that of the dividend (numerator).
+
+     Examples:
+
+       dividend      divisor     quotient    remainder
+       --------      -------     --------    ---------
+              5            3            1            2
+             -5            3           -1           -2
+              5           -3           -1            2
+             -5           -3            1           -2
+
+     Precondition:
+
+       divisor != 0
+       distinct(&quotient, &remainder, {&dividend, &divisor})
+
+     Postcondition:
+
+       (dividend < 0) ==> (remainder <= 0)
+       0 <= abs(remainder) < abs(divisor)
+       divisor * quotient + remainder = dividend
+  */
+  static void divide(
+    APInteger &quotient,
+    APInteger &remainder,
+    APInteger const &dividend,         // aka numerator
+    APInteger const &divisor)          // aka denominator
+  {
+    // TODO: Throw a better exception.
+    xassert(!divisor.isZero());
+
+    // Clear the sign bits.
+    quotient.setZero();
+    remainder.setZero();
+
+    // Compute result magnitudes without regard to sign.
+    UInteger::divide(
+      quotient.m_magnitude,
+      remainder.m_magnitude,
+      dividend.m_magnitude,
+      divisor.m_magnitude);
+
+    // Set the signs.
+    if (dividend.isNegative() != divisor.isNegative()) {
+      quotient.flipSign();
+    }
+    if (dividend.isNegative()) {
+      remainder.flipSign();
+    }
+  }
 };
 
 
