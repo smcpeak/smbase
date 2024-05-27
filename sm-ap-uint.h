@@ -322,6 +322,9 @@ private:     // methods
   }
 
 public:      // methods
+  ~APUInteger()
+  {}
+
   // ---------- Constructors ----------
   // Zero.
   APUInteger()

@@ -6,6 +6,7 @@
 #include "sm-ap-int.h"                 // module under test
 
 #include "exc.h"                       // EXN_CONTEXT_CALL
+#include "overflow.h"                  // addWithOverflowCheck, etc.
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE, smbase_loopi
 #include "sm-random.h"                 // sm_randomPrim
 #include "sm-test.h"                   // VPVAL, EXPECT_EQ, verbose

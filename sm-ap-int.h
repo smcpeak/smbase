@@ -52,6 +52,9 @@ private:     // methods
   }
 
 public:      // methods
+  ~APInteger()
+  {}
+
   // ---------- Constructors ----------
   // Zero.
   APInteger()
@@ -216,7 +219,7 @@ public:      // methods
       if (primMag & highBit) {
         if (primMag == highBit) {
           // The value is just barely representable.
-          return std::numeric_limits<PRIM>::min;
+          return std::numeric_limits<PRIM>::min();
         }
         else {
           // No, it is too large for the signed version.
