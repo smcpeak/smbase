@@ -22,7 +22,7 @@ OPEN_ANONYMOUS_NAMESPACE
 
 
 // True while developing.
-bool verbose = true;
+bool verbose = false;
 
 
 #define myrandom(n) (std::rand()%(n))
