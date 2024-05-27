@@ -226,11 +226,11 @@ void convertWithoutLoss(DEST &dest, SRC const &src)
   if (s2 != src) {
     // Printing '+src', etc., ensures that types like 'char' will print
     // as numbers.
-    throw XOverflow(stringb(
+    THROW(XOverflow(stringb(
       "convertWithoutLoss: Source value " << +src <<
       " converts to destination value " << +dest <<
       " and back to different value " << +s2 <<
-      " (ss=" << sizeof(SRC) << " ds=" << sizeof(DEST) << ")."));
+      " (ss=" << sizeof(SRC) << " ds=" << sizeof(DEST) << ").")));
   }
 }
 
@@ -247,10 +247,10 @@ DEST convertNumber(SRC const &src)
   convertWithoutLoss(dest, src);
 
   if ((dest < 0) != (src < 0)) {
-    throw XOverflow(stringb(
+    THROW(XOverflow(stringb(
       "convertNumber: Source value " << +src <<
       " and destination value " << +dest <<
-      " have different signs."));
+      " have different signs.")));
   }
 
   return dest;
