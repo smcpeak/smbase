@@ -6,6 +6,7 @@
 #include "sm-ap-uint.h"                // module under test
 
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE, smbase_loopi
+#include "sm-random.h"                 // sm_random, sm_randomPrim
 #include "sm-test.h"                   // VPVAL, EXPECT_EQ, EXPECT_MATCHES_REGEX
 #include "stringb.h"                   // stringb
 
@@ -23,9 +24,6 @@ OPEN_ANONYMOUS_NAMESPACE
 
 // True while developing.
 bool verbose = false;
-
-
-#define myrandom(n) (std::rand()%(n))
 
 
 // Wrap the entire test in a class template so I can vary the word size
@@ -308,13 +306,13 @@ public:      // methods
   {
     smbase_loopi(1000) {
       // Get two random 3-byte integers.
-      int a0 = myrandom(256);
-      int a1 = myrandom(256);
-      int a2 = myrandom(256);
+      int a0 = sm_random(256);
+      int a1 = sm_random(256);
+      int a2 = sm_random(256);
 
-      int b0 = myrandom(256);
-      int b1 = myrandom(256);
-      int b2 = myrandom(256);
+      int b0 = sm_random(256);
+      int b1 = sm_random(256);
+      int b2 = sm_random(256);
 
       uint64_t a = (a2 << 16) + (a1 << 8) + a0;
       uint64_t b = (b2 << 16) + (b1 << 8) + b0;
@@ -672,22 +670,6 @@ public:      // methods
   }
 
 
-  // Return a random value of type `PRIM`, approximately uniformly
-  // distributed.
-  template <typename PRIM>
-  PRIM randomPrim()
-  {
-    PRIM v = 0;
-
-    for (int i=0; i < (int)sizeof(PRIM); ++i) {
-      v <<= 8;
-      v += myrandom(256);
-    }
-
-    return v;
-  }
-
-
   void testGetAsRadixDigits()
   {
     Integer n;
@@ -707,7 +689,7 @@ public:      // methods
     EXPECT_EQ(Integer(107).getAsRadixDigits(36), "2Z");
 
     smbase_loopi(10) {
-      uint64_t val = randomPrim<uint64_t>();
+      uint64_t val = sm_randomPrim<uint64_t>();
       Integer apVal(val);
 
       std::string digits1 = apVal.getAsRadixDigits(16);
@@ -721,7 +703,7 @@ public:      // methods
       EXPECT_EQ(val2, apVal);
 
       smbase_loopj(3) {
-        int radix = myrandom(35) + 2;
+        int radix = sm_random(35) + 2;
 
         digits1 = apVal.getAsRadixDigits(radix);
         val2 = Integer::fromRadixDigits(digits1, radix);
