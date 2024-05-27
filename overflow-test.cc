@@ -10,6 +10,8 @@
 #include "sm-test.h"                   // PVAL, DIAG
 #include "str.h"                       // streq
 
+#include <cstdlib>                     // std::getenv
+
 #include <stdint.h>                    // int64_t, uint64_t, INT64_C
 #include <limits.h>                    // INT_MIN, INT_MIN
 
@@ -17,7 +19,47 @@
 OPEN_ANONYMOUS_NAMESPACE
 
 
-bool verbose = false;
+bool verbose = !!std::getenv("VERBOSE");
+
+
+// Write `n` to `os` as a number even if `NUM` is one of the `char`
+// types.
+template <class NUM>
+ostream& insertAsDigits(ostream &os, NUM n)
+{
+  stringBuilder sb;
+  insertAsDigits(sb, n);
+  return os << sb.str();
+}
+
+
+// Return `n` as a string of digits.
+template <class NUM>
+std::string digitsString(NUM n)
+{
+  std::ostringstream oss;
+  insertAsDigits(oss, n);
+  return oss.str();
+}
+
+
+// Like `expectEq` in `sm-test.h` but printing arguments as numbers.
+//
+// TODO: This should be moved to `sm-test.h` but I need to deal with
+// the implementation of `digitsString` first.
+template <class T>
+void expectEqNumbers(char const *label, T const &actual, T const &expect)
+{
+  if (expect != actual) {
+    xfailure(stringbc(
+      "While checking " << label << ":\n"
+      "  actual: " << digitsString(actual) << "\n"
+      "  expect: " << digitsString(expect)));
+  }
+}
+
+#define EXPECT_EQ_NUMBERS(actual, expect) \
+  expectEqNumbers(#actual, actual, expect) /* user ; */
 
 
 // Add, and expect success.
@@ -25,23 +67,14 @@ template <class NUM>
 void testOneAdd(NUM a, NUM b, NUM expect)
 {
   NUM actual = addWithOverflowCheck(a, b);
-  EXPECT_EQ(actual, expect);
+  EXPECT_EQ_NUMBERS(actual, expect);
 
   // Also test subtraction.
   NUM actualA = subtractWithOverflowCheck(expect, b);
-  EXPECT_EQ(actualA, a);
+  EXPECT_EQ_NUMBERS(actualA, a);
 
   NUM actualB = subtractWithOverflowCheck(expect, a);
-  EXPECT_EQ(actualB, b);
-}
-
-
-template <class NUM>
-ostream& insertAsDigits(ostream &os, NUM n)
-{
-  stringBuilder sb;
-  insertAsDigits(sb, n);
-  return os << sb.str();
+  EXPECT_EQ_NUMBERS(actualB, b);
 }
 
 
@@ -117,6 +150,46 @@ void testOneMultiplyOv(NUM a, NUM b)
 }
 
 
+// Divide, and expect success.
+template <class NUM>
+void testOneDivide(NUM a, NUM b, NUM expectQuotient, NUM expectRemainder)
+{
+  try {
+    NUM actualQuotient, actualRemainder;
+    divideWithOverflowCheck(actualQuotient, actualRemainder, a, b);
+    EXPECT_EQ_NUMBERS(actualQuotient, expectQuotient);
+    EXPECT_EQ_NUMBERS(actualRemainder, expectRemainder);
+  }
+  catch (XBase &x) {
+    x.prependContext(stringb(
+      "a=" << digitsString(a) << " b=" << digitsString(b)));
+    throw;
+  }
+}
+
+
+// Divide, and expect overflow.
+template <class NUM>
+void testOneDivideOv(NUM a, NUM b)
+{
+  try {
+    NUM q, r;
+    divideWithOverflowCheck(q, r, a, b);
+    PVAL(typeid(a).name());
+    cout << "a: ";
+    insertAsDigits(cout, a) << endl;
+    cout << "b: ";
+    insertAsDigits(cout, b) << endl;
+    xassert(!"testOneDivideOv: that should have failed");
+  }
+  catch (XOverflow &x) {
+    if (verbose) {
+      cout << "As expected: " << x << endl;
+    }
+  }
+}
+
+
 // Test what happens with 'a+b' using int64_t, which must be able
 // to represent all the possible values.
 template <class SMALL_NUM>
@@ -147,7 +220,7 @@ void testOneAddSmallUsingInt64(SMALL_NUM a, SMALL_NUM b)
   if (minValue <= result && result <= maxValue) {
     SMALL_NUM actual = subtractWithOverflowCheck(a, b);
     int64_t largeActual(actual);
-    EXPECT_EQ(largeActual, result);
+    EXPECT_EQ_NUMBERS(largeActual, result);
   }
   else {
     testOneSubOv(a, b);
@@ -180,18 +253,55 @@ void testOneMultiplySmallUsingInt64(SMALL_NUM a, SMALL_NUM b)
 }
 
 
+// And division.
+template <class SMALL_NUM>
+void testOneDivideSmallUsingInt64(SMALL_NUM a, SMALL_NUM b)
+{
+  if (b == 0) {
+    return;
+  }
+
+  int64_t largeA(a);
+  int64_t largeB(b);
+  int64_t expectQuotient(largeA / largeB);
+  int64_t expectRemainder(largeA % largeB);
+
+  int64_t minValue(numeric_limits<SMALL_NUM>::min());
+  int64_t maxValue(numeric_limits<SMALL_NUM>::max());
+
+  if (minValue <= expectQuotient && expectQuotient <= maxValue &&
+      minValue <= expectRemainder && expectRemainder <= maxValue) {
+    // Should not overflow.
+    SMALL_NUM actualQuotient, actualRemainder;
+    divideWithOverflowCheck(actualQuotient, actualRemainder, a, b);
+
+    // Check for correctness using the larger type.
+    int64_t largeActualQuotient(actualQuotient);
+    EXPECT_EQ_NUMBERS(largeActualQuotient, expectQuotient);
+    int64_t largeActualRemainder(actualRemainder);
+    EXPECT_EQ_NUMBERS(largeActualRemainder, expectRemainder);
+  }
+  else {
+    // Should overflow.
+    testOneDivideOv(a, b);
+  }
+}
+
+
 // Exhaustively check all pairs of SMALL_NUM.
 template <class SMALL_NUM>
 void testAddMultiplyAllSmallUsingInt64()
 {
+  SET_RESTORE(verbose, false);
+
   int64_t minValue(numeric_limits<SMALL_NUM>::min());
   int64_t maxValue(numeric_limits<SMALL_NUM>::max());
 
   for (int64_t a = minValue; a <= maxValue; a++) {
     for (int64_t b = minValue; b <= maxValue; b++) {
-      SET_RESTORE(verbose, false);
       testOneAddSmallUsingInt64((SMALL_NUM)a, (SMALL_NUM)b);
       testOneMultiplySmallUsingInt64((SMALL_NUM)a, (SMALL_NUM)b);
+      testOneDivideSmallUsingInt64((SMALL_NUM)a, (SMALL_NUM)b);
     }
   }
 }
@@ -237,7 +347,8 @@ void testAddAndMultiply()
   testOneMultiplyOv<int8_t>(-1, -128);
 
   // These are somewhat slow, taking around a second.
-  if (false) {
+  bool runSlowTests = !!std::getenv("TEST_OVERFLOW_SLOW");
+  if (runSlowTests) {
     DIAG("int8_t exhaustive");
     testAddMultiplyAllSmallUsingInt64<int8_t>();
 
@@ -271,6 +382,83 @@ void testAddAndMultiply()
   testOneMultiply<uint64_t>(UINT64_C(0x100000000), UINT64_C(0x80000000), UINT64_C(0x8000000000000000));
   testOneMultiplyOv<uint64_t>(UINT64_C(0x100000000), UINT64_C(0x100000000));
 }
+
+
+void testDivide()
+{
+  // Divide by 0.
+  testOneDivideOv<int8_t>(   0,  0);
+  testOneDivideOv<int8_t>(   1,  0);
+  testOneDivideOv<int8_t>(  -1,  0);
+  testOneDivideOv<int8_t>( 127,  0);
+  testOneDivideOv<int8_t>(-128,  0);
+
+  // Divide by 1.
+  testOneDivide<int8_t>(   0,    1,    0,   0);
+  testOneDivide<int8_t>(   1,    1,    1,   0);
+  testOneDivide<int8_t>(  -1,    1,   -1,   0);
+  testOneDivide<int8_t>( 127,    1,  127,   0);
+  testOneDivide<int8_t>(-128,    1, -128,   0);
+
+  // Divide by -1.
+  testOneDivide<int8_t>  (   0,   -1,    0,   0);
+  testOneDivide<int8_t>  (   1,   -1,   -1,   0);
+  testOneDivide<int8_t>  (  -1,   -1,    1,   0);
+  testOneDivide<int8_t>  ( 127,   -1, -127,   0);
+  testOneDivide<int8_t>  (-127,   -1,  127,   0);
+  testOneDivideOv<int8_t>(-128,   -1);
+
+  // Divide by 2.
+  testOneDivide<int8_t>(   0,    2,    0,   0);
+  testOneDivide<int8_t>(   1,    2,    0,   1);
+  testOneDivide<int8_t>(   2,    2,    1,   0);
+  testOneDivide<int8_t>(   3,    2,    1,   1);
+  testOneDivide<int8_t>(  -1,    2,    0,  -1);     // Note truncation toward zero, not -inf.
+  testOneDivide<int8_t>( 127,    2,   63,   1);
+  testOneDivide<int8_t>(-127,    2,  -63,  -1);
+  testOneDivide<int8_t>(-128,    2,  -64,   0);
+
+  // Divide by -2.
+  testOneDivide<int8_t>(   0,   -2,    0,   0);
+  testOneDivide<int8_t>(   1,   -2,    0,   1);
+  testOneDivide<int8_t>(   2,   -2,   -1,   0);
+  testOneDivide<int8_t>(   3,   -2,   -1,   1);
+  testOneDivide<int8_t>(  -1,   -2,    0,  -1);
+  testOneDivide<int8_t>( 127,   -2,  -63,   1);
+  testOneDivide<int8_t>(-127,   -2,   63,  -1);
+  testOneDivide<int8_t>(-128,   -2,   64,   0);
+
+  // Divide by 127.
+  testOneDivide<int8_t>(   0,  127,    0,   0);
+  testOneDivide<int8_t>(   1,  127,    0,   1);
+  testOneDivide<int8_t>( 126,  127,    0, 126);
+  testOneDivide<int8_t>( 127,  127,    1,   0);
+  testOneDivide<int8_t>(  -1,  127,    0,  -1);
+  testOneDivide<int8_t>(  -2,  127,    0,  -2);
+  testOneDivide<int8_t>(-127,  127,   -1,   0);
+  testOneDivide<int8_t>(-128,  127,   -1,  -1);
+
+  // Divide by -127.
+  testOneDivide<int8_t>(   0, -127,    0,   0);
+  testOneDivide<int8_t>(   1, -127,    0,   1);
+  testOneDivide<int8_t>( 126, -127,    0, 126);
+  testOneDivide<int8_t>( 127, -127,   -1,   0);
+  testOneDivide<int8_t>(  -1, -127,    0,  -1);
+  testOneDivide<int8_t>(  -2, -127,    0,  -2);
+  testOneDivide<int8_t>(-127, -127,    1,   0);
+  testOneDivide<int8_t>(-128, -127,    1,  -1);
+
+  // Divide by -128.
+  testOneDivide<int8_t>(   0, -128,    0,   0);
+  testOneDivide<int8_t>(   1, -128,    0,   1);
+  testOneDivide<int8_t>( 126, -128,    0, 126);
+  testOneDivide<int8_t>( 127, -128,    0, 127);
+  testOneDivide<int8_t>(  -1, -128,    0,  -1);
+  testOneDivide<int8_t>(  -2, -128,    0,  -2);
+  testOneDivide<int8_t>(-127, -128,    0,-127);
+  testOneDivide<int8_t>(-128, -128,    1,   0);
+}
+
 
 
 template <class DEST, class SRC>
@@ -370,6 +558,7 @@ void test_overflow()
     }
 
   RUNTEST(testAddAndMultiply);
+  RUNTEST(testDivide);
   RUNTEST(testConvertWithoutLoss);
   RUNTEST(testConvertNumber);
 

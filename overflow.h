@@ -31,6 +31,7 @@ using std::ostream;
 // into 'std').
 using std::numeric_limits;
 using std::is_unsigned;
+using std::is_signed;
 
 
 // Exception thrown when there would be an arithmetic overflow.
@@ -190,6 +191,39 @@ NUM multiplyWithOverflowCheck(NUM a, NUM b)
   }
 
   return a * b;
+}
+
+
+// Get quotient and remainder, throwing on overflow or division by zero.
+template <class NUM>
+void divideWithOverflowCheck(
+  NUM &quotient,
+  NUM &remainder,
+  NUM dividend,                        // aka numerator
+  NUM divisor)                         // aka denominator
+{
+  if (divisor == 0) {
+    // Although division by zero is not usually described as an
+    // "overflow", since there is no possible type that would be large
+    // enough to represent the result, my idea for this module is that
+    // it catches any unsafe operation and maps it to an `XOverflow`
+    // exception.
+    detectedOverflow(dividend, divisor, '/');
+  }
+
+  if (is_signed<NUM>::value) {
+    if (dividend == numeric_limits<NUM>::min() &&
+        divisor == -1) {
+      // The specific case of dividing the most negative integer by -1
+      // overflows because the result would be the positive counterpart
+      // of the dividend, which is not representable.
+      detectedOverflow(dividend, divisor, '/');
+    }
+  }
+
+  // All other cases are safe.
+  quotient = dividend / divisor;
+  remainder = dividend % divisor;
 }
 
 
