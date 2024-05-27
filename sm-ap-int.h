@@ -393,15 +393,16 @@ public:      // methods
       return APInteger(this->m_magnitude + other.m_magnitude,
                        this->isNegative());
     }
-    else if (this->magnitude >= other.magnitude) {
+    else if (this->m_magnitude >= other.m_magnitude) {
       // `*this` dominates.
       return APInteger(this->m_magnitude - other.m_magnitude,
                        this->isNegative());
     }
     else {
-      // `other` dominates.
+      // `other` dominates.  If `isSum`, we use its sign, otherwise we
+      // flip it.
       return APInteger(other.m_magnitude - this->m_magnitude,
-                       other.isNegative());
+                       other.isNegative() == isSum);
     }
   }
 
