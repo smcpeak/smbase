@@ -138,7 +138,7 @@ template <class T>
 void expectEq(char const *label, T const &actual, T const &expect)
 {
   if (expect != actual) {
-    xfailure(stringbc(
+    xmessage(stringb(
       "While checking " << label << ":\n"
       "  actual: " << actual << "\n"
       "  expect: " << expect));
