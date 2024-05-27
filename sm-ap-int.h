@@ -9,6 +9,7 @@
 #include "compare-util.h"              // RET_IF_COMPARE
 #include "sm-ap-uint.h"                // APUInteger
 #include "sm-macros.h"                 // OPEN_NAMESPACE, DMEMB, CMEMB
+#include "xoverflow.h"                 // XOverflow
 
 #include <limits>                      // std::numeric_limits
 #include <optional>                    // std::{optional, nullopt}
@@ -310,6 +311,12 @@ public:      // methods
     return os;
   }
 
+  // Return the value as a hex string with radix indicator.
+  std::string toHexString() const
+  {
+    return getAsRadixDigits(16, true /*radixIndicator*/);
+  }
+
   // ---------- Convert from sequence of digits ----------
   /* Convert `digits` to an integer value.
 
@@ -469,8 +476,12 @@ public:      // methods
     APInteger const &dividend,         // aka numerator
     APInteger const &divisor)          // aka denominator
   {
-    // TODO: Throw a better exception.
-    xassertPrecondition(!divisor.isZero());
+    if (divisor.isZero()) {
+      // Use the hex form in order to avoid the expensive and
+      // complicated process of decimalization.
+      THROW(XOverflow(stringb(
+        "Attempt to divide " << dividend.toHexString() << " by zero.")));
+    }
 
     // Clear the sign bits.
     quotient.setZero();

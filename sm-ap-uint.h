@@ -18,6 +18,7 @@
 #include "string-utils.h"              // singleQuoteChar
 #include "vector-utils.h"              // vectorReverseOf
 #include "xassert.h"                   // xassert
+#include "xoverflow.h"                 // XOverflow
 
 #include <algorithm>                   // std::max
 #include <cstddef>                     // std::ptrdiff_t
@@ -1077,8 +1078,10 @@ public:      // methods
     APUInteger const &dividend,        // aka numerator
     APUInteger const &divisor)         // aka denominator
   {
-    // TODO: Throw a better exception.
-    xassertPrecondition(!divisor.isZero());
+    if (divisor.isZero()) {
+      THROW(XOverflow(stringb(
+        "Attempt to divide " << dividend << " by zero.")));
+    }
 
     // We will set bits in the quotient as we go.
     quotient.setZero();

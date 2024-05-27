@@ -64,6 +64,25 @@ public:      // methods
     EXPECT_EQ(actualRemainder, Integer(expectRemainder));
   }
 
+  void testOneDivideOv(
+    int dividend,
+    int divisor)
+  {
+    try {
+      Integer actualQuotient, actualRemainder;
+      Integer::divide(
+        actualQuotient,
+        actualRemainder,
+        dividend,
+        divisor);
+      xfailure("should have failed");
+    }
+    catch (XOverflow &x) {
+      // As expected.
+      VPVAL(x);
+    }
+  }
+
   // Test division using the examples in the spec.
   void testDivide()
   {
@@ -71,6 +90,7 @@ public:      // methods
     testOneDivide(-5,  3, -1, -2);
     testOneDivide( 5, -3, -1,  2);
     testOneDivide(-5, -3,  1, -2);
+    testOneDivideOv(-1, 0);
   }
 
   template <typename PRIM>

@@ -5,14 +5,14 @@
 
 #include "sm-ap-uint.h"                // module under test
 
+#include "exc.h"                       // EXN_CONTEXT
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE, smbase_loopi
 #include "sm-random.h"                 // sm_random, sm_randomPrim
 #include "sm-test.h"                   // VPVAL, EXPECT_EQ, EXPECT_MATCHES_REGEX, verbose
 #include "stringb.h"                   // stringb
 
-#include <cstdlib>                     // std::rand
-
 #include <cstdint>                     // std::uint8_t, etc.; UINT64_C, etc.
+#include <cstdlib>                     // std::rand
 
 using namespace smbase;
 
@@ -747,6 +747,57 @@ public:      // methods
     testRadixPrefixedRoundtrip(0, "76543219");
   }
 
+
+  void testOneDivide(
+    char const *dividendDigits,
+    char const *divisorDigits,
+    char const *quotientDigits,
+    char const *remainderDigits)
+  {
+    EXN_CONTEXT("testOneDivide");
+    EXN_CONTEXT_EXPR(dividendDigits);
+    EXN_CONTEXT_EXPR(divisorDigits);
+
+    Integer actualQuotient, actualRemainder;
+    Integer::divide(
+      actualQuotient,
+      actualRemainder,
+      Integer::fromDecimalDigits(dividendDigits),
+      Integer::fromDecimalDigits(divisorDigits));
+    EXPECT_EQ(actualQuotient, Integer::fromDecimalDigits(quotientDigits));
+    EXPECT_EQ(actualRemainder, Integer::fromDecimalDigits(remainderDigits));
+  }
+
+  void testOneDivideOv(
+    char const *dividendDigits,
+    char const *divisorDigits)
+  {
+    EXN_CONTEXT("testOneDivideOv");
+    EXN_CONTEXT_EXPR(dividendDigits);
+    EXN_CONTEXT_EXPR(divisorDigits);
+
+    try {
+      Integer actualQuotient, actualRemainder;
+      Integer::divide(
+        actualQuotient,
+        actualRemainder,
+        Integer::fromDecimalDigits(dividendDigits),
+        Integer::fromDecimalDigits(divisorDigits));
+      xfailure("should have failed");
+    }
+    catch (XOverflow &x) {
+      // As expected.
+      VPVAL(x);
+    }
+  }
+
+  void testDivide()
+  {
+    testOneDivide("100", "7", "14", "2");
+    testOneDivideOv("100", "0");
+  }
+
+
   void testAll()
   {
     testSpecificAddSub();
@@ -757,6 +808,7 @@ public:      // methods
     testConstructFromPrim();
     testGetAsRadixDigits();
     testFromRadixPrefixedDigits();
+    testDivide();
   }
 }; // APUintTest
 
