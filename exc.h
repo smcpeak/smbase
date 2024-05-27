@@ -8,6 +8,7 @@
 #define SMBASE_EXC_H
 
 #include "breaker.h"                   // breaker
+#include "sm-pp-util.h"                // SM_PP_MAP, SM_PP_APPLY
 #include "str.h"                       // string
 #include "stringb.h"                   // stringb
 #include "vector-push-pop.h"           // VECTOR_PUSH_POP
@@ -47,6 +48,12 @@
 
    This is a stack of contexts with which to populate a newly created
    `XBase` instance.
+
+   There is no clever mechanism to make manipulating this vector fast,
+   so it is not.  I typically only use it in places where speed does not
+   matter (especially in test code).  Where speed is important, it is
+   better to catch the exception, use `prependContext`, then re-throw
+   it.
 */
 std::vector<std::string> &getExnContextVector();
 
@@ -57,6 +64,26 @@ std::vector<std::string> &getExnContextVector();
 // Add an expression value to the context stack.
 #define EXN_CONTEXT_EXPR(expr) \
   EXN_CONTEXT(#expr "=" << (expr))
+
+
+// Helper for `EXN_CONTEXT_CALL` to process one non-first argument.
+#define EXN_CONTEXT_CALL_ONE_ARG(arg) \
+  << ", " << arg
+
+// Helper for `EXN_CONTEXT_CALL` to process the argument list.
+#define EXN_CONTEXT_CALL_ARG_LIST(first, ...) \
+  first SM_PP_MAP(EXN_CONTEXT_CALL_ONE_ARG, __VA_ARGS__)
+
+/* Push/pop exception context consisting of a stringified function call
+   to `funcName` with `args`.
+
+   Example usage:
+
+     EXN_CONTEXT_CALL(someFunction, (arg1, arg2));
+*/
+#define EXN_CONTEXT_CALL(funcName, args) \
+  EXN_CONTEXT(#funcName "(" << SM_PP_APPLY(EXN_CONTEXT_CALL_ARG_LIST, args) << ")")
+
 
 
 // ------------------------------- XBase -------------------------------
