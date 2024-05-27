@@ -7,7 +7,7 @@
 #include "save-restore.h"              // SET_RESTORE
 #include "sm-iostream.h"               // cout
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
-#include "sm-test.h"                   // PVAL, DIAG
+#include "sm-test.h"                   // PVAL, DIAG, EXPECT_EQ_NUMBERS
 #include "str.h"                       // streq
 
 #include <cstdlib>                     // std::getenv
@@ -20,24 +20,6 @@ OPEN_ANONYMOUS_NAMESPACE
 
 
 bool verbose = !!std::getenv("VERBOSE");
-
-
-// Like `expectEq` in `sm-test.h` but printing arguments as numbers.
-//
-// TODO: This should be moved to `sm-test.h`.
-template <class T>
-void expectEqNumbers(char const *label, T const &actual, T const &expect)
-{
-  if (expect != actual) {
-    xfailure(stringbc(
-      "While checking " << label << ":\n"
-      "  actual: " << +actual << "\n"
-      "  expect: " << +expect));
-  }
-}
-
-#define EXPECT_EQ_NUMBERS(actual, expect) \
-  expectEqNumbers(#actual, actual, expect) /* user ; */
 
 
 // Add, and expect success.

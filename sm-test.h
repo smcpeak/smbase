@@ -129,6 +129,7 @@ public:
 };
 
 
+// Throw an exception if `actual != expect`.
 template <class T>
 void expectEq(char const *label, T const &actual, T const &expect)
 {
@@ -142,6 +143,22 @@ void expectEq(char const *label, T const &actual, T const &expect)
 
 #define EXPECT_EQ(actual, expect) \
   expectEq(#actual, actual, expect) /* user ; */
+
+
+/* Variant for use when `actual` and `expect` are numbers.  This just
+   applies unary `+` to them before checking.  That causes them to be
+   promoted to at least `int` if they are integral, which has two
+   benefits:
+
+   * If either is a `char` type (which `uint8_t` is), then it will
+     ensure they are printed as numbers rather than characters.
+
+   * It is more likely they will have the same type after promotion,
+     reducing the need for additional casts to make the `expectEq`
+     template happy.
+*/
+#define EXPECT_EQ_NUMBERS(actual, expect) \
+  expectEq(#actual, +(actual), +(expect)) /* user ; */
 
 
 // Special case for 'expect' being a string literal.
