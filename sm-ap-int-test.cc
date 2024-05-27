@@ -1,6 +1,8 @@
 // sm-ap-int-test.cc
 // Tests for sm-ap-int.h.
 
+// This file is in the public domain.
+
 #include "sm-ap-int.h"                 // module under test
 
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE, smbase_loopi
@@ -8,8 +10,7 @@
 #include "sm-test.h"                   // VPVAL, EXPECT_EQ
 
 #include <cstdint>                     // std::uint8_t, etc.
-
-// This file is in the public domain.
+#include <cstdlib>                     // std::{atoi, getenv}
 
 using namespace smbase;
 
@@ -17,8 +18,7 @@ using namespace smbase;
 OPEN_ANONYMOUS_NAMESPACE
 
 
-// True while developing.
-bool verbose = true;
+bool verbose = !!std::getenv("SM_AP_INT_TEST_VERBOSE");
 
 
 // Count primitive arithmetic overflows.
@@ -85,11 +85,32 @@ public:      // methods
         "computing a-b for a=" << apA << " b=" << apB));
       throw;
     }
+
+    try {
+      PRIM prod = multiplyWithOverflowCheck(a, b);
+      Integer apProd = apA * apB;
+      EXPECT_EQ(apProd, Integer(prod));
+      ++nonOverflowCount;
+    }
+    catch (XOverflow &x) {
+      ++overflowCount;
+    }
+    catch (XBase &x) {
+      x.prependContext(stringb(
+        "computing a*b for a=" << apA << " b=" << apB));
+      throw;
+    }
   }
 
   void testRandomArithmetic()
   {
-    smbase_loopi(100) {
+    int iters = 100;
+    if (char const *itersStr = std::getenv("SM_AP_INT_TEST_ITERS")) {
+      iters = std::atoi(itersStr);
+      PVAL(iters);
+    }
+
+    smbase_loopi(iters) {
       testOneRandomArithmetic<std::int8_t>();
       testOneRandomArithmetic<std::uint8_t>();
       testOneRandomArithmetic<std::int16_t>();
