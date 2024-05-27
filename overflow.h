@@ -1,5 +1,5 @@
 // overflow.h
-// Arithmetic with overflow checks.
+// Arithmetic that throws `XOverflow` on overflow.
 
 // This module avoids actually performing an overflowing operation.
 // Rather, it detects when the result of an operation would be outside
@@ -16,6 +16,7 @@
 
 #include "exc.h"                       // DEFINE_XBASE_SUBCLASS
 #include "str.h"                       // stringBuilder, stringb
+#include "xoverflow.h"                 // XOverflow
 
 #include <limits>                      // std::numeric_limits
 #include <type_traits>                 // std::is_unsigned
@@ -32,10 +33,6 @@ using std::ostream;
 using std::numeric_limits;
 using std::is_unsigned;
 using std::is_signed;
-
-
-// Exception thrown when there would be an arithmetic overflow.
-DEFINE_XBASE_SUBCLASS(XOverflow);
 
 
 // Throw an exception when overflow would happen.
