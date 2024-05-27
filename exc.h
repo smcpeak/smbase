@@ -10,6 +10,7 @@
 #include "breaker.h"                   // breaker
 #include "str.h"                       // string
 #include "stringb.h"                   // stringb
+#include "vector-push-pop.h"           // VECTOR_PUSH_POP
 
 #include <exception>                   // std::exception
 #include <iosfwd>                      // std::ostream
@@ -41,6 +42,23 @@
 // propagate out of destructors.
 
 
+// ---------------------------- EXN_CONTEXT ----------------------------
+/* Get the global exception context vector, creating it first if needed.
+
+   This is a stack of contexts with which to populate a newly created
+   `XBase` instance.
+*/
+std::vector<std::string> &getExnContextVector();
+
+// Add something to the context stack and remove it on scope exit.
+#define EXN_CONTEXT(stuff) \
+  VECTOR_PUSH_POP(getExnContextVector(), stringb(stuff))
+
+// Add an expression value to the context stack.
+#define EXN_CONTEXT_EXPR(expr) \
+  EXN_CONTEXT(#expr "=" << (expr))
+
+
 // ------------------------------- XBase -------------------------------
 /* This is the base class for all exceptions in smbase and the other
    projects of mine that use it.
@@ -67,12 +85,16 @@ private:     // data
   mutable std::string m_whatStorage;
 
 protected:   // data
-  // A sequence of English context phrases describing where an issue
-  // arose or what the program was trying to do at the time.  The
-  // phrases should be meaningful to the *user*, not only the programmer
-  // (this is not a stack trace!).  It is ordered from outermost
-  // (furthest from the conflict) to innermost (nearest to the
-  // conflict).  It can be empty.
+  /* A sequence of English context phrases describing where an issue
+     arose or what the program was trying to do at the time.  The
+     phrases should be meaningful to the *user*, not only the programmer
+     (this is not a stack trace!).  It is ordered from outermost
+     (furthest from the conflict) to innermost (nearest to the
+     conflict).  It can be empty.
+
+     This is initialized with the value of `getExnContextVector()` by
+     the default constructor.
+  */
   std::vector<std::string> m_contexts;
 
 public:      // methods

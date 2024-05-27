@@ -22,11 +22,18 @@ void printUnhandled(XBase const &x)
 }
 
 
+std::vector<std::string> &getExnContextVector()
+{
+  static std::vector<std::string> exnContextVector;
+  return exnContextVector;
+}
+
+
 // ------------------------------- XBase -------------------------------
 XBase::XBase() noexcept
   : std::exception(),
     m_whatStorage(),
-    m_contexts()
+    m_contexts(getExnContextVector())
 {}
 
 
