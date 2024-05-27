@@ -692,7 +692,7 @@ public:      // methods
       uint64_t val = sm_randomPrim<uint64_t>();
       Integer apVal(val);
 
-      std::string digits1 = apVal.getAsRadixDigits(16);
+      std::string digits1 = apVal.getAsRadixDigits_noFastPath(16);
       std::string digits2 = apVal.getAsHexDigits();
 
       VPVAL(digits1);

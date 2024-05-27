@@ -787,15 +787,22 @@ public:      // methods
   /* Return a string containing the digits of `*this` using `radix`,
      which must be in [2,36].  No indicator of the radix is returned.
 
-     This is a fairly slow procedure since it uses repeated division.
-
-     This does not do any fast-path optimization for the case of radix
-     16 or other powers of 2.  In part, that lets me use this code to
-     test the dedicated hex printing code and vice-versa.
-
-     TODO: Add a variant that does fast-path.
+     This is a fairly slow procedure since it uses repeated division,
+     although the case of `radix==16` is comparatively fast.
   */
   std::string getAsRadixDigits(int radix) const
+  {
+    if (radix == 16) {
+      return getAsHexDigits();
+    }
+    else {
+      return getAsRadixDigits_noFastPath(radix);
+    }
+  }
+
+  // Slow case.  This is exposed just so I can compare it to
+  // `getAsHexDigits()` in the unit tests.
+  std::string getAsRadixDigits_noFastPath(int radix) const
   {
     xassert(2 <= radix && radix <= 36);
 
