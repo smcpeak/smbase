@@ -38,34 +38,19 @@ using std::is_signed;
 DEFINE_XBASE_SUBCLASS(XOverflow);
 
 
-// Print 'n' to 'os' as digits rather than a character.
-template <class NUM>
-stringBuilder &insertAsDigits(stringBuilder &os, NUM n)
-{
-  if (sizeof(n) == 1) {
-    os << (int)n;
-  }
-  else {
-    os << n;
-  }
-  return os;
-}
-
-
 // Throw an exception when overflow would happen.
 template <class NUM>
 void detectedOverflow(NUM a, NUM b, char op)
 {
-  stringBuilder sb;
+  THROW(XOverflow(stringb(
+    // Note: On GCC, name() returns a mangled type name, so for the
+    // primitive types it will be like "i" for "int", "a" for "char",
+    // etc.  That's not ideal for human readability.
+    "Arithmetic overflow of type \"" << typeid(b).name() << "\": " <<
 
-  // Note: On GCC, name() returns a mangled type name, so for the
-  // primitive types it will be like "i" for "int", "a" for "char",
-  // etc.  That's not ideal for human readability.
-  sb << "Arithmetic overflow of type \"" << typeid(b).name() << "\": ";
-
-  insertAsDigits(sb, a) << ' ' << op << ' ';
-  insertAsDigits(sb, b) << " would overflow.";
-  throw XOverflow(sb.str());
+    // Prefix operands with `+` so they print as integers even if they
+    // are a `char` type.
+    +a << ' ' << op << ' ' << +b << " would overflow.")));
 }
 
 

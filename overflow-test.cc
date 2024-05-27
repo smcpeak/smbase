@@ -22,39 +22,17 @@ OPEN_ANONYMOUS_NAMESPACE
 bool verbose = !!std::getenv("VERBOSE");
 
 
-// Write `n` to `os` as a number even if `NUM` is one of the `char`
-// types.
-template <class NUM>
-ostream& insertAsDigits(ostream &os, NUM n)
-{
-  stringBuilder sb;
-  insertAsDigits(sb, n);
-  return os << sb.str();
-}
-
-
-// Return `n` as a string of digits.
-template <class NUM>
-std::string digitsString(NUM n)
-{
-  std::ostringstream oss;
-  insertAsDigits(oss, n);
-  return oss.str();
-}
-
-
 // Like `expectEq` in `sm-test.h` but printing arguments as numbers.
 //
-// TODO: This should be moved to `sm-test.h` but I need to deal with
-// the implementation of `digitsString` first.
+// TODO: This should be moved to `sm-test.h`.
 template <class T>
 void expectEqNumbers(char const *label, T const &actual, T const &expect)
 {
   if (expect != actual) {
     xfailure(stringbc(
       "While checking " << label << ":\n"
-      "  actual: " << digitsString(actual) << "\n"
-      "  expect: " << digitsString(expect)));
+      "  actual: " << +actual << "\n"
+      "  expect: " << +expect));
   }
 }
 
@@ -85,10 +63,8 @@ void testOneAddOv(NUM a, NUM b)
   try {
     addWithOverflowCheck(a, b);
     PVAL(typeid(a).name());
-    cout << "a: ";
-    insertAsDigits(cout, a) << endl;
-    cout << "b: ";
-    insertAsDigits(cout, b) << endl;
+    PVAL(+a);
+    PVAL(+b);
     xassert(!"testOneAddOv: that should have failed");
   }
   catch (XOverflow &x) {
@@ -106,10 +82,8 @@ void testOneSubOv(NUM a, NUM b)
   try {
     subtractWithOverflowCheck(a, b);
     PVAL(typeid(a).name());
-    cout << "a: ";
-    insertAsDigits(cout, a) << endl;
-    cout << "b: ";
-    insertAsDigits(cout, b) << endl;
+    PVAL(+a);
+    PVAL(+b);
     xassert(!"testOneSubOv: that should have failed");
   }
   catch (XOverflow &x) {
@@ -136,10 +110,8 @@ void testOneMultiplyOv(NUM a, NUM b)
   try {
     multiplyWithOverflowCheck(a, b);
     PVAL(typeid(a).name());
-    cout << "a: ";
-    insertAsDigits(cout, a) << endl;
-    cout << "b: ";
-    insertAsDigits(cout, b) << endl;
+    PVAL(+a);
+    PVAL(+b);
     xassert(!"testOneMultiplyOv: that should have failed");
   }
   catch (XOverflow &x) {
@@ -162,7 +134,7 @@ void testOneDivide(NUM a, NUM b, NUM expectQuotient, NUM expectRemainder)
   }
   catch (XBase &x) {
     x.prependContext(stringb(
-      "a=" << digitsString(a) << " b=" << digitsString(b)));
+      "a=" << +a << " b=" << +b));
     throw;
   }
 }
@@ -176,10 +148,8 @@ void testOneDivideOv(NUM a, NUM b)
     NUM q, r;
     divideWithOverflowCheck(q, r, a, b);
     PVAL(typeid(a).name());
-    cout << "a: ";
-    insertAsDigits(cout, a) << endl;
-    cout << "b: ";
-    insertAsDigits(cout, b) << endl;
+    PVAL(+a);
+    PVAL(+b);
     xassert(!"testOneDivideOv: that should have failed");
   }
   catch (XOverflow &x) {
