@@ -514,6 +514,32 @@ public:      // methods
       remainder.flipSign();
     }
   }
+
+  APInteger operator/(APInteger const &divisor) const
+  {
+    APInteger quotient, remainder;
+    divide(quotient, remainder, *this, divisor);
+    return quotient;
+  }
+
+  APInteger operator%(APInteger const &divisor) const
+  {
+    APInteger quotient, remainder;
+    divide(quotient, remainder, *this, divisor);
+    return remainder;
+  }
+
+  APInteger &operator/=(APInteger const &divisor)
+  {
+    APInteger q = *this / divisor;
+    return *this = q;
+  }
+
+  APInteger &operator%=(APInteger const &divisor)
+  {
+    APInteger r = *this % divisor;
+    return *this = r;
+  }
 };
 
 

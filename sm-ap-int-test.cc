@@ -105,8 +105,14 @@ public:      // methods
 
     try {
       PRIM sum = addWithOverflowCheck(a, b);
+
       Integer apSum = apA + apB;
       EXPECT_EQ(apSum, Integer(sum));
+
+      apSum = apA;
+      apSum += apB;
+      EXPECT_EQ(apSum, Integer(sum));
+
       ++nonOverflowCount;
     }
     catch (XOverflow &x) {
@@ -115,8 +121,14 @@ public:      // methods
 
     try {
       PRIM diff = subtractWithOverflowCheck(a, b);
+
       Integer apDiff = apA - apB;
       EXPECT_EQ(apDiff, Integer(diff));
+
+      apDiff = apA;
+      apDiff -= apB;
+      EXPECT_EQ(apDiff, Integer(diff));
+
       ++nonOverflowCount;
     }
     catch (XOverflow &x) {
@@ -130,8 +142,14 @@ public:      // methods
 
     try {
       PRIM prod = multiplyWithOverflowCheck(a, b);
+
       Integer apProd = apA * apB;
       EXPECT_EQ(apProd, Integer(prod));
+
+      apProd = apA;
+      apProd *= apB;
+      EXPECT_EQ(apProd, Integer(prod));
+
       ++nonOverflowCount;
     }
     catch (XOverflow &x) {
@@ -154,6 +172,20 @@ public:      // methods
         apA,
         apB);
 
+      EXPECT_EQ(apQuot, Integer(quot));
+      EXPECT_EQ(apRem, Integer(rem));
+
+      // Check the operator forms.
+      apQuot = apA / apB;
+      apRem = apA % apB;
+      EXPECT_EQ(apQuot, Integer(quot));
+      EXPECT_EQ(apRem, Integer(rem));
+
+      // Check the operator= forms.
+      apQuot = apA;
+      apQuot /= apB;
+      apRem = apA;
+      apRem %= apB;
       EXPECT_EQ(apQuot, Integer(quot));
       EXPECT_EQ(apRem, Integer(rem));
 
