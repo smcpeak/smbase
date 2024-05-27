@@ -25,7 +25,14 @@ template <class NUM>
 void testOneAdd(NUM a, NUM b, NUM expect)
 {
   NUM actual = addWithOverflowCheck(a, b);
-  xassert(actual == expect);
+  EXPECT_EQ(actual, expect);
+
+  // Also test subtraction.
+  NUM actualA = subtractWithOverflowCheck(expect, b);
+  EXPECT_EQ(actualA, a);
+
+  NUM actualB = subtractWithOverflowCheck(expect, a);
+  EXPECT_EQ(actualB, b);
 }
 
 
@@ -50,6 +57,27 @@ void testOneAddOv(NUM a, NUM b)
     cout << "b: ";
     insertAsDigits(cout, b) << endl;
     xassert(!"testOneAddOv: that should have failed");
+  }
+  catch (XOverflow &x) {
+    if (verbose) {
+      cout << "As expected: " << x.why() << endl;
+    }
+  }
+}
+
+
+// Subtract, and expect overflow.
+template <class NUM>
+void testOneSubOv(NUM a, NUM b)
+{
+  try {
+    subtractWithOverflowCheck(a, b);
+    PVAL(typeid(a).name());
+    cout << "a: ";
+    insertAsDigits(cout, a) << endl;
+    cout << "b: ";
+    insertAsDigits(cout, b) << endl;
+    xassert(!"testOneSubOv: that should have failed");
   }
   catch (XOverflow &x) {
     if (verbose) {
@@ -101,6 +129,7 @@ void testOneAddSmallUsingInt64(SMALL_NUM a, SMALL_NUM b)
   int64_t minValue(numeric_limits<SMALL_NUM>::min());
   int64_t maxValue(numeric_limits<SMALL_NUM>::max());
 
+  // Try addition.
   if (minValue <= result && result <= maxValue) {
     // Should not overflow.
     SMALL_NUM actual = addWithOverflowCheck(a, b);
@@ -111,6 +140,17 @@ void testOneAddSmallUsingInt64(SMALL_NUM a, SMALL_NUM b)
   }
   else {
     testOneAddOv(a, b);
+  }
+
+  // Try subtraction.
+  result = largeA - largeB;
+  if (minValue <= result && result <= maxValue) {
+    SMALL_NUM actual = subtractWithOverflowCheck(a, b);
+    int64_t largeActual(actual);
+    EXPECT_EQ(largeActual, result);
+  }
+  else {
+    testOneSubOv(a, b);
   }
 }
 
@@ -179,12 +219,24 @@ void testAddAndMultiply()
   testOneAddOv<int8_t>(-128, -2);
   testOneAddOv<int8_t>(-128, -128);
 
+  testOneSubOv<uint8_t>(126, 127);     // 126 - 127 = -1
+  testOneSubOv<uint8_t>(254, 255);     // 254 - 255 = -1
+  testOneSubOv<uint8_t>(0, 1);         // 0 - 1 = -1
+  testOneSubOv<uint8_t>(0, 127);       // 0 - 127 = -127
+  testOneSubOv<uint8_t>(0, 255);       // 0 - 255 = -255
+
+  testOneSubOv<int8_t>(127, -1);       // 127 - (-1) = 128
+  testOneSubOv<int8_t>(-128, 1);       // -128 - 1 = -129
+  testOneSubOv<int8_t>(127, -128);     // 128 - (-128) = 255
+  testOneSubOv<int8_t>(0, -128);       // 0 - (-128) = 128
+  testOneSubOv<int8_t>(-2, 127);       // -2 - 127 = -129
+
   testOneMultiplySmallUsingInt64<int8_t>(2, 3);
   testOneMultiplySmallUsingInt64<int8_t>(100, 100);
   testOneMultiplySmallUsingInt64<int8_t>(-1, 1);
   testOneMultiplyOv<int8_t>(-1, -128);
 
-  // These are slow.
+  // These are somewhat slow, taking around a second.
   if (false) {
     DIAG("int8_t exhaustive");
     testAddMultiplyAllSmallUsingInt64<int8_t>();

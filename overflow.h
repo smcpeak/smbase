@@ -18,6 +18,7 @@
 #include "str.h"                       // stringBuilder, stringb
 
 #include <limits>                      // std::numeric_limits
+#include <type_traits>                 // std::is_unsigned
 #include <typeinfo>                    // typeid
 
 using std::ostream;
@@ -29,6 +30,7 @@ using std::ostream;
 // for it (since only the standard library is permitted to put things
 // into 'std').
 using std::numeric_limits;
+using std::is_unsigned;
 
 
 // Exception thrown when there would be an arithmetic overflow.
@@ -85,6 +87,57 @@ NUM addWithOverflowCheck(NUM a, NUM b)
   }
 
   return a + b;
+}
+
+
+// Subtract two numbers and check that they do not overflow.
+template <class NUM>
+NUM subtractWithOverflowCheck(NUM a, NUM b)
+{
+  if (is_unsigned<NUM>::value) {
+    if (a < b) {
+      detectedOverflow(a, b, '-');
+    }
+  }
+  else {
+    // Prototype example (PE): NUM is a 4-bit number.
+    if (a >= 0) {                      // PE: a in [0,3]
+      if (b >= 0) {                    // PE: b in [0,3]
+        // Both non-negative, cannot overflow.
+      }
+      else /* b < 0 */ {               // PE: b in [-4,-1]
+        // PE: `max()` is 3, `largest_minus_b` is in [0,3]
+        NUM largest_minus_b = numeric_limits<NUM>::max() - a;
+
+        //   a     -   b
+        // = a +     (-b)
+        // = a + 1 + (-b) - 1
+        // = a + 1 + (-b  - 1)
+        // = a + 1 + -(b  + 1)
+        NUM mbp1 = -(b+1);             // PE: mbp1 in [0,3]
+
+        if (mbp1 >= largest_minus_b) {
+          detectedOverflow(a, b, '-');
+        }
+      }
+    }
+    else /* a < 0 */ {                 // PE: a in [-4,-1]
+      if (b >= 0) {                    // PE: b in [0,3]
+        // PE: `min()` is -4, `smallest_minus_b` is in [-3,0]
+        NUM smallest_minus_b = numeric_limits<NUM>::min() - a;
+
+        // Since `b` is positive, we can safely invert it.
+        if (-b < smallest_minus_b) {
+          detectedOverflow(a, b, '-');
+        }
+      }
+      else /* b < 0 */ {
+        // Both negative, cannot overflow.
+      }
+    }
+  }
+
+  return a - b;
 }
 
 
