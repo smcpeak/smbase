@@ -794,7 +794,31 @@ public:      // methods
   void testDivide()
   {
     testOneDivide("100", "7", "14", "2");
+
+    testOneDivide("1000" "000" "000" "000" "000" "000" "000" "003",
+                  "1000" "000" "000",
+                  "1000" "000" "000" "000" "000",
+                  "3");
+
     testOneDivideOv("100", "0");
+  }
+
+
+  // Check that we can apply `operator+` to `input` and get back the
+  // same thing.
+  void testOneUnary(Integer const &input)
+  {
+    EXN_CONTEXT_CALL(testOneUnary, (input));
+
+    Integer actual = +input;
+    EXPECT_EQ(actual, input);
+  }
+
+  void testUnaryOps()
+  {
+    testOneUnary(0);
+    testOneUnary(1);
+    testOneUnary(100);
   }
 
 
@@ -809,6 +833,7 @@ public:      // methods
     testGetAsRadixDigits();
     testFromRadixPrefixedDigits();
     testDivide();
+    testUnaryOps();
   }
 }; // APUintTest
 

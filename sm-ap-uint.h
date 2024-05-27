@@ -347,6 +347,8 @@ public:      // methods
   APUInteger(PRIM n)
     : m_vec()
   {
+    static_assert(std::is_integral<PRIM>::value);
+
     if (n < 0) {
       xmessage(stringb(
         "Attempted to create an APUInteger from negative value " <<
@@ -979,6 +981,12 @@ public:      // methods
     return ret += other;
   }
 
+  // One place this can potentially be used is EXPECT_EQ_NUMBERS.
+  APUInteger const &operator+() const
+  {
+    return *this;
+  }
+
   // ---------- Subtraction ----------
   // Subtract `other` from `*this`.  If `other` is larger, then set
   // `*this` to zero.
@@ -998,6 +1006,9 @@ public:      // methods
     APUInteger ret(*this);
     return ret -= other;
   }
+
+  // There is no unary `operator-` because that would not make sense for
+  // an unsigned integer.
 
   // ---------- Multiplication ----------
   // Set `*this` to the product of its original value and `w`.
