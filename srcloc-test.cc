@@ -6,7 +6,7 @@
 #include "autofile.h"                  // AutoFILE
 #include "exc.h"                       // xbase
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
-#include "sm-test.h"                   // DIAG
+#include "sm-test.h"                   // DIAG, verbose
 #include "strtokp.h"                   // StrtokParse
 #include "strutil.h"                   // substring
 #include "trace.h"                     // traceProgress
@@ -15,9 +15,6 @@
 
 
 OPEN_ANONYMOUS_NAMESPACE
-
-
-bool const verbose = false;
 
 
 SourceLocManager mgr;

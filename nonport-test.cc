@@ -5,7 +5,7 @@
 
 #include "save-restore.h"              // SET_RESTORE
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
-#include "sm-test.h"                   // dummy_printf
+#include "sm-test.h"                   // dummy_printf, verbose
 
 #include <errno.h>                     // errno
 #include <stdarg.h>                    // va_list
@@ -15,8 +15,6 @@
 
 OPEN_ANONYMOUS_NAMESPACE
 
-
-bool verbose = false;
 
 #define printf (verbose? printf : dummy_printf)
 
@@ -96,8 +94,6 @@ CLOSE_ANONYMOUS_NAMESPACE
 void test_nonport()
 {
   SET_RESTORE(nonportFail, testingFail);
-
-  verbose = !!getenv("NONPORT_TEST_VERBOSE");
 
   char s[4];
   s[0] = '-';

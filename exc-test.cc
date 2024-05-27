@@ -5,15 +5,12 @@
 
 #include "exc.h"                       // module under test
 
-#include "sm-test.h"                   // DIAG
+#include "sm-test.h"                   // DIAG, verbose
 
 #include <iostream>                    // std::{cout, endl}
 
 using std::cout;
 using std::endl;
-
-
-static bool verbose = false;
 
 
 // Called from unit-tests.cc.

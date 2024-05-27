@@ -7,7 +7,7 @@
 
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE, smbase_loopi
 #include "sm-random.h"                 // sm_random, sm_randomPrim
-#include "sm-test.h"                   // VPVAL, EXPECT_EQ, EXPECT_MATCHES_REGEX
+#include "sm-test.h"                   // VPVAL, EXPECT_EQ, EXPECT_MATCHES_REGEX, verbose
 #include "stringb.h"                   // stringb
 
 #include <cstdlib>                     // std::rand
@@ -20,10 +20,6 @@ using std::uint8_t;
 
 
 OPEN_ANONYMOUS_NAMESPACE
-
-
-// True while developing.
-bool verbose = false;
 
 
 // Wrap the entire test in a class template so I can vary the word size

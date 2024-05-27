@@ -4,15 +4,12 @@
 #include "run-process.h"               // module under test
 
 #include "exc.h"                       // XBase
-#include "sm-test.h"                   // DIAG
+#include "sm-test.h"                   // DIAG, verbose
 #include "sm-platform.h"               // PLATFORM_IS_POSIX
 #include "string-utils.h"              // splitNonEmpty
 #include "xassert.h"                   // xassert
 
 #include <cstdlib>                     // std::exit
-
-
-static bool verbose = false;
 
 
 static void oneBwcl(string expect, char const **argv)

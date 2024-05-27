@@ -7,7 +7,7 @@
 #include "save-restore.h"              // SET_RESTORE
 #include "sm-iostream.h"               // cout
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
-#include "sm-test.h"                   // PVAL, DIAG, EXPECT_EQ_NUMBERS
+#include "sm-test.h"                   // PVAL, DIAG, EXPECT_EQ_NUMBERS, verbose
 #include "str.h"                       // streq
 
 #include <cstdlib>                     // std::getenv
@@ -17,9 +17,6 @@
 
 
 OPEN_ANONYMOUS_NAMESPACE
-
-
-bool verbose = !!std::getenv("VERBOSE");
 
 
 // Add, and expect success.

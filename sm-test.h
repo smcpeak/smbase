@@ -18,6 +18,12 @@
 #include <stdio.h>         // printf
 
 
+// This is set, in a global initializer, to true if the "VERBOSE"
+// environment variable is set.  Tests can use it to control whether
+// they print extra diagnostics.
+extern bool verbose;
+
+
 // reports uncaught exceptions
 //
 // 12/30/02: I used to print "uncaught exception: " before
@@ -95,8 +101,7 @@ int main(int argc, char *argv[])                \
 #define PVAL_HEX(val) \
   cout << #val << " = " << "0x" << std::hex << (val) << std::dec << endl
 
-// If the test file has defined a variable called `verbose`, then this
-// will print only when it is true.
+// Print a value if `verbose`.
 #define VPVAL(stuff)                                        \
   if (verbose) {                                            \
     PVAL(stuff);                                            \
@@ -106,8 +111,7 @@ int main(int argc, char *argv[])                \
     (void)stuff;                                            \
   }
 
-// Again if `verbose` exists, this will conditionally write a line of
-// diagnostic output.
+// Conditionally write a line of diagnostic output.
 #define DIAG(stuff)                  \
   if (verbose) {                     \
     std::cout << stuff << std::endl; \

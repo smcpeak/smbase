@@ -7,7 +7,7 @@
 #include "compare-util.h"              // compare
 #include "objlist.h"                   // ObjList
 #include "sm-macros.h"                 // TABLESIZE
-#include "sm-test.h"                   // PVAL, DIAG
+#include "sm-test.h"                   // PVAL, DIAG, verbose
 
 // libc++
 #include <algorithm>                   // std::sort
@@ -18,9 +18,6 @@
 #include <assert.h>                    // assert
 #include <stdio.h>                     // printf
 #include <stdlib.h>                    // exit
-
-
-static bool verbose = false;
 
 
 // Assert that 'ase' and 'vec' have the same sequence of elements.

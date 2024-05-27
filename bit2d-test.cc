@@ -4,10 +4,8 @@
 #include "bit2d.h"                     // module under test
 
 #include "bflatten.h"                  // BFlatten
+#include "sm-test.h"                   // verbose
 #include "xassert.h"                   // xassert
-
-
-static bool verbose = false;
 
 
 // Called from unit-tests.cc.

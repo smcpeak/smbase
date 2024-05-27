@@ -10,13 +10,10 @@
 #include "owner.h"                     // Owner
 #include "sm-iostream.h"               // cout, etc.
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
-#include "sm-test.h"                   // EXPECT_EQ, DIAG
+#include "sm-test.h"                   // EXPECT_EQ, DIAG, verbose
 
 
 OPEN_ANONYMOUS_NAMESPACE
-
-
-bool verbose = false;
 
 
 // Placeholder data class.  This one does not explicitly call any of

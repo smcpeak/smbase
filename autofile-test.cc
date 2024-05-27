@@ -3,16 +3,13 @@
 
 #include "autofile.h"                  // this module
 
-#include "sm-test.h"                   // DIAG
+#include "sm-test.h"                   // DIAG, verbose
 
 #include <cstdlib>                     // std::getenv
 #include <iostream>                    // std::{cout, endl}
 
 using std::cout;
 using std::endl;
-
-
-static bool verbose = false;
 
 
 void test_autofile()

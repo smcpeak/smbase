@@ -4,12 +4,9 @@
 #include "array2d.h"         // module to test
 
 #include "sm-iostream.h"     // cout
-#include "sm-test.h"         // USUAL_MAIN, DIAG
+#include "sm-test.h"         // USUAL_MAIN, DIAG, verbose
 
 #include <stdlib.h>          // exit
-
-
-static bool verbose = false;
 
 
 // Called from unit-tests.cc.

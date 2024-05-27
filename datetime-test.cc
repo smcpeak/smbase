@@ -4,11 +4,8 @@
 #include "datetime.h"                  // module to test
 
 #include "sm-iostream.h"               // cout, endl
-#include "sm-test.h"                   // PVAL, DIAG
+#include "sm-test.h"                   // PVAL, DIAG, verbose
 #include "xassert.h"                   // xassert
-
-
-static bool verbose = false;
 
 
 static struct UnixTimeAndISO {

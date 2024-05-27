@@ -7,7 +7,7 @@
 #include "counting-ostream.h"          // nullOStream
 #include "gdvsymbol.h"                 // gdv::GDVSymbol
 #include "gdvalue-reader-exception.h"  // GDValueReaderException
-#include "sm-test.h"                   // EXPECT_EQ, EXPECT_MATCHES_REGEX, VPVAL, DIAG
+#include "sm-test.h"                   // EXPECT_EQ, EXPECT_MATCHES_REGEX, VPVAL, DIAG, verbose
 #include "strutil.h"                   // hasSubstring
 #include "string-utils.h"              // doubleQuote
 #include "utf8-writer.h"               // smbase::utf8EncodeVector
@@ -22,9 +22,6 @@ using namespace smbase;
 using namespace gdv;
 
 using std::cout;
-
-
-static bool verbose = false;
 
 
 // "test out", which by default goes nowhere.

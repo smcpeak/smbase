@@ -3,14 +3,13 @@
 
 #include "counting-ostream.h"          // this module
 
+#include "sm-test.h"                   // verbose
+
 #include <cassert>                     // assert
 #include <sstream>                     // std::ostringstream
 
 using std::cout;
 using std::endl;
-
-
-static bool verbose = false;
 
 
 // Run a single test.  'writeOperands' is a chain of things to be

@@ -4,16 +4,13 @@
 #include "functional-set.h"            // module under test
 
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
-#include "sm-test.h"                   // DIAG
+#include "sm-test.h"                   // DIAG, verbose
 #include "xassert.h"                   // xassert
 
 #include <iostream>                    // std::cout
 
 
 OPEN_ANONYMOUS_NAMESPACE
-
-
-bool verbose = false;
 
 
 class FSEInteger : public FSElement {

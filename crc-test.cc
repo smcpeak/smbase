@@ -3,7 +3,7 @@
 
 #include "crc.h"                       // module under test
 
-#include "dummy-printf.h"              // dummy_printf
+#include "sm-test.h"                   // dummy_printf, verbose
 
 #include <errno.h>                     // errno
 #include <stdint.h>                    // uint32_t
@@ -12,7 +12,6 @@
 #include <string.h>                    // strerror
 
 
-static bool verbose = false;
 #define printf (verbose? printf : dummy_printf)
 
 

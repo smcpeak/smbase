@@ -3,11 +3,9 @@
 
 #include "tree-print.h"                // module under test
 
+#include "sm-test.h"                   // verbose
+
 #include <cstdlib>                     // std::getenv
-
-
-// True to print various things.
-static bool verbose = false;
 
 
 static void debugPrint(TreePrint &tp)

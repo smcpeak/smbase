@@ -5,12 +5,10 @@
 
 #include "nonport.h"                   // removeFile
 #include "save-restore.h"              // SET_RESTORE
+#include "sm-test.h"                   // verbose
 #include "xassert.h"                   // xfailure
 
 #include <stdio.h>                     // printf
-
-
-static bool verbose = false;
 
 
 static bool detectedCorruption = false;

@@ -3,12 +3,9 @@
 
 #include "boxprint.h"                  // module under test
 
-#include "sm-test.h"                   // DIAG
+#include "sm-test.h"                   // DIAG, verbose
 
 #include <stdlib.h>                    // atoi, getenv
-
-
-static bool verbose = false;
 
 
 // Called from unit-tests.cc.

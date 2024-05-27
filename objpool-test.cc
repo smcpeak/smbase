@@ -5,15 +5,12 @@
 
 #include "sm-iostream.h"               // cout
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
-#include "sm-test.h"                   // DIAG
+#include "sm-test.h"                   // DIAG, verbose
 
 #include <stdlib.h>                    // rand
 
 
 OPEN_ANONYMOUS_NAMESPACE
-
-
-bool verbose = false;
 
 
 // class we're going to make a pool of

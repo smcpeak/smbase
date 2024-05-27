@@ -3,7 +3,7 @@
 
 #include "mysig.h"                     // module under test
 
-#include "sm-test.h"                   // dummy_printf
+#include "sm-test.h"                   // dummy_printf, verbose
 
 #include <setjmp.h>                    // setjmp
 #include <stdint.h>                    // uintptr_t
@@ -12,7 +12,6 @@
 #include <string.h>                    // strcmp
 
 
-static bool verbose = false;
 #define printf (verbose? printf : dummy_printf)
 
 

@@ -7,7 +7,7 @@
 
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE, smbase_loopi
 #include "sm-random.h"                 // sm_randomPrim
-#include "sm-test.h"                   // VPVAL, EXPECT_EQ
+#include "sm-test.h"                   // VPVAL, EXPECT_EQ, verbose
 
 #include <cstdint>                     // std::uint8_t, etc.
 #include <cstdlib>                     // std::{atoi, getenv}
@@ -16,9 +16,6 @@ using namespace smbase;
 
 
 OPEN_ANONYMOUS_NAMESPACE
-
-
-bool verbose = !!std::getenv("SM_AP_INT_TEST_VERBOSE");
 
 
 // Count primitive arithmetic overflows.

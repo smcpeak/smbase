@@ -8,6 +8,11 @@
 #include "string-utils.h"              // doubleQuote, matchesRegex
 #include "xassert.h"                   // xfailure
 
+#include <cstdlib>                     // std::getenv
+
+
+bool verbose = std::getenv("VERBOSE");
+
 
 void expectHasSubstring(
   char const *label,

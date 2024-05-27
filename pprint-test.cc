@@ -3,12 +3,12 @@
 
 #include "pprint.h"                    // module under test
 
+#include "sm-test.h"                   // verbose
+
 #include <iostream>                    // std::cout
 
 using std::cout;
 
-
-static bool verbose = false;
 
 static PPrintToString pp;
 

@@ -3,16 +3,13 @@
 
 #include "sm-rc-ptr.h"                 // module under test
 
-#include "sm-test.h"                   // DIAG
+#include "sm-test.h"                   // DIAG, verbose
 #include "xassert.h"                   // xassert
 
 #include <iostream>                    // std::cout, etc.
 
 
 OPEN_ANONYMOUS_NAMESPACE
-
-
-bool verbose = false;
 
 
 class Foo : public RefCountObject {
