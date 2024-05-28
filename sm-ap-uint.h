@@ -499,11 +499,13 @@ public:      // methods
     char const *className,
     std::string const &valueAsString)
   {
-    xmessage(stringb(
+    // I'm gravitating toward using `XOverflow` for all arithmetic
+    // issues, so that is why it is used here.
+    THROW(XOverflow(stringb(
       "Attempted to convert the " << className <<
       " value " << valueAsString << " to " <<
       (std::is_signed<PRIM>::value? "a signed " : "an unsigned ") <<
-      (sizeof(PRIM)*8) << "-bit integer type, but it does not fit."));
+      (sizeof(PRIM)*8) << "-bit integer type, but it does not fit.")));
   }
 
   // ---------- Treat as a sequence of Words ----------

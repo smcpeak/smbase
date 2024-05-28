@@ -207,7 +207,7 @@ public:      // methods
       // Extract the magnitude using the unsigned counterpart of `PRIM`.
       typedef typename std::make_unsigned<PRIM>::type UPRIM;
       std::optional<UPRIM> primMagOpt =
-        m_magnitude.template getAs<UPRIM>();
+        m_magnitude.template getAsOpt<UPRIM>();
       if (!primMagOpt.has_value()) {
         // Not representable even with the unsigned version.
         return std::nullopt;
@@ -234,7 +234,7 @@ public:      // methods
     else {
       // The value is non-negative, so the underlying unsigned AP
       // integer can handle this.
-      return m_magnitude.template getAs<PRIM>();
+      return m_magnitude.template getAsOpt<PRIM>();
     }
   }
 

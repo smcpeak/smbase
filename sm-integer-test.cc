@@ -249,7 +249,69 @@ void testRandomArithmetic()
 }
 
 
-// TODO: I need tests for `getAsOpt`.
+template <typename PRIM>
+void testOneGetAs(Integer i, PRIM expect)
+{
+  EXN_CONTEXT_CALL(testOneGetAs, (i));
+
+  std::optional<PRIM> actualOpt = i.template getAsOpt<PRIM>();
+  EXPECT_EQ(actualOpt.has_value(), true);
+  EXPECT_EQ_NUMBERS(*actualOpt, expect);
+
+  PRIM actual = i.template getAs<PRIM>();
+  EXPECT_EQ_NUMBERS(actual, expect);
+}
+
+template <typename PRIM>
+void testOneGetAsFail(Integer i)
+{
+  EXN_CONTEXT_CALL(testOneGetAsFail, (i));
+
+  std::optional<PRIM> actualOpt = i.template getAsOpt<PRIM>();
+  xassert(!actualOpt.has_value());
+
+  try {
+    i.template getAs<PRIM>();
+    xfailure("should have failed");
+  }
+  catch (XOverflow &x) {
+    // Failed as expected
+    VPVAL(x);
+  }
+}
+
+
+void testGetAs()
+{
+  testOneGetAs<int8_t>(127, 127);
+  testOneGetAsFail<int8_t>(128);
+
+  testOneGetAs<int8_t>(-127, -127);
+  testOneGetAs<int8_t>(-128, -128);
+  testOneGetAsFail<int8_t>(-129);
+
+  testOneGetAs<uint8_t>(255, 255);
+  testOneGetAsFail<uint8_t>(256);
+
+  testOneGetAs<uint8_t>(0, 0);
+  testOneGetAsFail<uint8_t>(-1);
+
+  testOneGetAs<int16_t>(0x7FFE, 0x7FFE);
+  testOneGetAs<int16_t>(0x7FFF, 0x7FFF);
+  testOneGetAsFail<int16_t>(0x8000);
+
+  testOneGetAs<int16_t>(-0x7FFE, -0x7FFE);
+  testOneGetAs<int16_t>(-0x7FFF, -0x7FFF);
+  testOneGetAs<int16_t>(-0x8000, -0x8000);
+  testOneGetAsFail<int16_t>(-0x8001);
+
+  testOneGetAs<uint16_t>(0, 0);
+  testOneGetAsFail<uint16_t>(-1);
+
+  testOneGetAs<uint16_t>(0xFFFE, 0xFFFE);
+  testOneGetAs<uint16_t>(0xFFFF, 0xFFFF);
+  testOneGetAsFail<uint16_t>(0x10000);
+}
 
 
 CLOSE_ANONYMOUS_NAMESPACE
@@ -261,6 +323,7 @@ void test_sm_integer()
   testSimple();
   testDivide();
   testUnaryOps();
+  testGetAs();
   testRandomArithmetic();
 
   VPVAL(overflowCount);
