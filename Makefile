@@ -98,6 +98,9 @@ AR      = ar
 RANLIB  = ranlib
 PYTHON3 = python3
 
+# https://mypy-lang.org/
+MYPY    = mypy
+
 # How to invoke run-compare-expect.py.
 RUN_COMPARE_EXPECT = $(PYTHON3) ./run-compare-expect.py
 
@@ -123,6 +126,9 @@ COVERAGE = 0
 # If 1, generate the *.o.json files used to create
 # compile_commands.json.  This requires that we are using Clang.
 CREATE_O_JSON_FILES = 0
+
+# If 1, hook the `mypy` checks into the `check` target.
+ENABLE_MYPY = 0
 
 # Path to the null device.
 DEV_NULL = /dev/null
@@ -615,6 +621,20 @@ out/test/ctc/in/%.ok: test/ctc/in/%.h test/ctc/in/%.cc create-tuple-class.py
 check-ctc: out/test/ctc/in/foo.ok
 
 check: check-ctc
+
+
+# ------------------------------- mypy ---------------------------------
+# Run `mypy` on a script.
+out/%.mypy.ok: %
+	$(MYPY) --strict $*
+	touch $@
+
+.PHONY: check-mypy
+check-mypy: out/create-tuple-class.py.mypy.ok
+
+ifeq ($(ENABLE_MYPY),1)
+check: check-mypy
+endif
 
 
 # ----------------------------- coverage -------------------------------
