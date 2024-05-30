@@ -16,6 +16,10 @@ for the corresponding example output.
 Within a directive to generate declarations, the following options are
 recognized:
 
+  +move
+
+    Generate move constructor and move assignment operator.
+
   +compare
 
     Generate relational comparison operators and a `compare` method.
@@ -182,6 +186,7 @@ def generatePrimaryCtorParam(type: str, name: str) -> str:
 # A field is a tuple of its type and name.
 Field = tuple[str, str]
 
+
 def generatePrimaryCtorParams(fields: list[Field]) -> str:
   """Generate a string that contains the parameter declarations for the
   primary constructor of a tuple class containing `fields`."""
@@ -190,8 +195,8 @@ def generatePrimaryCtorParams(fields: list[Field]) -> str:
     [generatePrimaryCtorParam(type, name) for (type, name) in fields])
 
 
-# The options are expressed as a map from option key to bool.  The
-# current option keys are "compare" and "write".
+# The options are expressed as a map from option key to bool.  This is
+# populated by `parseOptions`.
 OptionsMap = dict[str, bool]
 
 
@@ -225,14 +230,18 @@ def generateDeclarations(
   # Foo(Foo const &obj);
   out.append(f"{curClass}({curClass} const &obj);")
 
-  # Foo(Foo &&obj);
-  out.append(f"{curClass}({curClass} &&obj);")
+  enableMoveOps: bool = options.get("move", False)
+
+  if enableMoveOps:
+    # Foo(Foo &&obj);
+    out.append(f"{curClass}({curClass} &&obj);")
 
   # Foo &operator=(Foo const &obj);
   out.append(f"{curClass} &operator=({curClass} const &obj);")
 
-  # Foo &operator=(Foo &obj);
-  out.append(f"{curClass} &operator=({curClass} &&obj);")
+  if enableMoveOps:
+    # Foo &operator=(Foo &&obj);
+    out.append(f"{curClass} &operator=({curClass} &&obj);")
 
   if options.get("compare", False):
     # // For +compare:
@@ -275,6 +284,9 @@ def parseOptions(optionsString: str) -> OptionsMap:
 
     elif opt == "+write":
       ret["write"] = True
+
+    elif opt == "+move":
+      ret["move"] = True
 
     else:
       die(f"Unrecognized option: {opt}")
@@ -537,17 +549,20 @@ def generateDefinitions(
     ""
   ]
 
-  # Foo::Foo(Foo &&obj)
-  #   : MDMEMB(m_x),         // insert "Super(std::move(obj))" if superclass
-  #     MDMEMB(m_y),
-  #     MDMEMB(m_z)
-  # {}
-  out += [
-    f"{curClass}::{curClass}({curClass} &&obj)"
-  ] + generateCtorInits(superclass, fields, "MDMEMB") + [
-    "{}",
-    ""
-  ]
+  enableMoveOps: bool = options.get("move", False)
+
+  if enableMoveOps:
+    # Foo::Foo(Foo &&obj)
+    #   : MDMEMB(m_x),         // insert "Super(std::move(obj))" if superclass
+    #     MDMEMB(m_y),
+    #     MDMEMB(m_z)
+    # {}
+    out += [
+      f"{curClass}::{curClass}({curClass} &&obj)"
+    ] + generateCtorInits(superclass, fields, "MDMEMB") + [
+      "{}",
+      ""
+    ]
 
   # Foo &Foo::operator=(Foo const &obj)
   # {
@@ -574,30 +589,31 @@ def generateDefinitions(
     ""
   ]
 
-  # Foo &Foo::operator=(Foo &&obj)
-  # {
-  #   if (this != &obj) {
-  #     Super::operator=(std::move(obj));        // if superclass
-  #     MCMEMB(x);
-  #     MCMEMB(y);
-  #     MCMEMB(z);
-  #   }
-  #   return *this;
-  # }
-  out += [
-    f"{curClass} &{curClass}::operator=({curClass} &&obj)",
-    "{",
-    "  if (this != &obj) {"
-  ] + (
-        ([f"    {superclass}::operator=(std::move(obj));"]
-           if superclass is not None else []) +
-        generateCallsPerField(fields, "  MCMEMB")
-      ) + [
-    "  }",
-    "  return *this;",
-    "}",
-    ""
-  ]
+  if enableMoveOps:
+    # Foo &Foo::operator=(Foo &&obj)
+    # {
+    #   if (this != &obj) {
+    #     Super::operator=(std::move(obj));        // if superclass
+    #     MCMEMB(x);
+    #     MCMEMB(y);
+    #     MCMEMB(z);
+    #   }
+    #   return *this;
+    # }
+    out += [
+      f"{curClass} &{curClass}::operator=({curClass} &&obj)",
+      "{",
+      "  if (this != &obj) {"
+    ] + (
+          ([f"    {superclass}::operator=(std::move(obj));"]
+             if superclass is not None else []) +
+          generateCallsPerField(fields, "  MCMEMB")
+        ) + [
+      "  }",
+      "  return *this;",
+      "}",
+      ""
+    ]
 
   if options.get("compare", False):
     # int compare(Foo const &a, Foo const &b)

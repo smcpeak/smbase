@@ -97,25 +97,11 @@
 /*AUTO_CTC*/     DMEMB(m_n)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ Bar::Bar(Bar &&obj)
-/*AUTO_CTC*/   : EmptyBase(std::move(obj)),
-/*AUTO_CTC*/     MDMEMB(m_n)
-/*AUTO_CTC*/ {}
-/*AUTO_CTC*/
 /*AUTO_CTC*/ Bar &Bar::operator=(Bar const &obj)
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   if (this != &obj) {
 /*AUTO_CTC*/     EmptyBase::operator=(obj);
 /*AUTO_CTC*/     CMEMB(m_n);
-/*AUTO_CTC*/   }
-/*AUTO_CTC*/   return *this;
-/*AUTO_CTC*/ }
-/*AUTO_CTC*/
-/*AUTO_CTC*/ Bar &Bar::operator=(Bar &&obj)
-/*AUTO_CTC*/ {
-/*AUTO_CTC*/   if (this != &obj) {
-/*AUTO_CTC*/     EmptyBase::operator=(std::move(obj));
-/*AUTO_CTC*/     MCMEMB(m_n);
 /*AUTO_CTC*/   }
 /*AUTO_CTC*/   return *this;
 /*AUTO_CTC*/ }
@@ -158,22 +144,10 @@
 /*AUTO_CTC*/   : DMEMB(m_p)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ Baz::Baz(Baz &&obj)
-/*AUTO_CTC*/   : MDMEMB(m_p)
-/*AUTO_CTC*/ {}
-/*AUTO_CTC*/
 /*AUTO_CTC*/ Baz &Baz::operator=(Baz const &obj)
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   if (this != &obj) {
 /*AUTO_CTC*/     CMEMB(m_p);
-/*AUTO_CTC*/   }
-/*AUTO_CTC*/   return *this;
-/*AUTO_CTC*/ }
-/*AUTO_CTC*/
-/*AUTO_CTC*/ Baz &Baz::operator=(Baz &&obj)
-/*AUTO_CTC*/ {
-/*AUTO_CTC*/   if (this != &obj) {
-/*AUTO_CTC*/     MCMEMB(m_p);
 /*AUTO_CTC*/   }
 /*AUTO_CTC*/   return *this;
 /*AUTO_CTC*/ }

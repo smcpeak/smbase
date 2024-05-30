@@ -16,7 +16,7 @@ public:
   std::string m_z;
 
 public:
-  // ---- create-tuple-class: declarations for Foo +compare +write
+  // ---- create-tuple-class: declarations for Foo +compare +write +move
 };
 
 class EmptyBase {};

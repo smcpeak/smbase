@@ -29,14 +29,6 @@
 /*AUTO_CTC*/     DMEMB(m_op)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ XBinaryOpOverflow::XBinaryOpOverflow(XBinaryOpOverflow &&obj)
-/*AUTO_CTC*/   : XOverflow(std::move(obj)),
-/*AUTO_CTC*/     MDMEMB(m_type),
-/*AUTO_CTC*/     MDMEMB(m_lhs),
-/*AUTO_CTC*/     MDMEMB(m_rhs),
-/*AUTO_CTC*/     MDMEMB(m_op)
-/*AUTO_CTC*/ {}
-/*AUTO_CTC*/
 /*AUTO_CTC*/ XBinaryOpOverflow &XBinaryOpOverflow::operator=(XBinaryOpOverflow const &obj)
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   if (this != &obj) {
@@ -45,18 +37,6 @@
 /*AUTO_CTC*/     CMEMB(m_lhs);
 /*AUTO_CTC*/     CMEMB(m_rhs);
 /*AUTO_CTC*/     CMEMB(m_op);
-/*AUTO_CTC*/   }
-/*AUTO_CTC*/   return *this;
-/*AUTO_CTC*/ }
-/*AUTO_CTC*/
-/*AUTO_CTC*/ XBinaryOpOverflow &XBinaryOpOverflow::operator=(XBinaryOpOverflow &&obj)
-/*AUTO_CTC*/ {
-/*AUTO_CTC*/   if (this != &obj) {
-/*AUTO_CTC*/     XOverflow::operator=(std::move(obj));
-/*AUTO_CTC*/     MCMEMB(m_type);
-/*AUTO_CTC*/     MCMEMB(m_lhs);
-/*AUTO_CTC*/     MCMEMB(m_rhs);
-/*AUTO_CTC*/     MCMEMB(m_op);
 /*AUTO_CTC*/   }
 /*AUTO_CTC*/   return *this;
 /*AUTO_CTC*/ }
@@ -95,15 +75,6 @@ std::string XBinaryOpOverflow::getConflict() const
 /*AUTO_CTC*/     DMEMB(m_destSizeBytes)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ XNumericConversionLosesRange::XNumericConversionLosesRange(XNumericConversionLosesRange &&obj)
-/*AUTO_CTC*/   : XNumericConversion(std::move(obj)),
-/*AUTO_CTC*/     MDMEMB(m_sourceValue),
-/*AUTO_CTC*/     MDMEMB(m_destValue),
-/*AUTO_CTC*/     MDMEMB(m_roundTripValue),
-/*AUTO_CTC*/     MDMEMB(m_sourceSizeBytes),
-/*AUTO_CTC*/     MDMEMB(m_destSizeBytes)
-/*AUTO_CTC*/ {}
-/*AUTO_CTC*/
 /*AUTO_CTC*/ XNumericConversionLosesRange &XNumericConversionLosesRange::operator=(XNumericConversionLosesRange const &obj)
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   if (this != &obj) {
@@ -113,19 +84,6 @@ std::string XBinaryOpOverflow::getConflict() const
 /*AUTO_CTC*/     CMEMB(m_roundTripValue);
 /*AUTO_CTC*/     CMEMB(m_sourceSizeBytes);
 /*AUTO_CTC*/     CMEMB(m_destSizeBytes);
-/*AUTO_CTC*/   }
-/*AUTO_CTC*/   return *this;
-/*AUTO_CTC*/ }
-/*AUTO_CTC*/
-/*AUTO_CTC*/ XNumericConversionLosesRange &XNumericConversionLosesRange::operator=(XNumericConversionLosesRange &&obj)
-/*AUTO_CTC*/ {
-/*AUTO_CTC*/   if (this != &obj) {
-/*AUTO_CTC*/     XNumericConversion::operator=(std::move(obj));
-/*AUTO_CTC*/     MCMEMB(m_sourceValue);
-/*AUTO_CTC*/     MCMEMB(m_destValue);
-/*AUTO_CTC*/     MCMEMB(m_roundTripValue);
-/*AUTO_CTC*/     MCMEMB(m_sourceSizeBytes);
-/*AUTO_CTC*/     MCMEMB(m_destSizeBytes);
 /*AUTO_CTC*/   }
 /*AUTO_CTC*/   return *this;
 /*AUTO_CTC*/ }
@@ -157,28 +115,12 @@ std::string XNumericConversionLosesRange::getConflict() const
 /*AUTO_CTC*/     DMEMB(m_destValue)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ XNumericConversionChangesSign::XNumericConversionChangesSign(XNumericConversionChangesSign &&obj)
-/*AUTO_CTC*/   : XNumericConversion(std::move(obj)),
-/*AUTO_CTC*/     MDMEMB(m_sourceValue),
-/*AUTO_CTC*/     MDMEMB(m_destValue)
-/*AUTO_CTC*/ {}
-/*AUTO_CTC*/
 /*AUTO_CTC*/ XNumericConversionChangesSign &XNumericConversionChangesSign::operator=(XNumericConversionChangesSign const &obj)
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   if (this != &obj) {
 /*AUTO_CTC*/     XNumericConversion::operator=(obj);
 /*AUTO_CTC*/     CMEMB(m_sourceValue);
 /*AUTO_CTC*/     CMEMB(m_destValue);
-/*AUTO_CTC*/   }
-/*AUTO_CTC*/   return *this;
-/*AUTO_CTC*/ }
-/*AUTO_CTC*/
-/*AUTO_CTC*/ XNumericConversionChangesSign &XNumericConversionChangesSign::operator=(XNumericConversionChangesSign &&obj)
-/*AUTO_CTC*/ {
-/*AUTO_CTC*/   if (this != &obj) {
-/*AUTO_CTC*/     XNumericConversion::operator=(std::move(obj));
-/*AUTO_CTC*/     MCMEMB(m_sourceValue);
-/*AUTO_CTC*/     MCMEMB(m_destValue);
 /*AUTO_CTC*/   }
 /*AUTO_CTC*/   return *this;
 /*AUTO_CTC*/ }
@@ -215,14 +157,6 @@ std::string XNumericConversionChangesSign::getConflict() const
 /*AUTO_CTC*/     DMEMB(m_destSizeBytes)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ XNumericConversionFromAP::XNumericConversionFromAP(XNumericConversionFromAP &&obj)
-/*AUTO_CTC*/   : XNumericConversion(std::move(obj)),
-/*AUTO_CTC*/     MDMEMB(m_sourceTypeName),
-/*AUTO_CTC*/     MDMEMB(m_sourceValue),
-/*AUTO_CTC*/     MDMEMB(m_destIsSigned),
-/*AUTO_CTC*/     MDMEMB(m_destSizeBytes)
-/*AUTO_CTC*/ {}
-/*AUTO_CTC*/
 /*AUTO_CTC*/ XNumericConversionFromAP &XNumericConversionFromAP::operator=(XNumericConversionFromAP const &obj)
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   if (this != &obj) {
@@ -231,18 +165,6 @@ std::string XNumericConversionChangesSign::getConflict() const
 /*AUTO_CTC*/     CMEMB(m_sourceValue);
 /*AUTO_CTC*/     CMEMB(m_destIsSigned);
 /*AUTO_CTC*/     CMEMB(m_destSizeBytes);
-/*AUTO_CTC*/   }
-/*AUTO_CTC*/   return *this;
-/*AUTO_CTC*/ }
-/*AUTO_CTC*/
-/*AUTO_CTC*/ XNumericConversionFromAP &XNumericConversionFromAP::operator=(XNumericConversionFromAP &&obj)
-/*AUTO_CTC*/ {
-/*AUTO_CTC*/   if (this != &obj) {
-/*AUTO_CTC*/     XNumericConversion::operator=(std::move(obj));
-/*AUTO_CTC*/     MCMEMB(m_sourceTypeName);
-/*AUTO_CTC*/     MCMEMB(m_sourceValue);
-/*AUTO_CTC*/     MCMEMB(m_destIsSigned);
-/*AUTO_CTC*/     MCMEMB(m_destSizeBytes);
 /*AUTO_CTC*/   }
 /*AUTO_CTC*/   return *this;
 /*AUTO_CTC*/ }

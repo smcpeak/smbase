@@ -34,9 +34,7 @@ public:      // methods
   // create-tuple-class: declarations for XBinaryOpOverflow
   /*AUTO_CTC*/ explicit XBinaryOpOverflow(std::string const &type, std::string const &lhs, std::string const &rhs, std::string const &op);
   /*AUTO_CTC*/ XBinaryOpOverflow(XBinaryOpOverflow const &obj);
-  /*AUTO_CTC*/ XBinaryOpOverflow(XBinaryOpOverflow &&obj);
   /*AUTO_CTC*/ XBinaryOpOverflow &operator=(XBinaryOpOverflow const &obj);
-  /*AUTO_CTC*/ XBinaryOpOverflow &operator=(XBinaryOpOverflow &&obj);
 
   virtual std::string getConflict() const override;
 };
@@ -69,9 +67,7 @@ public:      // methods
   // create-tuple-class: declarations for XNumericConversionLosesRange
   /*AUTO_CTC*/ explicit XNumericConversionLosesRange(std::string const &sourceValue, std::string const &destValue, std::string const &roundTripValue, unsigned sourceSizeBytes, unsigned destSizeBytes);
   /*AUTO_CTC*/ XNumericConversionLosesRange(XNumericConversionLosesRange const &obj);
-  /*AUTO_CTC*/ XNumericConversionLosesRange(XNumericConversionLosesRange &&obj);
   /*AUTO_CTC*/ XNumericConversionLosesRange &operator=(XNumericConversionLosesRange const &obj);
-  /*AUTO_CTC*/ XNumericConversionLosesRange &operator=(XNumericConversionLosesRange &&obj);
 
   virtual std::string getConflict() const override;
 };
@@ -93,9 +89,7 @@ public:      // methods
   // create-tuple-class: declarations for XNumericConversionChangesSign
   /*AUTO_CTC*/ explicit XNumericConversionChangesSign(std::string const &sourceValue, std::string const &destValue);
   /*AUTO_CTC*/ XNumericConversionChangesSign(XNumericConversionChangesSign const &obj);
-  /*AUTO_CTC*/ XNumericConversionChangesSign(XNumericConversionChangesSign &&obj);
   /*AUTO_CTC*/ XNumericConversionChangesSign &operator=(XNumericConversionChangesSign const &obj);
-  /*AUTO_CTC*/ XNumericConversionChangesSign &operator=(XNumericConversionChangesSign &&obj);
 
   virtual std::string getConflict() const override;
 };
@@ -121,9 +115,7 @@ public:      // methods
   // create-tuple-class: declarations for XNumericConversionFromAP
   /*AUTO_CTC*/ explicit XNumericConversionFromAP(std::string const &sourceTypeName, std::string const &sourceValue, bool destIsSigned, unsigned destSizeBytes);
   /*AUTO_CTC*/ XNumericConversionFromAP(XNumericConversionFromAP const &obj);
-  /*AUTO_CTC*/ XNumericConversionFromAP(XNumericConversionFromAP &&obj);
   /*AUTO_CTC*/ XNumericConversionFromAP &operator=(XNumericConversionFromAP const &obj);
-  /*AUTO_CTC*/ XNumericConversionFromAP &operator=(XNumericConversionFromAP &&obj);
 
   virtual std::string getConflict() const override;
 };

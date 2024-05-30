@@ -16,7 +16,7 @@ public:
   std::string m_z;
 
 public:
-  // ---- create-tuple-class: declarations for Foo +compare +write
+  // ---- create-tuple-class: declarations for Foo +compare +write +move
   /*AUTO_CTC*/ explicit Foo(int x, float y, std::string const &z);
   /*AUTO_CTC*/ Foo(Foo const &obj);
   /*AUTO_CTC*/ Foo(Foo &&obj);
@@ -41,9 +41,7 @@ public:
   // ---- create-tuple-class: declarations for Bar +compare +write
   /*AUTO_CTC*/ explicit Bar(int n);
   /*AUTO_CTC*/ Bar(Bar const &obj);
-  /*AUTO_CTC*/ Bar(Bar &&obj);
   /*AUTO_CTC*/ Bar &operator=(Bar const &obj);
-  /*AUTO_CTC*/ Bar &operator=(Bar &&obj);
   /*AUTO_CTC*/ // For +compare:
   /*AUTO_CTC*/ friend int compare(Bar const &a, Bar const &b);
   /*AUTO_CTC*/ DEFINE_FRIEND_RELATIONAL_OPERATORS(Bar)
@@ -59,9 +57,7 @@ struct Baz {
   // ---- create-tuple-class: declarations for Baz
   /*AUTO_CTC*/ explicit Baz(int *p);
   /*AUTO_CTC*/ Baz(Baz const &obj);
-  /*AUTO_CTC*/ Baz(Baz &&obj);
   /*AUTO_CTC*/ Baz &operator=(Baz const &obj);
-  /*AUTO_CTC*/ Baz &operator=(Baz &&obj);
 };
 
 #endif // FOO_H
