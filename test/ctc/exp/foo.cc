@@ -84,20 +84,24 @@
 
 // ---- create-tuple-class: definitions for Bar
 /*AUTO_CTC*/ Bar::Bar(int n)
-/*AUTO_CTC*/   : m_n(n)
+/*AUTO_CTC*/   : EmptyBase(),
+/*AUTO_CTC*/     m_n(n)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
 /*AUTO_CTC*/ Bar::Bar(Bar const &obj)
-/*AUTO_CTC*/   : DMEMB(m_n)
+/*AUTO_CTC*/   : EmptyBase(obj),
+/*AUTO_CTC*/     DMEMB(m_n)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
 /*AUTO_CTC*/ Bar::Bar(Bar &&obj)
-/*AUTO_CTC*/   : MDMEMB(m_n)
+/*AUTO_CTC*/   : EmptyBase(std::move(obj)),
+/*AUTO_CTC*/     MDMEMB(m_n)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
 /*AUTO_CTC*/ Bar &Bar::operator=(Bar const &obj)
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   if (this != &obj) {
+/*AUTO_CTC*/     EmptyBase::operator=(obj);
 /*AUTO_CTC*/     CMEMB(m_n);
 /*AUTO_CTC*/   }
 /*AUTO_CTC*/   return *this;
@@ -106,6 +110,7 @@
 /*AUTO_CTC*/ Bar &Bar::operator=(Bar &&obj)
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   if (this != &obj) {
+/*AUTO_CTC*/     EmptyBase::operator=(std::move(obj));
 /*AUTO_CTC*/     MCMEMB(m_n);
 /*AUTO_CTC*/   }
 /*AUTO_CTC*/   return *this;

@@ -326,7 +326,11 @@ def processHeader(headerFname: str) -> None:
   newHeaderLines = []
 
   # Match a `class` or `struct` declaration first line.
-  classDeclFirstLineRE = re.compile(r"^( *)(?:class|struct) +(\S+)")
+  classDeclFirstLineRE = re.compile(
+    r"^( *)(?:class|struct) +(\S+)" +
+    #  ^ indent              ^ class name
+    r"(?:\s*:\s*(?:(?:public|private|protected)\s*)(\S+))?\s*\{")
+    #                                              ^ superclass name
 
   # Match a line that indicates where to insert code and its options.
   beginLineRE = re.compile(r".*create-tuple-class: declarations for (\S+)(.*)")
@@ -343,6 +347,7 @@ def processHeader(headerFname: str) -> None:
   curFields: list[Field] = []
 
   # Map from class name to its fields and options.
+  classToSuperclass: dict[str, str] = {}
   classToFields: dict[str, list[Field]] = {}
   classToOptions: dict[str, OptionsMap] = {}
 
@@ -359,8 +364,12 @@ def processHeader(headerFname: str) -> None:
       if m := classDeclFirstLineRE.match(line):
         curIndentation = m.group(1)
         curClass = m.group(2)
+        curSuperclass = m.group(3)
         curFields = []
         debugPrint(f"{i+1}: class decl: {curClass}")
+
+        if curSuperclass is not None:
+          classToSuperclass[curClass] = curSuperclass
 
       if m := fieldDeclLineRE.match(line):
         typeAndName = m.group(1)
@@ -399,7 +408,11 @@ def processHeader(headerFname: str) -> None:
 
   writeUpdatedFile(headerFname, origHeaderLines, newHeaderLines)
 
-  processImplementationFile(headerFname, classToFields, classToOptions)
+  processImplementationFile(
+    headerFname,
+    classToSuperclass,
+    classToFields,
+    classToOptions)
 
 
 def generatePrimaryCtorInit(fieldName: str) -> str:
@@ -409,20 +422,37 @@ def generatePrimaryCtorInit(fieldName: str) -> str:
   return f"{fieldName}({paramName})"
 
 
-def generateCtorInits(fields: list[Field], kind: str) -> list[str]:
+def generateCtorInits(
+  superclass: Optional[str],
+  fields: list[Field],
+  kind: str) -> list[str]:
+
   """Generate the lines that initialize a constructor.  The ctor kind
   is indicated by `kind`, which is either "primary" or the name of a
   macro to invoke for each member."""
 
   out: list[str] = []
 
+  if superclass is not None:
+    fields = [("<dontcare>", superclass)] + fields
+
   for i, field in enumerate(fields):
     fieldName = field[1]
 
-    if kind == "primary":
+    if fieldName == superclass:
+      if kind == "primary":
+        init = f"{superclass}()"
+      elif kind == "MDMEMB":
+        init = f"{superclass}(std::move(obj))"
+      else:
+        init = f"{superclass}(obj)"
+
+    elif kind == "primary":
       init = generatePrimaryCtorInit(fieldName)
+
     else:
       init = f"{kind}({fieldName})"
+
     comma = "," if i+1 != len(fields) else ""
     leadIn = ": " if i == 0 else "  "
 
@@ -446,6 +476,7 @@ def generateCallsPerField(fields: list[Field], func: str) -> list[str]:
 
 def generateDefinitions(
   curClass: str,
+  superclass: Optional[str],
   fields: list[Field],
   options: OptionsMap) -> list[str]:
 
@@ -455,37 +486,37 @@ def generateDefinitions(
   out: list[str] = []
 
   # Foo::Foo(int x, float y, std::string const &z)
-  #   : m_x(x),
+  #   : m_x(x),              // insert "Super()" if superclass
   #     m_y(y),
   #     m_z(z)
   # {}
   out += [
     f"{curClass}::{curClass}({generatePrimaryCtorParams(fields)})"
-  ] + generateCtorInits(fields, "primary") + [
+  ] + generateCtorInits(superclass, fields, "primary") + [
     "{}",
     ""
   ]
 
   # Foo::Foo(Foo const &obj)
-  #   : DMEMB(m_x),
+  #   : DMEMB(m_x),          // insert "Super(obj)" if superclass
   #     DMEMB(m_y),
   #     DMEMB(m_z)
   # {}
   out += [
     f"{curClass}::{curClass}({curClass} const &obj)",
-  ] + generateCtorInits(fields, "DMEMB") + [
+  ] + generateCtorInits(superclass, fields, "DMEMB") + [
     "{}",
     ""
   ]
 
   # Foo::Foo(Foo &&obj)
-  #   : MDMEMB(m_x),
+  #   : MDMEMB(m_x),         // insert "Super(std::move(obj))" if superclass
   #     MDMEMB(m_y),
   #     MDMEMB(m_z)
   # {}
   out += [
     f"{curClass}::{curClass}({curClass} &&obj)"
-  ] + generateCtorInits(fields, "MDMEMB") + [
+  ] + generateCtorInits(superclass, fields, "MDMEMB") + [
     "{}",
     ""
   ]
@@ -493,6 +524,7 @@ def generateDefinitions(
   # Foo &Foo::operator=(Foo const &obj)
   # {
   #   if (this != &obj) {
+  #     Super::operator(obj);                    // if superclass
   #     CMEMB(x);
   #     CMEMB(y);
   #     CMEMB(z);
@@ -503,7 +535,11 @@ def generateDefinitions(
     f"{curClass} &{curClass}::operator=({curClass} const &obj)",
     "{",
     "  if (this != &obj) {"
-  ] + generateCallsPerField(fields, "  CMEMB") + [
+  ] + (
+        ([f"    {superclass}::operator=(obj);"]
+           if superclass is not None else []) +
+        generateCallsPerField(fields, "  CMEMB")
+      ) + [
     "  }",
     "  return *this;",
     "}",
@@ -513,6 +549,7 @@ def generateDefinitions(
   # Foo &Foo::operator=(Foo &&obj)
   # {
   #   if (this != &obj) {
+  #     Super::operator=(std::move(obj));        // if superclass
   #     MCMEMB(x);
   #     MCMEMB(y);
   #     MCMEMB(z);
@@ -523,7 +560,11 @@ def generateDefinitions(
     f"{curClass} &{curClass}::operator=({curClass} &&obj)",
     "{",
     "  if (this != &obj) {"
-  ] + generateCallsPerField(fields, "  MCMEMB") + [
+  ] + (
+        ([f"    {superclass}::operator=(std::move(obj));"]
+           if superclass is not None else []) +
+        generateCallsPerField(fields, "  MCMEMB")
+      ) + [
     "  }",
     "  return *this;",
     "}",
@@ -540,7 +581,14 @@ def generateDefinitions(
   out += [
     f"int compare({curClass} const &a, {curClass} const &b)",
     "{"
-  ] + generateCallsPerField(fields, "RET_IF_COMPARE_MEMBERS") + [
+  ] + (
+        # My current objective is to derive from XBase, which does not
+        # have a comparison operator, so just skip this...
+        #([f"  RET_IF_COMPARE_SUBOBJS({superclass});"]
+        #   if superclass is not None else []) +
+
+        generateCallsPerField(fields, "RET_IF_COMPARE_MEMBERS")
+      ) + [
     "  return 0;",
     "}",
     ""
@@ -602,6 +650,7 @@ def generateDefinitions(
 
 def processImplementationFile(
   headerFname: str,
+  classToSuperclass: dict[str, str],
   classToFields: dict[str, list[Field]],
   classToOptions: dict[str, OptionsMap]) -> None:
   """Determine the implementation file for `headerFname` and process it."""
@@ -642,10 +691,16 @@ def processImplementationFile(
         if curClass not in classToOptions:
           die(f"Found directive to create definitions for {curClass}, "+
               f"but its declarations were not seen.")
-        options = classToOptions[curClass]
-        fields = classToFields[curClass]
 
-        newImplLines += generateDefinitions(curClass, fields, options)
+        superclass: Optional[str] = classToSuperclass.get(curClass, None)
+        fields: list[Field] = classToFields[curClass]
+        options: OptionsMap = classToOptions[curClass]
+
+        newImplLines += generateDefinitions(
+          curClass,
+          superclass,
+          fields,
+          options)
 
     except Exception as e:
       die(f"{implFname}:{i+1}: {exceptionMessage(e)}")
