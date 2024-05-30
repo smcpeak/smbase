@@ -41,8 +41,13 @@
 // Member move in move assignment operator.
 #define MCMEMB(var) (var = std::move(obj.var))
 
-// member comparison in operator ==
+// Member comparison in operator ==.
 #define EMEMB(var) (var == obj.var)
+
+
+// Within a method that is writing the fields of an object, this will
+// write one such field
+#define WRITE_MEMBER(var) os << " " #var ":" << var /* user ; */
 
 
 // standard insert operator
