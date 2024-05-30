@@ -15,12 +15,12 @@
 #define OVERFLOW_H
 
 #include "exc.h"                       // DEFINE_XBASE_SUBCLASS
+#include "get-type-name.h"             // smbase::GetTypeName
 #include "str.h"                       // stringBuilder, stringb
 #include "xoverflow.h"                 // XBinaryOpOverflow, XNumericConversionLosesRange, XNumericConversionChangesSign
 
 #include <limits>                      // std::numeric_limits
 #include <type_traits>                 // std::is_unsigned
-#include <typeinfo>                    // typeid
 
 using std::ostream;
 
@@ -40,10 +40,7 @@ template <class NUM>
 void detectedOverflow(NUM a, NUM b, char op)
 {
   THROW(XBinaryOpOverflow(
-    // Note: On GCC, name() returns a mangled type name, so for the
-    // primitive types it will be like "i" for "int", "a" for "char",
-    // etc.  That's not ideal for human readability.
-    typeid(b).name(),
+    std::string(smbase::GetTypeName<NUM>::value),
 
     // Prefix operands with `+` so they print as integers even if they
     // are a `char` type.
