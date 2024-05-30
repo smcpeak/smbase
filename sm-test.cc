@@ -14,6 +14,18 @@
 bool verbose = std::getenv("VERBOSE");
 
 
+void expectEq(char const *label, string const &actual, char const *expect)
+{
+  expectEq(label, actual, string(expect));
+}
+
+
+void expectEq(char const *label, std::string_view actual, char const *expect)
+{
+  expectEq(label, std::string(actual), expect);
+}
+
+
 void expectHasSubstring(
   char const *label,
   string const &actual,

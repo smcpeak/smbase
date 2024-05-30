@@ -14,6 +14,7 @@
 #include "xassert.h"       // xassert
 
 #include <iomanip>         // std::hex, std::dec
+#include <string_view>     // std::string_view [n]
 
 #include <stdio.h>         // printf
 
@@ -166,10 +167,10 @@ void expectEq(char const *label, T const &actual, T const &expect)
 
 
 // Special case for 'expect' being a string literal.
-inline void expectEq(char const *label, string const &actual, char const *expect)
-{
-  expectEq(label, actual, string(expect));
-}
+void expectEq(char const *label, string const &actual, char const *expect);
+
+// Let 'actual' be a `string_view`.
+void expectEq(char const *label, std::string_view actual, char const *expect);
 
 
 // Check that 'hasSubstring(actual, expectSubstring)'.
