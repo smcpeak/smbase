@@ -593,6 +593,29 @@ rce-tests: out/rce_chdir1.ok
 check: rce-tests
 
 
+# ------------------- test create-tuple-class.py -----------------------
+# Rewrite one header and implementation file.
+out/test/ctc/in/%.ok: test/ctc/in/%.h test/ctc/in/%.cc create-tuple-class.py
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(PYTHON3) ./create-tuple-class.py \
+	  --prefix=out/ \
+	  test/ctc/in/$*.h
+	$(RUN_COMPARE_EXPECT) \
+	  --expect test/ctc/exp/$*.h \
+	  --no-separators --no-stderr \
+	  cat out/test/ctc/in/$*.h
+	$(RUN_COMPARE_EXPECT) \
+	  --expect test/ctc/exp/$*.cc \
+	  --no-separators --no-stderr \
+	  cat out/test/ctc/in/$*.cc
+	touch $@
+
+.PHONY: check-ctc
+check-ctc: out/test/ctc/in/foo.ok
+
+check: check-ctc
+
+
 # ----------------------------- coverage -------------------------------
 # Run gcov to produce .gcov files.  This requires having compiled with
 # COVERAGE=1.
