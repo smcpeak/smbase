@@ -310,7 +310,7 @@ def parseTypeAndName(typeAndName: str) -> Field:
 
 
 # Generated line.
-autoPrefixedLineRE = re.compile(r"^ +/\*AUTO_CTC\*/")
+autoPrefixedLineRE = re.compile(r"^ */\*AUTO_CTC\*/")
 
 
 def processHeader(headerFname: str) -> None:
@@ -396,6 +396,13 @@ def processHeader(headerFname: str) -> None:
             curFields,
             options)
 
+          # Do not make further changes to this object once we have
+          # added it to the map.
+          #
+          # TODO: I've made a mess of when these fields get reset.  I
+          # should try to encapsulate them in a class.
+          curFields = []
+
       if m := classDeclLastLineRE.match(line):
         debugPrint(f"{i+1}: end class")
         if m.group(1) == curIndentation:
@@ -413,6 +420,21 @@ def processHeader(headerFname: str) -> None:
     classToSuperclass,
     classToFields,
     classToOptions)
+
+
+def generatePrimaryCtorParamsSeparateLines(fields: list[Field]) -> list[str]:
+  """Generate a list that contains the parameter declarations for the
+  primary constructor of a tuple class containing `fields`, where each
+  parameter will go to its own line."""
+
+  out = []
+
+  for i, (type, name) in enumerate(fields):
+    terminator = "," if i+1 < len(fields) else ")"
+
+    out.append("  " + generatePrimaryCtorParam(type, name) + terminator)
+
+  return out
 
 
 def generatePrimaryCtorInit(fieldName: str) -> str:
@@ -485,14 +507,20 @@ def generateDefinitions(
 
   out: list[str] = []
 
-  # Foo::Foo(int x, float y, std::string const &z)
+  # Foo::Foo(
+  #   int x,
+  #   float y,
+  #   std::string const &z)
   #   : m_x(x),              // insert "Super()" if superclass
   #     m_y(y),
   #     m_z(z)
   # {}
   out += [
-    f"{curClass}::{curClass}({generatePrimaryCtorParams(fields)})"
-  ] + generateCtorInits(superclass, fields, "primary") + [
+    f"{curClass}::{curClass}("
+  ] + (
+         generatePrimaryCtorParamsSeparateLines(fields) +
+         generateCtorInits(superclass, fields, "primary")
+      ) + [
     "{}",
     ""
   ]

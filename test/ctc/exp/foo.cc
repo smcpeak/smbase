@@ -12,7 +12,10 @@
 
 
 // ---- create-tuple-class: definitions for Foo
-/*AUTO_CTC*/ Foo::Foo(int x, float y, std::string const &z)
+/*AUTO_CTC*/ Foo::Foo(
+/*AUTO_CTC*/   int x,
+/*AUTO_CTC*/   float y,
+/*AUTO_CTC*/   std::string const &z)
 /*AUTO_CTC*/   : m_x(x),
 /*AUTO_CTC*/     m_y(y),
 /*AUTO_CTC*/     m_z(z)
@@ -83,7 +86,8 @@
 
 
 // ---- create-tuple-class: definitions for Bar
-/*AUTO_CTC*/ Bar::Bar(int n)
+/*AUTO_CTC*/ Bar::Bar(
+/*AUTO_CTC*/   int n)
 /*AUTO_CTC*/   : EmptyBase(),
 /*AUTO_CTC*/     m_n(n)
 /*AUTO_CTC*/ {}
@@ -145,7 +149,8 @@
 
 
 // ---- create-tuple-class: definitions for Baz
-/*AUTO_CTC*/ Baz::Baz(int *p)
+/*AUTO_CTC*/ Baz::Baz(
+/*AUTO_CTC*/   int *p)
 /*AUTO_CTC*/   : m_p(p)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
