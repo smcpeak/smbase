@@ -29,4 +29,10 @@ public:
   // ---- create-tuple-class: declarations for Bar +compare +write
 };
 
+struct Baz {
+  int *m_p;
+
+  // ---- create-tuple-class: declarations for Baz
+};
+
 #endif // FOO_H

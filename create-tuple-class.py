@@ -571,76 +571,78 @@ def generateDefinitions(
     ""
   ]
 
-  # int compare(Foo const &a, Foo const &b)
-  # {
-  #   RET_IF_COMPARE_MEMBERS(x);
-  #   RET_IF_COMPARE_MEMBERS(y);
-  #   RET_IF_COMPARE_MEMBERS(z);
-  #   return 0;
-  # }
-  out += [
-    f"int compare({curClass} const &a, {curClass} const &b)",
-    "{"
-  ] + (
-        # My current objective is to derive from XBase, which does not
-        # have a comparison operator, so just skip this...
-        #([f"  RET_IF_COMPARE_SUBOBJS({superclass});"]
-        #   if superclass is not None else []) +
+  if options.get("compare", False):
+    # int compare(Foo const &a, Foo const &b)
+    # {
+    #   RET_IF_COMPARE_MEMBERS(x);
+    #   RET_IF_COMPARE_MEMBERS(y);
+    #   RET_IF_COMPARE_MEMBERS(z);
+    #   return 0;
+    # }
+    out += [
+      f"int compare({curClass} const &a, {curClass} const &b)",
+      "{"
+    ] + (
+          # My current objective is to derive from XBase, which does not
+          # have a comparison operator, so just skip this...
+          #([f"  RET_IF_COMPARE_SUBOBJS({superclass});"]
+          #   if superclass is not None else []) +
 
-        generateCallsPerField(fields, "RET_IF_COMPARE_MEMBERS")
-      ) + [
-    "  return 0;",
-    "}",
-    ""
-  ]
+          generateCallsPerField(fields, "RET_IF_COMPARE_MEMBERS")
+        ) + [
+      "  return 0;",
+      "}",
+      ""
+    ]
 
-  # std::string Foo::toString() const
-  # {
-  #   std::ostringstream oss;
-  #   write(oss);
-  #   return oss.str();
-  # }
-  out += [
-    f"std::string {curClass}::toString() const",
-    "{",
-    "  std::ostringstream oss;",
-    "  write(oss);",
-    "  return oss.str();",
-    "}",
-    ""
-  ]
+  if options.get("write", False):
+    # std::string Foo::toString() const
+    # {
+    #   std::ostringstream oss;
+    #   write(oss);
+    #   return oss.str();
+    # }
+    out += [
+      f"std::string {curClass}::toString() const",
+      "{",
+      "  std::ostringstream oss;",
+      "  write(oss);",
+      "  return oss.str();",
+      "}",
+      ""
+    ]
 
-  # void Foo::write(std::ostream &os) const
-  # {
-  #   os << "{";
-  #   WRITE_MEMBER(m_x);
-  #   WRITE_MEMBER(m_y);
-  #   WRITE_MEMBER(m_z);
-  #   os << " }";
-  # }
-  out += [
-    f"void {curClass}::write(std::ostream &os) const",
-    "{",
-    "  os << \"{\";"
-  ] + generateCallsPerField(fields, "WRITE_MEMBER") + [
-    "  os << \" }\";",
-    "}",
-    ""
-  ]
+    # void Foo::write(std::ostream &os) const
+    # {
+    #   os << "{";
+    #   WRITE_MEMBER(m_x);
+    #   WRITE_MEMBER(m_y);
+    #   WRITE_MEMBER(m_z);
+    #   os << " }";
+    # }
+    out += [
+      f"void {curClass}::write(std::ostream &os) const",
+      "{",
+      "  os << \"{\";"
+    ] + generateCallsPerField(fields, "WRITE_MEMBER") + [
+      "  os << \" }\";",
+      "}",
+      ""
+    ]
 
-  # std::ostream &operator<<(std::ostream &os, Foo const &obj)
-  # {
-  #   obj.write(os);
-  #   return os;
-  # }
-  out += [
-    f"std::ostream &operator<<(std::ostream &os, {curClass} const &obj)",
-    "{",
-    "  obj.write(os);",
-    "  return os;",
-    "}",
-    ""
-  ]
+    # std::ostream &operator<<(std::ostream &os, Foo const &obj)
+    # {
+    #   obj.write(os);
+    #   return os;
+    # }
+    out += [
+      f"std::ostream &operator<<(std::ostream &os, {curClass} const &obj)",
+      "{",
+      "  obj.write(os);",
+      "  return os;",
+      "}",
+      ""
+    ]
 
   # Prepend prefixes.
   out = [addAutoPrefix(line) for line in out]

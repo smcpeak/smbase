@@ -17,4 +17,7 @@
 // ---- create-tuple-class: definitions for Bar
 
 
+// ---- create-tuple-class: definitions for Baz
+
+
 // EOF

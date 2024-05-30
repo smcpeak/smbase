@@ -144,4 +144,35 @@
 /*AUTO_CTC*/
 
 
+// ---- create-tuple-class: definitions for Baz
+/*AUTO_CTC*/ Baz::Baz(int *p)
+/*AUTO_CTC*/   : m_p(p)
+/*AUTO_CTC*/ {}
+/*AUTO_CTC*/
+/*AUTO_CTC*/ Baz::Baz(Baz const &obj)
+/*AUTO_CTC*/   : DMEMB(m_p)
+/*AUTO_CTC*/ {}
+/*AUTO_CTC*/
+/*AUTO_CTC*/ Baz::Baz(Baz &&obj)
+/*AUTO_CTC*/   : MDMEMB(m_p)
+/*AUTO_CTC*/ {}
+/*AUTO_CTC*/
+/*AUTO_CTC*/ Baz &Baz::operator=(Baz const &obj)
+/*AUTO_CTC*/ {
+/*AUTO_CTC*/   if (this != &obj) {
+/*AUTO_CTC*/     CMEMB(m_p);
+/*AUTO_CTC*/   }
+/*AUTO_CTC*/   return *this;
+/*AUTO_CTC*/ }
+/*AUTO_CTC*/
+/*AUTO_CTC*/ Baz &Baz::operator=(Baz &&obj)
+/*AUTO_CTC*/ {
+/*AUTO_CTC*/   if (this != &obj) {
+/*AUTO_CTC*/     MCMEMB(m_p);
+/*AUTO_CTC*/   }
+/*AUTO_CTC*/   return *this;
+/*AUTO_CTC*/ }
+/*AUTO_CTC*/
+
+
 // EOF

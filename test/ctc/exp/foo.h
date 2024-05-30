@@ -53,4 +53,15 @@ public:
   /*AUTO_CTC*/ friend std::ostream &operator<<(std::ostream &os, Bar const &obj);
 };
 
+struct Baz {
+  int *m_p;
+
+  // ---- create-tuple-class: declarations for Baz
+  /*AUTO_CTC*/ explicit Baz(int *p);
+  /*AUTO_CTC*/ Baz(Baz const &obj);
+  /*AUTO_CTC*/ Baz(Baz &&obj);
+  /*AUTO_CTC*/ Baz &operator=(Baz const &obj);
+  /*AUTO_CTC*/ Baz &operator=(Baz &&obj);
+};
+
 #endif // FOO_H
