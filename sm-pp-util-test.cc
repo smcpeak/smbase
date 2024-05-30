@@ -3,13 +3,15 @@
 
 #include "sm-pp-util.h"                // module under test
 
+#include "sm-test.h"                   // EXPECT_EQ
+
 #include <string.h>                    // strcmp
 #include <assert.h>                    // assert
 
 
 static void shouldBe(int expect, int actual)
 {
-  assert(expect == actual);
+  EXPECT_EQ(actual, expect);
 }
 
 
@@ -40,6 +42,83 @@ static void test_if_else()
   shouldBe(333, SM_PP_IF_ELSE(1)(333)(444));
   shouldBe(333, SM_PP_IF_ELSE(2)(333)(444));
   shouldBe(333, SM_PP_IF_ELSE(foobar)(333)(444));
+}
+
+
+static void test_nonempty_args()
+{
+  shouldBe(0, SM_PP_PRIVATE_NONEMPTY_ARGS());
+  shouldBe(1, SM_PP_PRIVATE_NONEMPTY_ARGS(a));
+  shouldBe(1, SM_PP_PRIVATE_NONEMPTY_ARGS(a, b));
+}
+
+
+static void test_map()
+{
+  #define PLUSONE(arg) +1+arg
+  shouldBe(0, 0 SM_PP_MAP(PLUSONE));
+  shouldBe(2, 0 SM_PP_MAP(PLUSONE, 1));
+  shouldBe(5, 0 SM_PP_MAP(PLUSONE, 1, 2));
+  shouldBe(9, 0 SM_PP_MAP(PLUSONE, 1, 2, 3));
+  #undef PLUSONE
+}
+
+
+// Test invoking `SM_PP_MAP` with an argument list where the arguments
+// are parenthesized pairs.
+static void test_map_parend_args()
+{
+  #define MULTIPLY(a,b) +a*b
+  #define MULTIPLY1(a_b) MULTIPLY a_b
+
+  // Here, the pairs just follow the macro name.  We have to use the
+  // `MULTIPLY1` helper macro to pull apart the pair.
+  shouldBe(0, 0 SM_PP_MAP(MULTIPLY1));
+  shouldBe(2, 0 SM_PP_MAP(MULTIPLY1, (1, 2)));
+  shouldBe(14, 0 SM_PP_MAP(MULTIPLY1, (1, 2), (3, 4)));
+  shouldBe(44, 0 SM_PP_MAP(MULTIPLY1, (1, 2), (3, 4), (5, 6)));
+
+  // Here, the pairs are enclosed in their own list.  `MULTIPLY1` is
+  // still required.
+  shouldBe(0, 0 SM_PP_MAP_LIST(MULTIPLY1, ()));
+  shouldBe(2, 0 SM_PP_MAP_LIST(MULTIPLY1, ((1, 2))));
+  shouldBe(14, 0 SM_PP_MAP_LIST(MULTIPLY1, ((1, 2), (3, 4))));
+  shouldBe(44, 0 SM_PP_MAP_LIST(MULTIPLY1, ((1, 2), (3, 4), (5, 6))));
+
+  // This time we do not need the helper.
+  shouldBe(0, 0 SM_PP_MAP_APPLY(MULTIPLY));
+  shouldBe(2, 0 SM_PP_MAP_APPLY(MULTIPLY, (1, 2)));
+  shouldBe(14, 0 SM_PP_MAP_APPLY(MULTIPLY, (1, 2), (3, 4)));
+  shouldBe(44, 0 SM_PP_MAP_APPLY(MULTIPLY, (1, 2), (3, 4), (5, 6)));
+
+  // And again without the helper, now with the pairs enclosed in their
+  // own list.
+  shouldBe(0, 0 SM_PP_MAP_APPLY_LIST(MULTIPLY, ()));
+  shouldBe(2, 0 SM_PP_MAP_APPLY_LIST(MULTIPLY, ((1, 2))));
+  shouldBe(14, 0 SM_PP_MAP_APPLY_LIST(MULTIPLY, ((1, 2), (3, 4))));
+  shouldBe(44, 0 SM_PP_MAP_APPLY_LIST(MULTIPLY, ((1, 2), (3, 4), (5, 6))));
+
+  #undef MULTIPLY
+  #undef MULTIPLY1
+}
+
+
+#define DECL_PARAM(type, name) type name
+
+static void checkAdd(
+  // This needs to expand with commas between the expanded parameters.
+  SM_PP_COMMA_MAP_APPLY_LIST(DECL_PARAM, ((int, x), (int, y)))
+)
+{
+  assert(x+1 == y);
+}
+
+#undef DECL_PARAM
+
+
+static void test_comma_map()
+{
+  checkAdd(2, 3);
 }
 
 
@@ -191,6 +270,10 @@ void test_sm_pp_util()
   test_not();
   test_bool();
   test_if_else();
+  test_nonempty_args();
+  test_map();
+  test_map_parend_args();
+  test_comma_map();
   test_getEName();
   test_getAEName();
   test_map_list();
