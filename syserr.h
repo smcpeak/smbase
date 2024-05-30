@@ -112,10 +112,10 @@ void devWarningSysError(char const *file, int line,
                         char const *syscallName, char const *context=NULL);
 
 #define DEV_WARNING_SYSERROR(syscall) \
-  devWarningSysError(__FILE__, __LINE__, syscall) /* user ; */
+  smbase::devWarningSysError(__FILE__, __LINE__, syscall) /* user ; */
 
 #define DEV_WARNING_SYSERROR_CTXT(syscall, context) \
-  devWarningSysError(__FILE__, __LINE__, syscall, context) /* user ; */
+  smbase::devWarningSysError(__FILE__, __LINE__, syscall, context) /* user ; */
 
 
 CLOSE_NAMESPACE(smbase)

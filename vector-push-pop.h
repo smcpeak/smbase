@@ -56,7 +56,7 @@ public:      // methods
 // This macro synthesizes a variable name based on the line number so
 // that multiple uses in the same function do not collide.
 #define VECTOR_PUSH_POP(vec, value) \
-  VectorPushPop SM_PP_CAT(vpp_, __LINE__)(vec, value);
+  smbase::VectorPushPop SM_PP_CAT(vpp_, __LINE__)(vec, value);
 
 
 CLOSE_NAMESPACE(smbase)

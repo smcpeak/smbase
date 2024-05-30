@@ -63,7 +63,7 @@ std::vector<std::string> &getExnContextVector();
 
 // Add something to the context stack and remove it on scope exit.
 #define EXN_CONTEXT(stuff) \
-  VECTOR_PUSH_POP(getExnContextVector(), stringb(stuff))
+  VECTOR_PUSH_POP(smbase::getExnContextVector(), stringb(stuff))
 
 // Add an expression value to the context stack.
 #define EXN_CONTEXT_EXPR(expr) \
@@ -231,15 +231,15 @@ void printUnhandled(XBase const &x);
 // with that name.
 #define GENERIC_CATCH_END             \
   }                                   \
-  catch (XBase &x) {                  \
-    printUnhandled(x);                \
+  catch (smbase::XBase &x) {          \
+    smbase::printUnhandled(x);        \
   }
 
 // Variant for functions that return a value.
 #define GENERIC_CATCH_END_RET(retval) \
   }                                   \
-  catch (XBase &x) {                  \
-    printUnhandled(x);                \
+  catch (smbase::XBase &x) {          \
+    smbase::printUnhandled(x);        \
     return retval;                    \
   }
 
@@ -283,10 +283,10 @@ inline void xbase(std::string const &msg) { xmessage(msg); }
 
 // Define a subclass of XMessage.  All methods are inline.
 #define DEFINE_XMESSAGE_SUBCLASS(SubclassName)                           \
-  class SubclassName : public XMessage {                                 \
+  class SubclassName : public smbase::XMessage {                         \
   public:                                                                \
     SubclassName(std::string const &message) noexcept                    \
-      : XMessage(message) {}                                             \
+      : smbase::XMessage(message) {}                                     \
     SubclassName(SubclassName const &obj) noexcept = default;            \
     SubclassName &operator=(SubclassName const &obj) noexcept = default; \
   } /* user ; */
@@ -347,17 +347,17 @@ public:      // methods
 // compact way to throw an XFormat
 void xformat(rostring condition) NORETURN;
 
-#define xformatsb(msg) xformat(stringb(msg))
+#define xformatsb(msg) smbase::xformat(stringb(msg))
 
 // convenient combination of condition and human-readable message
 #define checkFormat(cond, message) \
-  ((cond)? (void)0 : xformat(message))
+  ((cond)? (void)0 : smbase::xformat(message))
 
 // assert-like interface to XFormat
 void formatAssert_fail(char const *cond, char const *file, int line) NORETURN;
 
 #define formatAssert(cond) \
-  ((cond)? (void)0 : formatAssert_fail(#cond, __FILE__, __LINE__))
+  ((cond)? (void)0 : smbase::formatAssert_fail(#cond, __FILE__, __LINE__))
 
 
 // 2022-07-18: There was previously a class called XOpen, and another
@@ -393,7 +393,7 @@ public:
 };
 
 void throw_XFatal(rostring msg) NORETURN;
-#define xfatal(msg) throw_XFatal(stringb(msg))
+#define xfatal(msg) smbase::throw_XFatal(stringb(msg))
 
 
 CLOSE_NAMESPACE(smbase)
