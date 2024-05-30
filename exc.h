@@ -379,7 +379,7 @@ void throw_XUnimp(rostring msg) NORETURN;
 // throw XUnimp with file/line info
 void throw_XUnimp(char const *msg, char const *file, int line) NORETURN;
 
-#define xunimp(msg) throw_XUnimp(msg, __FILE__, __LINE__)
+#define xunimp(msg) smbase::throw_XUnimp(msg, __FILE__, __LINE__)
 
 
 // ------------------------------ XFatal -------------------------------
