@@ -17,6 +17,7 @@
 #include "sm-macros.h"                 // OPEN_NAMESPACE, DMEMB, CMEMB
 #include "string-utils.h"              // singleQuoteChar
 #include "vector-utils.h"              // vectorReverseOf
+#include "xarithmetic.h"               // XDivideByZero
 #include "xassert.h"                   // xassert
 #include "xoverflow.h"                 // XOverflow
 
@@ -499,18 +500,18 @@ public:      // methods
     char const *className,
     std::string const &valueAsString)
   {
-    // I'm gravitating toward using `XOverflow` for all arithmetic
-    // issues, so that is why it is used here.
-    THROW(XOverflow(stringb(
-      "Attempted to convert the " << className <<
-      " value " << valueAsString << " to " <<
-      (std::is_signed<PRIM>::value? "a signed " : "an unsigned ") <<
-      (sizeof(PRIM)*8) << "-bit integer type, but it does not fit.")));
+    THROW(XNumericConversionFromAP(
+      className,
+      valueAsString,
+      std::is_signed<PRIM>::value,
+      sizeof(PRIM)));
   }
 
   // ---------- Treat as a sequence of Words ----------
   // Return the number of stored words.  Some of the high words may
   // be redundantly zero, but this method does not check for that.
+  //
+  // TODO: Remove or rename this method.
   Index size() const
   {
     return static_cast<Index>(m_vec.size());
@@ -1095,8 +1096,7 @@ public:      // methods
     APUInteger const &divisor)         // aka denominator
   {
     if (divisor.isZero()) {
-      THROW(XOverflow(stringb(
-        "Attempt to divide " << dividend << " by zero.")));
+      THROW(XDivideByZero(stringb(dividend)));
     }
 
     // We will set bits in the quotient as we go.

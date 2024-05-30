@@ -308,6 +308,8 @@ SRCS += vdtllist.cc
 SRCS += voidlist.cc
 SRCS += vptrmap.cc
 SRCS += warn.cc
+SRCS += xarithmetic.cc
+SRCS += xoverflow.cc
 
 # Library object files.
 OBJS := $(SRCS)
@@ -621,6 +623,25 @@ out/test/ctc/in/%.ok: test/ctc/in/%.h test/ctc/in/%.cc create-tuple-class.py
 check-ctc: out/test/ctc/in/foo.ok
 
 check: check-ctc
+
+
+# -------------- check create-tuple-class.py outputs -------------------
+# Set of header files that use create-tuple-class.py.
+CTC_HEADERS :=
+CTC_HEADERS += xarithmetic.h
+CTC_HEADERS += xoverflow.h
+
+# Corresponding implementation files.
+CTC_IMPL_FILES := $(CTC_HEADERS:.h=.cc)
+
+# Check that all of the CTC-generated code is up to date.
+out/ctc-up-to-date.ok: $(CTC_HEADERS) $(CTC_IMPL_FILES) create-tuple-class.py
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(PYTHON3) ./create-tuple-class.py \
+	  --check $(CTC_HEADERS)
+	touch $@
+
+check: out/ctc-up-to-date.ok
 
 
 # ------------------------------- mypy ---------------------------------

@@ -16,7 +16,7 @@
 
 #include "exc.h"                       // DEFINE_XBASE_SUBCLASS
 #include "str.h"                       // stringBuilder, stringb
-#include "xoverflow.h"                 // XOverflow
+#include "xoverflow.h"                 // XBinaryOpOverflow, XNumericConversionLosesRange, XNumericConversionChangesSign
 
 #include <limits>                      // std::numeric_limits
 #include <type_traits>                 // std::is_unsigned
@@ -39,15 +39,17 @@ using std::is_signed;
 template <class NUM>
 void detectedOverflow(NUM a, NUM b, char op)
 {
-  THROW(XOverflow(stringb(
+  THROW(XBinaryOpOverflow(
     // Note: On GCC, name() returns a mangled type name, so for the
     // primitive types it will be like "i" for "int", "a" for "char",
     // etc.  That's not ideal for human readability.
-    "Arithmetic overflow of type \"" << typeid(b).name() << "\": " <<
+    typeid(b).name(),
 
     // Prefix operands with `+` so they print as integers even if they
     // are a `char` type.
-    +a << ' ' << op << ' ' << +b << " would overflow.")));
+    stringb(+a),
+    stringb(+b),
+    stringb(op)));
 }
 
 
@@ -223,11 +225,12 @@ void convertWithoutLoss(DEST &dest, SRC const &src)
   if (s2 != src) {
     // Printing '+src', etc., ensures that types like 'char' will print
     // as numbers.
-    THROW(XOverflow(stringb(
-      "convertWithoutLoss: Source value " << +src <<
-      " converts to destination value " << +dest <<
-      " and back to different value " << +s2 <<
-      " (ss=" << sizeof(SRC) << " ds=" << sizeof(DEST) << ").")));
+    THROW(XNumericConversionLosesRange(
+      stringb(+src),
+      stringb(+dest),
+      stringb(+s2),
+      sizeof(SRC),
+      sizeof(DEST)));
   }
 }
 
@@ -244,10 +247,9 @@ DEST convertNumber(SRC const &src)
   convertWithoutLoss(dest, src);
 
   if ((dest < 0) != (src < 0)) {
-    THROW(XOverflow(stringb(
-      "convertNumber: Source value " << +src <<
-      " and destination value " << +dest <<
-      " have different signs.")));
+    THROW(XNumericConversionChangesSign(
+      stringb(+src),
+      stringb(+dest)));
   }
 
   return dest;

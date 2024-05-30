@@ -785,7 +785,7 @@ public:      // methods
         Integer::fromDecimalDigits(divisorDigits));
       xfailure("should have failed");
     }
-    catch (XOverflow &x) {
+    catch (XDivideByZero &x) {
       // As expected.
       VPVAL(x);
     }

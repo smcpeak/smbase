@@ -9,7 +9,7 @@
 #include "compare-util.h"              // RET_IF_COMPARE
 #include "sm-ap-uint.h"                // APUInteger
 #include "sm-macros.h"                 // OPEN_NAMESPACE, DMEMB, CMEMB
-#include "xoverflow.h"                 // XOverflow
+#include "xarithmetic.h"               // XDivideByZero
 
 #include <limits>                      // std::numeric_limits
 #include <optional>                    // std::{optional, nullopt}
@@ -494,8 +494,7 @@ public:      // methods
     if (divisor.isZero()) {
       // Use the hex form in order to avoid the expensive and
       // complicated process of decimalization.
-      THROW(XOverflow(stringb(
-        "Attempt to divide " << dividend.toHexString() << " by zero.")));
+      THROW(XDivideByZero(dividend.toHexString()));
     }
 
     // Clear the sign bits.
