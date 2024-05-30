@@ -93,6 +93,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(functional_set);
   RUN_TEST(gcc_options);
   RUN_TEST(gdvalue);
+  RUN_TEST(get_type_name);
   RUN_TEST_NO_DECL(gprintf);
   RUN_TEST(growbuf);
   RUN_TEST(hashline);
