@@ -335,7 +335,7 @@ def processHeader(headerFname: str) -> None:
   fieldDeclLineRE = re.compile(r"^ +([a-zA-Z_][^;]+);$")
 
   # Match the last line.
-  classDeclLastLineRE = re.compile(r"^( +)\};")
+  classDeclLastLineRE = re.compile(r"^( *)\};")
 
   # Current class indentation and name.
   curClass: Optional[str] = None
@@ -359,6 +359,7 @@ def processHeader(headerFname: str) -> None:
       if m := classDeclFirstLineRE.match(line):
         curIndentation = m.group(1)
         curClass = m.group(2)
+        curFields = []
         debugPrint(f"{i+1}: class decl: {curClass}")
 
       if m := fieldDeclLineRE.match(line):
@@ -459,7 +460,7 @@ def generateDefinitions(
   #     m_z(z)
   # {}
   out += [
-    f"{curClass}::{curClass}(int x, float y, std::string const &z)"
+    f"{curClass}::{curClass}({generatePrimaryCtorParams(fields)})"
   ] + generateCtorInits(fields, "primary") + [
     "{}",
     ""

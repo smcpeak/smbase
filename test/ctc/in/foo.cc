@@ -14,4 +14,7 @@
 // ---- create-tuple-class: definitions for Foo
 
 
+// ---- create-tuple-class: definitions for Bar
+
+
 // EOF

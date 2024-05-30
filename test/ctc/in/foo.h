@@ -1,5 +1,5 @@
 // foo.h
-// `Foo` class.
+// `Foo` class, for testing `create-tuple-class.py`.
 
 #ifndef FOO_H
 #define FOO_H
@@ -17,6 +17,16 @@ public:
 
 public:
   // ---- create-tuple-class: declarations for Foo +compare +write
+};
+
+class EmptyBase {};
+
+class Bar : public EmptyBase {
+public:
+  int m_n;
+
+public:
+  // ---- create-tuple-class: declarations for Bar +compare +write
 };
 
 #endif // FOO_H

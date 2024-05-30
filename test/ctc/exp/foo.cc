@@ -82,4 +82,61 @@
 /*AUTO_CTC*/
 
 
+// ---- create-tuple-class: definitions for Bar
+/*AUTO_CTC*/ Bar::Bar(int n)
+/*AUTO_CTC*/   : m_n(n)
+/*AUTO_CTC*/ {}
+/*AUTO_CTC*/
+/*AUTO_CTC*/ Bar::Bar(Bar const &obj)
+/*AUTO_CTC*/   : DMEMB(m_n)
+/*AUTO_CTC*/ {}
+/*AUTO_CTC*/
+/*AUTO_CTC*/ Bar::Bar(Bar &&obj)
+/*AUTO_CTC*/   : MDMEMB(m_n)
+/*AUTO_CTC*/ {}
+/*AUTO_CTC*/
+/*AUTO_CTC*/ Bar &Bar::operator=(Bar const &obj)
+/*AUTO_CTC*/ {
+/*AUTO_CTC*/   if (this != &obj) {
+/*AUTO_CTC*/     CMEMB(m_n);
+/*AUTO_CTC*/   }
+/*AUTO_CTC*/   return *this;
+/*AUTO_CTC*/ }
+/*AUTO_CTC*/
+/*AUTO_CTC*/ Bar &Bar::operator=(Bar &&obj)
+/*AUTO_CTC*/ {
+/*AUTO_CTC*/   if (this != &obj) {
+/*AUTO_CTC*/     MCMEMB(m_n);
+/*AUTO_CTC*/   }
+/*AUTO_CTC*/   return *this;
+/*AUTO_CTC*/ }
+/*AUTO_CTC*/
+/*AUTO_CTC*/ int compare(Bar const &a, Bar const &b)
+/*AUTO_CTC*/ {
+/*AUTO_CTC*/   RET_IF_COMPARE_MEMBERS(m_n);
+/*AUTO_CTC*/   return 0;
+/*AUTO_CTC*/ }
+/*AUTO_CTC*/
+/*AUTO_CTC*/ std::string Bar::toString() const
+/*AUTO_CTC*/ {
+/*AUTO_CTC*/   std::ostringstream oss;
+/*AUTO_CTC*/   write(oss);
+/*AUTO_CTC*/   return oss.str();
+/*AUTO_CTC*/ }
+/*AUTO_CTC*/
+/*AUTO_CTC*/ void Bar::write(std::ostream &os) const
+/*AUTO_CTC*/ {
+/*AUTO_CTC*/   os << "{";
+/*AUTO_CTC*/   WRITE_MEMBER(m_n);
+/*AUTO_CTC*/   os << " }";
+/*AUTO_CTC*/ }
+/*AUTO_CTC*/
+/*AUTO_CTC*/ std::ostream &operator<<(std::ostream &os, Bar const &obj)
+/*AUTO_CTC*/ {
+/*AUTO_CTC*/   obj.write(os);
+/*AUTO_CTC*/   return os;
+/*AUTO_CTC*/ }
+/*AUTO_CTC*/
+
+
 // EOF
