@@ -120,7 +120,7 @@ private:     // methods
     // Process all of the words in `other`, then keep going as long as
     // we have a carry to propagate.
     Index i = 0;
-    for (; i < other.size() || carry != 0; ++i) {
+    for (; i < other.numWords() || carry != 0; ++i) {
       // Get current word.
       Word d = this->getWord(i);
 
@@ -148,8 +148,8 @@ private:     // methods
     // previous iteration's word.
     Word borrow = 0;
 
-    for (Index i = 0; i < other.size() ||
-                      (i < this->size() && borrow != 0); ++i) {
+    for (Index i = 0; i < other.numWords() ||
+                      (i < this->numWords() && borrow != 0); ++i) {
       Word d = this->getWord(i);
 
       Word borrow1 = subtractWithBorrow(d, borrow);
@@ -510,9 +510,7 @@ public:      // methods
   // ---------- Treat as a sequence of Words ----------
   // Return the number of stored words.  Some of the high words may
   // be redundantly zero, but this method does not check for that.
-  //
-  // TODO: Remove or rename this method.
-  Index size() const
+  Index numWords() const
   {
     return static_cast<Index>(m_vec.size());
   }
@@ -521,7 +519,7 @@ public:      // methods
   // then this is -1.
   Index maxWordIndex() const
   {
-    Index i = size() - 1;
+    Index i = numWords() - 1;
     while (i >= 0 && m_vec[i] == 0) {
       --i;
     }
@@ -533,7 +531,7 @@ public:      // methods
   Word getWord(Index i) const
   {
     xassertPrecondition(i >= 0);
-    if (i < size()) {
+    if (i < numWords()) {
       return m_vec[i];
     }
     else {
@@ -546,7 +544,7 @@ public:      // methods
   void setWord(Index i, Word d)
   {
     xassertPrecondition(i >= 0);
-    if (i < size()) {
+    if (i < numWords()) {
       m_vec[i] = d;
     }
     else if (d == 0) {
@@ -555,7 +553,7 @@ public:      // methods
     }
     else {
       // Add zeroes until we can place `d`.
-      while (i >= size()) {
+      while (i >= numWords()) {
         m_vec.push_back(0);
       }
 
@@ -1023,7 +1021,7 @@ public:      // methods
     // Amount to add from the previous iteration.
     Word carry = 0;
 
-    for (Index i = 0; i < size() || carry; ++i) {
+    for (Index i = 0; i < numWords() || carry; ++i) {
       Word d = this->getWord(i);
 
       Word lowProd, highProd;
@@ -1052,7 +1050,7 @@ public:      // methods
   {
     APUInteger acc;
 
-    for (Index i = 0; i < other.size(); ++i) {
+    for (Index i = 0; i < other.numWords(); ++i) {
       // Compute `*this * (N**i) * other[i]`.
       APUInteger partialSum(*this);
       partialSum.leftShiftByWords(i);

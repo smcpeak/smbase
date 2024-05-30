@@ -329,7 +329,7 @@ public:      // methods
 
           // Even with `uint8_t` words, there should never be more than
           // four of them in the result.
-          xassert(apS.size() <= 4);
+          xassert(apS.numWords() <= 4);
 
           xassert(apS - apA == apB);
           xassert(apS - apB == apA);
