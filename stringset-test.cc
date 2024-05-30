@@ -3,7 +3,9 @@
 
 #include "stringset.h"                 // module to test
 
-#include "exc.h"                       // xbase
+#include "exc.h"                       // smbase::xbase
+
+using namespace smbase;
 
 
 static void testAddUnique()

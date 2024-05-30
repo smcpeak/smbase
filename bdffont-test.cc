@@ -3,12 +3,14 @@
 
 #include "bdffont.h"                   // module under test
 
-#include "exc.h"                       // xfatal
+#include "exc.h"                       // smbase::xfatal
 #include "strutil.h"                   // readStringFromFile
 
 #include <iostream>                    // std::{cout, endl}
 
 #include <unistd.h>                    // unlink
+
+using namespace smbase;
 
 using std::cout;
 using std::endl;

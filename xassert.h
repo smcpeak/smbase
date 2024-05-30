@@ -2,10 +2,14 @@
 // xassert is an assert()-like macro that throws an exception when it
 // fails, instead of calling abort().
 
-#ifndef XASSERT_H
-#define XASSERT_H
+#ifndef SMBASE_XASSERT_H
+#define SMBASE_XASSERT_H
 
 #include "sm-macros.h"  // NORETURN
+
+
+OPEN_NAMESPACE(smbase)
+
 
 // this functions accepts raw 'char const *' instead of 'rostring'
 // because I do not want this interface to depend on str.h, and also
@@ -21,7 +25,7 @@ void x_assert_fail(char const *cond, char const *file, int line) NORETURN;
 // performance impact of the existing assertions.
 #if !defined(NDEBUG_NO_ASSERTIONS)
   #define xassert(cond) \
-    ((cond)? (void)0 : x_assert_fail(#cond, __FILE__, __LINE__))
+    ((cond)? (void)0 : smbase::x_assert_fail(#cond, __FILE__, __LINE__))
 #else
   #define xassert(cond) ((void)0)
 #endif
@@ -35,7 +39,7 @@ void x_assert_fail(char const *cond, char const *file, int line) NORETURN;
 #endif
 
 // call when state is known to be bad; will *not* return
-#define xfailure(why) x_assert_fail(why, __FILE__, __LINE__)
+#define xfailure(why) smbase::x_assert_fail(why, __FILE__, __LINE__)
 
 
 // This requires 'stringbc', which is declared in 'stringb.h'.  I
@@ -142,5 +146,9 @@ void x_assert_fail(char const *cond, char const *file, int line) NORETURN;
 
 */
 
-#endif // XASSERT_H
+
+CLOSE_NAMESPACE(smbase)
+
+
+#endif // SMBASE_XASSERT_H
 

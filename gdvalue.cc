@@ -8,7 +8,7 @@
 #include "gdvalue-reader.h"            // gdv::GDValueReader
 #include "gdvalue-writer.h"            // gdv::GDValueWriter
 #include "gdvsymbol.h"                 // gdv::GDVSymbol
-#include "syserr.h"                    // xsyserror
+#include "syserr.h"                    // smbase::xsyserror
 #include "xassert.h"                   // xassert
 
 // libc++
@@ -19,8 +19,10 @@
 #include <sstream>                     // std::ostringstream
 #include <utility>                     // std::move, std::swap, std::make_pair
 
+using namespace smbase;
 
-namespace gdv {
+
+OPEN_NAMESPACE(gdv)
 
 
 // ---------------------------- GDValueKind ----------------------------
@@ -1034,7 +1036,7 @@ void GDValue::mapClear()
 }
 
 
-} // namespace gdv
+CLOSE_NAMESPACE(gdv)
 
 
 // EOF

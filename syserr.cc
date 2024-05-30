@@ -9,6 +9,9 @@
 
 
 // ---------------- portable code ----------------
+OPEN_NAMESPACE(smbase)
+
+
 char const * const XSysError::reasonStrings[] = {
   "No error occurred",
   "File not found",
@@ -169,6 +172,9 @@ void devWarningSysError(char const *file, int line,
 }
 
 
+CLOSE_NAMESPACE(smbase)
+
+
 // ----------------------- Win32 code ------------------------------------
 #ifdef __WIN32__
 
@@ -178,6 +184,9 @@ void devWarningSysError(char const *file, int line,
 #  include <windows.h>  // api
 #endif
 #include <errno.h>      // errno
+
+OPEN_NAMESPACE(smbase)
+
 
 STATICDEF int XSysError::getSystemErrorCode()
 {
@@ -278,6 +287,9 @@ STATICDEF XSysError::Reason XSysError::portablize(
 }
 
 
+CLOSE_NAMESPACE(smbase)
+
+
 // ---------------------- unix ---------------------------
 #else      // unix
 
@@ -302,6 +314,9 @@ STATICDEF XSysError::Reason XSysError::portablize(
 #ifndef EINVFMT
 #  define EINVFMT 0         // won't be seen because EZERO is first
 #endif
+
+
+OPEN_NAMESPACE(smbase)
 
 
 STATICDEF int XSysError::getSystemErrorCode()
@@ -345,6 +360,9 @@ STATICDEF XSysError::Reason XSysError::portablize(
   // I don't know
   return R_UNKNOWN;
 }
+
+
+CLOSE_NAMESPACE(smbase)
 
 
 #endif  // unix

@@ -6,6 +6,7 @@
 // test_$MOD(), which is declared and called below by the 'RUN_TEST'
 // macro.
 
+#include "exc.h"                       // xfatal
 #include "nonport.h"                   // getMilliseconds
 #include "sm-test.h"                   // ARGS_TEST_MAIN
 #include "str.h"                       // streq
@@ -14,6 +15,8 @@
 #include <iostream>                    // std::{cout, cerr}
 
 #include <stdio.h>                     // fflush, stdout, stderr
+
+using namespace smbase;
 
 
 extern "C" {

@@ -7,6 +7,8 @@
 #include <errno.h>        // errno
 #include <string.h>       // strerror
 
+using namespace smbase;
+
 
 FILE *xfopen(char const *fname, char const *mode)
 {

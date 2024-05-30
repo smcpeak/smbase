@@ -3,8 +3,10 @@
 
 #include "bitarray.h"                  // module under test
 
-#include "exc.h"                       // xbase
+#include "exc.h"                       // smbase::xbase
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
+
+using namespace smbase;
 
 
 OPEN_ANONYMOUS_NAMESPACE

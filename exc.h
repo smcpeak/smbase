@@ -8,6 +8,7 @@
 #define SMBASE_EXC_H
 
 #include "breaker.h"                   // breaker
+#include "sm-macros.h"                 // OPEN_NAMESPACE
 #include "sm-pp-util.h"                // SM_PP_MAP, SM_PP_APPLY
 #include "str.h"                       // string
 #include "stringb.h"                   // stringb
@@ -17,6 +18,9 @@
 #include <iosfwd>                      // std::ostream
 #include <string>                      // std::string
 #include <vector>                      // std::vector
+
+
+OPEN_NAMESPACE(smbase)
 
 
 // by using this macro, the debugger gets a shot before the stack is unwound
@@ -390,6 +394,9 @@ public:
 
 void throw_XFatal(rostring msg) NORETURN;
 #define xfatal(msg) throw_XFatal(stringb(msg))
+
+
+CLOSE_NAMESPACE(smbase)
 
 
 #endif // SMBASE_EXC_H

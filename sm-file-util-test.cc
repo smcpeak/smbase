@@ -9,11 +9,14 @@
 #include "sm-file-util.h"              // module to test
 
 // smbase
+#include "exc.h"                       // smbase::XBase
 #include "nonport.h"                   // GetMillisecondsAccumulator, getFileModificationTime
 #include "run-process.h"               // RunProcess
 #include "sm-test.h"                   // VPVAL, DIAG, verbose
 #include "strutil.h"                   // compareStringPtrs
 #include "syserr.h"                    // XSysError
+
+using namespace smbase;
 
 
 // Run some checks on the 'fn' object directly.

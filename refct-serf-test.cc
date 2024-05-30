@@ -5,12 +5,15 @@
 #include "refct-serf.h"                // module to test
 
 #include "array.h"                     // ArrayStack
-#include "save-restore.h"              // SET_RESTORE
+#include "exc.h"                       // smbase::XBase
 #include "objlist.h"                   // ObjList
 #include "owner.h"                     // Owner
+#include "save-restore.h"              // SET_RESTORE
 #include "sm-iostream.h"               // cout, etc.
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
 #include "sm-test.h"                   // EXPECT_EQ, DIAG, verbose
+
+using namespace smbase;
 
 
 OPEN_ANONYMOUS_NAMESPACE

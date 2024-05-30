@@ -7,6 +7,8 @@
 #include "overflow.h"                  // multiplyWithOverflowCheck
 #include "strutil.h"                   // quoteCharacter
 
+using namespace smbase;
+
 
 // ------------------------- XParseString ---------------------------
 static string formatCondition(string const &str, int offset,

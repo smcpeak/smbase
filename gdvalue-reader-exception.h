@@ -6,15 +6,15 @@
 
 #include "gdvalue-reader-exception-fwd.h"        // fwds for this module
 
-#include "exc.h"                                 // XFormat
+#include "exc.h"                                 // smbase::XBase
 #include "file-line-col.h"                       // FileLineCol
 
 
-namespace gdv {
+OPEN_NAMESPACE(gdv)
 
 
 // Exception used to report a syntax error.
-class GDValueReaderException : public XBase {
+class GDValueReaderException : public smbase::XBase {
 public:      // data
   // Where the error occurred.
   FileLineCol m_location;
@@ -35,7 +35,7 @@ public:      // methods
 };
 
 
-} // namespace gdv
+CLOSE_NAMESPACE(gdv)
 
 
 #endif // SMBASE_GDVALUE_READER_EXCEPTION_H

@@ -11,8 +11,8 @@
 // integral type, including user-defined types.  However, I have not
 // tested with any user-defined types.
 
-#ifndef OVERFLOW_H
-#define OVERFLOW_H
+#ifndef SMBASE_OVERFLOW_H
+#define SMBASE_OVERFLOW_H
 
 #include "exc.h"                       // DEFINE_XBASE_SUBCLASS
 #include "get-type-name.h"             // smbase::GetTypeName
@@ -39,7 +39,7 @@ using std::is_signed;
 template <class NUM>
 void detectedOverflow(NUM a, NUM b, char op)
 {
-  THROW(XBinaryOpOverflow(
+  THROW(smbase::XBinaryOpOverflow(
     std::string(smbase::GetTypeName<NUM>::value),
 
     // Prefix operands with `+` so they print as integers even if they
@@ -222,7 +222,7 @@ void convertWithoutLoss(DEST &dest, SRC const &src)
   if (s2 != src) {
     // Printing '+src', etc., ensures that types like 'char' will print
     // as numbers.
-    THROW(XNumericConversionLosesRange(
+    THROW(smbase::XNumericConversionLosesRange(
       stringb(+src),
       stringb(+dest),
       stringb(+s2),
@@ -244,7 +244,7 @@ DEST convertNumber(SRC const &src)
   convertWithoutLoss(dest, src);
 
   if ((dest < 0) != (src < 0)) {
-    THROW(XNumericConversionChangesSign(
+    THROW(smbase::XNumericConversionChangesSign(
       stringb(+src),
       stringb(+dest)));
   }
@@ -257,4 +257,4 @@ DEST convertNumber(SRC const &src)
 void test_overflow();
 
 
-#endif // OVERFLOW_H
+#endif // SMBASE_OVERFLOW_H

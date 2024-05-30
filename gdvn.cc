@@ -1,12 +1,13 @@
 // gdvn.cc
 // Program to read and write GDVN.
 
-#include "exc.h"                       // XBase
+#include "exc.h"                       // smbase::XBase
 #include "gdvalue.h"                   // gdv::GDValue
 
 #include <iostream>                    // std::{cin, cout, cerr, endl}
 
 using namespace gdv;
+using namespace smbase;
 
 
 int main(int argc, char **argv)

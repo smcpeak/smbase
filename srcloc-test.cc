@@ -4,7 +4,7 @@
 #include "srcloc.h"                    // module under test
 
 #include "autofile.h"                  // AutoFILE
-#include "exc.h"                       // xbase
+#include "exc.h"                       // smbase::xbase
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
 #include "sm-test.h"                   // DIAG, verbose
 #include "strtokp.h"                   // StrtokParse
@@ -12,6 +12,8 @@
 #include "trace.h"                     // traceProgress
 
 #include <stdlib.h>                    // rand, exit, system, getenv
+
+using namespace smbase;
 
 
 OPEN_ANONYMOUS_NAMESPACE

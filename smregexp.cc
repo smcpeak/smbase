@@ -3,10 +3,12 @@
 
 #include "smregexp.h"     // this module
 #include "str.h"          // string
-#include "exc.h"          // xmessage
+#include "exc.h"          // smbase::xmessage
 #include "array.h"        // Array
 
 #include <stddef.h>       // size_t
+
+using namespace smbase;
 
 
 // The entire module does not work on Windows.

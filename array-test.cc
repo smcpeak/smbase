@@ -19,6 +19,8 @@
 #include <stdio.h>                     // printf
 #include <stdlib.h>                    // exit
 
+using namespace smbase;
+
 
 // Assert that 'ase' and 'vec' have the same sequence of elements.
 template <class T, int n>

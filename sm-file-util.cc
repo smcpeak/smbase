@@ -11,7 +11,7 @@
 #include "sm-windows.h"                // PLATFORM_IS_WINDOWS
 #include "strtokp.h"                   // StrtokParse
 #include "strutil.h"                   // suffixEquals, quoted
-#include "syserr.h"                    // xsyserror
+#include "syserr.h"                    // smbase::xsyserror
 
 // libc++
 #include <algorithm>                   // std::max
@@ -50,6 +50,8 @@
 #  include <stdlib.h>                  // getcwd
 #  include <unistd.h>                  // pathconf
 #endif
+
+using namespace smbase;
 
 
 static char const * const s_fileKindNames[] = {

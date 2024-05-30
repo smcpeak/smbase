@@ -6,7 +6,7 @@
 
 #include "dev-warning.h"   // g_abortUponDevWarning
 #include "dummy-printf.h"  // dummy_printf (provided for clients)
-#include "exc.h"           // XBase
+#include "exc.h"           // smbase::XBase
 #include "nonport.h"       // getMilliseconds
 #include "sm-iostream.h"   // cout
 #include "sm-macros.h"     // SM_PRINTF_ANNOTATION
@@ -38,7 +38,7 @@ int main()                                      \
     entry();                                    \
     return 0;                                   \
   }                                             \
-  catch (XBase &x) {                            \
+  catch (smbase::XBase &x) {                    \
     cout << x << endl;                          \
     return 4;                                   \
   }                                             \
@@ -53,7 +53,7 @@ int main(int argc, char *argv[])                \
     entry(argc, argv);                          \
     return 0;                                   \
   }                                             \
-  catch (XBase &x) {                            \
+  catch (smbase::XBase &x) {                    \
     cout << x << endl;                          \
     return 4;                                   \
   }                                             \
@@ -69,7 +69,7 @@ int main(int argc, char *argv[])                \
       entry();                                  \
       return 0;                                 \
     }                                           \
-    catch (XBase &x) {                          \
+    catch (smbase::XBase &x) {                  \
       cout << x << endl;                        \
       return 4;                                 \
     }                                           \
@@ -84,7 +84,7 @@ int main(int argc, char *argv[])                \
       entry(argc, argv);                        \
       return 0;                                 \
     }                                           \
-    catch (XBase &x) {                          \
+    catch (smbase::XBase &x) {                  \
       cout << x << endl;                        \
       return 4;                                 \
     }                                           \
@@ -139,7 +139,7 @@ template <class T>
 void expectEq(char const *label, T const &actual, T const &expect)
 {
   if (expect != actual) {
-    xmessage(stringb(
+    smbase::xmessage(stringb(
       "While checking " << label << ":\n"
       "  actual: " << actual << "\n"
       "  expect: " << expect));

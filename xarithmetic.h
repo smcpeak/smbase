@@ -7,6 +7,10 @@
 #define SMBASE_XARITHMETIC_H
 
 #include "exc.h"                       // XBase
+#include "sm-macros.h"                 // OPEN_NAMESPACE
+
+
+OPEN_NAMESPACE(smbase)
 
 
 // Exception thrown when some sort of invalid numeric arithmetic
@@ -29,6 +33,9 @@ public:      // methods
 
   virtual std::string getConflict() const override;
 };
+
+
+CLOSE_NAMESPACE(smbase)
 
 
 #endif // SMBASE_XARITHMETIC_H

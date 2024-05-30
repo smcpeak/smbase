@@ -5,7 +5,7 @@
 
 // smbase
 #include "autofile.h"                  // AutoFILE
-#include "syserr.h"                    // xsyserror
+#include "syserr.h"                    // smbase::xsyserror
 #include "xassert.h"                   // xassert
 
 // libc++
@@ -13,6 +13,8 @@
 
 // POSIX
 #include <unistd.h>                    // read, write
+
+using namespace smbase;
 
 
 static std::vector<unsigned char> allbytes()

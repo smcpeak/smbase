@@ -16,6 +16,9 @@
 #include <string.h>                    // strlen, strcpy
 
 
+OPEN_NAMESPACE(smbase)
+
+
 void printUnhandled(XBase const &x)
 {
   DEV_WARNING("Unhandled exception: " << x);
@@ -251,6 +254,9 @@ void throw_XFatal(rostring msg)
   XFatal x(msg);
   THROW(x);
 }
+
+
+CLOSE_NAMESPACE(smbase)
 
 
 // EOF

@@ -16,6 +16,8 @@
 #include <string.h>       // memcpy
 #include <ctype.h>        // isprint
 
+using namespace smbase;
+
 
 // define the endpost byte as something we hope is
 // unlikely to coincidentally be written during an

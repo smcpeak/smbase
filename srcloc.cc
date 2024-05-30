@@ -4,11 +4,13 @@
 #include "srcloc.h"     // this module
 #include "autofile.h"   // AutoFILE
 #include "array.h"      // ArrayStack
-#include "syserr.h"     // xsyserror
+#include "syserr.h"     // smbase::xsyserror
 #include "hashline.h"   // HashLineMap
 
 #include <stdio.h>      // fprintf
 #include <string.h>     // memcpy
+
+using namespace smbase;
 
 
 // this parameter controls the frequency of Markers in

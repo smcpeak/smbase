@@ -7,13 +7,15 @@
 #include "flatten.h"                   // this module
 
 // smbase
-#include "exc.h"                       // formatAssert
+#include "exc.h"                       // formatAssert, smbase::xformat
 #include "overflow.h"                  // convertWithoutLoss
 #include "xassert.h"                   // xassert
 
 // libc
 #include <limits.h>                    // INT_MAX
 #include <string.h>                    // strlen
+
+using namespace smbase;
 
 
 Flatten::Flatten()

@@ -659,6 +659,23 @@ check: check-mypy
 endif
 
 
+# --------------------------- ad-hoc check -----------------------------
+# Verify that `using namespace` does not appear in any header.
+ALL_HEADERS := $(wildcard *.h)
+out/no-using-namespace-in-header.ok: $(ALL_HEADERS)
+	@if grep 'using namespace' $(ALL_HEADERS); then \
+	  echo "Some headers have 'using namespace'."; \
+	  exit 2; \
+	else \
+	  exit 0; \
+	fi
+
+.PHONY: check-ad-hoc
+check-ad-hoc: out/no-using-namespace-in-header.ok
+
+check: check-ad-hoc
+
+
 # ----------------------------- coverage -------------------------------
 # Run gcov to produce .gcov files.  This requires having compiled with
 # COVERAGE=1.

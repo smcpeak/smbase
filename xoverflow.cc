@@ -8,6 +8,9 @@
 #include "stringb.h"                   // stringb
 
 
+OPEN_NAMESPACE(smbase)
+
+
 // create-tuple-class: definitions for XBinaryOpOverflow
 /*AUTO_CTC*/ XBinaryOpOverflow::XBinaryOpOverflow(
 /*AUTO_CTC*/   std::string const &type,
@@ -179,6 +182,9 @@ std::string XNumericConversionFromAP::getConflict() const
     (m_destIsSigned? "a signed " : "an unsigned ") <<
     (m_destSizeBytes*8) << "-bit integer type, but it does not fit.");
 }
+
+
+CLOSE_NAMESPACE(smbase)
 
 
 // EOF

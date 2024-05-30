@@ -15,6 +15,8 @@
 #include <stdint.h>                    // int64_t, uint64_t, INT64_C
 #include <limits.h>                    // INT_MIN, INT_MIN
 
+using namespace smbase;
+
 
 OPEN_ANONYMOUS_NAMESPACE
 

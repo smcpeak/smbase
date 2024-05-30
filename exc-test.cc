@@ -9,6 +9,8 @@
 
 #include <iostream>                    // std::{cout, endl}
 
+using namespace smbase;
+
 using std::cout;
 using std::endl;
 

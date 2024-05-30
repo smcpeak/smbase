@@ -4,6 +4,9 @@
 #include "xarithmetic.h"               // this module
 
 
+OPEN_NAMESPACE(smbase)
+
+
 // create-tuple-class: definitions for XDivideByZero
 /*AUTO_CTC*/ XDivideByZero::XDivideByZero(
 /*AUTO_CTC*/   std::string const &dividend)
@@ -32,6 +35,9 @@ std::string XDivideByZero::getConflict() const
   return stringb(
     "Attempt to divide " << m_dividend << " by zero.");
 }
+
+
+CLOSE_NAMESPACE(smbase)
 
 
 // EOF

@@ -11,6 +11,8 @@
 
 #include <unistd.h>          // unlink
 
+using namespace smbase;
+
 
 // ---------------------- BDFFont::Property ------------------------
 BDFFont::Property::Property(rostring n, int i)

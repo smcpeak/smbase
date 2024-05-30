@@ -9,6 +9,10 @@
 #define SMBASE_SYSERR_H
 
 #include "exc.h"                       // XBase
+#include "sm-macros.h"                 // OPEN_NAMESPACE
+
+
+OPEN_NAMESPACE(smbase)
 
 
 // Thrown in response to a system call failure.
@@ -112,6 +116,9 @@ void devWarningSysError(char const *file, int line,
 
 #define DEV_WARNING_SYSERROR_CTXT(syscall, context) \
   devWarningSysError(__FILE__, __LINE__, syscall, context) /* user ; */
+
+
+CLOSE_NAMESPACE(smbase)
 
 
 #endif // SMBASE_SYSERR_H

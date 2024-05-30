@@ -7,7 +7,7 @@
 #include "sm-posix.h"                  // fork, exec, etc.
 #include "sm-windows.h"                // Windows API
 #include "string-utils.h"              // contains
-#include "syserr.h"                    // xsyserror
+#include "syserr.h"                    // smbase::xsyserror
 #include "vector-utils.h"              // accumulateWith
 #include "xassert.h"                   // xassert
 
@@ -15,6 +15,8 @@
 
 #include <errno.h>                     // errno
 #include <string.h>                    // strerror
+
+using namespace smbase;
 
 
 RunProcess::RunProcess()

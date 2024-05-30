@@ -10,6 +10,8 @@
 
 #include <fstream>        // std::fstream, etc.
 
+using namespace smbase;
+
 
 // ----------------------- OwnerTableFlatten ---------------------------
 OwnerTableFlatten::OwnerTableFlatten(bool reading)

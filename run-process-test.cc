@@ -3,13 +3,15 @@
 
 #include "run-process.h"               // module under test
 
-#include "exc.h"                       // XBase
+#include "exc.h"                       // smbase::{XBase, XFormat}
 #include "sm-test.h"                   // DIAG, verbose
 #include "sm-platform.h"               // PLATFORM_IS_POSIX
 #include "string-utils.h"              // splitNonEmpty
 #include "xassert.h"                   // xassert
 
 #include <cstdlib>                     // std::exit
+
+using namespace smbase;
 
 
 static void oneBwcl(string expect, char const **argv)

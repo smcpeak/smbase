@@ -3,7 +3,9 @@
 
 #include "map-utils.h"                 // module under test
 
-#include "exc.h"                       // XBase
+#include "exc.h"                       // smbase::XBase
+
+using namespace smbase;
 
 
 static void testInsertMapUnique()

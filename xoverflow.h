@@ -6,7 +6,11 @@
 #ifndef SMBASE_XOVERFLOW_H
 #define SMBASE_XOVERFLOW_H
 
+#include "sm-macros.h"                 // OPEN_NAMESPACE
 #include "xarithmetic.h"               // XArithmetic
+
+
+OPEN_NAMESPACE(smbase)
 
 
 // Exception thrown when there would be an arithmetic overflow due to
@@ -119,6 +123,9 @@ public:      // methods
 
   virtual std::string getConflict() const override;
 };
+
+
+CLOSE_NAMESPACE(smbase)
 
 
 #endif // SMBASE_XOVERFLOW_H

@@ -12,6 +12,8 @@
 #include <cstdlib>                     // std::exit
 #include <functional>                  // std::function
 
+using namespace smbase;
+
 
 // Call `failingCall`, expecting that it will return false, meaning it
 // failed.  It is also expected to set `errno` or the current OS

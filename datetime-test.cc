@@ -3,9 +3,12 @@
 
 #include "datetime.h"                  // module to test
 
+#include "exc.h"                       // smbase::XFormat
 #include "sm-iostream.h"               // cout, endl
 #include "sm-test.h"                   // PVAL, DIAG, verbose
 #include "xassert.h"                   // xassert
+
+using namespace smbase;
 
 
 static struct UnixTimeAndISO {

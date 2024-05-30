@@ -8,7 +8,7 @@
 #include "autofile.h"                  // AutoFILE
 #include "codepoint.h"                 // isPrintableASCII, isShellMetacharacter
 #include "compare-util.h"              // compare
-#include "exc.h"                       // xformat
+#include "exc.h"                       // smbase::xformat
 #include "nonport.h"                   // vnprintf
 
 // libc
@@ -18,6 +18,8 @@
 #include <string.h>                    // strstr, memcmp
 #include <time.h>                      // time, asctime, localtime
 #include <unistd.h>                    // write
+
+using namespace smbase;
 
 
 // replace all instances of oldstr in src with newstr, return result
