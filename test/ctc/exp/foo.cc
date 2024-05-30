@@ -50,7 +50,7 @@
 /*AUTO_CTC*/   return *this;
 /*AUTO_CTC*/ }
 /*AUTO_CTC*/
-/*AUTO_CTC*/ int Foo::compare(Foo const &a, Foo const &b)
+/*AUTO_CTC*/ int compare(Foo const &a, Foo const &b)
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   RET_IF_COMPARE_MEMBERS(m_x);
 /*AUTO_CTC*/   RET_IF_COMPARE_MEMBERS(m_y);
@@ -65,9 +65,9 @@
 /*AUTO_CTC*/   return oss.str();
 /*AUTO_CTC*/ }
 /*AUTO_CTC*/
-/*AUTO_CTC*/ void Foo::write(std::ostream &os)
+/*AUTO_CTC*/ void Foo::write(std::ostream &os) const
 /*AUTO_CTC*/ {
-/*AUTO_CTC*/   os << "{"
+/*AUTO_CTC*/   os << "{";
 /*AUTO_CTC*/   WRITE_MEMBER(m_x);
 /*AUTO_CTC*/   WRITE_MEMBER(m_y);
 /*AUTO_CTC*/   WRITE_MEMBER(m_z);

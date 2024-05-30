@@ -608,6 +608,7 @@ out/test/ctc/in/%.ok: test/ctc/in/%.h test/ctc/in/%.cc create-tuple-class.py
 	  --expect test/ctc/exp/$*.cc \
 	  --no-separators --no-stderr \
 	  cat out/test/ctc/in/$*.cc
+	$(CXX) -c -o $(DEV_NULL) -I. out/test/ctc/in/$*.cc
 	touch $@
 
 .PHONY: check-ctc

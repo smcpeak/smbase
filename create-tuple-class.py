@@ -251,8 +251,8 @@ def generateDeclarations(
     # std::string toString() const;
     out.append("std::string toString() const;")
 
-    # void write(std::ostream &os);
-    out.append("void write(std::ostream &os);")
+    # void write(std::ostream &os) const;
+    out.append("void write(std::ostream &os) const;")
 
     # friend std::ostream &operator<<(std::ostream &os, Foo const &obj);
     out.append(f"friend std::ostream &operator<<(std::ostream &os, {curClass} const &obj);")
@@ -529,7 +529,7 @@ def generateDefinitions(
     ""
   ]
 
-  # int Foo::compare(Foo const &a, Foo const &b)
+  # int compare(Foo const &a, Foo const &b)
   # {
   #   RET_IF_COMPARE_MEMBERS(x);
   #   RET_IF_COMPARE_MEMBERS(y);
@@ -537,7 +537,7 @@ def generateDefinitions(
   #   return 0;
   # }
   out += [
-    f"int {curClass}::compare({curClass} const &a, {curClass} const &b)",
+    f"int compare({curClass} const &a, {curClass} const &b)",
     "{"
   ] + generateCallsPerField(fields, "RET_IF_COMPARE_MEMBERS") + [
     "  return 0;",
@@ -561,7 +561,7 @@ def generateDefinitions(
     ""
   ]
 
-  # void Foo::write(std::ostream &os)
+  # void Foo::write(std::ostream &os) const
   # {
   #   os << "{";
   #   WRITE_MEMBER(m_x);
@@ -570,9 +570,9 @@ def generateDefinitions(
   #   os << " }";
   # }
   out += [
-    f"void {curClass}::write(std::ostream &os)",
+    f"void {curClass}::write(std::ostream &os) const",
     "{",
-    "  os << \"{\""
+    "  os << \"{\";"
   ] + generateCallsPerField(fields, "WRITE_MEMBER") + [
     "  os << \" }\";",
     "}",

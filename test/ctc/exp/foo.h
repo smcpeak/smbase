@@ -27,7 +27,7 @@ public:
   /*AUTO_CTC*/ DEFINE_FRIEND_RELATIONAL_OPERATORS(Foo)
   /*AUTO_CTC*/ // For +write:
   /*AUTO_CTC*/ std::string toString() const;
-  /*AUTO_CTC*/ void write(std::ostream &os);
+  /*AUTO_CTC*/ void write(std::ostream &os) const;
   /*AUTO_CTC*/ friend std::ostream &operator<<(std::ostream &os, Foo const &obj);
 };
 
