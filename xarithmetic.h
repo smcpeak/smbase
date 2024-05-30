@@ -28,8 +28,8 @@ public:      // data
 public:      // methods
   // create-tuple-class: declarations for XDivideByZero
   /*AUTO_CTC*/ explicit XDivideByZero(std::string const &dividend);
-  /*AUTO_CTC*/ XDivideByZero(XDivideByZero const &obj);
-  /*AUTO_CTC*/ XDivideByZero &operator=(XDivideByZero const &obj);
+  /*AUTO_CTC*/ XDivideByZero(XDivideByZero const &obj) noexcept;
+  /*AUTO_CTC*/ XDivideByZero &operator=(XDivideByZero const &obj) noexcept;
 
   virtual std::string getConflict() const override;
 };

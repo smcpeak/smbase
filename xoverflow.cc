@@ -24,7 +24,7 @@ OPEN_NAMESPACE(smbase)
 /*AUTO_CTC*/     m_op(op)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ XBinaryOpOverflow::XBinaryOpOverflow(XBinaryOpOverflow const &obj)
+/*AUTO_CTC*/ XBinaryOpOverflow::XBinaryOpOverflow(XBinaryOpOverflow const &obj) noexcept
 /*AUTO_CTC*/   : XOverflow(obj),
 /*AUTO_CTC*/     DMEMB(m_type),
 /*AUTO_CTC*/     DMEMB(m_lhs),
@@ -32,7 +32,7 @@ OPEN_NAMESPACE(smbase)
 /*AUTO_CTC*/     DMEMB(m_op)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ XBinaryOpOverflow &XBinaryOpOverflow::operator=(XBinaryOpOverflow const &obj)
+/*AUTO_CTC*/ XBinaryOpOverflow &XBinaryOpOverflow::operator=(XBinaryOpOverflow const &obj) noexcept
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   if (this != &obj) {
 /*AUTO_CTC*/     XOverflow::operator=(obj);
@@ -69,7 +69,7 @@ std::string XBinaryOpOverflow::getConflict() const
 /*AUTO_CTC*/     m_destSizeBytes(destSizeBytes)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ XNumericConversionLosesRange::XNumericConversionLosesRange(XNumericConversionLosesRange const &obj)
+/*AUTO_CTC*/ XNumericConversionLosesRange::XNumericConversionLosesRange(XNumericConversionLosesRange const &obj) noexcept
 /*AUTO_CTC*/   : XNumericConversion(obj),
 /*AUTO_CTC*/     DMEMB(m_sourceValue),
 /*AUTO_CTC*/     DMEMB(m_destValue),
@@ -78,7 +78,7 @@ std::string XBinaryOpOverflow::getConflict() const
 /*AUTO_CTC*/     DMEMB(m_destSizeBytes)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ XNumericConversionLosesRange &XNumericConversionLosesRange::operator=(XNumericConversionLosesRange const &obj)
+/*AUTO_CTC*/ XNumericConversionLosesRange &XNumericConversionLosesRange::operator=(XNumericConversionLosesRange const &obj) noexcept
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   if (this != &obj) {
 /*AUTO_CTC*/     XNumericConversion::operator=(obj);
@@ -112,13 +112,13 @@ std::string XNumericConversionLosesRange::getConflict() const
 /*AUTO_CTC*/     m_destValue(destValue)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ XNumericConversionChangesSign::XNumericConversionChangesSign(XNumericConversionChangesSign const &obj)
+/*AUTO_CTC*/ XNumericConversionChangesSign::XNumericConversionChangesSign(XNumericConversionChangesSign const &obj) noexcept
 /*AUTO_CTC*/   : XNumericConversion(obj),
 /*AUTO_CTC*/     DMEMB(m_sourceValue),
 /*AUTO_CTC*/     DMEMB(m_destValue)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ XNumericConversionChangesSign &XNumericConversionChangesSign::operator=(XNumericConversionChangesSign const &obj)
+/*AUTO_CTC*/ XNumericConversionChangesSign &XNumericConversionChangesSign::operator=(XNumericConversionChangesSign const &obj) noexcept
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   if (this != &obj) {
 /*AUTO_CTC*/     XNumericConversion::operator=(obj);
@@ -152,7 +152,7 @@ std::string XNumericConversionChangesSign::getConflict() const
 /*AUTO_CTC*/     m_destSizeBytes(destSizeBytes)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ XNumericConversionFromAP::XNumericConversionFromAP(XNumericConversionFromAP const &obj)
+/*AUTO_CTC*/ XNumericConversionFromAP::XNumericConversionFromAP(XNumericConversionFromAP const &obj) noexcept
 /*AUTO_CTC*/   : XNumericConversion(obj),
 /*AUTO_CTC*/     DMEMB(m_sourceTypeName),
 /*AUTO_CTC*/     DMEMB(m_sourceValue),
@@ -160,7 +160,7 @@ std::string XNumericConversionChangesSign::getConflict() const
 /*AUTO_CTC*/     DMEMB(m_destSizeBytes)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ XNumericConversionFromAP &XNumericConversionFromAP::operator=(XNumericConversionFromAP const &obj)
+/*AUTO_CTC*/ XNumericConversionFromAP &XNumericConversionFromAP::operator=(XNumericConversionFromAP const &obj) noexcept
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   if (this != &obj) {
 /*AUTO_CTC*/     XNumericConversion::operator=(obj);

@@ -18,10 +18,10 @@ public:
 public:
   // ---- create-tuple-class: declarations for Foo +compare +write +move
   /*AUTO_CTC*/ explicit Foo(int x, float y, std::string const &z);
-  /*AUTO_CTC*/ Foo(Foo const &obj);
-  /*AUTO_CTC*/ Foo(Foo &&obj);
-  /*AUTO_CTC*/ Foo &operator=(Foo const &obj);
-  /*AUTO_CTC*/ Foo &operator=(Foo &&obj);
+  /*AUTO_CTC*/ Foo(Foo const &obj) noexcept;
+  /*AUTO_CTC*/ Foo(Foo &&obj) noexcept;
+  /*AUTO_CTC*/ Foo &operator=(Foo const &obj) noexcept;
+  /*AUTO_CTC*/ Foo &operator=(Foo &&obj) noexcept;
   /*AUTO_CTC*/ // For +compare:
   /*AUTO_CTC*/ friend int compare(Foo const &a, Foo const &b);
   /*AUTO_CTC*/ DEFINE_FRIEND_RELATIONAL_OPERATORS(Foo)
@@ -40,8 +40,8 @@ public:
 public:
   // ---- create-tuple-class: declarations for Bar +compare +write
   /*AUTO_CTC*/ explicit Bar(int n);
-  /*AUTO_CTC*/ Bar(Bar const &obj);
-  /*AUTO_CTC*/ Bar &operator=(Bar const &obj);
+  /*AUTO_CTC*/ Bar(Bar const &obj) noexcept;
+  /*AUTO_CTC*/ Bar &operator=(Bar const &obj) noexcept;
   /*AUTO_CTC*/ // For +compare:
   /*AUTO_CTC*/ friend int compare(Bar const &a, Bar const &b);
   /*AUTO_CTC*/ DEFINE_FRIEND_RELATIONAL_OPERATORS(Bar)
@@ -56,8 +56,8 @@ struct Baz {
 
   // ---- create-tuple-class: declarations for Baz
   /*AUTO_CTC*/ explicit Baz(int *p);
-  /*AUTO_CTC*/ Baz(Baz const &obj);
-  /*AUTO_CTC*/ Baz &operator=(Baz const &obj);
+  /*AUTO_CTC*/ Baz(Baz const &obj) noexcept;
+  /*AUTO_CTC*/ Baz &operator=(Baz const &obj) noexcept;
 };
 
 #endif // FOO_H

@@ -222,26 +222,30 @@ def generateDeclarations(
   which has overall indentation `curIndentation`, subject to
   `options`."""
 
+  # Use a variable to specify `noexcept` in case I want to make this an
+  # option later.
+  noexcept: str = " noexcept"
+
   out: list[str] = []
 
   # explicit Foo(int x, float y, std::string const &z);
   out.append(f"explicit {curClass}({generatePrimaryCtorParams(fields)});")
 
-  # Foo(Foo const &obj);
-  out.append(f"{curClass}({curClass} const &obj);")
+  # Foo(Foo const &obj) noexcept;
+  out.append(f"{curClass}({curClass} const &obj){noexcept};")
 
   enableMoveOps: bool = options.get("move", False)
 
   if enableMoveOps:
-    # Foo(Foo &&obj);
-    out.append(f"{curClass}({curClass} &&obj);")
+    # Foo(Foo &&obj) noexcept;
+    out.append(f"{curClass}({curClass} &&obj){noexcept};")
 
-  # Foo &operator=(Foo const &obj);
-  out.append(f"{curClass} &operator=({curClass} const &obj);")
+  # Foo &operator=(Foo const &obj) noexcept;
+  out.append(f"{curClass} &operator=({curClass} const &obj){noexcept};")
 
   if enableMoveOps:
-    # Foo &operator=(Foo &&obj);
-    out.append(f"{curClass} &operator=({curClass} &&obj);")
+    # Foo &operator=(Foo &&obj) noexcept;
+    out.append(f"{curClass} &operator=({curClass} &&obj){noexcept};")
 
   if options.get("compare", False):
     # // For +compare:
@@ -517,6 +521,8 @@ def generateDefinitions(
   """Generate and return the definitions for methods of `curClass`,
   subject to `options`."""
 
+  noexcept: str = " noexcept"
+
   out: list[str] = []
 
   # Foo::Foo(
@@ -537,13 +543,13 @@ def generateDefinitions(
     ""
   ]
 
-  # Foo::Foo(Foo const &obj)
+  # Foo::Foo(Foo const &obj) noexcept
   #   : DMEMB(m_x),          // insert "Super(obj)" if superclass
   #     DMEMB(m_y),
   #     DMEMB(m_z)
   # {}
   out += [
-    f"{curClass}::{curClass}({curClass} const &obj)",
+    f"{curClass}::{curClass}({curClass} const &obj){noexcept}",
   ] + generateCtorInits(superclass, fields, "DMEMB") + [
     "{}",
     ""
@@ -552,19 +558,19 @@ def generateDefinitions(
   enableMoveOps: bool = options.get("move", False)
 
   if enableMoveOps:
-    # Foo::Foo(Foo &&obj)
+    # Foo::Foo(Foo &&obj) noexcept
     #   : MDMEMB(m_x),         // insert "Super(std::move(obj))" if superclass
     #     MDMEMB(m_y),
     #     MDMEMB(m_z)
     # {}
     out += [
-      f"{curClass}::{curClass}({curClass} &&obj)"
+      f"{curClass}::{curClass}({curClass} &&obj){noexcept}"
     ] + generateCtorInits(superclass, fields, "MDMEMB") + [
       "{}",
       ""
     ]
 
-  # Foo &Foo::operator=(Foo const &obj)
+  # Foo &Foo::operator=(Foo const &obj) noexcept
   # {
   #   if (this != &obj) {
   #     Super::operator(obj);                    // if superclass
@@ -575,7 +581,7 @@ def generateDefinitions(
   #   return *this;
   # }
   out += [
-    f"{curClass} &{curClass}::operator=({curClass} const &obj)",
+    f"{curClass} &{curClass}::operator=({curClass} const &obj){noexcept}",
     "{",
     "  if (this != &obj) {"
   ] + (
@@ -590,7 +596,7 @@ def generateDefinitions(
   ]
 
   if enableMoveOps:
-    # Foo &Foo::operator=(Foo &&obj)
+    # Foo &Foo::operator=(Foo &&obj) noexcept
     # {
     #   if (this != &obj) {
     #     Super::operator=(std::move(obj));        // if superclass
@@ -601,7 +607,7 @@ def generateDefinitions(
     #   return *this;
     # }
     out += [
-      f"{curClass} &{curClass}::operator=({curClass} &&obj)",
+      f"{curClass} &{curClass}::operator=({curClass} &&obj){noexcept}",
       "{",
       "  if (this != &obj) {"
     ] + (

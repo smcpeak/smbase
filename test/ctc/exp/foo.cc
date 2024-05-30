@@ -21,19 +21,19 @@
 /*AUTO_CTC*/     m_z(z)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ Foo::Foo(Foo const &obj)
+/*AUTO_CTC*/ Foo::Foo(Foo const &obj) noexcept
 /*AUTO_CTC*/   : DMEMB(m_x),
 /*AUTO_CTC*/     DMEMB(m_y),
 /*AUTO_CTC*/     DMEMB(m_z)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ Foo::Foo(Foo &&obj)
+/*AUTO_CTC*/ Foo::Foo(Foo &&obj) noexcept
 /*AUTO_CTC*/   : MDMEMB(m_x),
 /*AUTO_CTC*/     MDMEMB(m_y),
 /*AUTO_CTC*/     MDMEMB(m_z)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ Foo &Foo::operator=(Foo const &obj)
+/*AUTO_CTC*/ Foo &Foo::operator=(Foo const &obj) noexcept
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   if (this != &obj) {
 /*AUTO_CTC*/     CMEMB(m_x);
@@ -43,7 +43,7 @@
 /*AUTO_CTC*/   return *this;
 /*AUTO_CTC*/ }
 /*AUTO_CTC*/
-/*AUTO_CTC*/ Foo &Foo::operator=(Foo &&obj)
+/*AUTO_CTC*/ Foo &Foo::operator=(Foo &&obj) noexcept
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   if (this != &obj) {
 /*AUTO_CTC*/     MCMEMB(m_x);
@@ -92,12 +92,12 @@
 /*AUTO_CTC*/     m_n(n)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ Bar::Bar(Bar const &obj)
+/*AUTO_CTC*/ Bar::Bar(Bar const &obj) noexcept
 /*AUTO_CTC*/   : EmptyBase(obj),
 /*AUTO_CTC*/     DMEMB(m_n)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ Bar &Bar::operator=(Bar const &obj)
+/*AUTO_CTC*/ Bar &Bar::operator=(Bar const &obj) noexcept
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   if (this != &obj) {
 /*AUTO_CTC*/     EmptyBase::operator=(obj);
@@ -140,11 +140,11 @@
 /*AUTO_CTC*/   : m_p(p)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ Baz::Baz(Baz const &obj)
+/*AUTO_CTC*/ Baz::Baz(Baz const &obj) noexcept
 /*AUTO_CTC*/   : DMEMB(m_p)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ Baz &Baz::operator=(Baz const &obj)
+/*AUTO_CTC*/ Baz &Baz::operator=(Baz const &obj) noexcept
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   if (this != &obj) {
 /*AUTO_CTC*/     CMEMB(m_p);

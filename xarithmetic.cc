@@ -14,12 +14,12 @@ OPEN_NAMESPACE(smbase)
 /*AUTO_CTC*/     m_dividend(dividend)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ XDivideByZero::XDivideByZero(XDivideByZero const &obj)
+/*AUTO_CTC*/ XDivideByZero::XDivideByZero(XDivideByZero const &obj) noexcept
 /*AUTO_CTC*/   : XArithmetic(obj),
 /*AUTO_CTC*/     DMEMB(m_dividend)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ XDivideByZero &XDivideByZero::operator=(XDivideByZero const &obj)
+/*AUTO_CTC*/ XDivideByZero &XDivideByZero::operator=(XDivideByZero const &obj) noexcept
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   if (this != &obj) {
 /*AUTO_CTC*/     XArithmetic::operator=(obj);
