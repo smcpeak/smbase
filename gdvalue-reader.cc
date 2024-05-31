@@ -575,12 +575,12 @@ GDValue GDValueReader::readNextInteger(int const firstChar)
     return GDValue(GDVInteger::fromDigits(
       std::string_view(digits.data(), digits.size())));
   }
-  catch (XFormat &x) {
+  catch (XFormat &x) {       // gcov-ignore
     // We already validated the syntax, so this should not be possible.
     // But if it happens, map it into a `GDValueReaderException` for
     // uniformity.
-    err(x.getMessage());
-    return GDValue();  // Not reached.
+    err(x.getMessage());     // gcov-ignore
+    return GDValue();        // Not reached.
   }
 }
 
