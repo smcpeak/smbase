@@ -357,34 +357,43 @@ inline void pretendUsedFn(T const &) {}
 
 // Define a 'toString' method for an enumeration.  Use like this:
 //
-//   DEFINE_ENUMERATION_TO_STRING(
+//   DEFINE_ENUMERATION_TO_STRING_OR(
 //     DocumentProcessStatus,
 //     NUM_DOCUMENT_PROCESS_STATUSES,
 //     (
 //       "DPS_NONE",
 //       "DPS_RUNNING",
 //       "DPS_FINISHED"
-//     )
+//     ),
+//     "DPS_invalid"
 //   )
 //
-#define DEFINE_ENUMERATION_TO_STRING(Enumeration, NUM_VALUES, nameList) \
-  char const *toString(Enumeration value)                               \
-  {                                                                     \
-    RETURN_ENUMERATION_STRING(Enumeration, NUM_VALUES, nameList, value) \
+#define DEFINE_ENUMERATION_TO_STRING_OR(Enumeration, NUM_VALUES, nameList, unknown) \
+  char const *toString(Enumeration value)                                           \
+  {                                                                                 \
+    RETURN_ENUMERATION_STRING_OR(Enumeration, NUM_VALUES, nameList, value, unknown) \
   }
 
 // The core of the enum-to-string logic, exposed separately so I can use
 // it to define functions not called 'toString()'.
-#define RETURN_ENUMERATION_STRING(Enumeration, NUM_VALUES, nameList, value) \
-  static char const * const names[] =                                       \
-    { SMBASE_PP_UNWRAP_PARENS nameList };                                   \
-  ASSERT_TABLESIZE(names, (NUM_VALUES));                                    \
-  if ((unsigned)value < TABLESIZE(names)) {                                 \
-    return names[value];                                                    \
-  }                                                                         \
-  else {                                                                    \
-    return "unknown";                                                       \
+#define RETURN_ENUMERATION_STRING_OR(Enumeration, NUM_VALUES, nameList, value, unknown) \
+  static char const * const names[] =                                                   \
+    { SMBASE_PP_UNWRAP_PARENS nameList };                                               \
+  ASSERT_TABLESIZE(names, (NUM_VALUES));                                                \
+  if ((unsigned)value < TABLESIZE(names)) {                                             \
+    return names[value];                                                                \
+  }                                                                                     \
+  else {                                                                                \
+    return unknown;                                                                     \
   }
+
+// Compatibility.
+#define DEFINE_ENUMERATION_TO_STRING(Enumeration, NUM_VALUES, nameList) \
+  DEFINE_ENUMERATION_TO_STRING_OR(Enumeration, NUM_VALUES, nameList, "unknown")
+
+// Compatibility.
+#define RETURN_ENUMERATION_STRING(Enumeration, NUM_VALUES, nameList, value) \
+  RETURN_ENUMERATION_STRING_OR(Enumeration, NUM_VALUES, nameList, value, "unknown")
 
 
 // Given an array with known size, return a one-past-the-end pointer
