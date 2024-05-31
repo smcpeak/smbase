@@ -14,6 +14,12 @@
 int verbose = !!std::getenv("VERBOSE");
 
 
+void expectEq(char const *label, char const *actual, char const *expect)
+{
+  expectEq(label, std::string_view(actual), std::string_view(expect));
+}
+
+
 void expectEq(char const *label, string const &actual, char const *expect)
 {
   expectEq(label, actual, string(expect));

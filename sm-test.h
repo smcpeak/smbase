@@ -168,10 +168,11 @@ void expectEq(char const *label, T const &actual, T const &expect)
   expectEq(#actual, +(actual), +(expect)) /* user ; */
 
 
-// Special case for 'expect' being a string literal.
+// Overloads for some common cases that would otherwise either not work
+// due to template argument deduction failing due to a mismatch in
+// argument types, or else ambiguity in the conversions.
+void expectEq(char const *label, char const *actual, char const *expect);
 void expectEq(char const *label, string const &actual, char const *expect);
-
-// Let 'actual' be a `string_view`.
 void expectEq(char const *label, std::string_view actual, char const *expect);
 
 
