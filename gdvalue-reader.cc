@@ -5,8 +5,8 @@
 
 #include "gdvalue-reader.h"            // this module
 
-#include "breaker.h"                   // breaker
 #include "codepoint.h"                 // isWhitespace, decodeRadixIndicatorLetter, isASCIIRadixDigit
+#include "exc.h"                       // THROW
 #include "gdvalue-reader-exception.h"  // GDValueReaderException
 #include "gdvsymbol.h"                 // GDVSymbol
 #include "overflow.h"                  // addWithOverflowCheck, multiplyWithOverflowCheck
@@ -56,8 +56,7 @@ void GDValueReader::locErr(FileLineCol const &loc,
   FileLineCol prev(loc);
   prev.decrementColumn();
 
-  breaker();
-  throw GDValueReaderException(prev, syntaxError);
+  THROW(GDValueReaderException(prev, syntaxError));
 }
 
 
