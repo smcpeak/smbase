@@ -4,15 +4,14 @@
 #include "trdelete.h"                  // module under test
 
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
-#include "sm-test.h"                   // dummy_printf
+#include "sm-test.h"                   // dummy_printf, verbose
 
 #include <assert.h>                    // assert
 #include <stdio.h>                     // printf
-#include <stdlib.h>                    // malloc, exit
+#include <stdlib.h>                    // malloc, exit, getenv
 
 
-// Silence the output when I'm not actively working on this test.
-#define printf dummy_printf
+#define printf (verbose? printf : dummy_printf)
 
 
 OPEN_ANONYMOUS_NAMESPACE
@@ -47,6 +46,12 @@ CLOSE_ANONYMOUS_NAMESPACE
 // Called from unit-tests.cc.
 void test_trdelete()
 {
+  if (getenv("UNDER_VALGRIND")) {
+    // Valgrind sees and complains about the deliberate use-after-free.
+    printf("skipping test due to UNDER_VALGRIND\n");
+    return;
+  }
+
   printf("malloc: %p\n", malloc(10));
 
   Foo *f = new Foo;

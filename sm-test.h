@@ -22,7 +22,9 @@
 // This is set, in a global initializer, to true if the "VERBOSE"
 // environment variable is set.  Tests can use it to control whether
 // they print extra diagnostics.
-extern bool verbose;
+//
+// This has type `int` so it can be used from C modules too.
+extern int verbose;
 
 
 // reports uncaught exceptions

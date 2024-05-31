@@ -8,7 +8,7 @@
 #include <setjmp.h>                    // setjmp
 #include <stdint.h>                    // uintptr_t
 #include <stdio.h>                     // printf
-#include <stdlib.h>                    // strtoul, exit
+#include <stdlib.h>                    // strtoul, exit, getenv
 #include <string.h>                    // strcmp
 
 
@@ -83,7 +83,11 @@ static void runTest()
 // Called from unit-tests.cc.
 void test_mysig()
 {
-  if (mysigModuleWorks()) {
+  if (getenv("UNDER_VALGRIND")) {
+    // The test deliberately segfaults, which valgrind of course sees.
+    printf("skipping test due to UNDER_VALGRIND\n");
+  }
+  else if (mysigModuleWorks()) {
     runTest();
   }
   else {

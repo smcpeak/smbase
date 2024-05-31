@@ -11,7 +11,7 @@
 #include <cstdlib>                     // std::getenv
 
 
-bool verbose = std::getenv("VERBOSE");
+int verbose = !!std::getenv("VERBOSE");
 
 
 void expectEq(char const *label, string const &actual, char const *expect)

@@ -5,16 +5,16 @@
 
 #include "dummy-printf.h"    // dummy_printf
 
-#include <stdlib.h>          // exit, perror
 #include <stdio.h>           // printf
+#include <stdlib.h>          // exit, perror, getenv
 #include <string.h>          // memcmp
 
 // POSIX
 #include <unistd.h>          // read, write
 
 
-// Silence test.
-#define printf dummy_printf
+extern int verbose;          // sm-test.cc
+#define printf (verbose? printf : dummy_printf)
 
 
 static void die(char const *fn)
@@ -29,6 +29,15 @@ void test_mypopen()
 {
   char buf[80];
   int stat;
+
+  if (getenv("UNDER_VALGRIND")) {
+    // There isn't any problem per se, but Valgrind appears to follow
+    // the child processes even when I say "--trace-children=no".  It
+    // then prints out extra reports, one for each child.  Just to cut
+    // down on the noise, skip the test.
+    printf("skipping test due to UNDER_VALGRIND\n");
+    return;
+  }
 
   if (!mypopenModuleWorks()) {
     printf("mypopen module does not work on this platform, skipping test\n");
