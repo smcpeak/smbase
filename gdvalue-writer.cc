@@ -14,9 +14,9 @@
 #include "sm-trace.h"                  // INIT_TRACE
 #include "string-utils.h"              // doubleQuote
 #include "stringf.h"                   // stringf
+#include "xassert.h"                   // xfailure
 
 // libc++
-#include <cassert>                     // assert
 #include <iostream>                    // std::ostream
 
 
@@ -128,7 +128,7 @@ bool GDValueWriter::valueFitsOnLine(
     " numExtraChars=" << m_numExtraChars);
 
   // For this to be called, we must be considering using indentation.
-  assert(usingIndentation());
+  xassertPrecondition(usingIndentation());
 
   // Disable indentation for this check.
   SET_RESTORE(m_options.m_enableIndentation, false);
@@ -197,7 +197,7 @@ bool GDValueWriter::tryWrite(GDValue const &value,
 
   switch (value.getKind()) {
     default:
-      assert(!"invalid kind");
+      xfailureInvariant("invalid kind");
 
     case GDVK_INTEGER:
       os() << value.integerGet();
@@ -476,15 +476,15 @@ bool GDValueWriter::isContainer(GDValue const &value) const
 int GDValueWriter::openDelimLength(GDValue const &value) const
 {
   switch (value.getKind()) {
+    default:
+      xfailurePrecondition("not a container");
+
     case GDVK_SEQUENCE:
     case GDVK_MAP:
       return 1;    // '(' or '{'
 
     case GDVK_SET:
       return 2;    // '{{'
-
-    default:
-      return 0;
   }
 }
 
@@ -503,7 +503,7 @@ void GDValueWriter::write(GDValue const &value)
   // Call the private method that returns 'bool'.  In this context, it
   // will always return true.
   bool res = tryWrite(value);
-  assert(res);
+  xassert(res);
 }
 
 
