@@ -34,13 +34,14 @@ private:     // data
   //       - start pointer
   //       - end pointer
   //       - end-of-storage pointer
-  //   - bool
+  //   - SignOrEmbed: uint8_t
+  //   - EmbeddedInt: int32_t
   //
-  // With padding, that is four `void*` words.  I declare this as an
-  // array of `void*` rather than `unsigned char` to (hopefully?) ensure
-  // proper alignment.  The implementation has a `static_assert` that
-  // checks that this is enough space.
-  void *m_storage[4];
+  // With padding, that is four or five `void*` words.  I declare this
+  // as an array of `void*` rather than `unsigned char` to (hopefully?)
+  // ensure proper alignment.  The implementation has a `static_assert`
+  // that checks that this is enough space.
+  void *m_storage[sizeof(void*) >= 8? 4 : 5];
 
 private:     // methods
   // Special constructor that accepts a pointer to an underlying integer
