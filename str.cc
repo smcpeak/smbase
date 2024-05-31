@@ -183,6 +183,8 @@ void stringXfer(std::string &str, Flatten &flat)
 
     // This causes an extra allocation.
     str = p;
+
+    delete[] p;
   }
 
   else {

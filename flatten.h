@@ -63,9 +63,12 @@ public:      // funcs
   virtual void xfer_int32_t(int32_t &i);
   virtual void xfer_uint32_t(uint32_t &i);
 
-  // read or write a null-terminated character buffer, allocated with
-  // new; this works if 'str' is NULL (in other words, a NULL string
-  // is distinguished from an empty string, and both are legal)
+  // Read or write a null-terminated character buffer, allocated with
+  // `new[]`.  This works if 'str' is NULL (in other words, a NULL
+  // string is distinguished from an empty string, and both are legal).
+  //
+  // Note: In read mode, the caller is responsible for freeing the
+  // memory with `delete[]`!.
   virtual void xferCharString(char *&str);
 
   // xfer a buffer allocated with 'new', of a given length; the buffer
