@@ -215,10 +215,6 @@ public:      // methods
       m_eValue(0)
   {
     normalize();
-
-    // TODO: Add a mechanism to deallocate the vector here if we do not
-    // need it.  The process of parsing digits (and other operations
-    // too) will otherwise always leave one uselessly allocated.
   }
 
   APInteger(UInteger &&magnitude, bool negative)
@@ -327,6 +323,8 @@ public:      // methods
       // `m_soe==SOE_NEGATIVE` and `m_magnitude.isZero()`.
       xassert(!m_magnitude.template getAsOpt<EmbeddedInt>().has_value());
     }
+
+    m_magnitude.selfCheck();
   }
 
   // ---------- Zero ----------

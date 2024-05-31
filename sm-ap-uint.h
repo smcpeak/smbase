@@ -62,16 +62,29 @@ private:     // data
 
      where N is one larger than the largest value of Word.
 
-     This can be empty for the case of zero, but is not required to be.
-
-     The reason I do not insist on a normal form currently is it would
-     potentially make the sequence-of-words (`setWord`, etc.) and
-     sequence-of bits (`setBit`, etc.) interfaces awkward due to perhaps
-     doing needless trimming.  But this is a decision I might revisit.
+     This is normalized: the Word with the highest index is not zero.
+     If the value being represented is zero, then the vector is empty.
   */
   std::vector<Word> m_vec;
 
 private:     // methods
+  // Trim zero words from the end of the vector.
+  void normalize()
+  {
+    if (!m_vec.empty()) {
+      while (!m_vec.empty() && m_vec.back() == 0) {
+        m_vec.pop_back();
+      }
+
+      if (m_vec.empty()) {
+        // Try to deallocate the vector's storage.  The algorithms built
+        // on top of this class somewhat frequently populate the
+        // APUInteger and then zero it, but the object remains.
+        m_vec.shrink_to_fit();
+      }
+    }
+  }
+
   // ---------- Operations on Words ----------
   // Return the number of bits in each word.
   static constexpr Index bitsPerWord()
@@ -139,6 +152,8 @@ private:     // methods
       // second addition yields `other.getWord(i)` with no carry.
       xassert(carry <= 1);
     }
+
+    normalize();
   }
 
   // Subtract `other` from `this`.  `this` must be at least as large.
@@ -168,6 +183,8 @@ private:     // methods
 
     // Otherwise, `other` was larger.
     xassert(borrow == 0);
+
+    normalize();
   }
 
   // ---------- Serialization helpers ----------
@@ -373,6 +390,8 @@ public:      // methods
         n >>= bitsPerWord();
       }
     }
+
+    selfCheck();
   }
 
   // ---------- Assignment ----------
@@ -392,11 +411,21 @@ public:      // methods
     return *this;
   }
 
+  // ---------- General ----------
+  // Assert invariants.
+  void selfCheck() const
+  {
+    if (!m_vec.empty()) {
+      // The most significant word is not zero.
+      xassertInvariant(m_vec[m_vec.size()-1] != 0);
+    }
+  }
+
   // ---------- Zero ----------
   // True if this object represents zero.
   bool isZero() const
   {
-    return this->maxWordIndex() == -1;
+    return m_vec.empty();
   }
 
   // Set the value of this object to zero.
@@ -508,8 +537,7 @@ public:      // methods
   }
 
   // ---------- Treat as a sequence of Words ----------
-  // Return the number of stored words.  Some of the high words may
-  // be redundantly zero, but this method does not check for that.
+  // Return the number of stored words.
   Index numWords() const
   {
     return static_cast<Index>(m_vec.size());
@@ -519,11 +547,7 @@ public:      // methods
   // then this is -1.
   Index maxWordIndex() const
   {
-    Index i = numWords() - 1;
-    while (i >= 0 && m_vec[i] == 0) {
-      --i;
-    }
-    return i;
+    return numWords() - 1;
   }
 
   // Get the `i`th word, where the 0th is the least significant.
@@ -546,6 +570,10 @@ public:      // methods
     xassertPrecondition(i >= 0);
     if (i < numWords()) {
       m_vec[i] = d;
+
+      if (d == 0 && i == maxWordIndex()) {
+        normalize();
+      }
     }
     else if (d == 0) {
       // There is no need to explicitly set a zero word beyond the
@@ -559,6 +587,8 @@ public:      // methods
 
       m_vec[i] = d;
     }
+
+    selfCheck();
   }
 
   // Multiply `*this` by `N ** amount`.
@@ -1043,6 +1073,8 @@ public:      // methods
       // What is in `highProd` is what carries to the next word.
       carry = highProd;
     }
+
+    selfCheck();
   }
 
   // Return the product of `*this` and `other`.
