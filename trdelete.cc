@@ -5,6 +5,8 @@
 
 #include "breaker.h"      // breaker
 
+#include <new>            // operator delete
+
 #include <stdlib.h>       // abs
 #include <string.h>       // memset
 
@@ -55,7 +57,9 @@ void trashingDelete(void *blk, size_t size)
   // use the global delete operator to free the memory;
   // gratuitous cast to char* to silence gcc warning
   // "not a pointer-to-object type"
-  ::delete((char*)blk);
+  //
+  // Passing `size` is needed to pacify Address Sanitizer.
+  ::operator delete((char*)blk, size);
 }
 
 
@@ -65,7 +69,7 @@ void trashingDeleteArr(void *blk, size_t size)
 
   // use the global delete operator to free the memory;
   // (see comment about gratuitious cast, above)
-  ::delete[]((char*)blk);
+  ::operator delete[]((char*)blk, size);
 }
 
 
