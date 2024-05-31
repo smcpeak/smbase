@@ -14,7 +14,6 @@
 #include "xassert.h"                   // xassert
 
 // libc++
-#include <cassert>                     // assert
 #include <cstring>                     // std::strcmp
 #include <fstream>                     // std::{ifstream, ofstream}
 #include <new>                         // placement `new`
@@ -95,7 +94,7 @@ void GDValue::clearSelfAndSwapWith(GDValue &obj) noexcept
 
   switch (obj.m_kind) {
     default:
-      assert(!"invalid kind");
+      xfailureInvariant("invalid kind");
 
     case GDVK_SYMBOL:
       SWAP_MEMBER(m_symbolName);
@@ -159,7 +158,7 @@ GDValue::GDValue(GDValue const &obj)
 {
   switch (obj.m_kind) {
     default:
-      assert(!"invalid kind");
+      xfailureInvariant("invalid kind");
 
     case GDVK_SYMBOL:
       symbolSet(obj.symbolGet());
@@ -235,12 +234,12 @@ GDValue::GDValue(GDValueKind kind)
 {
   switch (m_kind) {
     default:
-      xassertPrecondition(!"invalid kind");
+      xfailurePrecondition("invalid kind");
 
     case GDVK_SYMBOL:
       // Redundant, but for clarity.
       m_value.m_symbolName = s_symbolName_null;
-      assert(m_value.m_symbolName);
+      xassert(m_value.m_symbolName != nullptr);
       break;
 
     case GDVK_INTEGER:
@@ -346,7 +345,7 @@ int compare(GDValue const &a, GDValue const &b)
 
   switch (a.m_kind) {
     default:
-      xassertInvariant(!"invalid kind");
+      xfailureInvariant("invalid kind");
 
     case GDVK_SYMBOL:
       return std::strcmp(a.m_value.m_symbolName, b.m_value.m_symbolName);
@@ -401,7 +400,7 @@ GDVSize GDValue::size() const
 {
   switch (m_kind) {
     default:
-      assert(!"invalid kind");
+      xfailureInvariant("invalid kind");
 
     case GDVK_SYMBOL:
       return isNull()? 0 : 1;
@@ -433,7 +432,7 @@ void GDValue::clear()
 {
   switch (m_kind) {
     default:
-      xassertInvariant(!"invalid kind");
+      xfailureInvariant("invalid kind");
 
     case GDVK_SYMBOL:
       break;
@@ -596,13 +595,14 @@ void GDValue::boolSet(bool b)
   m_kind = GDVK_SYMBOL;
   m_value.m_symbolName =
     b? s_symbolName_true : s_symbolName_false;
-  assert(m_value.m_symbolName);
+  xassert(m_value.m_symbolName != nullptr);
 }
 
 
 bool GDValue::boolGet() const
 {
-  assert(m_kind == GDVK_SYMBOL);
+  xassertPrecondition(m_kind == GDVK_SYMBOL);
+
   if (m_value.m_symbolName == s_symbolName_true) {
     return true;
   }
@@ -637,7 +637,7 @@ void GDValue::symbolSet(GDVSymbol sym)
 
 GDVSymbol GDValue::symbolGet() const
 {
-  assert(m_kind == GDVK_SYMBOL);
+  xassertPrecondition(m_kind == GDVK_SYMBOL);
   return GDVSymbol(GDVSymbol::BypassSymbolLookup, m_value.m_symbolName);
 }
 
@@ -769,14 +769,14 @@ void GDValue::stringSet(GDVString &&str)
 
 GDVString const &GDValue::stringGet() const
 {
-  assert(m_kind == GDVK_STRING);
+  xassertPrecondition(m_kind == GDVK_STRING);
   return *(m_value.m_string);
 }
 
 
 GDVString &GDValue::stringGetMutable()
 {
-  assert(m_kind == GDVK_STRING);
+  xassertPrecondition(m_kind == GDVK_STRING);
   return *(m_value.m_string);
 }
 
@@ -786,28 +786,28 @@ GDVString &GDValue::stringGetMutable()
 #define DEFINE_GDV_KIND_BEGIN_END(GDVKindName, kindName, GDVK_CODE) \
   GDVKindName::const_iterator GDValue::kindName##CBegin() const     \
   {                                                                 \
-    assert(m_kind == GDVK_CODE);                                    \
+    xassertPrecondition(m_kind == GDVK_CODE);                       \
     return m_value.m_##kindName->cbegin();                          \
   }                                                                 \
                                                                     \
                                                                     \
   GDVKindName::const_iterator GDValue::kindName##CEnd() const       \
   {                                                                 \
-    assert(m_kind == GDVK_CODE);                                    \
+    xassertPrecondition(m_kind == GDVK_CODE);                       \
     return m_value.m_##kindName->cend();                            \
   }                                                                 \
                                                                     \
                                                                     \
   GDVKindName::iterator GDValue::kindName##Begin()                  \
   {                                                                 \
-    assert(m_kind == GDVK_CODE);                                    \
+    xassertPrecondition(m_kind == GDVK_CODE);                       \
     return m_value.m_##kindName->begin();                           \
   }                                                                 \
                                                                     \
                                                                     \
   GDVKindName::iterator GDValue::kindName##End()                    \
   {                                                                 \
-    assert(m_kind == GDVK_CODE);                                    \
+    xassertPrecondition(m_kind == GDVK_CODE);                       \
     return m_value.m_##kindName->end();                             \
   }
 
@@ -855,14 +855,14 @@ void GDValue::sequenceSet(GDVSequence &&vec)
 
 GDVSequence const &GDValue::sequenceGet() const
 {
-  assert(m_kind == GDVK_SEQUENCE);
+  xassertPrecondition(m_kind == GDVK_SEQUENCE);
   return *(m_value.m_sequence);
 }
 
 
 GDVSequence &GDValue::sequenceGetMutable()
 {
-  assert(m_kind == GDVK_SEQUENCE);
+  xassertPrecondition(m_kind == GDVK_SEQUENCE);
   return *(m_value.m_sequence);
 }
 
@@ -959,14 +959,14 @@ void GDValue::setSet(GDVSet &&set)
 
 GDVSet const &GDValue::setGet() const
 {
-  assert(m_kind == GDVK_SET);
+  xassertPrecondition(m_kind == GDVK_SET);
   return *(m_value.m_set);
 }
 
 
 GDVSet &GDValue::setGetMutable()
 {
-  assert(m_kind == GDVK_SET);
+  xassertPrecondition(m_kind == GDVK_SET);
   return *(m_value.m_set);
 }
 
@@ -976,14 +976,14 @@ DEFINE_GDV_KIND_BEGIN_END(GDVSet, set, GDVK_SET)
 
 bool GDValue::setContains(GDValue const &elt) const
 {
-  assert(isSet());
+  xassertPrecondition(isSet());
   return m_value.m_set->find(elt) != m_value.m_set->end();
 }
 
 
 bool GDValue::setInsert(GDValue const &elt)
 {
-  assert(isSet());
+  xassertPrecondition(isSet());
   auto res = m_value.m_set->insert(elt);
   return res.second;
 }
@@ -991,7 +991,7 @@ bool GDValue::setInsert(GDValue const &elt)
 
 bool GDValue::setInsert(GDValue &&elt)
 {
-  assert(isSet());
+  xassertPrecondition(isSet());
   auto res = m_value.m_set->insert(std::move(elt));
   return res.second;
 }
@@ -999,14 +999,14 @@ bool GDValue::setInsert(GDValue &&elt)
 
 bool GDValue::setRemove(GDValue const &elt)
 {
-  assert(isSet());
+  xassertPrecondition(isSet());
   return m_value.m_set->erase(elt) != 0;
 }
 
 
 void GDValue::setClear()
 {
-  assert(isSet());
+  xassertPrecondition(isSet());
   return m_value.m_set->clear();
 }
 
@@ -1052,14 +1052,14 @@ void GDValue::mapSet(GDVMap &&map)
 
 GDVMap const &GDValue::mapGet() const
 {
-  assert(m_kind == GDVK_MAP);
+  xassertPrecondition(m_kind == GDVK_MAP);
   return *(m_value.m_map);
 }
 
 
 GDVMap &GDValue::mapGetMutable()
 {
-  assert(m_kind == GDVK_MAP);
+  xassertPrecondition(m_kind == GDVK_MAP);
   return *(m_value.m_map);
 }
 
@@ -1069,32 +1069,32 @@ DEFINE_GDV_KIND_BEGIN_END(GDVMap, map, GDVK_MAP)
 
 bool GDValue::mapContains(GDValue const &key) const
 {
-  assert(isMap());
+  xassertPrecondition(isMap());
   return m_value.m_map->find(key) != m_value.m_map->end();
 }
 
 
 GDValue const &GDValue::mapGetValueAt(GDValue const &key) const
 {
-  assert(isMap());
+  xassertPrecondition(isMap());
   auto it = m_value.m_map->find(key);
-  assert(it != m_value.m_map->end());
+  xassertPrecondition(it != m_value.m_map->end());
   return (*it).second;
 }
 
 
 GDValue &GDValue::mapGetValueAt(GDValue const &key)
 {
-  assert(isMap());
+  xassertPrecondition(isMap());
   auto it = m_value.m_map->find(key);
-  assert(it != m_value.m_map->end());
+  xassertPrecondition(it != m_value.m_map->end());
   return (*it).second;
 }
 
 
 void GDValue::mapSetValueAt(GDValue const &key, GDValue const &value)
 {
-  assert(isMap());
+  xassertPrecondition(isMap());
 
   auto it = m_value.m_map->find(key);
   if (it != m_value.m_map->end()) {
@@ -1108,7 +1108,7 @@ void GDValue::mapSetValueAt(GDValue const &key, GDValue const &value)
 
 void GDValue::mapSetValueAt(GDValue &&key, GDValue &&value)
 {
-  assert(isMap());
+  xassertPrecondition(isMap());
 
   auto it = m_value.m_map->find(key);
   if (it != m_value.m_map->end()) {
@@ -1123,14 +1123,14 @@ void GDValue::mapSetValueAt(GDValue &&key, GDValue &&value)
 
 bool GDValue::mapRemoveKey(GDValue const &key)
 {
-  assert(isMap());
+  xassertPrecondition(isMap());
   return m_value.m_map->erase(key) != 0;
 }
 
 
 void GDValue::mapClear()
 {
-  assert(isMap());
+  xassertPrecondition(isMap());
   return m_value.m_map->clear();
 }
 
