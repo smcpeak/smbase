@@ -11,6 +11,7 @@
 #include "gdvsymbol.h"                 // gdv::GDVSymbol
 #include "save-restore.h"              // SAVE_RESTORE, SET_RESTORE
 #include "sm-macros.h"                 // OPEN_NAMESPACE
+#include "sm-trace.h"                  // INIT_TRACE
 #include "string-utils.h"              // doubleQuote
 #include "stringf.h"                   // stringf
 
@@ -20,20 +21,6 @@
 
 
 OPEN_NAMESPACE(gdv)
-
-
-// This file exists in a different repo that I don't want to depend on,
-// so it is normally commented out.
-#if 0
-  #include "trace.h"                   // INIT_TRACE
-#else
-  // Do-nothing definitions.
-  #define INIT_TRACE(x)
-  #define TRACE1(x)
-  #define TRACE2(x)
-  #define TRACE1_SCOPED(x)
-  #define TRACE2_SCOPED(x)
-#endif
 
 
 INIT_TRACE("gdvalue-writer");
@@ -425,6 +412,9 @@ bool GDValueWriter::writeDQString(GDVString const &str)
   }
 
   os() << '"';
+  if (exceededSpeculativeCapacity()) {
+    return false;
+  }
 
   return true;
 }

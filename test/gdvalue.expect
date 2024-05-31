@@ -160,6 +160,12 @@ pretty print target width: 0
       "zwei"
     }}
 }
+{
+  1:
+    "long-ish value"
+  2:
+    3
+}
 pretty print target width: 19
 |-----------------|
 [1 2 3]
@@ -226,6 +232,11 @@ pretty print target width: 19
     "zwei"
   }}
 }
+{
+  1:
+    "long-ish value"
+  2:3
+}
 |-----------------|
 pretty print target width: 20
 |------------------|
@@ -289,6 +300,10 @@ pretty print target width: 20
     "zwei"
   }}
 }
+{
+  1:"long-ish value"
+  2:3
+}
 |------------------|
 pretty print target width: 37
 |-----------------------------------|
@@ -315,6 +330,7 @@ pretty print target width: 37
     {8:9 10:11 12:13 14:15}
 }
 { {1:2}:{{"drei" "eins" "zwei"}}}
+{1:"long-ish value" 2:3}
 |-----------------------------------|
 pretty print target width: 38
 |------------------------------------|
@@ -336,6 +352,7 @@ pretty print target width: 38
     {8:9 10:11 12:13 14:15}
 }
 { {1:2}:{{"drei" "eins" "zwei"}}}
+{1:"long-ish value" 2:3}
 |------------------------------------|
 tests for module gdvalue PASSED
 ---- stderr ----

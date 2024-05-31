@@ -662,6 +662,15 @@ static void testPrettyPrint(int width)
   v.writeLines(tout, GDValueWriteOptions()
                       .setTargetLineWidth(width));
 
+  // Exercise printing where a map value is long but is not a container.
+  // This is meant to barely not fit in 20 columns, thereby causing the
+  // key/value pair to be split onto two lines (even though that does
+  // not help here).
+  v = GDValue(GDVMap{ {1, "long-ish value"},
+                      {2, 3} });
+  v.writeLines(tout, GDValueWriteOptions()
+                      .setTargetLineWidth(width));
+
   printRuler(width);
 }
 
