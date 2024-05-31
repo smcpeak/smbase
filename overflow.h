@@ -20,6 +20,7 @@
 #include "xoverflow.h"                 // XBinaryOpOverflow, XNumericConversionLosesRange, XNumericConversionChangesSign
 
 #include <limits>                      // std::numeric_limits
+#include <optional>                    // std::optional
 #include <type_traits>                 // std::is_unsigned
 
 using std::ostream;
@@ -50,21 +51,21 @@ void detectedOverflow(NUM a, NUM b, char op)
 }
 
 
-// Add two numbers and check that they do not overflow.
+// Add two numbers.  Return `std::nullopt` if they would overflow.
 template <class NUM>
-NUM addWithOverflowCheck(NUM a, NUM b)
+std::optional<NUM> addWithOverflowCheckOpt(NUM a, NUM b)
 {
   if (a >= 0) {
     NUM largest_b = numeric_limits<NUM>::max() - a;
     if (b > largest_b) {
-      detectedOverflow(a, b, '+');
+      return std::nullopt;
     }
   }
   else {
     // Here, "smallest" means "most negative".
     NUM smallest_b = numeric_limits<NUM>::min() - a;
     if (b < smallest_b) {
-      detectedOverflow(a, b, '+');
+      return std::nullopt;
     }
   }
 
@@ -72,13 +73,25 @@ NUM addWithOverflowCheck(NUM a, NUM b)
 }
 
 
-// Subtract two numbers and check that they do not overflow.
+// Add two numbers.  Throw `XOverflow` if they would overflow.
 template <class NUM>
-NUM subtractWithOverflowCheck(NUM a, NUM b)
+NUM addWithOverflowCheck(NUM a, NUM b)
+{
+  auto ret = addWithOverflowCheckOpt(a, b);
+  if (!ret.has_value()) {
+    detectedOverflow(a, b, '+');
+  }
+  return ret.value();
+}
+
+
+// Subtract two numbers.  Return `std::nullopt` if they would overflow.
+template <class NUM>
+std::optional<NUM> subtractWithOverflowCheckOpt(NUM a, NUM b)
 {
   if (is_unsigned<NUM>::value) {
     if (a < b) {
-      detectedOverflow(a, b, '-');
+      return std::nullopt;
     }
   }
   else {
@@ -99,7 +112,7 @@ NUM subtractWithOverflowCheck(NUM a, NUM b)
         NUM mbp1 = -(b+1);             // PE: mbp1 in [0,3]
 
         if (mbp1 >= largest_minus_b) {
-          detectedOverflow(a, b, '-');
+          return std::nullopt;
         }
       }
     }
@@ -110,7 +123,7 @@ NUM subtractWithOverflowCheck(NUM a, NUM b)
 
         // Since `b` is positive, we can safely invert it.
         if (-b < smallest_minus_b) {
-          detectedOverflow(a, b, '-');
+          return std::nullopt;
         }
       }
       else /* b < 0 */ {
@@ -123,9 +136,21 @@ NUM subtractWithOverflowCheck(NUM a, NUM b)
 }
 
 
-// Multiply two integers, verifying that the result does not overflow.
+// Subtract two numbers.  Throw `XOverflow` if they would overflow.
 template <class NUM>
-NUM multiplyWithOverflowCheck(NUM a, NUM b)
+NUM subtractWithOverflowCheck(NUM a, NUM b)
+{
+  auto ret = subtractWithOverflowCheckOpt(a, b);
+  if (!ret.has_value()) {
+    detectedOverflow(a, b, '-');
+  }
+  return ret.value();
+}
+
+
+// Multiply two integers.  Return `std::nullopt` if they would overflow.
+template <class NUM>
+std::optional<NUM> multiplyWithOverflowCheckOpt(NUM a, NUM b)
 {
   if (a == 0) {
     // 'a' is zero.  Result should not overflow.  I could
@@ -136,13 +161,13 @@ NUM multiplyWithOverflowCheck(NUM a, NUM b)
     if (b > 0) {
       NUM largest_b = numeric_limits<NUM>::max() / a;
       if (b > largest_b) {
-        detectedOverflow(a, b, '*');
+        return std::nullopt;
       }
     }
     else {
       NUM smallest_b = numeric_limits<NUM>::min() / a;
       if (b < smallest_b) {
-        detectedOverflow(a, b, '*');
+        return std::nullopt;
       }
     }
   }
@@ -153,20 +178,20 @@ NUM multiplyWithOverflowCheck(NUM a, NUM b)
     // to arbitrary representation limits without incurring extra
     // requirements on NUM like being able to compute the magnitude.
     if (b == numeric_limits<NUM>::min()) {
-      detectedOverflow(a, b, '*');
+      return std::nullopt;
     }
   }
   else {
     if (b > 0) {
       NUM largest_b = numeric_limits<NUM>::min() / a;
       if (b > largest_b) {
-        detectedOverflow(a, b, '*');
+        return std::nullopt;
       }
     }
     else {
       NUM smallest_b = numeric_limits<NUM>::max() / a;
       if (b < smallest_b) {
-        detectedOverflow(a, b, '*');
+        return std::nullopt;
       }
     }
   }
@@ -175,21 +200,29 @@ NUM multiplyWithOverflowCheck(NUM a, NUM b)
 }
 
 
-// Get quotient and remainder, throwing on overflow or division by zero.
+// Multiply two integers.  Throw `XOverflow` if they would overflow.
 template <class NUM>
-void divideWithOverflowCheck(
+NUM multiplyWithOverflowCheck(NUM a, NUM b)
+{
+  auto res = multiplyWithOverflowCheckOpt(a, b);
+  if (!res.has_value()) {
+    detectedOverflow(a, b, '*');
+  }
+  return res.value();
+}
+
+
+// Get quotient and remainder, returning false on overflow or division
+// by zero.
+template <class NUM>
+bool divideWithOverflowCheckOpt(
   NUM &quotient,
   NUM &remainder,
   NUM dividend,                        // aka numerator
   NUM divisor)                         // aka denominator
 {
   if (divisor == 0) {
-    // Although division by zero is not usually described as an
-    // "overflow", since there is no possible type that would be large
-    // enough to represent the result, my idea for this module is that
-    // it catches any unsafe operation and maps it to an `XOverflow`
-    // exception.
-    detectedOverflow(dividend, divisor, '/');
+    return false;
   }
 
   if (is_signed<NUM>::value) {
@@ -198,28 +231,73 @@ void divideWithOverflowCheck(
       // The specific case of dividing the most negative integer by -1
       // overflows because the result would be the positive counterpart
       // of the dividend, which is not representable.
-      detectedOverflow(dividend, divisor, '/');
+      return false;
     }
   }
 
   // All other cases are safe.
   quotient = dividend / divisor;
   remainder = dividend % divisor;
+  return true;
+}
+
+
+// Get quotient and remainder, throwing `XOverflow` on overflow or
+// division by zero.
+//
+// TODO: I should throw `XDivideByZero` in the latter case.
+template <class NUM>
+void divideWithOverflowCheck(
+  NUM &quotient,
+  NUM &remainder,
+  NUM dividend,                        // aka numerator
+  NUM divisor)                         // aka denominator
+{
+  if (!divideWithOverflowCheckOpt(
+         quotient,
+         remainder,
+         dividend,
+         divisor)) {
+    detectedOverflow(dividend, divisor, '/');
+  }
+}
+
+
+// Convert 'src' to type 'DEST', returning `std::nullopt` if it cannot
+// be converted back without loss of information.
+//
+// This is not the same as being convertible without overflow, since
+// converting -1 to unsigned is a form of overflow, but does not lose
+// information.
+template <class DEST, class SRC>
+std::optional<DEST> convertWithoutLossOpt(SRC const &src)
+{
+  DEST dest = static_cast<DEST>(src);
+  SRC s2 = static_cast<SRC>(dest);
+  if (s2 == src) {
+    // Round-trip conversion preserved information.
+    return dest;
+  }
+  else {
+    return std::nullopt;
+  }
 }
 
 
 // Convert 'src' to type 'DEST', throwing XOverflow if it cannot be
 // converted back without loss of information.
 //
-// This is not the same as being convertible without overflow, since
-// converting -1 to unsigned is a form of overflow, but does not lose
-// information.
+// TODO: Change this to return `dest` instead of passing by reference.
 template <class DEST, class SRC>
 void convertWithoutLoss(DEST &dest, SRC const &src)
 {
-  dest = static_cast<DEST>(src);
-  SRC s2 = static_cast<SRC>(dest);
-  if (s2 != src) {
+  std::optional<DEST> destOpt(convertWithoutLossOpt<DEST>(src));
+  if (!destOpt.has_value()) {
+    // I'm repeating myself here in order to compute values used in the
+    // exception object...
+    dest = static_cast<DEST>(src);
+    SRC s2 = static_cast<SRC>(dest);
+
     // Printing '+src', etc., ensures that types like 'char' will print
     // as numbers.
     THROW(smbase::XNumericConversionLosesRange(
@@ -229,6 +307,31 @@ void convertWithoutLoss(DEST &dest, SRC const &src)
       sizeof(SRC),
       sizeof(DEST)));
   }
+
+  dest = destOpt.value();
+}
+
+
+// Convert 'src' to 'dest', ensuring the value is exactly representable
+// in the destination type.  If not, return `std::nullopt`.
+//
+// This is different from 'convertWithoutLossOpt' in that it requires
+// the sign to be preserved.
+template <class DEST, class SRC>
+std::optional<DEST> convertNumberOpt(SRC const &src)
+{
+  std::optional<DEST> ret(convertWithoutLossOpt<DEST>(src));
+
+  if (ret.has_value()) {
+    DEST dest = ret.value();
+
+    if ((dest < 0) != (src < 0)) {
+      // The conversion changes sign.
+      return std::nullopt;
+    }
+  }
+
+  return ret;
 }
 
 
@@ -240,16 +343,16 @@ void convertWithoutLoss(DEST &dest, SRC const &src)
 template <class DEST, class SRC>
 DEST convertNumber(SRC const &src)
 {
-  DEST dest;
-  convertWithoutLoss(dest, src);
+  std::optional<DEST> ret(convertNumberOpt<DEST>(src));
 
-  if ((dest < 0) != (src < 0)) {
+  if (!ret.has_value()) {
+    DEST dest = static_cast<DEST>(src);
     THROW(smbase::XNumericConversionChangesSign(
       stringb(+src),
       stringb(+dest)));
   }
 
-  return dest;
+  return ret.value();
 }
 
 

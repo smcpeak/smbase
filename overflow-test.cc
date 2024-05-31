@@ -11,6 +11,7 @@
 #include "str.h"                       // streq
 
 #include <cstdlib>                     // std::getenv
+#include <optional>                    // std::optional
 
 #include <stdint.h>                    // int64_t, uint64_t, INT64_C
 #include <limits.h>                    // INT_MIN, INT_MIN
@@ -28,12 +29,21 @@ void testOneAdd(NUM a, NUM b, NUM expect)
   NUM actual = addWithOverflowCheck(a, b);
   EXPECT_EQ_NUMBERS(actual, expect);
 
+  std::optional<NUM> actualOpt = addWithOverflowCheckOpt(a, b);
+  EXPECT_EQ_NUMBERS(actualOpt.value(), expect);
+
   // Also test subtraction.
   NUM actualA = subtractWithOverflowCheck(expect, b);
   EXPECT_EQ_NUMBERS(actualA, a);
 
+  std::optional<NUM> actualAOpt = subtractWithOverflowCheckOpt(expect, b);
+  EXPECT_EQ_NUMBERS(actualAOpt.value(), a);
+
   NUM actualB = subtractWithOverflowCheck(expect, a);
   EXPECT_EQ_NUMBERS(actualB, b);
+
+  std::optional<NUM> actualBOpt = subtractWithOverflowCheckOpt(expect, a);
+  EXPECT_EQ_NUMBERS(actualBOpt.value(), b);
 }
 
 
@@ -53,6 +63,8 @@ void testOneAddOv(NUM a, NUM b)
       cout << "As expected: " << x.why() << endl;
     }
   }
+
+  EXPECT_EQ(addWithOverflowCheckOpt(a, b).has_value(), false);
 }
 
 
@@ -72,6 +84,8 @@ void testOneSubOv(NUM a, NUM b)
       cout << "As expected: " << x.why() << endl;
     }
   }
+
+  EXPECT_EQ(subtractWithOverflowCheckOpt(a, b).has_value(), false);
 }
 
 
@@ -80,7 +94,9 @@ template <class NUM>
 void testOneMultiply(NUM a, NUM b, NUM expect)
 {
   NUM actual = multiplyWithOverflowCheck(a, b);
-  xassert(actual == expect);
+  EXPECT_EQ_NUMBERS(actual, expect);
+
+  EXPECT_EQ_NUMBERS(multiplyWithOverflowCheckOpt(a, b).value(), expect);
 }
 
 
@@ -100,6 +116,8 @@ void testOneMultiplyOv(NUM a, NUM b)
       cout << "As expected: " << x.why() << endl;
     }
   }
+
+  EXPECT_EQ(multiplyWithOverflowCheckOpt(a, b).has_value(), false);
 }
 
 
@@ -110,6 +128,10 @@ void testOneDivide(NUM a, NUM b, NUM expectQuotient, NUM expectRemainder)
   try {
     NUM actualQuotient, actualRemainder;
     divideWithOverflowCheck(actualQuotient, actualRemainder, a, b);
+    EXPECT_EQ_NUMBERS(actualQuotient, expectQuotient);
+    EXPECT_EQ_NUMBERS(actualRemainder, expectRemainder);
+
+    xassert(divideWithOverflowCheckOpt(actualQuotient, actualRemainder, a, b));
     EXPECT_EQ_NUMBERS(actualQuotient, expectQuotient);
     EXPECT_EQ_NUMBERS(actualRemainder, expectRemainder);
   }
@@ -138,6 +160,9 @@ void testOneDivideOv(NUM a, NUM b)
       cout << "As expected: " << x << endl;
     }
   }
+
+  NUM q, r;
+  xassert(!divideWithOverflowCheckOpt(q, r, a, b));
 }
 
 
@@ -160,7 +185,10 @@ void testOneAddSmallUsingInt64(SMALL_NUM a, SMALL_NUM b)
 
     // Check for correctness using the larger type.
     int64_t largeActual(actual);
-    xassert(largeActual == result);
+    EXPECT_EQ_NUMBERS(largeActual, result);
+
+    EXPECT_EQ_NUMBERS(
+      static_cast<int64_t>(addWithOverflowCheckOpt(a, b).value()), result);
   }
   else {
     testOneAddOv(a, b);
@@ -172,6 +200,9 @@ void testOneAddSmallUsingInt64(SMALL_NUM a, SMALL_NUM b)
     SMALL_NUM actual = subtractWithOverflowCheck(a, b);
     int64_t largeActual(actual);
     EXPECT_EQ_NUMBERS(largeActual, result);
+
+    EXPECT_EQ_NUMBERS(
+      static_cast<int64_t>(subtractWithOverflowCheckOpt(a, b).value()), result);
   }
   else {
     testOneSubOv(a, b);
@@ -196,7 +227,10 @@ void testOneMultiplySmallUsingInt64(SMALL_NUM a, SMALL_NUM b)
 
     // Check for correctness using the larger type.
     int64_t largeActual(actual);
-    xassert(largeActual == result);
+    EXPECT_EQ_NUMBERS(largeActual, result);
+
+    EXPECT_EQ_NUMBERS(
+      static_cast<int64_t>(multiplyWithOverflowCheckOpt(a, b).value()), result);
   }
   else {
     testOneMultiplyOv(a, b);
@@ -230,6 +264,13 @@ void testOneDivideSmallUsingInt64(SMALL_NUM a, SMALL_NUM b)
     int64_t largeActualQuotient(actualQuotient);
     EXPECT_EQ_NUMBERS(largeActualQuotient, expectQuotient);
     int64_t largeActualRemainder(actualRemainder);
+    EXPECT_EQ_NUMBERS(largeActualRemainder, expectRemainder);
+
+    xassert(divideWithOverflowCheckOpt(actualQuotient, actualRemainder, a, b));
+
+    largeActualQuotient = actualQuotient;
+    EXPECT_EQ_NUMBERS(largeActualQuotient, expectQuotient);
+    largeActualRemainder = actualRemainder;
     EXPECT_EQ_NUMBERS(largeActualRemainder, expectRemainder);
   }
   else {
