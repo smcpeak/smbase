@@ -213,10 +213,10 @@ STATICDEF Integer Integer::fromRadixDigits(
 }
 
 
-STATICDEF Integer Integer::fromRadixPrefixedDigits(std::string_view digits)
+STATICDEF Integer Integer::fromDigits(std::string_view digits)
 {
   return underToInteger(
-    UnderInteger::fromRadixPrefixedDigits(digits)
+    UnderInteger::fromDigits(digits)
   );
 }
 

@@ -593,7 +593,7 @@ public:      // methods
 
     if (radix < 0) {
       // Detect the radix.
-      return APInteger(UInteger::fromRadixPrefixedDigits(digits),
+      return APInteger(UInteger::fromDigits(digits),
                        negative);
     }
     else {
@@ -611,7 +611,7 @@ public:      // methods
   }
 
   // Calls `fromPossiblyRadixPrefixedDigits` with a negative `radix`.
-  static APInteger fromRadixPrefixedDigits(std::string_view digits)
+  static APInteger fromDigits(std::string_view digits)
   {
     return fromPossiblyRadixPrefixedDigits(digits, -1 /*radix*/);
   }

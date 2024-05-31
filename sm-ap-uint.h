@@ -911,8 +911,8 @@ public:      // methods
     return 0;
   }
 
-  /* Convert `digits` to an integer.  It is expected to be prefixed with
-     a radix indicator, from among:
+  /* Convert `digits` to an integer.  It can be prefixed with a radix
+     indicator, from among:
 
        0b   - binary
        0o   - octal
@@ -937,7 +937,7 @@ public:      // methods
      unprefixed hex too potentially confusing, and if I write a prefix
      then I should be able to read it too.  So here we are.
   */
-  static APUInteger fromRadixPrefixedDigits(std::string_view digits)
+  static APUInteger fromDigits(std::string_view digits)
   {
     if (int radix = detectRadixPrefix(digits)) {
       return fromRadixDigits(digits.substr(2), radix);

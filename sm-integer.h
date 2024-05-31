@@ -160,7 +160,9 @@ public:      // methods
   static Integer fromRadixDigits(std::string_view digits, int radix);
 
   // Calls `fromPossiblyRadixPrefixedDigits` with a negative `radix`.
-  static Integer fromRadixPrefixedDigits(std::string_view digits);
+  // That is, read the digits, which might have a radix prefix.  This is
+  // the most user-friendly interface.
+  static Integer fromDigits(std::string_view digits);
 
   // ---------- Addition ----------
   Integer &operator+=(Integer const &other);

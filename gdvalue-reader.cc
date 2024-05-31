@@ -572,7 +572,7 @@ GDValue GDValueReader::readNextInteger(int const firstChar)
 
   try {
     // This will re-do the radix detection.  That is fine.
-    return GDValue(GDVInteger::fromRadixPrefixedDigits(
+    return GDValue(GDVInteger::fromDigits(
       std::string_view(digits.data(), digits.size())));
   }
   catch (XFormat &x) {
