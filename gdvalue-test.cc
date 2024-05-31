@@ -941,6 +941,14 @@ static void testDeserializeMisc()
   testOneDeserialize("1 /**/", 1);
   testOneDeserialize("1 /**/ ", 1);
 
+  testOneDeserialize("/***/ 1", 1);
+  testOneDeserialize("/* */ 1", 1);
+  testOneDeserialize("/* / */ 1", 1);
+  testOneDeserialize("/* /* */ */ 1", 1);
+  testOneDeserialize("/*/**/*/1", 1);
+  testOneDeserialize("/* /** */ */ 1", 1);
+  testOneDeserialize("/* /***/ */ 1", 1);
+
   // Check that we don't somehow recognize comments inside strings.
   testOneDeserialize("\"/*\"", GDVString("/*"));
 
@@ -991,6 +999,14 @@ static void testDeserializeIntegers()
     "0x1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF",
     GDVInteger::fromRadixDigits(
       "1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF", 16));
+}
+
+
+static void testDeserializeStrings()
+{
+  // Surrogate pair.
+  testOneDeserialize(R"("\uD800\uDC00")", utf8EncodeVector({0x10000}));
+  testOneDeserialize(R"("\uDBFF\uDFFF")", utf8EncodeVector({0x10FFFF}));
 }
 
 
@@ -1102,6 +1118,7 @@ void test_gdvalue()
     testSyntaxErrors();
     testDeserializeMisc();
     testDeserializeIntegers();
+    testDeserializeStrings();
     testStringEscapes();
 
     // Some interesting values for the particular data used.

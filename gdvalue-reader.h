@@ -38,21 +38,21 @@ protected:   // methods
   // find the places that need to be tested for syntax error detection
   // and reporting by searching for "err(" case-insensitively.
   //
-  void err(std::string const &syntaxError) const;
+  void err(std::string const &syntaxError) const NORETURN;
 
   // Throw with 'loc-1' and 'syntaxError'.
   void locErr(FileLineCol const &loc,
-              std::string const &syntaxError) const;
+              std::string const &syntaxError) const NORETURN;
 
   // Report error: 'c' is unexpected.  'c' can be 'eofCode()', and the
   // message will be tailored accordingly.  'lookingFor' is a phrase
   // describing what the parser was looking for when 'c' was
   // encountered.
-  void unexpectedCharErr(int c, char const *lookingFor) const;
+  void unexpectedCharErr(int c, char const *lookingFor) const NORETURN;
 
   // Slightly more general version that does not insert the word
   // "while".
-  void inCtxUnexpectedCharErr(int c, char const *context) const;
+  void inCtxUnexpectedCharErr(int c, char const *context) const NORETURN;
 
   // Read a single character from 'm_is', updating 'm_location' so it
   // refers to the *next* character.  (Thus, when we report an error, we
