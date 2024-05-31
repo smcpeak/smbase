@@ -986,6 +986,28 @@ void SMFileUtil::writeFile(string const &fname,
 }
 
 
+string SMFileUtil::readFileAsString(string const &fname)
+{
+  std::vector<unsigned char> vec = readFile(fname);
+  return std::string(reinterpret_cast<char const *>(vec.data()),
+                     vec.size());
+}
+
+
+void SMFileUtil::writeFileAsString(string const &fname,
+                                   string const &contents)
+{
+  std::vector<unsigned char> vec;
+  unsigned char const *start =
+    reinterpret_cast<unsigned char const *>(contents.data());
+  vec.insert(vec.begin(),
+             start,
+             start + contents.size());
+
+  writeFile(fname, vec);
+}
+
+
 // Call 'closedir' in the destructor.
 struct CallCloseDir {
   DIR *m_dirp;

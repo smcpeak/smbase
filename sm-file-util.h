@@ -305,7 +305,7 @@ public:      // funcs
   // as-is.  The idea is to treat 'suffix' as being relative to 'prefix'
   // unless it is absolute already.
   string joinIfRelativeFilename(string const &prefix,
-                                         string const &suffix);
+                                string const &suffix);
 
   // Read the contents of 'fname' in binary mode, returning the entire
   // thing as a vector.  Throw XSysError on error.
@@ -315,6 +315,14 @@ public:      // funcs
   // error.
   virtual void writeFile(string const &fname,
                          std::vector<unsigned char> const &bytes);
+
+  // Read the contents of `fname`, in binary mode, and return the result
+  // as a string.
+  virtual string readFileAsString(string const &fname);
+
+  // Write `contents` to `fname` in binary mode.
+  virtual void writeFileAsString(string const &fname,
+                                 string const &contents);
 
   // Get the names of entries in 'directory'.  If an error is
   // encountered, throw XSysError (syserr.h).  The entries are not

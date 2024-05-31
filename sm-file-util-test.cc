@@ -12,7 +12,7 @@
 #include "exc.h"                       // smbase::XBase
 #include "nonport.h"                   // GetMillisecondsAccumulator, getFileModificationTime
 #include "run-process.h"               // RunProcess
-#include "sm-test.h"                   // VPVAL, DIAG, verbose
+#include "sm-test.h"                   // VPVAL, DIAG, verbose, EXPECT_EQ
 #include "strutil.h"                   // compareStringPtrs
 #include "syserr.h"                    // XSysError
 
@@ -785,6 +785,20 @@ static void testReadAndWriteFile()
 }
 
 
+static void testReadAndWriteFileAsString()
+{
+  string fname = "test.dir/rw-as-string.txt";
+  string expect("this is the string");
+
+  SMFileUtil sfu;
+  sfu.writeFileAsString(fname, expect);
+  string actual = sfu.readFileAsString(fname);
+  EXPECT_EQ(actual, expect);
+
+  sfu.removeFile(fname);
+}
+
+
 static void testTouchFile()
 {
   SMFileUtil sfu;
@@ -906,6 +920,7 @@ void test_sm_file_util()
   testAtomicallyRenameFile();
   testCreateDirectoryAndParents();
   testReadAndWriteFile();
+  testReadAndWriteFileAsString();
   testArrayOfDirEntry();
 
   // This test is annoyingly slow, so it is disabled by default.
