@@ -186,6 +186,10 @@ void test2()
   s.add(a3);
   xassert(s.isNotEmpty());
   xassert(s.getNumEntries() == 1);
+
+  delete a1;
+  delete a2;
+  delete a3;
 }
 
 
