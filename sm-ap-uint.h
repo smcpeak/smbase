@@ -9,7 +9,7 @@
 #ifndef SMBASE_SM_AP_UINT_H
 #define SMBASE_SM_AP_UINT_H
 
-#include "codepoint.h"                 // isASCIIHexDigit, decodeASCIIHexDigit
+#include "codepoint.h"                 // isASCIIHexDigit, decodeASCIIHexDigit, decodeASCIIRadixDigit, decodeRadixIndicatorLetter, encodeRadixIndicatorLetter
 #include "compare-util.h"              // DEFINE_FRIEND_RELATIONAL_OPERATORS
 #include "div-up.h"                    // div_up
 #include "double-width-type.h"         // smbase::DoubleWidthType
@@ -281,62 +281,13 @@ private:     // methods
   {
     xassertPrecondition(2 <= radix && radix <= 36);
 
-    // First try to map the digit to a value without regard for radix.
-    int dv = -1;
-    if ('0' <= digit && digit <= '9') {
-      dv = digit - '0';
-    }
-    else if ('A' <= digit && digit <= 'Z') {
-      dv = digit - 'A' + 10;
-    }
-    else if ('a' <= digit && digit <= 'z') {
-      dv = digit - 'a' + 10;
-    }
-
-    // If it was not a digit or letter, or was but the denoted value is
-    // too large, complain.
-    if (dv < 0 || dv >= radix) {
+    int dv = decodeASCIIRadixDigit(digit, radix);
+    if (dv < 0) {
       xformatsb("Expecting a base-" << radix <<
                 " digit, instead found " << singleQuoteChar(digit));
     }
 
     return (Word)dv;
-  }
-
-  /* If `c` is one of the letters that can follow a leading '0' to
-     indicate the radix, return the denoted radix.  Otherwise return 0.
-  */
-  static int decodeRadixIndicatorLetter(char c)
-  {
-    switch (c) {
-      case 'b':
-      case 'B':
-        return 2;
-
-      case 'o':
-      case 'O':
-        return 8;
-
-      case 'x':
-      case 'X':
-        return 16;
-
-      default:
-        return 0;
-    }
-  }
-
-  /* If `radix` is one of those for which there is a special radix
-     prefix code letter, return that letter.  Otherwise return 0.
-  */
-  static char encodeRadixIndicatorLetter(int radix)
-  {
-    switch (radix) {
-      case 2:      return 'b';
-      case 8:      return 'o';
-      case 16:     return 'x';
-      default:     return 0;
-    }
   }
 
 public:      // methods

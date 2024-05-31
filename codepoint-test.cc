@@ -3,6 +3,7 @@
 
 #include "codepoint.h"                 // module to test
 
+#include "sm-test.h"                   // EXPECT_EQ
 #include "xassert.h"                   // xassert
 
 #include <iostream>                    // std::{cout, endl}
@@ -40,6 +41,26 @@ void test_codepoint()
   xassert(isASCIIOctDigit('0'));
   xassert(isASCIIOctDigit('7'));
   xassert(!isASCIIOctDigit('8'));
+
+  EXPECT_EQ(decodeRadixIndicatorLetter('b'), 2);
+  EXPECT_EQ(decodeRadixIndicatorLetter('O'), 8);
+  EXPECT_EQ(decodeRadixIndicatorLetter('x'), 16);
+  EXPECT_EQ(decodeRadixIndicatorLetter('t'), 0);
+  EXPECT_EQ(decodeRadixIndicatorLetter(-1), 0);
+
+  EXPECT_EQ(decodeASCIIRadixDigit('F', 16), 15);
+  EXPECT_EQ(decodeASCIIRadixDigit('F', 10), -1);
+  EXPECT_EQ(decodeASCIIRadixDigit('z', 36), 35);
+  EXPECT_EQ(decodeASCIIRadixDigit('7', 16),  7);
+
+  EXPECT_EQ(isASCIIRadixDigit('A', 16), true);
+  EXPECT_EQ(isASCIIRadixDigit('A', 10), false);
+
+  EXPECT_EQ(encodeRadixIndicatorLetter(10), '\0');
+  EXPECT_EQ(encodeRadixIndicatorLetter(25), '\0');
+  EXPECT_EQ(encodeRadixIndicatorLetter(16), 'x');
+  EXPECT_EQ(encodeRadixIndicatorLetter(8), 'o');
+  EXPECT_EQ(encodeRadixIndicatorLetter(2), 'b');
 }
 
 

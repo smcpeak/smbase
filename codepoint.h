@@ -71,5 +71,31 @@ int decodeASCIIHexDigit(int c);
 // [0x0,0x10FFFF].
 int decodeSurrogatePair(int highSurrogate, int lowSurrogate);
 
+/* Implement the following map:
+
+     input          output
+     ----------     ------
+     'b' or 'B'          2
+     'o' or 'O'          8
+     'x' or 'X'         16
+     else                0
+
+   This is meant for use as part of an integer decoder.
+*/
+int decodeRadixIndicatorLetter(int c);
+
+// If `c` denotes a digit value in `radix`, return that value.
+// Otherwise return -1.  When `radix > 10`, letters case-insensitively
+// denote digits starting with 'A' denoting 10.
+//
+// `radix` must be in [2,36].
+int decodeASCIIRadixDigit(int c, int radix);
+
+// True if `decodeASCIIRadixDigit` would return non-negative.
+bool isASCIIRadixDigit(int c, int radix);
+
+// If `radix` is one of those for which there is a special radix
+// prefix code letter, return that letter.  Otherwise return 0.
+char encodeRadixIndicatorLetter(int radix);
 
 #endif // CODEPOINT_H

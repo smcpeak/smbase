@@ -140,9 +140,9 @@ public:      // methods
      If it starts with '-', return a negative value.
 
      If `radix` is -1 and, after the optional minus sign, the digits
-     begin with "0b", "0o", or "0x", then treat the digits that follow
-     as being in base 2, 8, or 16 respectively.  Otherwise, treat them
-     as decimal.
+     begin with "0b", "0o", or "0x" (case-insensitive), then treat the
+     digits that follow as being in base 2, 8, or 16 respectively.
+     Otherwise, treat them as decimal.
 
      If `radix` is not -1, then it must be in [2,36], and specifies the
      base in which to interpret the digits.

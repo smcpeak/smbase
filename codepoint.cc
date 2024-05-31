@@ -199,6 +199,66 @@ int decodeSurrogatePair(int highSurrogate, int lowSurrogate)
 }
 
 
+int decodeRadixIndicatorLetter(int c)
+{
+  switch (c) {
+    case 'b':
+    case 'B':
+      return 2;
+
+    case 'o':
+    case 'O':
+      return 8;
+
+    case 'x':
+    case 'X':
+      return 16;
+
+    default:
+      return 0;
+  }
+}
+
+
+int decodeASCIIRadixDigit(int c, int radix)
+{
+  xassertPrecondition(2 <= radix && radix <= 36);
+
+  int dv = -1;
+  if ('0' <= c && c <= '9') {
+    dv = c - '0';
+  }
+  else if ('A' <= c && c <= 'Z') {
+    dv = c - 'A' + 10;
+  }
+  else if ('a' <= c && c <= 'z') {
+    dv = c - 'a' + 10;
+  }
+
+  if (dv < 0 || dv >= radix) {
+    return -1;
+  }
+  else {
+    return dv;
+  }
+}
+
+
+bool isASCIIRadixDigit(int c, int radix)
+{
+  return decodeASCIIRadixDigit(c, radix) >= 0;
+}
+
+
+char encodeRadixIndicatorLetter(int radix)
+{
+  switch (radix) {
+    case  2:     return 'b';
+    case  8:     return 'o';
+    case 16:     return 'x';
+    default:     return 0;
+  }
+}
 
 
 // EOF
