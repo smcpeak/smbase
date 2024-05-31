@@ -45,6 +45,9 @@ using GDVIndex = std::size_t;
 // GDValue(GDVK_INTEGER) holds this.
 using GDVInteger = smbase::Integer;
 
+// Stored when the kind is GDVK_SMALL_INTEGER.
+using GDVSmallInteger = std::int64_t;
+
 // GDValue(GDVK_STRING) holds this.  It is a UTF-8 encoding of the
 // sequence of Unicode code points the string represents.
 using GDVString = std::string;
@@ -65,13 +68,13 @@ using GDVMapEntry = std::pair<GDValue const, GDValue>;
 
 
 // Possible kinds of GDValues.
-enum GDValueKind : int {
+enum GDValueKind : unsigned char {
   // symbol: An identifier-like string that acts as a name of something
   // defined elsewhere.  This includes the special symbols `null`,
   // `false`, and `true`.
   GDVK_SYMBOL,
 
-  // integer: int64_t for now, but arbitrary precision in the future
+  // integer: Unbounded mathematical integer.
   GDVK_INTEGER,
 
   // string: Sequence of Unicode characters encoded as UTF-8.
@@ -85,6 +88,10 @@ enum GDValueKind : int {
 
   // map: Set of (key, value) pairs that are indexed by key.
   GDVK_MAP,
+
+  // This is a private code for internal use by `GDValue`.  It is not a
+  // valid code for use in the public API.
+  GDVK_SMALL_INTEGER,
 
   NUM_GDVALUE_KINDS
 };
@@ -116,6 +123,7 @@ public:      // class data
   static unsigned s_ct_symbolCtor;
   static unsigned s_ct_integerCopyCtor;
   static unsigned s_ct_integerMoveCtor;
+  static unsigned s_ct_integerSmallIntCtor;
   static unsigned s_ct_stringCtorCopy;
   static unsigned s_ct_stringCtorMove;
   static unsigned s_ct_stringSetCopy;
@@ -134,24 +142,31 @@ public:      // class data
   static unsigned s_ct_mapSetMove;
 
 private:     // instance data
-  // Tag indicating which kind of value is represented.
+  // Tag indicating which kind of value is represented, and for
+  // integers, whether we are storing a large or small value.
   GDValueKind m_kind;
 
   // Representation of the value.
   union GDValueUnion {
     // Non-owning pointer to a NUL-terminated string stored in
     // 'GDVSymbol::s_stringTable'.
-    char const  *m_symbolName;
-
-    // TODO: Allow this too?
-    //GDVInteger   m_int64;
+    char const     *m_symbolName;
 
     // These are all owner pointers.
-    GDVInteger  *m_integer;
-    GDVString   *m_string;
-    GDVSequence *m_sequence;
-    GDVSet      *m_set;
-    GDVMap      *m_map;
+    GDVInteger     *m_integer;
+    GDVString      *m_string;
+    GDVSequence    *m_sequence;
+    GDVSet         *m_set;
+    GDVMap         *m_map;
+
+    // The value for `GDVK_SMALL_INTEGER`.
+    //
+    // Given that `GDVInteger` also has a small-integer storage option,
+    // why have one here?  To avoid allocating an extra object for every
+    // integer.  `GDVInteger` still exploits the small integer case for
+    // faster *arithmetic* (and for better storage), while this class
+    // does so for *storage* only.
+    GDVSmallInteger m_smallInteger;
 
     explicit GDValueUnion(char const *symbolName)
       : m_symbolName(symbolName)
@@ -163,8 +178,12 @@ private:     // methods
   // the null value.
   void clearSelfAndSwapWith(GDValue &obj) noexcept;
 
+  // If `i` can fit into `m_smallInteger`, store it there and return
+  // true, otherwise return false without changing anything.
+  bool tryStoreSmallInteger(GDVInteger const &i);
+
 public:      // methods
-  // Make a null value.
+  // Make a `null` symbol value--that is, `isNull()` is true.
   GDValue() noexcept;
 
   ~GDValue();
@@ -184,7 +203,7 @@ public:      // methods
   explicit GDValue(GDValueKind kind);
 
 
-  GDValueKind getKind() const { return m_kind; }
+  GDValueKind getKind() const;
   bool isSymbol()   const { return getKind() == GDVK_SYMBOL;   }
   bool isInteger()  const { return getKind() == GDVK_INTEGER;  }
   bool isString()   const { return getKind() == GDVK_STRING;   }
@@ -315,9 +334,10 @@ public:      // methods
   bool isBool() const;
 
   // A constructor that just accepts 'bool' creates too many ambiguities
-  // so we use a discriminator tag.
+  // so we use a discriminator tag.  But with the tag, this should be
+  // safe to make usable implicitly in brace initializers.
   enum BoolTagType { BoolTag };
-  GDValue(BoolTagType, bool b);
+  /*implicit*/ GDValue(BoolTagType, bool b);
 
   void boolSet(bool b);
 
@@ -344,12 +364,17 @@ public:      // methods
   // This overload is needed to allow `GDValue(0)` to work because
   // otherwise it is ambiguous between the ctor accepting `GDVInteger`
   // and the ones accepting `GDVString`.
-  /*implicit*/ GDValue(std::int64_t i);
+  /*implicit*/ GDValue(GDVSmallInteger i);
 
   void integerSet(GDVInteger const &i);
   void integerSet(GDVInteger      &&i);
 
-  GDVInteger const &integerGet() const;
+  // This does not return a `const &` because there might not be an
+  // existing `GDVInteger` object to return.  In the common case of
+  // storing a small integer, this does no allocation.  But that comes
+  // at the expense of doing an extra allocation (versus returning a
+  // reference) when we are storing a large integer.
+  GDVInteger integerGet() const;
 
 
   // ---- String ----

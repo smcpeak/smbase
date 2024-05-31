@@ -952,6 +952,14 @@ static void testDeserialize()
   testOneDeserialize("123456789012345678901234567890", n123123123);
   testOneDeserialize("-123456789012345678901234567890", -n123123123);
 
+  // Test comparison between small and large integers.
+  xassert(GDValue(    n123) < GDValue(    n123123));
+  xassert(GDValue( n123123) < GDValue( n123123123));
+  xassert(GDValue(    n123) < GDValue( n123123123));
+  xassert(GDValue(   -n123) > GDValue(   -n123123));
+  xassert(GDValue(-n123123) > GDValue(-n123123123));
+  xassert(GDValue(   -n123) > GDValue(-n123123123));
+
   // TODO: More here.
 }
 

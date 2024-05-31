@@ -38,6 +38,7 @@ char const *toString(GDValueKind gdvk)
     CASE(GDVK_SEQUENCE)
     CASE(GDVK_SET)
     CASE(GDVK_MAP)
+    CASE(GDVK_SMALL_INTEGER)
     #undef CASE
 
     default:
@@ -62,6 +63,7 @@ unsigned GDValue::s_ct_boolCtor = 0;
 unsigned GDValue::s_ct_symbolCtor = 0;
 unsigned GDValue::s_ct_integerCopyCtor = 0;
 unsigned GDValue::s_ct_integerMoveCtor = 0;
+unsigned GDValue::s_ct_integerSmallIntCtor = 0;
 unsigned GDValue::s_ct_stringCtorCopy = 0;
 unsigned GDValue::s_ct_stringCtorMove = 0;
 unsigned GDValue::s_ct_stringSetCopy = 0;
@@ -116,6 +118,10 @@ void GDValue::clearSelfAndSwapWith(GDValue &obj) noexcept
 
     case GDVK_MAP:
       SWAP_MEMBER(m_map);
+      break;
+
+    case GDVK_SMALL_INTEGER:
+      SWAP_MEMBER(m_smallInteger);
       break;
   }
 
@@ -177,6 +183,11 @@ GDValue::GDValue(GDValue const &obj)
     case GDVK_MAP:
       mapSet(obj.mapGet());
       break;
+
+    case GDVK_SMALL_INTEGER:
+      m_kind = obj.m_kind;
+      m_value.m_smallInteger = obj.m_value.m_smallInteger;
+      break;
   }
 
   ++s_ct_ctorCopy;
@@ -223,7 +234,7 @@ GDValue::GDValue(GDValueKind kind)
 {
   switch (m_kind) {
     default:
-      assert(!"invalid kind");
+      xassertPrecondition(!"invalid kind");
 
     case GDVK_SYMBOL:
       // Redundant, but for clarity.
@@ -232,7 +243,8 @@ GDValue::GDValue(GDValueKind kind)
       break;
 
     case GDVK_INTEGER:
-      m_value.m_integer = new GDVInteger;
+      m_kind = GDVK_SMALL_INTEGER;
+      m_value.m_smallInteger = 0;
       break;
 
     case GDVK_STRING:
@@ -250,9 +262,22 @@ GDValue::GDValue(GDValueKind kind)
     case GDVK_MAP:
       m_value.m_map = new GDVMap;
       break;
+
+    // GDVK_SMALL_INTEGER is invalid.
   }
 
   ++s_ct_valueKindCtor;
+}
+
+
+GDValueKind GDValue::getKind() const
+{
+  if (m_kind == GDVK_SMALL_INTEGER) {
+    return GDVK_INTEGER;
+  }
+  else {
+    return m_kind;
+  }
 }
 
 
@@ -309,13 +334,18 @@ int compare(GDValue const &a, GDValue const &b)
   // gdv::compare shadows it.
   using ::compare;
 
-  if (int ret = a.m_kind - b.m_kind) {
+  if (int ret = a.getKind() - b.getKind()) {
     return ret;
+  }
+
+  if (a.m_kind != b.m_kind) {
+    // One must be a small integer and another large.
+    return compare(a.integerGet(), b.integerGet());
   }
 
   switch (a.m_kind) {
     default:
-      assert(!"invalid kind");
+      xassertInvariant(!"invalid kind");
 
     case GDVK_SYMBOL:
       return std::strcmp(a.m_value.m_symbolName, b.m_value.m_symbolName);
@@ -334,6 +364,9 @@ int compare(GDValue const &a, GDValue const &b)
 
     case GDVK_MAP:
       return DEEP_COMPARE_PTR_MEMBERS(m_value.m_map);
+
+    case GDVK_SMALL_INTEGER:
+      return COMPARE_MEMBERS(m_value.m_smallInteger);
   }
 }
 
@@ -350,6 +383,7 @@ STATICDEF unsigned GDValue::countConstructorCalls()
     + s_ct_symbolCtor
     + s_ct_integerCopyCtor
     + s_ct_integerMoveCtor
+    + s_ct_integerSmallIntCtor
     + s_ct_stringCtorCopy
     + s_ct_stringCtorMove
     + s_ct_sequenceCtorCopy
@@ -372,6 +406,7 @@ GDVSize GDValue::size() const
       return isNull()? 0 : 1;
 
     case GDVK_INTEGER:
+    case GDVK_SMALL_INTEGER:
     case GDVK_STRING:
       return 1;
 
@@ -397,7 +432,7 @@ void GDValue::clear()
 {
   switch (m_kind) {
     default:
-      assert(!"invalid kind");
+      xassertInvariant(!"invalid kind");
 
     case GDVK_SYMBOL:
       break;
@@ -420,6 +455,9 @@ void GDValue::clear()
 
     case GDVK_MAP:
       delete m_value.m_map;
+      break;
+
+    case GDVK_SMALL_INTEGER:
       break;
   }
 
@@ -622,31 +660,64 @@ GDValue::GDValue(GDVInteger &&i)
 }
 
 
-GDValue::GDValue(std::int64_t i)
-  : GDValue(GDVInteger(i))
-{}
+GDValue::GDValue(GDVSmallInteger i)
+  : INIT_AS_NULL()
+{
+  m_kind = GDVK_SMALL_INTEGER;
+  m_value.m_smallInteger = i;
+
+  ++s_ct_integerSmallIntCtor;
+}
+
+
+bool GDValue::tryStoreSmallInteger(GDVInteger const &i)
+{
+  std::optional<GDVSmallInteger> smallValueOpt =
+    i.getAsOpt<GDVSmallInteger>();
+
+  if (smallValueOpt.has_value()) {
+    m_kind = GDVK_SMALL_INTEGER;
+    m_value.m_smallInteger = smallValueOpt.value();
+    return true;
+  }
+  else {
+    return false;
+  }
+}
 
 
 void GDValue::integerSet(GDVInteger const &i)
 {
   clear();
-  m_kind = GDVK_INTEGER;
-  m_value.m_integer = new GDVInteger(i);
+
+  if (!tryStoreSmallInteger(i)) {
+    m_kind = GDVK_INTEGER;
+    m_value.m_integer = new GDVInteger(i);
+  }
 }
 
 
 void GDValue::integerSet(GDVInteger &&i)
 {
   clear();
-  m_kind = GDVK_INTEGER;
-  m_value.m_integer = new GDVInteger(std::move(i));
+
+  if (!tryStoreSmallInteger(i)) {
+    m_kind = GDVK_INTEGER;
+    m_value.m_integer = new GDVInteger(std::move(i));
+  }
 }
 
 
-GDVInteger const &GDValue::integerGet() const
+GDVInteger GDValue::integerGet() const
 {
-  assert(m_kind == GDVK_INTEGER);
-  return *(m_value.m_integer);
+  xassertPrecondition(getKind() == GDVK_INTEGER);
+
+  if (m_kind == GDVK_SMALL_INTEGER) {
+    return GDVInteger(m_value.m_smallInteger);
+  }
+  else {
+    return *(m_value.m_integer);
+  }
 }
 
 

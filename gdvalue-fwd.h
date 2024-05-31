@@ -8,7 +8,7 @@
 
 namespace gdv {
 
-enum GDValueKind : int;
+enum GDValueKind : unsigned char;
 class GDValue;
 class GDVStringIterableC;
 class GDVStringIterable;
