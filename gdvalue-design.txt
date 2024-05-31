@@ -238,7 +238,20 @@ Symbols use the regex: [a-zA-Z_][a-zA-Z0-9_]
   any string (including empty), and using backticks to enclose them if
   not of a "simple" form.
 
-Integers use the regex: (0|-?([1-9][0-9]+))
+Integers have the form <sign?><radix?><digits> where:
+
+  * <sign?> is either "" or "-", the latter indicating a negative
+    number.  It *is* allowed to use "-" when the magnitude is zero, but
+    this is semantically equivalent to omitting the "-".
+
+  * <radix?> is "0x", "0o", or "0b", indicating hexadecimal, octal, or
+    binary, respectively.  The letter can be uppercase or lowercase.
+
+  * <digits> is a non-empty sequence of digits consistent with the
+    specified base, or decimal of there is no radix indicator.  It can
+    have extra leading zeroes, but they are semantically insignificant;
+    in particular, a leading zero does *not* indicate to use octal.
+    Hexadecimal digits A-F can be uppercase or lowercase.
 
 TODO: Specify a form for floating-point numbers.
 
@@ -393,6 +406,15 @@ semantics is entirely up to those applications.  Furthermore, this
 allows additional symbols such as "NaN", "PInf", and "NInf" to be used
 as alternatives to ordinary floating point numbers once floats are
 added.
+
+The notation for integers allows radix specifiers (unlike JSON) in part
+to allow large integers to be expressed as hexadecimal, which is much
+more efficient since conversion from an internal binary representation
+to decimal digits requires repeated division by 10.  It does not follow
+the C/C++ convention of using a leading zero to indicate octal because
+that is octal is rare, and that notation is obscure and confusing to
+those only familiar with mathematical notation.  It allows redundant
+leading zeroes mostly because standard mathematical notation does.
 
 Within strings, unknown baskslash codes are disallowed in order to
 reserve them for possible future use.  If instead, say, "\c" just meant

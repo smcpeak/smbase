@@ -6,7 +6,7 @@
 #include "gdvalue-reader.h"            // this module
 
 #include "breaker.h"                   // breaker
-#include "codepoint.h"                 // isWhitespace
+#include "codepoint.h"                 // isWhitespace, decodeRadixIndicatorLetter, isASCIIRadixDigit
 #include "gdvalue-reader-exception.h"  // GDValueReaderException
 #include "gdvsymbol.h"                 // GDVSymbol
 #include "overflow.h"                  // addWithOverflowCheck, multiplyWithOverflowCheck
@@ -514,38 +514,75 @@ int GDValueReader::readNextU4Escape()
 }
 
 
-GDValue GDValueReader::readNextInteger(int firstChar)
+GDValue GDValueReader::readNextInteger(int const firstChar)
 {
+  // We will collect all of the characters of the number here before
+  // interpreting them as a number.
   std::vector<char> digits;
 
-  if (firstChar == '-') {
-    digits.push_back((char)firstChar);
+  // In the steady state, `c` has the next character to process.
+  int c = firstChar;
+
+  // Sign?
+  if (c == '-') {
+    digits.push_back((char)c);
 
     // Prepare to consume digits.
-    firstChar = readChar();
-    if (!isASCIIDigit(firstChar)) {
-      unexpectedCharErr(firstChar,
+    c = readChar();
+    if (!isASCIIDigit(c)) {
+      unexpectedCharErr(c,
         "looking for digit after minus sign that starts an integer");
     }
   }
 
-  xassert(isASCIIDigit(firstChar));
-  digits.push_back((char)firstChar);
+  // The caller assures us that `firstChar` is a hypen or a digit.
+  xassert(isASCIIDigit(c));
+  int const firstDigit = c;
 
-  while (true) {
-    int c = readChar();
-    if (!isASCIIDigit(c)) {
-      putbackAfterValueOrErr(c);
-      break;
+  // Next.
+  digits.push_back((char)c);
+  c = readChar();
+  if (c == eofCode()) {
+    putback(c);
+  }
+  else {
+    // Radix?
+    int radix = 0;
+    if (firstDigit == '0') {
+      radix = decodeRadixIndicatorLetter(c);
+    }
+    if (radix) {
+      // Next.
+      digits.push_back((char)c);
+      c = readNotEOFCharOrErr(
+        "looking for digit after radix indicator in integer");
+    }
+    else {
+      radix = 10;
     }
 
-    digits.push_back((char)c);
+    // Digits after the first.
+    while (isASCIIRadixDigit(c, radix)) {
+      // Next.
+      digits.push_back((char)c);
+      c = readChar();
+    }
+
+    putbackAfterValueOrErr(c);
   }
 
-  // TODO: Accept a radix prefix.
-  return GDValue(GDVInteger::fromRadixDigits(
-    std::string_view(digits.data(), digits.size()),
-    10 /*radix*/));
+  try {
+    // This will re-do the radix detection.  That is fine.
+    return GDValue(GDVInteger::fromRadixPrefixedDigits(
+      std::string_view(digits.data(), digits.size())));
+  }
+  catch (XFormat &x) {
+    // We already validated the syntax, so this should not be possible.
+    // But if it happens, map it into a `GDValueReaderException` for
+    // uniformity.
+    err(x.getMessage());
+    return GDValue();  // Not reached.
+  }
 }
 
 

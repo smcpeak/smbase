@@ -872,8 +872,16 @@ static void testSyntaxErrors()
     //   "looking for digit after minus sign that starts an integer");
     testMultiErrorRegex("-", {-1, ' ', 'x', ']', '['}, 1, 2, "looking for digit after minus");
 
+    // c = readNotEOFCharOrErr(
+    //   "looking for digit after radix indicator in integer");
+    testOneErrorRegex("0x", 1, 3, "looking for digit after radix");
+    testOneErrorRegex("0o", 1, 3, "looking for digit after radix");
+
     // putbackAfterValueOrErr(c);
     testMultiErrorRegex("1", {'a', '[', '(', '-'}, 1, 2, "after a value");
+
+    // There is one more call to `err` in `readNextInteger`, in the
+    // exception handler, but I believe it is unreachable
   }
 
   // readNextSymbolOrSpecial
@@ -920,7 +928,7 @@ static void testOneDeserialize(
 }
 
 
-static void testDeserialize()
+static void testDeserializeMisc()
 {
   // Comma is whitespace.
   testOneDeserialize(",1", 1);
@@ -936,6 +944,13 @@ static void testDeserialize()
   // Check that we don't somehow recognize comments inside strings.
   testOneDeserialize("\"/*\"", GDVString("/*"));
 
+  // TODO: More here.  I've barely exercised the parser for the cases
+  // that are not syntax errors.
+}
+
+
+static void testDeserializeIntegers()
+{
   // Confirm we can deserialize a value near the top of the range for a
   // signed 64-bit integer.
   testOneDeserialize("1234567890123456789", INT64_C(1234567890123456789));
@@ -960,7 +975,22 @@ static void testDeserialize()
   xassert(GDValue(-n123123) > GDValue(-n123123123));
   xassert(GDValue(   -n123) > GDValue(-n123123123));
 
-  // TODO: More here.
+  // Test the radix decoder.
+  testOneDeserialize("0", 0);
+  testOneDeserialize("00", 0);
+  testOneDeserialize("0099", 99);   // Not octal.
+  testOneDeserialize("0b1111", 15);
+  testOneDeserialize("0o377", 255);
+  testOneDeserialize("0xFF", 255);
+  testOneDeserialize("0XFF", 255);
+  testOneDeserialize("-0b1111", -15);
+  testOneDeserialize("-0o377", -255);
+  testOneDeserialize("-0xFF", -255);
+
+  testOneDeserialize(
+    "0x1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF",
+    GDVInteger::fromRadixDigits(
+      "1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF", 16));
 }
 
 
@@ -1070,7 +1100,8 @@ void test_gdvalue()
     testSet();
     testMap();
     testSyntaxErrors();
-    testDeserialize();
+    testDeserializeMisc();
+    testDeserializeIntegers();
     testStringEscapes();
 
     // Some interesting values for the particular data used.
