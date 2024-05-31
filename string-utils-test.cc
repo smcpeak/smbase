@@ -324,6 +324,53 @@ static void testEscapeForRegex()
 }
 
 
+static void testInt64ToRadixDigits()
+{
+  for (int r=2; r <= 36; ++r) {
+    EXPECT_EQ(int64ToRadixDigits(0, r, false), "0");
+    EXPECT_EQ(int64ToRadixDigits(1, r, false), "1");
+    EXPECT_EQ(int64ToRadixDigits(-1, r, false), "-1");
+  }
+
+  EXPECT_EQ(int64ToRadixDigits(0, 2, true), "0b0");
+  EXPECT_EQ(int64ToRadixDigits(0, 8, true), "0o0");
+  EXPECT_EQ(int64ToRadixDigits(0, 10, true), "0");
+  EXPECT_EQ(int64ToRadixDigits(0, 16, true), "0x0");
+
+  int64_t maxVal = std::numeric_limits<int64_t>::max();
+  EXPECT_EQ(int64ToRadixDigits(maxVal, 16, true), "0x7FFFFFFFFFFFFFFF");
+  EXPECT_EQ(int64ToRadixDigits(maxVal, 8, true), "0o777777777777777777777");
+  EXPECT_EQ(int64ToRadixDigits(maxVal, 2, true), "0b111111111111111111111111111111111111111111111111111111111111111");
+  EXPECT_EQ(int64ToRadixDigits(maxVal, 10, true), "9223372036854775807");
+
+  --maxVal;
+  EXPECT_EQ(int64ToRadixDigits(maxVal, 16, true), "0x7FFFFFFFFFFFFFFE");
+  EXPECT_EQ(int64ToRadixDigits(maxVal, 8, true), "0o777777777777777777776");
+  EXPECT_EQ(int64ToRadixDigits(maxVal, 2, true), "0b111111111111111111111111111111111111111111111111111111111111110");
+  EXPECT_EQ(int64ToRadixDigits(maxVal, 10, true), "9223372036854775806");
+
+  int64_t minVal = std::numeric_limits<int64_t>::min();
+  EXPECT_EQ(int64ToRadixDigits(minVal, 16, true), "-0x8000000000000000");
+  EXPECT_EQ(int64ToRadixDigits(minVal, 8, true), "-0o1000000000000000000000");
+  EXPECT_EQ(int64ToRadixDigits(minVal, 2, true), "-0b1000000000000000000000000000000000000000000000000000000000000000");
+  EXPECT_EQ(int64ToRadixDigits(minVal, 10, true), "-9223372036854775808");
+
+  ++minVal;
+  EXPECT_EQ(int64ToRadixDigits(minVal, 16, true), "-0x7FFFFFFFFFFFFFFF");
+  EXPECT_EQ(int64ToRadixDigits(minVal, 8, true), "-0o777777777777777777777");
+  EXPECT_EQ(int64ToRadixDigits(minVal, 2, true), "-0b111111111111111111111111111111111111111111111111111111111111111");
+  EXPECT_EQ(int64ToRadixDigits(minVal, 10, true), "-9223372036854775807");
+
+  ++minVal;
+  EXPECT_EQ(int64ToRadixDigits(minVal, 16, true), "-0x7FFFFFFFFFFFFFFE");
+  EXPECT_EQ(int64ToRadixDigits(minVal, 8, true), "-0o777777777777777777776");
+  EXPECT_EQ(int64ToRadixDigits(minVal, 2, true), "-0b111111111111111111111111111111111111111111111111111111111111110");
+  EXPECT_EQ(int64ToRadixDigits(minVal, 10, true), "-9223372036854775806");
+
+  EXPECT_EQ(int64ToRadixDigits(minVal, 16, false), "-7FFFFFFFFFFFFFFE");
+}
+
+
 void test_string_utils()
 {
   testSplitNonEmpty();
@@ -340,6 +387,7 @@ void test_string_utils()
   testInsertPossiblyEscapedChar();
   testSingleQuoteChar();
   testEscapeForRegex();
+  testInt64ToRadixDigits();
 }
 
 

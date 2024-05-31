@@ -11,6 +11,7 @@
 #ifndef STRING_UTILS_H
 #define STRING_UTILS_H
 
+#include <cstdint>                     // std::{int64_t, uint64_t}
 #include <iosfwd>                      // std::ostream
 #include <string>                      // std::string
 #include <vector>                      // std::vector
@@ -97,5 +98,25 @@ bool matchesRegex(std::string const &str, std::string const &regex);
 // metacharacters it contains.
 std::string escapeForRegex(std::string const &s);
 
+// Return `value` as a string of digits in `radix`, itself in [2,36].
+std::string uint64ToRadixDigits(
+  std::uint64_t magnitude, int radix);
+
+// Same, but also with a radix indicator of "0b", "0o", or "0x".
+// `radix` must be in {2, 8, 10, 16}.
+std::string uint64ToRadixPrefixedDigits(
+  std::uint64_t magnitude, int radix);
+
+/* Return `value` as a string of digits in `radix`, possibly with a
+   radix indicator of "0b", "0o", or "0x".  If it is negative, then a
+   hyphen is the first character.  When letters are used (`radix>10`),
+   they are uppercase.
+
+   `radix` must be in [2,36].
+
+   If `radixIndicator`, `radix` must be in {2, 8, 10, 16}.
+*/
+std::string int64ToRadixDigits(
+  std::int64_t value, int radix, bool radixIndicator);
 
 #endif // STRING_UTILS_H

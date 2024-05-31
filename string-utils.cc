@@ -9,7 +9,9 @@
 #include "xassert.h"                   // xassertdb
 
 #include <algorithm>                   // std::binary_search
+#include <cstdlib>                     // std::abs
 #include <cstring>                     // std::{strchr, strrchr}
+#include <limits>                      // std::numeric_limits
 #include <sstream>                     // std::ostringstream
 #include <regex>                       // std::regex
 
@@ -294,6 +296,78 @@ std::string escapeForRegex(std::string const &s)
     out.push_back(ch);
   }
   return out;
+}
+
+
+std::string uint64ToRadixDigits(
+  std::uint64_t magnitude, int radix)
+{
+  xassertPrecondition(2 <= radix && radix <= 36);
+
+  if (magnitude == 0) {
+    return "0";
+  }
+
+  // Digits in reverse order.
+  std::vector<char> digits;
+
+  while (magnitude > 0) {
+    uint64_t d = magnitude % (uint64_t)radix;
+    magnitude /= (uint64_t)radix;
+
+    if (d < 10) {
+      digits.push_back((char)('0' + d));
+    }
+    else {
+      digits.push_back((char)('A' + (d - 10)));
+    }
+  }
+
+  return std::string(digits.rbegin(), digits.rend());
+}
+
+
+std::string uint64ToRadixPrefixedDigits(
+  std::uint64_t magnitude, int radix)
+{
+  xassertPrecondition(radix==2 || radix==8 || radix==10 || radix==16);
+
+  char const *prefix =
+    (radix==2?  "0b" :
+     radix==8?  "0o" :
+     radix==16? "0x" : "");
+
+  return std::string(prefix) + uint64ToRadixDigits(magnitude, radix);
+}
+
+
+std::string int64ToRadixDigits(
+  std::int64_t value, int radix, bool radixIndicator)
+{
+  uint64_t magnitude;
+  if (value == std::numeric_limits<int64_t>::min()) {
+    // It is undefined to call `std::abs` on `value`, so directly
+    // specify the result.
+    magnitude = (std::numeric_limits<uint64_t>::max() >> 1) + 1;
+  }
+  else {
+    magnitude = static_cast<uint64_t>(std::abs(value));
+  }
+
+  std::string magString;
+  if (!radixIndicator) {
+    magString = uint64ToRadixDigits(magnitude, radix);
+  }
+  else {
+    magString = uint64ToRadixPrefixedDigits(magnitude, radix);
+  }
+
+  if (value < 0) {
+    return std::string("-") + magString;
+  }
+  else {
+    return magString;
+  }
 }
 
 
