@@ -6,8 +6,10 @@
 #include "utf8-reader.h"               // module under test #1
 #include "utf8-writer.h"               // module under test #2
 
-#include "sm-test.h"                   // EXPECT_EQ
+// This has to come before `sm-test.h` since it is needed by `expectEq`.
 #include "vector-utils.h"              // operator<< (std::vector)
+
+#include "sm-test.h"                   // EXPECT_EQ
 
 #include <sstream>                     // std::{istringstream, ostringstream}
 #include <vector>                      // std::vector
