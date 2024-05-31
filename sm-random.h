@@ -33,11 +33,14 @@ inline int sm_random(int n)
 template <typename PRIM>
 PRIM sm_randomPrim()
 {
-  PRIM v = 0;
+  PRIM v = sm_random(256);
 
-  for (int i=0; i < (int)sizeof(PRIM); ++i) {
-    v <<= 8;
-    v |= sm_random(256);
+  // This test is needed to avoid Clang complaining about the shift.
+  if (sizeof(PRIM) > 1) {
+    for (int i=1; i < (int)sizeof(PRIM); ++i) {
+      v <<= 8;
+      v |= sm_random(256);
+    }
   }
 
   return v;
