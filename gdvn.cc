@@ -1,6 +1,8 @@
 // gdvn.cc
 // Program to read and write GDVN.
 
+// This file is in the public domain.
+
 #include "exc.h"                       // smbase::XBase
 #include "gdvalue.h"                   // gdv::GDValue
 

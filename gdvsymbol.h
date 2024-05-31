@@ -1,11 +1,14 @@
 // gdvsymbol.h
 // GDVSymbol class.
 
+// This file is in the public domain.
+
 #ifndef SMBASE_GDVSYMBOL_H
 #define SMBASE_GDVSYMBOL_H
 
 // this dir
 #include "compare-util.h"              // DEFINE_FRIEND_RELATIONAL_OPERATORS
+#include "sm-macros.h"                 // OPEN_NAMESPACE
 #include "strtable-fwd.h"              // StringTable [n]
 
 // libc++
@@ -13,7 +16,7 @@
 #include <string>                      // std::string [n]
 
 
-namespace gdv {
+OPEN_NAMESPACE(gdv)
 
 
 // A symbol is the name of some entity or concept defined elsewhere.
@@ -109,7 +112,7 @@ inline void swap(GDVSymbol &a, GDVSymbol &b)
 }
 
 
-} // namespace gdv
+CLOSE_NAMESPACE(gdv)
 
 
 #endif // SMBASE_GDVSYMBOL_H

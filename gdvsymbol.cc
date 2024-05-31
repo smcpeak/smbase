@@ -1,10 +1,12 @@
 // gdvsymbol.cc
 // Code for gdvsymbol.h.
 
+// This file is in the public domain.
+
 #include "gdvsymbol.h"                 // this module
 
 // this dir
-#include "sm-macros.h"                 // PRETEND_USED
+#include "sm-macros.h"                 // PRETEND_USED, OPEN_NAMESPACE
 #include "strtable.h"                  // StringTable
 #include "xassert.h"                   // xassertdb
 
@@ -14,7 +16,7 @@
 #include <utility>                     // std::swap
 
 
-namespace gdv {
+OPEN_NAMESPACE(gdv)
 
 
 StringTable *GDVSymbol::s_stringTable = nullptr;
@@ -77,7 +79,7 @@ void GDVSymbol::swap(GDVSymbol &obj)
 }
 
 
-} // namespace gdv
+CLOSE_NAMESPACE(gdv)
 
 
 // EOF

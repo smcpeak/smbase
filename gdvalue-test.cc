@@ -1,6 +1,8 @@
 // gdvalue-test.cc
 // Tests for gdvalue.
 
+// This file is in the public domain.
+
 #include "gdvalue.h"                   // module under test
 
 // this dir

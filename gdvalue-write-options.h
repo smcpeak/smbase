@@ -1,11 +1,15 @@
 // gdvalue-write-options.h
 // GDValueWriteOptions class.
 
+// This file is in the public domain.
+
 #ifndef SMBASE_GDVALUE_WRITE_OPTIONS_H
 #define SMBASE_GDVALUE_WRITE_OPTIONS_H
 
+#include "sm-macros.h"                 // OPEN_NAMESPACE
 
-namespace gdv {
+
+OPEN_NAMESPACE(gdv)
 
 
 // Options for how to write a GDValue as text.
@@ -73,7 +77,7 @@ public:      // methods
 };
 
 
-} // namespace gdv
+CLOSE_NAMESPACE(gdv)
 
 
 #endif // SMBASE_GDVALUE_WRITE_OPTIONS_H

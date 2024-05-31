@@ -1,6 +1,8 @@
 // gdvalue.cc
 // Code for gdvalue module.
 
+// This file is in the public domain.
+
 #include "gdvalue.h"                   // this module
 
 // this dir

@@ -1,10 +1,14 @@
 // gdvalue-reader-exception.cc
 // Code for gdvalue-reader-exception.h.
 
+// This file is in the public domain.
+
 #include "gdvalue-reader-exception.h"            // this module
 
+#include "sm-macros.h"                           // OPEN_NAMESPACE
 
-namespace gdv {
+
+OPEN_NAMESPACE(gdv)
 
 
 GDValueReaderException::GDValueReaderException(
@@ -40,7 +44,7 @@ std::string GDValueReaderException::getConflict() const
 }
 
 
-} // namespace gdv
+CLOSE_NAMESPACE(gdv)
 
 
 // EOF

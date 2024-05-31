@@ -1,6 +1,8 @@
 // gdvalue-fwd.h
 // Forwards for gdvalue.
 
+// This file is in the public domain.
+
 #ifndef SMBASE_GDVALUE_FWD_H
 #define SMBASE_GDVALUE_FWD_H
 

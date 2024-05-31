@@ -1,17 +1,20 @@
 // gdvalue-reader.h
 // GDValueReader class, which does text deserialization for GDValue.
 
+// This file is in the public domain.
+
 #ifndef GDVALUE_READER_H
 #define GDVALUE_READER_H
 
 #include "file-line-col.h"             // FileLineCol
 #include "gdvalue.h"                   // GDValue
+#include "sm-macros.h"                 // OPEN_NAMESPACE
 
 #include <optional>                    // std::optional
 #include <string>                      // std::string
 
 
-namespace gdv {
+OPEN_NAMESPACE(gdv)
 
 
 // Manage the process of reading a GDValue from an istream
@@ -154,7 +157,7 @@ public:      // methods
 };
 
 
-} // namespace gdv
+CLOSE_NAMESPACE(gdv)
 
 
 #endif // GDVALUE_READER_H

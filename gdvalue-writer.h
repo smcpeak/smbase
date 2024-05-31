@@ -1,17 +1,20 @@
 // gdvalue-writer.h
 // GDValueWriter class.
 
+// This file is in the public domain.
+
 #ifndef SMBASE_GDVALUE_WRITER_H
 #define SMBASE_GDVALUE_WRITER_H
 
 // this dir
 #include "gdvalue.h"                   // gdv::GDValueWriteOptions
+#include "sm-macros.h"                 // OPEN_NAMESPACE
 
 // libc++
 #include <iosfwd>                      // std::ostream
 
 
-namespace gdv {
+OPEN_NAMESPACE(gdv)
 
 
 // Manage the process of writing a GDValue to an ostream.
@@ -111,7 +114,7 @@ public:      // methods
 };
 
 
-} // namespace gdv
+CLOSE_NAMESPACE(gdv)
 
 
 #endif // SMBASE_GDVALUE_WRITER_H

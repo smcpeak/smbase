@@ -1,6 +1,8 @@
 // gdvalue-reader-exception.h
 // GDValueReaderException class, used to report GDValue syntax errors.
 
+// This file is in the public domain.
+
 #ifndef SMBASE_GDVALUE_READER_EXCEPTION_H
 #define SMBASE_GDVALUE_READER_EXCEPTION_H
 
@@ -8,6 +10,7 @@
 
 #include "exc.h"                                 // smbase::XBase
 #include "file-line-col.h"                       // FileLineCol
+#include "sm-macros.h"                           // OPEN_NAMESPACE
 
 
 OPEN_NAMESPACE(gdv)

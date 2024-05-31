@@ -1,10 +1,14 @@
 // gdvalue-write-options.cc
 // Code for gdvalue-write-options module.
 
+// This file is in the public domain.
+
 #include "gdvalue-write-options.h"     // this module
 
+#include "sm-macros.h"                 // OPEN_NAMESPACE
 
-namespace gdv {
+
+OPEN_NAMESPACE(gdv)
 
 
 int GDValueWriteOptions::s_defaultSpacesPerIndentLevel = 2;
@@ -18,7 +22,7 @@ int GDValueWriteOptions::lineCapacity() const
 }
 
 
-} // namespace gdv
+CLOSE_NAMESPACE(gdv)
 
 
 // EOF

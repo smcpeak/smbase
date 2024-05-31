@@ -1,6 +1,8 @@
 // gdvalue-writer.cc
 // Code for gdvalue-writer.
 
+// This file is in the public domain.
+
 #include "gdvalue-writer.h"            // this module
 
 // this dir
@@ -8,6 +10,7 @@
 #include "gdvalue.h"                   // gdv::GDValue
 #include "gdvsymbol.h"                 // gdv::GDVSymbol
 #include "save-restore.h"              // SAVE_RESTORE, SET_RESTORE
+#include "sm-macros.h"                 // OPEN_NAMESPACE
 #include "string-utils.h"              // doubleQuote
 #include "stringf.h"                   // stringf
 
@@ -16,7 +19,7 @@
 #include <iostream>                    // std::ostream
 
 
-namespace gdv {
+OPEN_NAMESPACE(gdv)
 
 
 // This file exists in a different repo that I don't want to depend on,
@@ -514,7 +517,7 @@ void GDValueWriter::write(GDValue const &value)
 }
 
 
-} // namespace gdv
+CLOSE_NAMESPACE(gdv)
 
 
 // EOF

@@ -1,6 +1,8 @@
 // gdvalue-reader.cc
 // Code for gdvalue-reader.h.
 
+// This file is in the public domain.
+
 #include "gdvalue-reader.h"            // this module
 
 #include "breaker.h"                   // breaker
@@ -8,6 +10,7 @@
 #include "gdvalue-reader-exception.h"  // GDValueReaderException
 #include "gdvsymbol.h"                 // GDVSymbol
 #include "overflow.h"                  // addWithOverflowCheck, multiplyWithOverflowCheck
+#include "sm-macros.h"                 // OPEN_NAMESPACE
 #include "string-utils.h"              // possiblyTruncatedWithEllipsis
 #include "utf8-writer.h"               // smbase::UTF8Writer
 
@@ -17,7 +20,7 @@
 using namespace smbase;
 
 
-namespace gdv {
+OPEN_NAMESPACE(gdv)
 
 
 GDValueReader::GDValueReader(std::istream &is,
@@ -674,7 +677,7 @@ GDValue GDValueReader::readExactlyOneValue()
 }
 
 
-} // namespace gdv
+CLOSE_NAMESPACE(gdv)
 
 
 // EOF

@@ -1,6 +1,8 @@
 // gdvalue.h
 // General Data Value: integer, sequence, map, etc.
 
+// This file is in the public domain.
+
 /* The basic idea is to represent general-purpose data, made up of a
    few common primitives and containers, for the purpose of interchange
    between systems.  The data model is loosely based on JSON, but with
@@ -17,6 +19,7 @@
 #include "compare-util.h"              // DEFINE_FRIEND_RELATIONAL_OPERATORS
 #include "gdvalue-write-options.h"     // gdv::GDValueWriteOptions
 #include "gdvsymbol.h"                 // gdv::GDVSymbol
+#include "sm-macros.h"                 // OPEN_NAMESPACE
 
 // libc++
 #include <cstddef>                     // std::size_t
@@ -29,7 +32,7 @@
 #include <utility>                     // std::pair
 
 
-namespace gdv {
+OPEN_NAMESPACE(gdv)
 
 
 // Count of elements.
@@ -546,7 +549,7 @@ DEFINE_GDV_KIND_ITERABLE(GDVSet, set)
 #undef DEFINE_GDV_KIND_ITERABLE
 
 
-} // namespace gdv
+CLOSE_NAMESPACE(gdv)
 
 
 #endif // SMBASE_GDVALUE_H
