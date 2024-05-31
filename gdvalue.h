@@ -403,10 +403,13 @@ public:      // methods
 
   GDVString const &stringGet()        const;
 
-  // I don't know if I want the 'getMutable' functions to be part of the
-  // API.  For the moment they should be treated as an implementation
-  // helper and a stop-gap in case an important operation is missing.
-  GDVString       &stringGetMutable()      ;
+  // For containers, I think it is important for efficiency to be able
+  // to modify them in-place, hence the "mutable" methods.  Strings have
+  // aspects of both a scalar and a container, so it's plausible to
+  // allow them to be mutated too.  However, I don't often mutate
+  // strings, the potential efficiency benefit for them is limited, and
+  // I'd like to leave the door open to a small-string optimization, so
+  // for now there is no `stringGetMutable`.
 
   // Declare the iterators for a particular kind of GDValue.
   #define DECLARE_GDV_KIND_ITERATORS(GDVKindName, kindName)    \

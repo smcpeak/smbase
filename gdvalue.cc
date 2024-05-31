@@ -774,13 +774,6 @@ GDVString const &GDValue::stringGet() const
 }
 
 
-GDVString &GDValue::stringGetMutable()
-{
-  xassertPrecondition(m_kind == GDVK_STRING);
-  return *(m_value.m_string);
-}
-
-
 // Define the begin/end methods that are not defined in the GDValue
 // class body.
 #define DEFINE_GDV_KIND_BEGIN_END(GDVKindName, kindName, GDVK_CODE) \
