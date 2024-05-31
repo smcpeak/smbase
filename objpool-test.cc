@@ -104,6 +104,8 @@ void test_objpool()
   // verify that the # of objects freed is the # that became available
   xassert(finalNumAllocd == (pool.freeObjectsInPool() - startSize));
 
+  delete[] allocated;
+
   DIAG("pool capacity at end: " << pool.freeObjectsInPool());
   DIAG("tobjpool works!");
 }
