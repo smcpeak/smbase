@@ -2,8 +2,8 @@
 // Function for putting a breakpoint in, to get debugger control just
 // before an exception is thrown.
 
-#ifndef __BREAKER_H
-#define __BREAKER_H
+#ifndef SMBASE_BREAKER_H
+#define SMBASE_BREAKER_H
 
 extern "C" void breaker();
 
@@ -29,11 +29,4 @@ inline void bassert(T cond)
   } /*no semicolon*/
 
 
-// this is obsolete...
-void _breaker_assert(char * __cond, char * __file, int __line);
-  // this will be called on failed assertions instead of _assert
-  // only if BREAKER_ASSERT is defined (due to a modification to
-  // assert.h directly)
-
-#endif // __BREAKER_H
-
+#endif // SMBASE_BREAKER_H
