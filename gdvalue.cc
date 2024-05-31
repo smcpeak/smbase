@@ -60,7 +60,8 @@ unsigned GDValue::s_ct_assignMove = 0;
 unsigned GDValue::s_ct_valueKindCtor = 0;
 unsigned GDValue::s_ct_boolCtor = 0;
 unsigned GDValue::s_ct_symbolCtor = 0;
-unsigned GDValue::s_ct_integerCtor = 0;
+unsigned GDValue::s_ct_integerCopyCtor = 0;
+unsigned GDValue::s_ct_integerMoveCtor = 0;
 unsigned GDValue::s_ct_stringCtorCopy = 0;
 unsigned GDValue::s_ct_stringCtorMove = 0;
 unsigned GDValue::s_ct_stringSetCopy = 0;
@@ -82,12 +83,12 @@ unsigned GDValue::s_ct_mapSetMove = 0;
 // ---------------------- GDValue private helpers ----------------------
 void GDValue::clearSelfAndSwapWith(GDValue &obj) noexcept
 {
+  using std::swap;
+
   clear();
 
-  // TODO: This is wrong.  Should do "using std::swap;" then call "swap"
-  // without qualification.
   #define SWAP_MEMBER(member) \
-    std::swap(m_value.member, obj.m_value.member)
+    swap(m_value.member, obj.m_value.member)
 
   switch (obj.m_kind) {
     default:
@@ -98,7 +99,7 @@ void GDValue::clearSelfAndSwapWith(GDValue &obj) noexcept
       break;
 
     case GDVK_INTEGER:
-      SWAP_MEMBER(m_int64);
+      SWAP_MEMBER(m_integer);
       break;
 
     case GDVK_STRING:
@@ -231,7 +232,7 @@ GDValue::GDValue(GDValueKind kind)
       break;
 
     case GDVK_INTEGER:
-      m_value.m_int64 = 0;
+      m_value.m_integer = new GDVInteger;
       break;
 
     case GDVK_STRING:
@@ -320,7 +321,7 @@ int compare(GDValue const &a, GDValue const &b)
       return std::strcmp(a.m_value.m_symbolName, b.m_value.m_symbolName);
 
     case GDVK_INTEGER:
-      return COMPARE_MEMBERS(m_value.m_int64);
+      return DEEP_COMPARE_PTR_MEMBERS(m_value.m_integer);
 
     case GDVK_STRING:
       return DEEP_COMPARE_PTR_MEMBERS(m_value.m_string);
@@ -347,7 +348,8 @@ STATICDEF unsigned GDValue::countConstructorCalls()
     + s_ct_valueKindCtor
     + s_ct_boolCtor
     + s_ct_symbolCtor
-    + s_ct_integerCtor
+    + s_ct_integerCopyCtor
+    + s_ct_integerMoveCtor
     + s_ct_stringCtorCopy
     + s_ct_stringCtorMove
     + s_ct_sequenceCtorCopy
@@ -401,6 +403,7 @@ void GDValue::clear()
       break;
 
     case GDVK_INTEGER:
+      delete m_value.m_integer;
       break;
 
     case GDVK_STRING:
@@ -601,27 +604,49 @@ GDVSymbol GDValue::symbolGet() const
 
 
 // ------------------------------ Integer ------------------------------
-GDValue::GDValue(GDVInteger i)
+GDValue::GDValue(GDVInteger const &i)
   : INIT_AS_NULL()
 {
   integerSet(i);
 
-  ++s_ct_integerCtor;
+  ++s_ct_integerCopyCtor;
 }
 
 
-void GDValue::integerSet(GDVInteger i)
+GDValue::GDValue(GDVInteger &&i)
+  : INIT_AS_NULL()
+{
+  integerSet(std::move(i));
+
+  ++s_ct_integerMoveCtor;
+}
+
+
+GDValue::GDValue(std::int64_t i)
+  : GDValue(GDVInteger(i))
+{}
+
+
+void GDValue::integerSet(GDVInteger const &i)
 {
   clear();
   m_kind = GDVK_INTEGER;
-  m_value.m_int64 = i;
+  m_value.m_integer = new GDVInteger(i);
 }
 
 
-GDVInteger GDValue::integerGet() const
+void GDValue::integerSet(GDVInteger &&i)
+{
+  clear();
+  m_kind = GDVK_INTEGER;
+  m_value.m_integer = new GDVInteger(std::move(i));
+}
+
+
+GDVInteger const &GDValue::integerGet() const
 {
   assert(m_kind == GDVK_INTEGER);
-  return m_value.m_int64;
+  return *(m_value.m_integer);
 }
 
 

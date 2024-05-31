@@ -874,11 +874,6 @@ static void testSyntaxErrors()
 
     // putbackAfterValueOrErr(c);
     testMultiErrorRegex("1", {'a', '[', '(', '-'}, 1, 2, "after a value");
-
-    // For reference, the maximum uint64_t is 18446744073709551615.
-
-    // err(stringb("Value denoted by integer is too large."));
-    testOneErrorSubstr("12345678901234567890", 1, 20, "too large");
   }
 
   // readNextSymbolOrSpecial
@@ -945,7 +940,19 @@ static void testDeserialize()
   // signed 64-bit integer.
   testOneDeserialize("1234567890123456789", INT64_C(1234567890123456789));
 
-  // TODO: Lots here.
+  // For reference, the maximum uint64_t is 18446744073709551615.
+
+  // Now using smbase::Integer, there is no range limit.
+  GDVInteger n123(1234567890);
+  GDVInteger n1e10(INT64_C(10000000000));
+  GDVInteger n123123 = n123 + n123*n1e10;
+  GDVInteger n123123123 = n123 + n123123*n1e10;
+  testOneDeserialize("1234567890", n123);
+  testOneDeserialize("12345678901234567890", n123123);
+  testOneDeserialize("123456789012345678901234567890", n123123123);
+  testOneDeserialize("-123456789012345678901234567890", -n123123123);
+
+  // TODO: More here.
 }
 
 

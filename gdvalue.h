@@ -19,6 +19,7 @@
 #include "compare-util.h"              // DEFINE_FRIEND_RELATIONAL_OPERATORS
 #include "gdvalue-write-options.h"     // gdv::GDValueWriteOptions
 #include "gdvsymbol.h"                 // gdv::GDVSymbol
+#include "sm-integer.h"                // smbase::Integer
 #include "sm-macros.h"                 // OPEN_NAMESPACE
 
 // libc++
@@ -41,9 +42,8 @@ using GDVSize = std::size_t;
 // Index for vectors.
 using GDVIndex = std::size_t;
 
-// GDValue(GDVK_INTEGER) holds this.  It should eventually be an
-// arbitrary-precision integer.
-using GDVInteger = std::int64_t;
+// GDValue(GDVK_INTEGER) holds this.
+using GDVInteger = smbase::Integer;
 
 // GDValue(GDVK_STRING) holds this.  It is a UTF-8 encoding of the
 // sequence of Unicode code points the string represents.
@@ -114,7 +114,8 @@ public:      // class data
   static unsigned s_ct_valueKindCtor;
   static unsigned s_ct_boolCtor;
   static unsigned s_ct_symbolCtor;
-  static unsigned s_ct_integerCtor;
+  static unsigned s_ct_integerCopyCtor;
+  static unsigned s_ct_integerMoveCtor;
   static unsigned s_ct_stringCtorCopy;
   static unsigned s_ct_stringCtorMove;
   static unsigned s_ct_stringSetCopy;
@@ -142,9 +143,11 @@ private:     // instance data
     // 'GDVSymbol::s_stringTable'.
     char const  *m_symbolName;
 
-    GDVInteger   m_int64;
+    // TODO: Allow this too?
+    //GDVInteger   m_int64;
 
     // These are all owner pointers.
+    GDVInteger  *m_integer;
     GDVString   *m_string;
     GDVSequence *m_sequence;
     GDVSet      *m_set;
@@ -335,11 +338,18 @@ public:      // methods
   // passed as arguments.  Furthermore, making them explicit (which I
   // initially did) *greatly* expands the verbosity and difficulty of
   // reading initializers for complex values.
-  /*implicit*/ GDValue(GDVInteger i);
+  /*implicit*/ GDValue(GDVInteger const &i);
+  /*implicit*/ GDValue(GDVInteger      &&i);
 
-  void integerSet(GDVInteger i);
+  // This overload is needed to allow `GDValue(0)` to work because
+  // otherwise it is ambiguous between the ctor accepting `GDVInteger`
+  // and the ones accepting `GDVString`.
+  /*implicit*/ GDValue(std::int64_t i);
 
-  GDVInteger integerGet() const;
+  void integerSet(GDVInteger const &i);
+  void integerSet(GDVInteger      &&i);
+
+  GDVInteger const &integerGet() const;
 
 
   // ---- String ----

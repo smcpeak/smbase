@@ -516,9 +516,10 @@ int GDValueReader::readNextU4Escape()
 
 GDValue GDValueReader::readNextInteger(int firstChar)
 {
-  bool isNegative = false;
+  std::vector<char> digits;
+
   if (firstChar == '-') {
-    isNegative = true;
+    digits.push_back((char)firstChar);
 
     // Prepare to consume digits.
     firstChar = readChar();
@@ -529,41 +530,22 @@ GDValue GDValueReader::readNextInteger(int firstChar)
   }
 
   xassert(isASCIIDigit(firstChar));
-  GDVInteger integerValue(firstChar - '0');
+  digits.push_back((char)firstChar);
 
-  try {
-    while (true) {
-      int c = readChar();
-      if (!isASCIIDigit(c)) {
-        putbackAfterValueOrErr(c);
-        break;
-      }
-
-      integerValue =
-        addWithOverflowCheck(
-          multiplyWithOverflowCheck(integerValue, (GDVInteger)10),
-          (GDVInteger)(c - '0'));
+  while (true) {
+    int c = readChar();
+    if (!isASCIIDigit(c)) {
+      putbackAfterValueOrErr(c);
+      break;
     }
 
-    if (isNegative) {
-      // This can't overflow since the negative magnitude range is
-      // larger than the positive, but I'm being defensive.
-      integerValue =
-        multiplyWithOverflowCheck(integerValue, (GDVInteger)-1);
-    }
-
-    return GDValue(integerValue);
+    digits.push_back((char)c);
   }
 
-  catch (XOverflow const &) {
-    // I want to eventually use an arbitrary-precision integer
-    // representation, in which case this error will be impossible.  But
-    // in the meantime I'll just note that this code will misbehave on
-    // MIN_INT64 since the accumulation of the positive value will
-    // overflow even though it would fit if negative.
-    err(stringb("Value denoted by integer is too large."));
-    return GDValue();        // Not reached.
-  }
+  // TODO: Accept a radix prefix.
+  return GDValue(GDVInteger::fromRadixDigits(
+    std::string_view(digits.data(), digits.size()),
+    10 /*radix*/));
 }
 
 
