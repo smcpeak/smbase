@@ -95,6 +95,10 @@ void x_assert_fail(char const *cond, char const *file, int line) NORETURN;
 */
 #define xassertPrecondition(cond) xassert(cond)
 
+// This is used when, for example, the function begins with a `switch`
+// and one of the cases corresponds to a violated precondition.
+#define xfailurePrecondition(why) xfailure(why)
+
 
 /* Assert a condition that should be a data structure invariant.
 
@@ -102,6 +106,10 @@ void x_assert_fail(char const *cond, char const *file, int line) NORETURN;
    invariants.
 */
 #define xassertInvariant(cond) xassert(cond)
+
+// Used when a spot in the code can only be reached if data structure
+// invariants were previously broken.
+#define xfailureInvariant(why) xfailure(why)
 
 
 // Quick note: one prominent book on writing code recommends that
