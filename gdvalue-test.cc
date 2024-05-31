@@ -13,6 +13,7 @@
 #include "sm-test.h"                   // EXPECT_EQ, EXPECT_MATCHES_REGEX, VPVAL, DIAG, verbose
 #include "strutil.h"                   // hasSubstring
 #include "string-utils.h"              // doubleQuote
+#include "syserr.h"                    // smbase::XSysError
 #include "utf8-writer.h"               // smbase::utf8EncodeVector
 
 // libc++
@@ -1135,6 +1136,22 @@ static void testWriteReadFile()
 
   string contents = sfu.readFileAsString(fname);
   EXPECT_EQ(contents, "[1 2 \"three\"]\n");
+
+  try {
+    v.writeToFile("out/gvdn/dir-does-not-exist/123.gdvn");
+    xfailure("should have failed");
+  }
+  catch (XSysError &x) {
+    VPVAL(x);
+  }
+
+  try {
+    GDValue::readFromFile("out/gvdn/file-does-not-exist.gdvn");
+    xfailure("should have failed");
+  }
+  catch (XSysError &x) {
+    VPVAL(x);
+  }
 }
 
 

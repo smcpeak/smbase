@@ -72,11 +72,7 @@ STATICDEF string XSysError::
   stringBuilder sb;
   sb << syscall;
   if (!ctx.empty()) {
-    // Printing the context here makes it clearly associated with the
-    // syscall.  There is a danger of thinking it is literally an
-    // argument to that syscall, which may or may not be the case, but
-    // I think that is tolerable.
-    sb << '(' << quoted(ctx) << ')';
+    sb << ": " << quoted(ctx);
   }
   sb << ": ";
 
