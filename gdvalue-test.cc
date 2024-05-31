@@ -9,6 +9,7 @@
 #include "counting-ostream.h"          // nullOStream
 #include "gdvsymbol.h"                 // gdv::GDVSymbol
 #include "gdvalue-reader-exception.h"  // GDValueReaderException
+#include "sm-file-util.h"              // SMFileUtil
 #include "sm-test.h"                   // EXPECT_EQ, EXPECT_MATCHES_REGEX, VPVAL, DIAG, verbose
 #include "strutil.h"                   // hasSubstring
 #include "string-utils.h"              // doubleQuote
@@ -182,6 +183,9 @@ static void testInteger()
   assert(d0.isInteger());
   assert(d0.integerGet() == 0);
 
+  // Ctor from the value kind.
+  assert(d0 == GDValue(GDVK_INTEGER));
+
   GDValue d1(1);
   assert(d1.asString() == "1");
   assert(d1.size() == 1);
@@ -197,6 +201,12 @@ static void testInteger()
 
   testSerializeRoundtrip(GDValue(1234567890));
   testSerializeRoundtrip(GDValue(-1234567890));
+
+  GDValue big = GDVInteger::fromDigits("0x1234567890ABCDEF1234567890ABCDEF");
+
+  // Copy ctor where the integer is not small.
+  GDValue big2(big);
+  assert(big == big2);
 }
 
 
@@ -245,6 +255,15 @@ static void testString()
   CHECK_COUNTS(1, 2, 0, 2)
 
   assert(dStr1 == dStr2);
+
+  {
+    GDValue emptyStr("");
+    assert(emptyStr.stringGet() == GDVString(""));
+    assert(emptyStr < dStr1);
+
+    // Ctor that accepts a kind.
+    assert(emptyStr == GDValue(GDVK_STRING));
+  }
 
   {
     GDValue const &dv = dStr1;
@@ -317,6 +336,7 @@ static void testSequence()
   assert(v3.getKind() == GDVK_SEQUENCE);
   assert(v3.sequenceGet() == seq1b3);
   assert(v1 < v3);
+  assert(v3 > v1);
   testSerializeRoundtrip(v3);
 
   v1.sequenceAppend(GDValue(-1));
@@ -1094,6 +1114,30 @@ static void testStringEscapes()
 }
 
 
+static void testGDValueKindToString()
+{
+  EXPECT_EQ(toString(GDVK_SYMBOL), "GDVK_SYMBOL");
+  EXPECT_EQ(toString(GDVK_MAP), "GDVK_MAP");
+}
+
+
+static void testWriteReadFile()
+{
+  SMFileUtil sfu;
+  sfu.createDirectoryAndParents("out/gdvn");
+
+  GDValue v(GDVSequence{1,2,"three"});
+  std::string fname("out/gdvn/123.gdvn");
+  v.writeToFile(fname);
+
+  GDValue v2 = GDValue::readFromFile(fname);
+  EXPECT_EQ(v, v2);
+
+  string contents = sfu.readFileAsString(fname);
+  EXPECT_EQ(contents, "[1 2 \"three\"]\n");
+}
+
+
 // Called from unit-tests.cc.
 void test_gdvalue()
 {
@@ -1120,6 +1164,8 @@ void test_gdvalue()
     testDeserializeIntegers();
     testDeserializeStrings();
     testStringEscapes();
+    testGDValueKindToString();
+    testWriteReadFile();
 
     // Some interesting values for the particular data used.
     testPrettyPrint(0);
