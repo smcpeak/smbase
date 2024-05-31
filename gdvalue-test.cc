@@ -15,9 +15,9 @@
 #include "string-utils.h"              // doubleQuote
 #include "syserr.h"                    // smbase::XSysError
 #include "utf8-writer.h"               // smbase::utf8EncodeVector
+#include "xassert.h"                   // xassert
 
 // libc++
-#include <cassert>                     // assert
 #include <cstdint>                     // INT64_C
 #include <cstdlib>                     // std::{atoi, exit}
 #include <iostream>                    // std::cout
@@ -76,31 +76,31 @@ static void testNull()
 {
   GDValue v;
   DIAG("null: " << v);
-  assert(v.asString() == "null");
-  assert(v.size() == 0);
-  assert(v.empty());
-  assert(v.isNull());
-  assert(v.getKind() == GDVK_SYMBOL);
+  xassert(v.asString() == "null");
+  xassert(v.size() == 0);
+  xassert(v.empty());
+  xassert(v.isNull());
+  xassert(v.getKind() == GDVK_SYMBOL);
 
   GDValue v2;
-  assert(v == v2);
-  assert(v2.asString() == "null");
-  assert(v.isNull());
-  assert(v2.getKind() == GDVK_SYMBOL);
+  xassert(v == v2);
+  xassert(v2.asString() == "null");
+  xassert(v.isNull());
+  xassert(v2.getKind() == GDVK_SYMBOL);
 
   v2.clear();
-  assert(v == v2);
-  assert(v.isNull());
-  assert(v2.getKind() == GDVK_SYMBOL);
+  xassert(v == v2);
+  xassert(v.isNull());
+  xassert(v2.getKind() == GDVK_SYMBOL);
 
   v2 = GDValue(GDVK_SYMBOL);
-  assert(v == v2);
+  xassert(v == v2);
 
   v2 = GDValue();
-  assert(v == v2);
+  xassert(v == v2);
 
   GDValue v3(GDVK_SYMBOL);
-  assert(v == v3);
+  xassert(v == v3);
 
   testSerializeRoundtrip(v);
 }
@@ -110,32 +110,32 @@ static void testBool()
 {
   GDValue dTrue(GDValue::BoolTag, true);
   VPVAL(dTrue);
-  assert(dTrue.asString() == "true");
-  assert(dTrue.size() == 1);
-  assert(!dTrue.empty());
-  assert(dTrue.getKind() == GDVK_SYMBOL);
-  assert(dTrue.isBool());
-  assert(dTrue.boolGet() == true);
+  xassert(dTrue.asString() == "true");
+  xassert(dTrue.size() == 1);
+  xassert(!dTrue.empty());
+  xassert(dTrue.getKind() == GDVK_SYMBOL);
+  xassert(dTrue.isBool());
+  xassert(dTrue.boolGet() == true);
 
   GDValue dFalse(GDValue::BoolTag, false);
   VPVAL(dFalse);
-  assert(dFalse.asString() == "false");
-  assert(dFalse.size() == 1);
-  assert(!dFalse.empty());
-  assert(dFalse.getKind() == GDVK_SYMBOL);
-  assert(dFalse.isBool());
-  assert(dFalse.boolGet() == false);
+  xassert(dFalse.asString() == "false");
+  xassert(dFalse.size() == 1);
+  xassert(!dFalse.empty());
+  xassert(dFalse.getKind() == GDVK_SYMBOL);
+  xassert(dFalse.isBool());
+  xassert(dFalse.boolGet() == false);
 
-  assert(dTrue != dFalse);
-  assert(dTrue > dFalse);
+  xassert(dTrue != dFalse);
+  xassert(dTrue > dFalse);
 
   GDValue dNull;
 
-  assert(dTrue != dNull);
-  assert(dFalse != dNull);
+  xassert(dTrue != dNull);
+  xassert(dFalse != dNull);
 
-  assert(dTrue > dNull);
-  assert(dFalse < dNull);
+  xassert(dTrue > dNull);
+  xassert(dFalse < dNull);
 
   testSerializeRoundtrip(dTrue);
   testSerializeRoundtrip(dFalse);
@@ -146,28 +146,28 @@ static void testSymbol()
 {
   GDValue dSym1(GDVSymbol("sym1"));
   VPVAL(dSym1);
-  assert(dSym1.asString() == "sym1");
-  assert(dSym1.size() == 1);
-  assert(!dSym1.empty());
-  assert(dSym1.getKind() == GDVK_SYMBOL);
-  assert(dSym1.isSymbol());
-  assert(dSym1.symbolGet() == GDVSymbol("sym1"));
+  xassert(dSym1.asString() == "sym1");
+  xassert(dSym1.size() == 1);
+  xassert(!dSym1.empty());
+  xassert(dSym1.getKind() == GDVK_SYMBOL);
+  xassert(dSym1.isSymbol());
+  xassert(dSym1.symbolGet() == GDVSymbol("sym1"));
   testSerializeRoundtrip(dSym1);
 
   GDValue dSym2(GDVSymbol("sym2"));
-  assert(dSym2.asString() == "sym2");
-  assert(dSym2.size() == 1);
-  assert(!dSym2.empty());
-  assert(dSym2.getKind() == GDVK_SYMBOL);
-  assert(dSym2.symbolGet() == GDVSymbol("sym2"));
+  xassert(dSym2.asString() == "sym2");
+  xassert(dSym2.size() == 1);
+  xassert(!dSym2.empty());
+  xassert(dSym2.getKind() == GDVK_SYMBOL);
+  xassert(dSym2.symbolGet() == GDVSymbol("sym2"));
   testSerializeRoundtrip(dSym2);
 
-  assert(dSym1 < dSym2);
-  assert(GDValue() < dSym1);
+  xassert(dSym1 < dSym2);
+  xassert(GDValue() < dSym1);
 
   dSym2.clear();
-  assert(dSym2.isNull());
-  assert(dSym2.getKind() == GDVK_SYMBOL);
+  xassert(dSym2.isNull());
+  xassert(dSym2.getKind() == GDVK_SYMBOL);
 
   testSerializeRoundtrip(dSym2);
 }
@@ -177,27 +177,27 @@ static void testInteger()
 {
   GDValue d0(0);
   VPVAL(d0);
-  assert(d0.asString() == "0");
-  assert(d0.size() == 1);
-  assert(!d0.empty());
-  assert(d0.getKind() == GDVK_INTEGER);
-  assert(d0.isInteger());
-  assert(d0.integerGet() == 0);
-  assert(!d0.isNull());
-  assert(!d0.isBool());
+  xassert(d0.asString() == "0");
+  xassert(d0.size() == 1);
+  xassert(!d0.empty());
+  xassert(d0.getKind() == GDVK_INTEGER);
+  xassert(d0.isInteger());
+  xassert(d0.integerGet() == 0);
+  xassert(!d0.isNull());
+  xassert(!d0.isBool());
 
   // Ctor from the value kind.
-  assert(d0 == GDValue(GDVK_INTEGER));
+  xassert(d0 == GDValue(GDVK_INTEGER));
 
   GDValue d1(1);
-  assert(d1.asString() == "1");
-  assert(d1.size() == 1);
-  assert(!d1.empty());
-  assert(d1.getKind() == GDVK_INTEGER);
-  assert(d1.integerGet() == 1);
+  xassert(d1.asString() == "1");
+  xassert(d1.size() == 1);
+  xassert(!d1.empty());
+  xassert(d1.getKind() == GDVK_INTEGER);
+  xassert(d1.integerGet() == 1);
 
-  assert(d0 < d1);
-  assert(GDValue() < d0);
+  xassert(d0 < d1);
+  xassert(GDValue() < d0);
 
   testSerializeRoundtrip(d0);
   testSerializeRoundtrip(d1);
@@ -209,7 +209,7 @@ static void testInteger()
 
   // Copy ctor where the integer is not small.
   GDValue big2(big);
-  assert(big == big2);
+  xassert(big == big2);
 }
 
 
@@ -222,51 +222,51 @@ static void testString()
   unsigned initCtCtorMove = GDValue::s_ct_stringCtorMove;
 
   // Check counts.
-  #define CHECK_COUNTS(setCopy, setMove, ctorCopy, ctorMove)           \
-    assert(GDValue::s_ct_stringSetCopy - initCtSetCopy == setCopy);    \
-    assert(GDValue::s_ct_stringSetMove - initCtSetMove == setMove);    \
-    assert(GDValue::s_ct_stringCtorCopy - initCtCtorCopy == ctorCopy); \
-    assert(GDValue::s_ct_stringCtorMove - initCtCtorMove == ctorMove);
+  #define CHECK_COUNTS(setCopy, setMove, ctorCopy, ctorMove)            \
+    xassert(GDValue::s_ct_stringSetCopy - initCtSetCopy == setCopy);    \
+    xassert(GDValue::s_ct_stringSetMove - initCtSetMove == setMove);    \
+    xassert(GDValue::s_ct_stringCtorCopy - initCtCtorCopy == ctorCopy); \
+    xassert(GDValue::s_ct_stringCtorMove - initCtCtorMove == ctorMove);
 
   GDValue dStr1(GDVString("str1"));
   CHECK_COUNTS(0, 1, 0, 1)
   VPVAL(dStr1);
-  assert(dStr1.asString() == "\"str1\"");
-  assert(dStr1.size() == 1);
-  assert(!dStr1.empty());
-  assert(dStr1.getKind() == GDVK_STRING);
-  assert(dStr1.isString());
-  assert(dStr1.stringGet() == GDVString("str1"));
-  assert(!dStr1.isNull());
+  xassert(dStr1.asString() == "\"str1\"");
+  xassert(dStr1.size() == 1);
+  xassert(!dStr1.empty());
+  xassert(dStr1.getKind() == GDVK_STRING);
+  xassert(dStr1.isString());
+  xassert(dStr1.stringGet() == GDVString("str1"));
+  xassert(!dStr1.isNull());
 
   GDValue dStr2(GDVString("str2"));
   CHECK_COUNTS(0, 2, 0, 2)
-  assert(dStr2.asString() == "\"str2\"");
-  assert(dStr2.size() == 1);
-  assert(!dStr2.empty());
-  assert(dStr2.getKind() == GDVK_STRING);
-  assert(dStr2.stringGet() == GDVString("str2"));
+  xassert(dStr2.asString() == "\"str2\"");
+  xassert(dStr2.size() == 1);
+  xassert(!dStr2.empty());
+  xassert(dStr2.getKind() == GDVK_STRING);
+  xassert(dStr2.stringGet() == GDVString("str2"));
 
-  assert(dStr1 < dStr2);
-  assert(GDValue() < dStr1);
+  xassert(dStr1 < dStr2);
+  xassert(GDValue() < dStr1);
 
   dStr2.clear();
-  assert(dStr2.isNull());
-  assert(dStr2.getKind() == GDVK_SYMBOL);
+  xassert(dStr2.isNull());
+  xassert(dStr2.getKind() == GDVK_SYMBOL);
 
   GDVString str1("str1");
   dStr2.stringSet(str1);     // 'set' without 'ctor'
   CHECK_COUNTS(1, 2, 0, 2)
 
-  assert(dStr1 == dStr2);
+  xassert(dStr1 == dStr2);
 
   {
     GDValue emptyStr("");
-    assert(emptyStr.stringGet() == GDVString(""));
-    assert(emptyStr < dStr1);
+    xassert(emptyStr.stringGet() == GDVString(""));
+    xassert(emptyStr < dStr1);
 
     // Ctor that accepts a kind.
-    assert(emptyStr == GDValue(GDVK_STRING));
+    xassert(emptyStr == GDValue(GDVK_STRING));
   }
 
   {
@@ -290,14 +290,14 @@ static void testString()
       DIAG(*it);
     }
     DIAG("again: " << dStr1);
-    assert(dStr1.stringGet() == "tus2");
+    xassert(dStr1.stringGet() == "tus2");
 
     DIAG("string iterable non-const iteration:");
     for (auto &c : dStr1.stringIterable()) {
       --c;
       DIAG(c);
     }
-    assert(dStr1.stringGet() == "str1");
+    xassert(dStr1.stringGet() == "str1");
   }
 
   #undef CHECK_COUNTS
@@ -319,52 +319,52 @@ static void testSequence()
 {
   GDValue v1(GDVK_SEQUENCE);
   DIAG("empty seq: " << v1);
-  assert(v1.asString() == "[]");
-  assert(v1.size() == 0);
-  assert(v1.empty());
-  assert(v1.getKind() == GDVK_SEQUENCE);
-  assert(v1.isSequence());
-  assert(v1.sequenceGet() == GDVSequence());
+  xassert(v1.asString() == "[]");
+  xassert(v1.size() == 0);
+  xassert(v1.empty());
+  xassert(v1.getKind() == GDVK_SEQUENCE);
+  xassert(v1.isSequence());
+  xassert(v1.sequenceGet() == GDVSequence());
   testSerializeRoundtrip(v1);
 
   GDValue v2((GDVSequence()));
 
-  assert(v1 == v2);
+  xassert(v1 == v2);
 
   GDVSequence seq1b3{GDValue(1), GDValue("b"), GDValue(3)};
   GDValue v3(seq1b3);
   DIAG("three-element seq: " << v3);
-  assert(v3.asString() == "[1 \"b\" 3]");
-  assert(v3.size() == 3);
-  assert(!v3.empty());
-  assert(v3.getKind() == GDVK_SEQUENCE);
-  assert(v3.sequenceGet() == seq1b3);
-  assert(v1 < v3);
-  assert(v3 > v1);
+  xassert(v3.asString() == "[1 \"b\" 3]");
+  xassert(v3.size() == 3);
+  xassert(!v3.empty());
+  xassert(v3.getKind() == GDVK_SEQUENCE);
+  xassert(v3.sequenceGet() == seq1b3);
+  xassert(v1 < v3);
+  xassert(v3 > v1);
   testSerializeRoundtrip(v3);
 
   v1.sequenceAppend(GDValue(-1));
-  assert(v1.asString() == "[-1]");
-  assert(v1 < v3);
+  xassert(v1.asString() == "[-1]");
+  xassert(v1 < v3);
 
   v3.sequenceAppend(GDValue("four"));
-  assert(v3.asString() == R"([1 "b" 3 "four"])");
+  xassert(v3.asString() == R"([1 "b" 3 "four"])");
 
   v1.sequenceResize(3);
-  assert(v1.asString() == "[-1 null null]");
+  xassert(v1.asString() == "[-1 null null]");
 
   v3.sequenceResize(3);
-  assert(v3.asString() == R"([1 "b" 3])");
+  xassert(v3.asString() == R"([1 "b" 3])");
 
   v1.sequenceSetValueAt(1, v3);
-  assert(v1.asString() == R"([-1 [1 "b" 3] null])");
+  xassert(v1.asString() == R"([-1 [1 "b" 3] null])");
 
   v1.sequenceSetValueAt(4, GDValue(5));
   VPVAL(v1);
-  assert(v1.asString() == R"([-1 [1 "b" 3] null null 5])");
+  xassert(v1.asString() == R"([-1 [1 "b" 3] null null 5])");
   testSerializeRoundtrip(v1);
 
-  assert(v1.sequenceGetValueAt(1) == v3);
+  xassert(v1.sequenceGetValueAt(1) == v3);
 
   {
     // Get a `const` reference so I can exercise the
@@ -373,8 +373,8 @@ static void testSequence()
 
     GDVIndex i = 0;
     for (GDValue const &value : v1.sequenceIterableC()) {
-      assert(value == v1.sequenceGetValueAt(i));
-      assert(value == v1c.sequenceGetValueAt(i));
+      xassert(value == v1.sequenceGetValueAt(i));
+      xassert(value == v1c.sequenceGetValueAt(i));
       ++i;
     }
   }
@@ -384,16 +384,16 @@ static void testSequence()
       value.integerSet(value.integerGet() + 1);
     }
   }
-  assert(v1.asString() == R"([0 [1 "b" 3] null null 6])");
+  xassert(v1.asString() == R"([0 [1 "b" 3] null null 6])");
 
   // Use `sequenceSetValueAt(const&)` to expand the sequence.
   GDValue seven(7);
   v1.sequenceSetValueAt(5, seven);
-  assert(v1.asString() == R"([0 [1 "b" 3] null null 6 7])");
+  xassert(v1.asString() == R"([0 [1 "b" 3] null null 6 7])");
 
   v1.sequenceClear();
-  assert(v1 == v2);
-  assert(v1.empty());
+  xassert(v1 == v2);
+  xassert(v1.empty());
   testSerializeRoundtrip(v1);
 }
 
@@ -402,32 +402,32 @@ static void testSet()
 {
   GDValue v1((GDVSet()));
   DIAG("empty set: " << v1);
-  assert(v1.asString() == "{{}}");
-  assert(v1.size() == 0);
-  assert(v1.empty());
-  assert(v1.getKind() == GDVK_SET);
-  assert(v1.isSet());
-  assert(v1.setGet() == GDVSet());
+  xassert(v1.asString() == "{{}}");
+  xassert(v1.size() == 0);
+  xassert(v1.empty());
+  xassert(v1.getKind() == GDVK_SET);
+  xassert(v1.isSet());
+  xassert(v1.setGet() == GDVSet());
   testSerializeRoundtrip(v1);
 
   GDValue v2(v1);
-  assert(v1 == v2);
+  xassert(v1 == v2);
 
   v2.setInsert(GDValue(1));
-  assert(v2.setContains(GDValue(1)));
-  assert(v2.size() == 1);
-  assert(v1 < v2);
+  xassert(v2.setContains(GDValue(1)));
+  xassert(v2.size() == 1);
+  xassert(v1 < v2);
 
   v2.setInsert(GDValue(2));
-  assert(v2.asString() == "{{1 2}}");
+  xassert(v2.asString() == "{{1 2}}");
   testSerializeRoundtrip(v2);
 
   v2.setRemove(GDValue(1));
-  assert(v2.asString() == "{{2}}");
+  xassert(v2.asString() == "{{2}}");
 
   v2.setClear();
-  assert(v2.asString() == "{{}}");
-  assert(v1 == v2);
+  xassert(v2.asString() == "{{}}");
+  xassert(v1 == v2);
   testSerializeRoundtrip(v2);
 
   v2 = GDValue(GDVSet{
@@ -440,7 +440,7 @@ static void testSet()
          }),
        });
   DIAG(v2);
-  assert(v2.asString() == R"({{10 "x" [2 3 4]}})");
+  xassert(v2.asString() == R"({{10 "x" [2 3 4]}})");
   testSerializeRoundtrip(v2);
 
   {
@@ -482,43 +482,43 @@ static void testMap()
 {
   GDValue v1((GDVMap()));
   DIAG("empty map: " << v1);
-  assert(v1.asString() == "{}");
-  assert(v1.size() == 0);
-  assert(v1.empty());
-  assert(v1.getKind() == GDVK_MAP);
-  assert(v1.isMap());
-  assert(v1.mapGet() == GDVMap());
+  xassert(v1.asString() == "{}");
+  xassert(v1.size() == 0);
+  xassert(v1.empty());
+  xassert(v1.getKind() == GDVK_MAP);
+  xassert(v1.isMap());
+  xassert(v1.mapGet() == GDVMap());
   testSerializeRoundtrip(v1);
 
   GDValue v2(v1);
-  assert(v1 == v2);
+  xassert(v1 == v2);
 
   v2.mapSetValueAt(GDValue("one"), GDValue(1));
-  assert(v2.size() == 1);
-  assert(v2.mapGetValueAt(GDValue("one")) == GDValue(1));
+  xassert(v2.size() == 1);
+  xassert(v2.mapGetValueAt(GDValue("one")) == GDValue(1));
   DIAG(v2);
-  assert(v2.asString() == R"({"one":1})");
-  assert(v2.mapContains(GDValue("one")));
-  assert(v2 > v1);
+  xassert(v2.asString() == R"({"one":1})");
+  xassert(v2.mapContains(GDValue("one")));
+  xassert(v2 > v1);
   testSerializeRoundtrip(v2);
 
   v2.mapSetValueAt(GDValue("one"), GDValue(2));
-  assert(v2.asString() == R"({"one":2})");
-  assert(v2.mapContains(GDValue("one")));
+  xassert(v2.asString() == R"({"one":2})");
+  xassert(v2.mapContains(GDValue("one")));
   testSerializeRoundtrip(v2);
 
   v2.mapSetValueAt(GDValue("two"), GDValue(2));
-  assert(v2.asString() == R"({"one":2 "two":2})");
-  assert(v2.size() == 2);
+  xassert(v2.asString() == R"({"one":2 "two":2})");
+  xassert(v2.size() == 2);
   testSerializeRoundtrip(v2);
 
   v2.mapRemoveKey(GDValue("one"));
-  assert(v2.asString() == R"({"two":2})");
-  assert(!v2.mapContains(GDValue("one")));
+  xassert(v2.asString() == R"({"two":2})");
+  xassert(!v2.mapContains(GDValue("one")));
   testSerializeRoundtrip(v2);
 
   v2.mapClear();
-  assert(v1 == v2);
+  xassert(v1 == v2);
   testSerializeRoundtrip(v2);
 
   v2 = GDValue(GDVMap{
@@ -533,12 +533,12 @@ static void testMap()
          )
        });
   DIAG(v2);
-  assert(v2.asString() == "{2:3 \"a\":1 [10 11]:ten_eleven}");
+  xassert(v2.asString() == "{2:3 \"a\":1 [10 11]:ten_eleven}");
   testSerializeRoundtrip(v2);
 
-  assert(v2.mapGetValueAt(
-           GDValue(GDVSequence({GDValue(10), GDValue(11)}))) ==
-         GDValue(GDVSymbol("ten_eleven")));
+  xassert(v2.mapGetValueAt(
+            GDValue(GDVSequence({GDValue(10), GDValue(11)}))) ==
+          GDValue(GDVSymbol("ten_eleven")));
 
   // Call the ctor that accepts a `map const &`.
   GDVMap tmpMap{ {1,2}, {3,4} };
@@ -683,7 +683,7 @@ static void checkLinesStringFor(
     DIAG("expect:\n" << expect);
     DIAG("actual:\n" << actual);
   }
-  assert(actual == expect);
+  xassert(actual == expect);
 }
 
 
