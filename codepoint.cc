@@ -193,9 +193,9 @@ int decodeSurrogatePair(int highSurrogate, int lowSurrogate)
   xassert(isHighSurrogate(highSurrogate));
   xassert(isLowSurrogate(lowSurrogate));
 
-  return 0x10000 |
-         ((highSurrogate & 0x3FF) << 10) |
-         (lowSurrogate & 0x3FF);
+  return 0x10000 +
+         (((highSurrogate & 0x3FF) << 10) |
+          (lowSurrogate & 0x3FF));
 }
 
 

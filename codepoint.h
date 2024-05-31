@@ -68,7 +68,7 @@ int decodeASCIIHexDigit(int c);
 
 // Given `highSurrogate` in [0xD800,0xDC00) and `lowSurrogate` in
 // [0xDC00,0xE000), decode them as a single code point in
-// [0x0,0x10FFFF].
+// [0x10000,0x10FFFF].
 int decodeSurrogatePair(int highSurrogate, int lowSurrogate);
 
 /* Implement the following map:

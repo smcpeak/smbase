@@ -61,6 +61,9 @@ void test_codepoint()
   EXPECT_EQ(encodeRadixIndicatorLetter(16), 'x');
   EXPECT_EQ(encodeRadixIndicatorLetter(8), 'o');
   EXPECT_EQ(encodeRadixIndicatorLetter(2), 'b');
+
+  EXPECT_EQ(decodeSurrogatePair(0xD800, 0xDC00), 0x10000);
+  EXPECT_EQ(decodeSurrogatePair(0xDBFF, 0xDFFF), 0x10FFFF);
 }
 
 
