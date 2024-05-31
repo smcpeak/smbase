@@ -17,7 +17,7 @@ OPEN_NAMESPACE(smbase)
 
 
 // The underlying implementation type.
-typedef APInteger<std::uint32_t> UnderInteger;
+typedef APInteger<std::uint32_t, std::int32_t> UnderInteger;
 
 // The underlying integer as a `const` pseudo-member of `Integer` `obj`.
 #define M_UNDER_OF_CONST(obj) \
@@ -111,6 +111,12 @@ Integer &Integer::operator=(Integer &&obj)
 }
 
 
+void Integer::selfCheck() const
+{
+  M_UNDER_CONST.selfCheck();
+}
+
+
 bool Integer::isZero() const
 {
   return M_UNDER_CONST.isZero();
@@ -151,7 +157,7 @@ PRIM Integer::getAs() const
 
   std::optional<PRIM> res = getAsOpt<PRIM>();
   if (!res.has_value()) {
-    UnderInteger::UInteger::template throwDoesNotFitException<PRIM>(
+    UnderInteger::template throwDoesNotFitException<PRIM>(
       "Integer", this->toString());
   }
   return res.value();

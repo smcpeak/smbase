@@ -17,6 +17,13 @@ using namespace smbase;
 OPEN_ANONYMOUS_NAMESPACE
 
 
+// Check that `actual` equals `expect` and also check the invariants on
+// `actual`.
+#define SC_EXPECT_EQ(actual, expect) \
+  EXPECT_EQ(actual, expect);         \
+  actual.selfCheck();
+
+
 // Count primitive arithmetic overflows.
 int overflowCount=0, nonOverflowCount=0;
 
@@ -27,16 +34,19 @@ void testSimple()
   xassert(zero.isZero());
   xassert(!zero.isNegative());
   VPVAL(zero);
+  zero.selfCheck();
 
   Integer one(1);
   xassert(!one.isZero());
   xassert(!one.isNegative());
   VPVAL(one);
+  one.selfCheck();
 
   Integer negOne(-1);
   xassert(!negOne.isZero());
   xassert(negOne.isNegative());
   VPVAL(negOne);
+  negOne.selfCheck();
 }
 
 
@@ -52,8 +62,8 @@ void testOneDivide(
     actualRemainder,
     dividend,
     divisor);
-  EXPECT_EQ(actualQuotient, Integer(expectQuotient));
-  EXPECT_EQ(actualRemainder, Integer(expectRemainder));
+  SC_EXPECT_EQ(actualQuotient, Integer(expectQuotient));
+  SC_EXPECT_EQ(actualRemainder, Integer(expectRemainder));
 }
 
 
@@ -101,11 +111,11 @@ void testOneRandomArithmetic()
     PRIM sum = addWithOverflowCheck(a, b);
 
     Integer apSum = apA + apB;
-    EXPECT_EQ(apSum, Integer(sum));
+    SC_EXPECT_EQ(apSum, Integer(sum));
 
     apSum = apA;
     apSum += apB;
-    EXPECT_EQ(apSum, Integer(sum));
+    SC_EXPECT_EQ(apSum, Integer(sum));
 
     ++nonOverflowCount;
   }
@@ -117,11 +127,11 @@ void testOneRandomArithmetic()
     PRIM diff = subtractWithOverflowCheck(a, b);
 
     Integer apDiff = apA - apB;
-    EXPECT_EQ(apDiff, Integer(diff));
+    SC_EXPECT_EQ(apDiff, Integer(diff));
 
     apDiff = apA;
     apDiff -= apB;
-    EXPECT_EQ(apDiff, Integer(diff));
+    SC_EXPECT_EQ(apDiff, Integer(diff));
 
     ++nonOverflowCount;
   }
@@ -138,11 +148,11 @@ void testOneRandomArithmetic()
     PRIM prod = multiplyWithOverflowCheck(a, b);
 
     Integer apProd = apA * apB;
-    EXPECT_EQ(apProd, Integer(prod));
+    SC_EXPECT_EQ(apProd, Integer(prod));
 
     apProd = apA;
     apProd *= apB;
-    EXPECT_EQ(apProd, Integer(prod));
+    SC_EXPECT_EQ(apProd, Integer(prod));
 
     ++nonOverflowCount;
   }
@@ -166,22 +176,22 @@ void testOneRandomArithmetic()
       apA,
       apB);
 
-    EXPECT_EQ(apQuot, Integer(quot));
-    EXPECT_EQ(apRem, Integer(rem));
+    SC_EXPECT_EQ(apQuot, Integer(quot));
+    SC_EXPECT_EQ(apRem, Integer(rem));
 
     // Check the operator forms.
     apQuot = apA / apB;
     apRem = apA % apB;
-    EXPECT_EQ(apQuot, Integer(quot));
-    EXPECT_EQ(apRem, Integer(rem));
+    SC_EXPECT_EQ(apQuot, Integer(quot));
+    SC_EXPECT_EQ(apRem, Integer(rem));
 
     // Check the operator= forms.
     apQuot = apA;
     apQuot /= apB;
     apRem = apA;
     apRem %= apB;
-    EXPECT_EQ(apQuot, Integer(quot));
-    EXPECT_EQ(apRem, Integer(rem));
+    SC_EXPECT_EQ(apQuot, Integer(quot));
+    SC_EXPECT_EQ(apRem, Integer(rem));
 
     ++nonOverflowCount;
   }
@@ -210,7 +220,7 @@ void testOneUnary(
   else {
     actual = -input;
   }
-  EXPECT_EQ(actual, expect);
+  SC_EXPECT_EQ(actual, expect);
 }
 
 

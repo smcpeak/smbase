@@ -7,10 +7,12 @@
 #define SMBASE_SM_AP_INT_H
 
 #include "compare-util.h"              // RET_IF_COMPARE
+#include "overflow.h"                  // convertNumberOpt
 #include "sm-ap-uint.h"                // APUInteger
 #include "sm-macros.h"                 // OPEN_NAMESPACE, DMEMB, CMEMB
 #include "xarithmetic.h"               // XDivideByZero
 
+#include <cstdint>                     // std::int32_t
 #include <limits>                      // std::numeric_limits
 #include <optional>                    // std::{optional, nullopt}
 #include <string_view>                 // std::string_view
@@ -20,70 +22,211 @@
 OPEN_NAMESPACE(smbase)
 
 
-// Arbitrary-precision integer, positive or negative.
-template <typename Word>
+/* Arbitrary-precision integer, positive or negative.
+
+   When the value is large, it is represented as a sequence of `Word`
+   elements.  `Word` must be unsigned.
+
+   When it is small, it is represented as a single `EmbeddedInt`, which
+   must be signed.
+
+   Both of these are template parameters primarily to facilitiate
+   testing.  The `Integer` class (declared in `sm-integer.h`) wraps this
+   with a more convenient, non-templated interface.
+
+   My nominal assumption is that, when used in production, `Word` will
+   be `uint32_t` and `EmbeddedInt` will be `int32_t`.
+*/
+template <typename Word, typename EmbeddedInt>
 class APInteger {
-public:      // types
+private:     // types
+  // Indicator of signedness or of an embedded value.
+  enum SignOrEmbed : std::uint8_t {
+    // The value is positive `m_magnitude` (which includes the case
+    // where it is zero).  `m_eValue==0`.
+    SOE_POSITIVE,
+
+    // The value is negative `m_magnitude`.  In this case, `m_magnitude`
+    // is not zero and `m_eValue==0`.
+    SOE_NEGATIVE,
+
+    // The value is `m_eValue`.  `m_magnitude` is zero.
+    SOE_EMBEDDED
+  };
+
   // The unsigned type upon which this is based.
   typedef APUInteger<Word> UInteger;
 
 private:     // data
-  // Magnitude of the value.
+  // Magnitude of the value if it is larger than what can be represented
+  // in `m_eValue`.
   UInteger m_magnitude;
 
-  // Sign of the value.  If the value is negative, then the magnitude is
-  // not zero.
-  bool m_negative;
+  // Indicator of where the value is, and its signedness if it is in
+  // `m_magnitude`.
+  SignOrEmbed m_soe;
+
+  /* If `m_soe==SOE_EMBEDDED`, this contains the value.  Storing small
+     values in the object saves a dynamic memory allocation in the
+     fairly common case that it fits.
+
+     I choose to use a separate integer rather than, say, using
+     `uintptr_t` and combining it with `m_soe`, for simplicity.  I
+     generally regard 64-bit as the primary target, and by letting
+     `EmbeddedInt` be `int32_t`, I can represent a reasonably large
+     range of integers using the embedded value while still not using
+     another word of memory.
+
+     I also choose to *not* use the most-negative value that is
+     representable, for example -128 if `EmbeddedInt` is `int8_t`.  The
+     reason is if I avoid that value, then the range is symmetric (-127
+     to 127 in that case), and I can use `UInteger::getAsOpt` to check
+     representability.  It also means I can always flip the sign without
+     changing how the value is represented.
+  */
+  EmbeddedInt m_eValue;
 
 private:     // methods
-  /* If `m_magnitude` is zero and `m_negative` is set, clear it.
-
-     I do this in order to allow `APInteger`s to be constructed with a
-     negative flag despite being zero.  This arises naturally in the
-     arithmetic operations (such as (-1) - (-1), or (-1) * 0), and it
-     would annoying to add extra logic to avoid a problem that is easily
-     solved by normalizing at construction time.
-  */
-  void fixNegativeZero()
+  // Are we using the value embedded as `m_eValue`?
+  bool isEmbedded() const
   {
-    if (m_negative && m_magnitude.isZero()) {
-      m_negative = false;
+    return m_soe == SOE_EMBEDDED;
+  }
+
+  // Normalize the representation.
+  void normalize()
+  {
+    if (isEmbedded()) {
+      m_magnitude.setZero();
     }
+    else {
+      // Check if the value can be represented in `m_eValue`.
+      std::optional<EmbeddedInt> valOpt =
+        m_magnitude.template getAsOpt<EmbeddedInt>();
+      if (valOpt.has_value()) {
+        // Use the embedded representation.
+        m_eValue = valOpt.value() * (m_soe==SOE_POSITIVE? +1 : -1);
+        m_soe = SOE_EMBEDDED;
+        m_magnitude.setZero();
+      }
+      else {
+        // Ensure this is zero when not in use.
+        m_eValue = 0;
+      }
+    }
+  }
+
+  // Get the magnitude as an AP integer.
+  UInteger getAPMagnitude() const
+  {
+    if (isEmbedded()) {
+      // Note that this is safe, in part, because we do not use the
+      // most-negative value representable by `EmbeddedInt`.
+      return UInteger(std::abs(m_eValue));
+    }
+    else {
+      return m_magnitude;
+    }
+  }
+
+  // Return sum if `isSum`, difference otherwise.
+  APInteger sumOrDifference(APInteger const &other, bool isSum) const
+  {
+    if (this->isEmbedded() || other.isEmbedded()) {
+      // Convert both to AP integers (even if one already is).
+      return innerSumOrDifference(
+        this->getAPMagnitude(), this->isNegative(),
+        other.getAPMagnitude(), other.isNegative(),
+        isSum);
+    }
+    else {
+      return innerSumOrDifference(
+        this->m_magnitude, this->isNegative(),
+        other.m_magnitude, other.isNegative(),
+        isSum);
+    }
+  }
+
+  // Return the sum or difference of two numbers represented as AP
+  // magnitudes and signs.
+  static APInteger innerSumOrDifference(
+    UInteger const &thisMagnitude,
+    bool thisIsNegative,
+    UInteger const &otherMagnitude,
+    bool otherIsNegative,
+    bool isSum)
+  {
+    bool sameSign = thisIsNegative == otherIsNegative;
+    if (sameSign == isSum) {
+      // Same effective signs, add magnitudes.
+      return APInteger(thisMagnitude + otherMagnitude,
+                       thisIsNegative);
+    }
+    else if (thisMagnitude >= otherMagnitude) {
+      // `this` dominates.
+      return APInteger(thisMagnitude - otherMagnitude,
+                       thisIsNegative);
+    }
+    else {
+      // `other` dominates.  If `isSum`, we use its sign, otherwise we
+      // flip it.
+      return APInteger(otherMagnitude - thisMagnitude,
+                       otherIsNegative == isSum);
+    }
+  }
+
+  // Return the most-negative value that `EmbeddedInt` can represent.
+  // We do *not* let `m_eValue` use this value.
+  static constexpr EmbeddedInt mostNegativeEmbeddedInt()
+  {
+    return std::numeric_limits<EmbeddedInt>::min();
   }
 
 public:      // methods
   ~APInteger()
-  {}
+  {
+    static_assert(std::is_unsigned<Word>::value);
+    static_assert(std::is_signed<EmbeddedInt>::value);
+  }
 
   // ---------- Constructors ----------
   // Zero.
   APInteger()
     : m_magnitude(),
-      m_negative(false)
+      m_soe(SOE_EMBEDDED),
+      m_eValue(0)
   {}
 
   APInteger(APInteger const &obj)
     : DMEMB(m_magnitude),
-      DMEMB(m_negative)
+      DMEMB(m_soe),
+      DMEMB(m_eValue)
   {}
 
   APInteger(APInteger &&obj)
     : MDMEMB(m_magnitude),
-      MDMEMB(m_negative)
+      MDMEMB(m_soe),
+      MDMEMB(m_eValue)
   {}
 
   APInteger(UInteger const &magnitude, bool negative)
     : m_magnitude(magnitude),
-      m_negative(negative)
+      m_soe(negative? SOE_NEGATIVE : SOE_POSITIVE),
+      m_eValue(0)
   {
-    fixNegativeZero();
+    normalize();
+
+    // TODO: Add a mechanism to deallocate the vector here if we do not
+    // need it.  The process of parsing digits (and other operations
+    // too) will otherwise always leave one uselessly allocated.
   }
 
   APInteger(UInteger &&magnitude, bool negative)
     : m_magnitude(std::move(magnitude)),
-      m_negative(negative)
+      m_soe(negative? SOE_NEGATIVE : SOE_POSITIVE),
+      m_eValue(0)
   {
-    fixNegativeZero();
+    normalize();
   }
 
   // Construct from `PRIM`, presumed to be a primitive type.  As this
@@ -91,13 +234,35 @@ public:      // methods
   template <typename PRIM>
   APInteger(PRIM n)
     : m_magnitude(),
-      m_negative(false)
+      m_soe(SOE_EMBEDDED),
+      m_eValue(static_cast<EmbeddedInt>(n))
   {
+    // Check if we are able represent it with the embedded value.
+    if (m_eValue < 0 && std::is_unsigned<PRIM>::value) {
+      // No, the conversion flipped the sign.
+    }
+    else if (static_cast<PRIM>(m_eValue) != n) {
+      // No, the conversion lost range.
+    }
+    else if (m_eValue == mostNegativeEmbeddedInt()) {
+      // The value fits just barely as the most-negative representable
+      // value.  I choose to not use this value.
+    }
+    else {
+      // Yes, it fits.
+      selfCheck();
+      return;
+    }
+
+    // Since it does not fit in `m_eValue`, we will store it in
+    // `m_magnitude`.
+    m_eValue = 0;
+
     // True if we need to add one more to the magnitude at the end.
     bool addOneAfterward = false;
 
     if (n < 0) {
-      m_negative = true;
+      m_soe = SOE_NEGATIVE;
 
       if (n == std::numeric_limits<PRIM>::min()) {
         // The naive strategy of getting a positive value by applying
@@ -110,6 +275,9 @@ public:      // methods
       // Flip the sign of `n`.
       n = -n;
       xassert(n >= 0);
+    }
+    else {
+      m_soe = SOE_POSITIVE;
     }
 
     m_magnitude = n;
@@ -126,7 +294,8 @@ public:      // methods
   {
     if (this != &obj) {
       CMEMB(m_magnitude);
-      CMEMB(m_negative);
+      CMEMB(m_soe);
+      CMEMB(m_eValue);
     }
     return *this;
   }
@@ -135,51 +304,73 @@ public:      // methods
   {
     if (this != &obj) {
       MCMEMB(m_magnitude);
-      MCMEMB(m_negative);
+      MCMEMB(m_soe);
+      MCMEMB(m_eValue);
     }
     return *this;
   }
+
+  // TODO: Add `swap`.
 
   // ---------- General ----------
   // Assert invariants.
   void selfCheck() const
   {
-    xassertInvariant(!( m_negative && m_magnitude.isZero() ));
+    if (isEmbedded()) {
+      xassertInvariant(m_magnitude.isZero());
+      xassertInvariant(m_eValue != mostNegativeEmbeddedInt());
+    }
+    else {
+      // The magnitude must not fit into `m_eValue`.
+      //
+      // Note that this check rules out the combination of
+      // `m_soe==SOE_NEGATIVE` and `m_magnitude.isZero()`.
+      xassert(!m_magnitude.template getAsOpt<EmbeddedInt>().has_value());
+    }
   }
 
   // ---------- Zero ----------
   // True if this object represents zero.
   bool isZero() const
   {
-    return m_magnitude.isZero();
+    if (isEmbedded()) {
+      return m_eValue == 0;
+    }
+    else {
+      return false;
+    }
   }
 
   // Set the value of this object to zero.
   void setZero()
   {
     m_magnitude.setZero();
-    m_negative = false;
+    m_soe = SOE_EMBEDDED;
+    m_eValue = 0;
   }
 
   // ---------- Negative ----------
   bool isNegative() const
   {
-    return m_negative;
+    if (isEmbedded()) {
+      return m_eValue < 0;
+    }
+    else {
+      return m_soe == SOE_NEGATIVE;
+    }
   }
 
   // Flip the sign of `*this` unless the magnitude is zero.
   void flipSign()
   {
-    if (isNegative()) {
-      m_negative = false;
+    if (isEmbedded()) {
+      m_eValue = -m_eValue;
+    }
+    else if (m_soe == SOE_NEGATIVE) {
+      m_soe = SOE_POSITIVE;
     }
     else {
-      if (isZero()) {
-        // Do not change the sign; -0 = 0.
-      }
-      else {
-        m_negative = true;
-      }
+      m_soe = SOE_NEGATIVE;
     }
   }
 
@@ -197,6 +388,11 @@ public:      // methods
   std::optional<PRIM> getAsOpt() const
   {
     static_assert(std::is_integral<PRIM>::value);
+
+    if (isEmbedded()) {
+      // Try to convert `m_eValue` to `PRIM`.
+      return convertNumberOpt<PRIM>(m_eValue);
+    }
 
     if (isNegative()) {
       if (std::is_unsigned<PRIM>::value) {
@@ -244,30 +440,62 @@ public:      // methods
   {
     std::optional<PRIM> res = getAsOpt<PRIM>();
     if (!res.has_value()) {
-      UInteger::template throwDoesNotFitException<PRIM>(
-        "APInteger", this->toString());
+      throwDoesNotFitException<PRIM>("APInteger", this->toString());
     }
     return res.value();
   }
 
+  // Throw an exception complaining about the inability to convert a
+  // value to `PRIM`.
+  template <typename PRIM>
+  static void throwDoesNotFitException(
+    char const *className,
+    std::string const &valueAsString)
+  {
+    UInteger::template throwDoesNotFitException<PRIM>(
+      className, valueAsString);
+  }
+
   // ---------- Relational comparison ----------
+  // Compare the numbers as if they were positive, and ignoring the
+  // specific value in `m_eValue` because we know they are not *both*
+  // using the embedded value.
+  //
+  // This function should be regarded as private to `APInteger`
+  // even though it is not a methed.
+  friend int compareAsIfPositive(APInteger const &a,
+                                 APInteger const &b)
+  {
+    // For positive numbers, embedded==true are smaller than, so sort as
+    // less than, embedded==false.  But false<true, so flip the order.
+    RET_IF_COMPARE(b.isEmbedded(), a.isEmbedded());
+
+    // Both numbers are non-embedded.  Compare magnitudes in the usual
+    // way.
+    RET_IF_COMPARE(a.m_magnitude, b.m_magnitude);
+
+    return 0;
+  }
+
   // Return <0 if a<b, 0 if a==b, >0 if a>b.
   friend int compare(APInteger const &a,
                      APInteger const &b)
   {
+    if (a.isEmbedded() && b.isEmbedded()) {
+      return compare(a.m_eValue, b.m_eValue);
+    }
+
     // Negative comes before positive so flip the usual order here.
-    RET_IF_COMPARE(b.m_negative, a.m_negative);
+    RET_IF_COMPARE(b.isNegative(), a.isNegative());
 
-    if (a.m_negative) {
-      // Larger negative comes before smaller negative, so again flip
-      // the usual order.
-      RET_IF_COMPARE(b.m_magnitude, a.m_magnitude);
+    if (a.isNegative()) {
+      // Flip the comparison order to account for negativity.
+      return compareAsIfPositive(b, a);
     }
+
     else {
-      RET_IF_COMPARE(a.m_magnitude, b.m_magnitude);
+      return compareAsIfPositive(a, b);
     }
-
-    return 0;
   }
 
   DEFINE_FRIEND_RELATIONAL_OPERATORS(APInteger)
@@ -286,6 +514,11 @@ public:      // methods
   */
   std::string getAsRadixDigits(int radix, bool radixIndicator) const
   {
+    if (isEmbedded()) {
+      static_assert(sizeof(EmbeddedInt) <= sizeof(int64_t));
+      return int64ToRadixDigits(m_eValue, radix, radixIndicator);
+    }
+
     std::string magString;
     if (!radixIndicator) {
       magString = m_magnitude.getAsRadixDigits(radix);
@@ -356,6 +589,10 @@ public:      // methods
       }
     }
 
+    // In both of the following cases, if the value ends up being
+    // representable in `m_eValue`, that will be handled by the call to
+    // `normalize` in the constructor.
+
     if (radix < 0) {
       // Detect the radix.
       return APInteger(UInteger::fromRadixPrefixedDigits(digits),
@@ -391,29 +628,17 @@ public:      // methods
 
   APInteger operator+(APInteger const &other) const
   {
-    return sumOrDifference(other, true /*isSum*/);
-  }
+    if (this->isEmbedded() && other.isEmbedded()) {
+      std::optional<EmbeddedInt> res =
+        addWithOverflowCheckOpt(this->m_eValue, other.m_eValue);
+      if (res.has_value()) {
+        // Note that this is not guaranteed to result in an embedded
+        // value because it could be `mostNegativeEmbeddedInt()`.
+        return APInteger(res.value());
+      }
+    }
 
-  // Return sum if `isSum`, difference otherwise.
-  APInteger sumOrDifference(APInteger const &other, bool isSum) const
-  {
-    bool sameSign = this->isNegative() == other.isNegative();
-    if (sameSign == isSum) {
-      // Same effective signs, add magnitudes.
-      return APInteger(this->m_magnitude + other.m_magnitude,
-                       this->isNegative());
-    }
-    else if (this->m_magnitude >= other.m_magnitude) {
-      // `*this` dominates.
-      return APInteger(this->m_magnitude - other.m_magnitude,
-                       this->isNegative());
-    }
-    else {
-      // `other` dominates.  If `isSum`, we use its sign, otherwise we
-      // flip it.
-      return APInteger(other.m_magnitude - this->m_magnitude,
-                       other.isNegative() == isSum);
-    }
+    return sumOrDifference(other, true /*isSum*/);
   }
 
   APInteger const &operator+() const
@@ -429,6 +654,14 @@ public:      // methods
 
   APInteger operator-(APInteger const &other) const
   {
+    if (this->isEmbedded() && other.isEmbedded()) {
+      std::optional<EmbeddedInt> res =
+        subtractWithOverflowCheckOpt(this->m_eValue, other.m_eValue);
+      if (res.has_value()) {
+        return APInteger(res.value());
+      }
+    }
+
     return sumOrDifference(other, false /*isSum*/);
   }
 
@@ -447,7 +680,15 @@ public:      // methods
 
   APInteger operator*(APInteger const &other) const
   {
-    return APInteger(this->m_magnitude * other.m_magnitude,
+    if (this->isEmbedded() && other.isEmbedded()) {
+      std::optional<EmbeddedInt> res =
+        multiplyWithOverflowCheckOpt(this->m_eValue, other.m_eValue);
+      if (res.has_value()) {
+        return APInteger(res.value());
+      }
+    }
+
+    return APInteger(this->getAPMagnitude() * other.getAPMagnitude(),
                      this->isNegative() != other.isNegative());
   }
 
@@ -497,24 +738,45 @@ public:      // methods
       THROW(XDivideByZero(dividend.toHexString()));
     }
 
-    // Clear the sign bits.
-    quotient.setZero();
-    remainder.setZero();
+    if (dividend.isEmbedded() && divisor.isEmbedded()) {
+      EmbeddedInt q, r;
+      if (divideWithOverflowCheckOpt(
+            q,
+            r,
+            dividend.m_eValue,
+            divisor.m_eValue)) {
+        quotient = q;
+        remainder = r;
+        return;
+      }
+      else {
+        // Since we know the divisor is not zero, and we do not use the
+        // most-negative value for `EmbeddedInt`, it should not be
+        // possible for division to overflow.
+        xfailure("not possible");
+      }
+    }
+
+    // Set up to do the division on the magnitudes.
+    UInteger magQuotient;
+    UInteger magRemainder;
 
     // Compute result magnitudes without regard to sign.
     UInteger::divide(
-      quotient.m_magnitude,
-      remainder.m_magnitude,
-      dividend.m_magnitude,
-      divisor.m_magnitude);
+      magQuotient,
+      magRemainder,
+      dividend.getAPMagnitude(),
+      divisor.getAPMagnitude());
 
-    // Set the signs.
-    if (dividend.isNegative() != divisor.isNegative()) {
-      quotient.flipSign();
-    }
-    if (dividend.isNegative()) {
-      remainder.flipSign();
-    }
+    // Compute the signs of the results.
+    bool negQuotient =
+      dividend.isNegative() != divisor.isNegative();
+    bool negRemainder =
+      dividend.isNegative();
+
+    // Package the results as APIntegers.
+    quotient = APInteger(std::move(magQuotient), negQuotient);
+    remainder = APInteger(std::move(magRemainder), negRemainder);
   }
 
   APInteger operator/(APInteger const &divisor) const

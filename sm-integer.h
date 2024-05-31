@@ -68,6 +68,10 @@ public:      // methods
   Integer &operator=(Integer const &obj);
   Integer &operator=(Integer      &&obj);
 
+  // ---------- General ----------
+  // Assert invariants.
+  void selfCheck() const;
+
   // ---------- Zero ----------
   // True if this object represents zero.
   bool isZero() const;
