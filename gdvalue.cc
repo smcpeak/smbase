@@ -28,23 +28,24 @@ OPEN_NAMESPACE(gdv)
 
 
 // ---------------------------- GDValueKind ----------------------------
-char const *toString(GDValueKind gdvk)
-{
-  switch (gdvk) {
-    #define CASE(kind) case kind: return #kind;
-    CASE(GDVK_SYMBOL)
-    CASE(GDVK_INTEGER)
-    CASE(GDVK_STRING)
-    CASE(GDVK_SEQUENCE)
-    CASE(GDVK_SET)
-    CASE(GDVK_MAP)
-    CASE(GDVK_SMALL_INTEGER)
-    #undef CASE
+#define CASE(kind) #kind
 
-    default:
-      return "GDVK_invalid";
-  }
-}
+DEFINE_ENUMERATION_TO_STRING_OR(
+  GDValueKind,
+  NUM_GDVALUE_KINDS,
+  (
+    CASE(GDVK_SYMBOL),
+    CASE(GDVK_INTEGER),
+    CASE(GDVK_STRING),
+    CASE(GDVK_SEQUENCE),
+    CASE(GDVK_SET),
+    CASE(GDVK_MAP),
+    CASE(GDVK_SMALL_INTEGER)
+  ),
+  "GDVK_invalid"
+)
+
+#undef CASE
 
 
 // ------------------------ GDValue static data ------------------------
