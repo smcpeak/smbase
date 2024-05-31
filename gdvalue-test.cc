@@ -941,6 +941,16 @@ static void testOneDeserialize(
   try {
     GDValue actual = GDValue::readFromString(input);
     EXPECT_EQ(actual, expect);
+
+    // Exercise `readNextValue`.
+    std::istringstream iss((std::string(input)));
+    std::optional<GDValue> actualOpt = GDValue::readNextValue(iss);
+    xassert(actualOpt.has_value());
+    EXPECT_EQ(*actualOpt, expect);
+
+    actualOpt = GDValue::readNextValue(iss);
+    xassert(!actualOpt.has_value());
+    xassert(iss.eof());
   }
   catch (XBase &x) {
     x.prependContext(stringb("input=" << doubleQuote(input)));
@@ -1155,6 +1165,29 @@ static void testWriteReadFile()
 }
 
 
+// There is already a test of `readNextValue` above, but it only returns
+// one value.  Here I want it to return multiple values before hitting
+// EOF.
+static void testReadNextValue()
+{
+  std::string input("1 2 3");
+  std::istringstream iss(input);
+
+  std::optional<GDValue> v = GDValue::readNextValue(iss);
+  EXPECT_EQ(*v, GDValue(1));
+
+  v = GDValue::readNextValue(iss);
+  EXPECT_EQ(*v, GDValue(2));
+
+  v = GDValue::readNextValue(iss);
+  EXPECT_EQ(*v, GDValue(3));
+
+  v = GDValue::readNextValue(iss);
+  xassert(!v.has_value());
+  xassert(iss.eof());
+}
+
+
 // Called from unit-tests.cc.
 void test_gdvalue()
 {
@@ -1183,6 +1216,7 @@ void test_gdvalue()
     testStringEscapes();
     testGDValueKindToString();
     testWriteReadFile();
+    testReadNextValue();
 
     // Some interesting values for the particular data used.
     testPrettyPrint(0);
