@@ -183,6 +183,8 @@ static void testInteger()
   assert(d0.getKind() == GDVK_INTEGER);
   assert(d0.isInteger());
   assert(d0.integerGet() == 0);
+  assert(!d0.isNull());
+  assert(!d0.isBool());
 
   // Ctor from the value kind.
   assert(d0 == GDValue(GDVK_INTEGER));
@@ -235,6 +237,7 @@ static void testString()
   assert(dStr1.getKind() == GDVK_STRING);
   assert(dStr1.isString());
   assert(dStr1.stringGet() == GDVString("str1"));
+  assert(!dStr1.isNull());
 
   GDValue dStr2(GDVString("str2"));
   CHECK_COUNTS(0, 2, 0, 2)
@@ -364,9 +367,14 @@ static void testSequence()
   assert(v1.sequenceGetValueAt(1) == v3);
 
   {
+    // Get a `const` reference so I can exercise the
+    // `sequenceGetValueAt` that works with `const` objects.
+    GDValue const &v1c = v1;
+
     GDVIndex i = 0;
     for (GDValue const &value : v1.sequenceIterableC()) {
       assert(value == v1.sequenceGetValueAt(i));
+      assert(value == v1c.sequenceGetValueAt(i));
       ++i;
     }
   }
@@ -377,6 +385,11 @@ static void testSequence()
     }
   }
   assert(v1.asString() == R"([0 [1 "b" 3] null null 6])");
+
+  // Use `sequenceSetValueAt(const&)` to expand the sequence.
+  GDValue seven(7);
+  v1.sequenceSetValueAt(5, seven);
+  assert(v1.asString() == R"([0 [1 "b" 3] null null 6 7])");
 
   v1.sequenceClear();
   assert(v1 == v2);
@@ -429,6 +442,39 @@ static void testSet()
   DIAG(v2);
   assert(v2.asString() == R"({{10 "x" [2 3 4]}})");
   testSerializeRoundtrip(v2);
+
+  {
+    GDVSet tmpSet{3,2,1};
+
+    // Construct a GDValue from a `const&` set.
+    v2 = tmpSet;
+    EXPECT_EQ(v2.asString(), "{{1 2 3}}");
+
+    v2.setGetMutable().erase(2);
+    EXPECT_EQ(v2.asString(), "{{1 3}}");
+
+    // Exercise `setCBegin` and `setCEnd`.
+    std::vector<GDValue> expectVec{1,3};
+    auto expectIt = expectVec.begin();
+    for (auto it = v2.setCBegin(); it != v2.setCEnd(); ++it) {
+      EXPECT_EQ(*it, *expectIt);
+      ++expectIt;
+    }
+    xassert(expectIt == expectVec.end());
+
+    // Exercise `setBegin` and `setEnd`.
+    expectIt = expectVec.begin();
+    for (auto it = v2.setBegin(); it != v2.setEnd(); ++it) {
+      EXPECT_EQ(*it, *expectIt);
+      ++expectIt;
+    }
+    xassert(expectIt == expectVec.end());
+
+    // Exercise `setInsert(const&)`.
+    GDValue four(4);
+    v2.setInsert(four);
+    EXPECT_EQ(v2.asString(), "{{1 3 4}}");
+  }
 }
 
 
@@ -493,6 +539,46 @@ static void testMap()
   assert(v2.mapGetValueAt(
            GDValue(GDVSequence({GDValue(10), GDValue(11)}))) ==
          GDValue(GDVSymbol("ten_eleven")));
+
+  // Call the ctor that accepts a `map const &`.
+  GDVMap tmpMap{ {1,2}, {3,4} };
+  v2 = tmpMap;
+  EXPECT_EQ(v2.asString(), "{1:2 3:4}");
+
+  // Call 'mapIterableC'.
+  auto expectIt = tmpMap.begin();
+  for (auto const &kv : v2.mapIterableC()) {
+    EXPECT_EQ(kv.first, (*expectIt).first);
+    EXPECT_EQ(kv.second, (*expectIt).second);
+    ++expectIt;
+  }
+  xassert(expectIt == tmpMap.end());
+
+  // Call 'mapIterable'.
+  expectIt = tmpMap.begin();
+  for (auto &kv : v2.mapIterable()) {
+    EXPECT_EQ(kv.first, (*expectIt).first);
+    EXPECT_EQ(kv.second, (*expectIt).second);
+    ++expectIt;
+  }
+  xassert(expectIt == tmpMap.end());
+
+  // Call `mapGetMutable`.
+  v2.mapGetMutable().insert({5,6});
+  EXPECT_EQ(v2.asString(), "{1:2 3:4 5:6}");
+
+  // Call `mapGetValueAt() const`.
+  GDValue const &v2c = v2;
+  EXPECT_EQ(v2c.mapGetValueAt(3), GDValue(4));
+
+  // Call `mapSetValueAt(..., const&)`.
+  GDValue eight(8);
+  v2.mapSetValueAt(7, eight);
+  EXPECT_EQ(v2.asString(), "{1:2 3:4 5:6 7:8}");
+
+  // Again, but this time replacing an existing value.
+  v2.mapSetValueAt(5, eight);
+  EXPECT_EQ(v2.asString(), "{1:2 3:4 5:8 7:8}");
 }
 
 
