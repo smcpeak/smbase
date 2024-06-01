@@ -6,6 +6,7 @@
 #include "gdvsymbol.h"                 // this module
 
 // this dir
+#include "codepoint.h"                 // isCIdentifierCharacter, isCIdentifierStartCharacter
 #include "sm-macros.h"                 // PRETEND_USED, OPEN_NAMESPACE
 #include "strtable.h"                  // StringTable
 #include "xassert.h"                   // xassertdb
@@ -21,14 +22,14 @@ OPEN_NAMESPACE(gdv)
 
 StringTable *GDVSymbol::s_stringTable = nullptr;
 
-char const *GDVSymbol::s_emptySymbolName = nullptr;
+char const *GDVSymbol::s_nullSymbolName = nullptr;
 
 
 STATICDEF StringTable *GDVSymbol::getStringTable()
 {
   if (!s_stringTable) {
     s_stringTable = new StringTable;
-    s_emptySymbolName = s_stringTable->add("");
+    s_nullSymbolName = s_stringTable->add("null");
   }
   return s_stringTable;
 }
@@ -40,7 +41,7 @@ GDVSymbol::GDVSymbol(std::string const &s)
 
 
 GDVSymbol::GDVSymbol(char const *p)
-  : m_symbolName(getStringTable()->add(p))
+  : m_symbolName(lookupSymbolName(p))
 {}
 
 
@@ -65,17 +66,35 @@ std::size_t GDVSymbol::size() const
 }
 
 
+STATICDEF bool GDVSymbol::validSymbolName(char const *name)
+{
+  if (!isCIdentifierStartCharacter(*name)) {
+    return false;
+  }
+  ++name;
+
+  for (; *name; ++name) {
+    if (!isCIdentifierCharacter(*name)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+
 STATICDEF char const *GDVSymbol::lookupSymbolName(char const *name)
 {
+  xassertPrecondition(validSymbolName(name));
   return getStringTable()->add(name);
 }
 
 
-STATICDEF char const *GDVSymbol::getEmptySymbolName()
+STATICDEF char const *GDVSymbol::getNullSymbolName()
 {
   getStringTable();
-  assert(s_emptySymbolName);
-  return s_emptySymbolName;
+  assert(s_nullSymbolName);
+  return s_nullSymbolName;
 }
 
 

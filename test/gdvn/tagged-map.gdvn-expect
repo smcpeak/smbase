@@ -1,14 +1,11 @@
 ---- stdout ----
 [
-  Person
-  {
-    address:{num:101 street:"Main St" type:Address unit:"Apt 12"}
+  Person{
+    address:Address{num:101 street:"Main St" unit:"Apt 12"}
     name:"Sam"
   }
-  Place
-  {city:"NY" name:"Central Park" state:"NY"}
-  Animal
-  {genus:"Ursus" name:"Brown Bear" species:"Somethingus"}
+  Place{city:"NY" name:"Central Park" state:"NY"}
+  Animal{genus:"Ursus" name:"Brown Bear" species:"Somethingus"}
 ]
 ---- stderr ----
 ---- exit status ----

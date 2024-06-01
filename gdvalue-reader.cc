@@ -585,15 +585,15 @@ GDValue GDValueReader::readNextInteger(int const firstChar)
 }
 
 
-GDValue GDValueReader::readNextSymbol(int firstChar)
+GDValue GDValueReader::readNextSymbolOrTaggedContainer(int firstChar)
 {
   std::vector<char> letters;
   letters.push_back((char)firstChar);
 
+  int c;
   while (true) {
-    int c = readChar();
+    c = readChar();
     if (!isCIdentifierCharacter(c)) {
-      putbackAfterValueOrErr(c);       // Could be EOF, fine.
       break;
     }
 
@@ -601,8 +601,31 @@ GDValue GDValueReader::readNextSymbol(int firstChar)
   }
 
   std::string symName(letters.begin(), letters.end());
+  GDVSymbol symbol(symName);
 
-  return GDValue(GDVSymbol(symName));
+  if (c == '{') {
+    // Tagged map or set.
+    c = readNotEOFCharOrErr(
+      "looking for character after symbol and '{'");
+    if (c == '{') {
+      // Tagged set.
+      err("Tagged sets are not implemented yet.");
+    }
+
+    // Tagged map.  First parse the map by itself.
+    putback(c);
+    GDValue containedMap = readNextMap();
+
+    // Move the map contents into a tagged map object.
+    return GDValue(GDVTaggedMap(symbol,
+      std::move(containedMap.mapGetMutable())));
+  }
+
+  else {
+    // Just a symbol.
+    putbackAfterValueOrErr(c);       // Could be EOF, fine.
+    return GDValue(symbol);
+  }
 }
 
 
@@ -661,7 +684,7 @@ std::optional<GDValue> GDValueReader::readNextValue()
 
       default:
         if (isLetter(c) || c == '_') {
-          return std::make_optional(readNextSymbol(c));
+          return std::make_optional(readNextSymbolOrTaggedContainer(c));
         }
         else {
           unexpectedCharErr(c, "looking for the start of a value");

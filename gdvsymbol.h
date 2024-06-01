@@ -33,16 +33,16 @@ private:     // class data
   // ensure the table gets built in time.
   static StringTable *s_stringTable;
 
-  // Pointer to the empty string in `s_stringTable`.  This allows the
-  // default constructor to avoid looking up the empty string.
-  static char const *s_emptySymbolName;
+  // Pointer to the string "null" in `s_stringTable`.  This allows the
+  // default constructor to avoid looking it up.
+  static char const *s_nullSymbolName;
 
 private:     // instance data
   // Pointer into `m_stringTable` providing the symbol name.  All
   // symbols that have the same name use the same pointer value.
   //
-  // This is never `nullptr`, although it can point to an empty string.
-  // The end of the name is marked by a NUL terminator character.
+  // This always points to a non-empty string.  The end of the name is
+  // marked by a NUL terminator character.
   //
   // This is what strtable.h calls a `StringRef` but I think that name
   // is a bit too collision-prone so I'm not using it here.
@@ -54,18 +54,22 @@ private:     // methods
   static StringTable *getStringTable();
 
 public:      // methods
-  // Empty symbol, i.e., a symbol whose name is the empty string.
+  // Null symbol, i.e., a symbol whose name is "null".
   GDVSymbol()
-    : m_symbolName(getEmptySymbolName())
+    : m_symbolName(getNullSymbolName())
   {}
 
   // Convert string to corresponding symbol.  This makes a copy of the
   // string in `m_stringTable` if it is not already there.
+  //
+  // Requires `validSymbolName(c.s_tr())`.
   explicit GDVSymbol(std::string const &s);
 
   // Same, but using a NUL-terminated string pointer.  After this ctor,
   // `m_symbolName` will usually *not* equal `p`; it would only be equal
   // if `p` was itself some other symbol's `m_symbolName`.
+  //
+  // Requires `validSymbolName(p)`.
   explicit GDVSymbol(char const *p);
 
   // Create a `GDVSymbol` that points to `symbolName` directly, without
@@ -95,15 +99,22 @@ public:      // methods
   // symbol name.
   char const *getSymbolName() const { return m_symbolName; }
 
+  // True if `name` conforms to the syntactic requirements of a symbol
+  // name.  Specifically, it must match the regex
+  /// "[a-zA-Z_][a-zA-Z_0-9]*".
+  static bool validSymbolName(char const *name);
+
   // Pass 'name' through the symbol table to get the unique
   // representative for the string it points to.  This is safe to call
   // in a global variable initializer because it takes care of
   // initializing prerequisites when necessary.
+  //
+  // Requires `validSymbolName(name)`.
   static char const *lookupSymbolName(char const *name);
 
   // Get the empty symbol name.  This is equivalent to
-  // `lookupSymbolName("")` but may be faster.
-  static char const *getEmptySymbolName();
+  // `lookupSymbolName("null")` but may be faster.
+  static char const *getNullSymbolName();
 
   // Exchange names with 'obj'.
   void swap(GDVSymbol &obj);

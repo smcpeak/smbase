@@ -16,14 +16,14 @@ using namespace gdv;
 void test_gdvsymbol()
 {
   GDVSymbol s1;
-  EXPECT_EQ(s1.getSymbolName(), "");
+  EXPECT_EQ(s1.getSymbolName(), "null");
 
   GDVSymbol s2("hello");
   EXPECT_EQ(s2.getSymbolName(), "hello");
 
   s1.swap(s2);
 
-  EXPECT_EQ(s2.getSymbolName(), "");
+  EXPECT_EQ(s2.getSymbolName(), "null");
   EXPECT_EQ(s1.getSymbolName(), "hello");
 }
 

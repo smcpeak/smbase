@@ -5,6 +5,7 @@
 // more delimiters cluttering the view.
 
 [
+// This is commented until I add tuples.
 /*
   (Person {
     name: "Sam"

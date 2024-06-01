@@ -171,6 +171,8 @@ char const *toString(GDValueKind gdvk);
 class GDValue {
 private:     // class data
   // Names of symbols with special semantics.
+  //
+  // TODO: These should be `GDVSymbol` objects.
   static char const *s_symbolName_null;
   static char const *s_symbolName_false;
   static char const *s_symbolName_true;
@@ -269,6 +271,7 @@ public:      // methods
   //   Integer or SmallInteger: 0
   //   String: ""
   //   Container: empty
+  //   Tagged container: null symbol, empty container
   explicit GDValue(GDValueKind kind);
 
 

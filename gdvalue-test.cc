@@ -604,12 +604,15 @@ static void testMap()
 static void testTaggedMap()
 {
   GDValue v(GDVK_TAGGED_MAP);
-  EXPECT_EQ(v.asString(), "{}");    // This isn't right, should use ``.
+  EXPECT_EQ(v.asString(), "null{}");
   xassert(v.isMap());
   xassert(v.isTaggedContainer());
   xassert(v.isTaggedMap());
   xassert(v.containerIsEmpty());
+  xassert(v.taggedContainerGetTag() == GDVSymbol());
+  xassert(v.taggedContainerGetTag() == GDVSymbol("null"));
   v.selfCheck();
+  testSerializeRoundtrip(v);
 
   v = GDVTaggedMap(GDVSymbol("x"), {{1,2}});
   EXPECT_EQ(v.asString(), "x{1:2}");
@@ -618,13 +621,16 @@ static void testTaggedMap()
   xassert(v.isTaggedMap());
   xassert(!v.containerIsEmpty());
   v.selfCheck();
+  testSerializeRoundtrip(v);
 
   v.taggedContainerSetTag(GDVSymbol("y"));
   EXPECT_EQ(v.asString(), "y{1:2}");
+  testSerializeRoundtrip(v);
 
   GDVTaggedMap tm(GDVSymbol("z"), {{3,4}, {5,6}});
   v = tm;
   EXPECT_EQ(v.asString(), "z{3:4 5:6}");
+  testSerializeRoundtrip(v);
 
   {
     GDValue v2(tm);
@@ -632,6 +638,7 @@ static void testTaggedMap()
 
     v2.mapClear();
     EXPECT_EQ(v2.asString(), "z{}");
+    testSerializeRoundtrip(v2);
   }
 
   xassert(v.taggedMapGet().m_container.size() == 2);
@@ -641,12 +648,15 @@ static void testTaggedMap()
 
   v.mapSetValueAt(5,7);
   EXPECT_EQ(v.asString(), "z{3:4 5:7}");
+  testSerializeRoundtrip(v);
 
   v.mapGetMutable().insert({8,9});
   EXPECT_EQ(v.asString(), "z{3:4 5:7 8:9}");
+  testSerializeRoundtrip(v);
 
   v.taggedMapGetMutable().m_container.erase(5);
   EXPECT_EQ(v.asString(), "z{3:4 8:9}");
+  testSerializeRoundtrip(v);
 }
 
 
@@ -1068,11 +1078,18 @@ static void testSyntaxErrors()
     // exception handler, but I believe it is unreachable
   }
 
-  // readNextSymbolOrSpecial
+  // readNextSymbolOrTaggedContainer
   {
+    // c = readNotEOFCharOrErr(
+    //   "looking for character after symbol and '{'");
+    testOneErrorSubstr("x{", 1, 3, "after symbol and '{'");
+
+    // err("Tagged sets are not implemented yet.");
+    testOneErrorSubstr("x{{", 1, 3, "not implemented");
+
     // putbackAfterValueOrErr(c);       // Could be EOF, fine.
     testOneErrorSubstr("true[", 1, 5, "'[' after a value");
-    testOneErrorSubstr("x{", 1, 2, "'{' after a value");
+    testOneErrorSubstr("true!", 1, 5, "'!' after a value");
   }
 
   // readNextValue

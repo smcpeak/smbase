@@ -110,7 +110,8 @@ protected:   // methods
   // them into a set.  Return after consuming the "}}".
   GDValue readNextSet();
 
-  // Having seen and consumed '{', read the following key/value pairs
+  // Having seen and consumed '{', and confirmed that the character
+  // after that is *not* another '{', read the following key/value pairs
   // and put them into a map.  Return after consuming the '}'.
   GDValue readNextMap();
 
@@ -128,8 +129,11 @@ protected:   // methods
   GDValue readNextInteger(int firstChar);
 
   // Having seen and consumed 'firstChar', a character that starts a
-  // symbol, read the remainder and put them into a GDVK_SYMBOL.
-  GDValue readNextSymbol(int firstChar);
+  // symbol, read the remainder and put them into a symbol.  Then, if
+  // the immediately following character is '{', parse what follows as a
+  // map and return the symbol and map together as a tagged map.
+  // Otherwise just return the symbol as its own value.
+  GDValue readNextSymbolOrTaggedContainer(int firstChar);
 
 public:      // methods
   GDValueReader(std::istream &is,
