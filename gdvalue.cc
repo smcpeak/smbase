@@ -722,6 +722,28 @@ GDVInteger GDValue::integerGet() const
 }
 
 
+std::optional<GDVSmallInteger> GDValue::integerGetSmallOpt() const
+{
+  xassertPrecondition(getKind() == GDVK_INTEGER);
+
+  if (m_kind == GDVK_SMALL_INTEGER) {
+    return m_value.m_smallInteger;
+  }
+  else {
+    return std::nullopt;
+  }
+}
+
+
+GDVInteger const &GDValue::integerGetLargeRef() const
+{
+  // This has to specifically be a large integer.
+  xassertPrecondition(m_kind == GDVK_INTEGER);
+
+  return *(m_value.m_integer);
+}
+
+
 // ------------------------------ String -------------------------------
 GDValue::GDValue(GDVString const &str)
   : INIT_AS_NULL()

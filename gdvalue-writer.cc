@@ -200,7 +200,16 @@ bool GDValueWriter::tryWrite(GDValue const &value,
       xfailureInvariant("invalid kind");
 
     case GDVK_INTEGER:
-      os() << value.integerGet();
+      if (std::optional<GDVSmallInteger> smallInt =
+            value.integerGetSmallOpt(); smallInt.has_value()) {
+        os() << *smallInt;
+      }
+      else if (m_options.m_writeLargeIntegersAsDecimal) {
+        os() << value.integerGetLargeRef();
+      }
+      else {
+        os() << value.integerGetLargeRef().toHexString();
+      }
       break;
 
     case GDVK_SYMBOL:

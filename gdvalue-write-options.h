@@ -27,6 +27,10 @@ public:      // instance data
   // Otherwise, a compact, single-line format is used.  Initially false.
   bool m_enableIndentation;
 
+  // When true, large integers will be written using decimal digits
+  // rather than hexadecimal.  Initially false.
+  bool m_writeLargeIntegersAsDecimal;
+
   // Current indentation level.  When we start a new line, we indent
   // 'm_indentLevel * SPACES_PER_INDENT_LEVEL' spaces.  Initially 0.
   int m_indentLevel;
@@ -43,6 +47,7 @@ public:      // instance data
 public:      // methods
   GDValueWriteOptions()
     : m_enableIndentation(false),
+      m_writeLargeIntegersAsDecimal(false),
       m_indentLevel(0),
       m_spacesPerIndentLevel(s_defaultSpacesPerIndentLevel),
       m_targetLineWidth(s_defaultTargetLineWidth)
@@ -54,6 +59,8 @@ public:      // methods
   // Chainable setters.
   GDValueWriteOptions &setEnableIndentation(bool b)
     { m_enableIndentation = b; return *this; }
+  GDValueWriteOptions &setWriteLargeIntegersAsDecimal(bool b)
+    { m_writeLargeIntegersAsDecimal = b; return *this; }
   GDValueWriteOptions &setIndentLevel(int newLevel)
     { m_indentLevel = newLevel; return *this; }
   GDValueWriteOptions &setSpacesPerIndentLevel(int newSpacesPer)

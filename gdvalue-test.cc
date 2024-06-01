@@ -1290,6 +1290,21 @@ static void testReadNextValue()
 }
 
 
+static void testGDValueWriter()
+{
+  GDValue small = GDVInteger::fromDigits("12345");
+  EXPECT_EQ(small.asString(), "12345");
+
+  GDValue big =
+    GDVInteger::fromDigits("0x1234567890ABCDEF1234567890ABCDEF");
+  EXPECT_EQ(big.asString(), "0x1234567890ABCDEF1234567890ABCDEF");
+
+  EXPECT_EQ(big.asString(
+              GDValueWriteOptions().setWriteLargeIntegersAsDecimal(true)),
+    "24197857200151252728969465429440056815");
+}
+
+
 // Called from unit-tests.cc.
 void test_gdvalue()
 {
@@ -1319,6 +1334,7 @@ void test_gdvalue()
     testGDValueKindToString();
     testWriteReadFile();
     testReadNextValue();
+    testGDValueWriter();
 
     // Some interesting values for the particular data used.
     testPrettyPrint(0);

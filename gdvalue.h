@@ -376,6 +376,17 @@ public:      // methods
   // reference) when we are storing a large integer.
   GDVInteger integerGet() const;
 
+  // If the value can be represented as `GDVSmallInteger`, return it as
+  // such.  Otherwise return `nullopt`.
+  std::optional<GDVSmallInteger> integerGetSmallOpt() const;
+
+  // Given that the value cannot be represented as a `GDVSmallInteger`,
+  // return a reference to the large integer.  This method should only
+  // be used when there is some performance justification for it, as it
+  // couples the client more closely to this class's implementation than
+  // calling `integerGet()` does.
+  GDVInteger const &integerGetLargeRef() const;
+
 
   // ---- String ----
   /*implicit*/ GDValue(GDVString const &str);
