@@ -28,6 +28,11 @@ using namespace gdv;
 using std::cout;
 
 
+// Throughout this file, there are exception handlers that only run if
+// a test fails, so ignore them for coverage purposes:
+// gcov-exception-lines-ignore
+
+
 // "test out", which by default goes nowhere.
 #define tout (verbose? cout : nullOStream)
 
@@ -39,6 +44,7 @@ static void checkParse(GDValue const &expect, std::string const &ser)
     GDValue actual(GDValue::readFromString(ser));
 
     if (actual != expect) {
+      // gcov-begin-ignore
       cout << "During checkParse, found mismatch:\n"
            << "---- expect ----\n"
            << expect.asLinesString()
@@ -47,6 +53,7 @@ static void checkParse(GDValue const &expect, std::string const &ser)
            << "---- actual ----\n"
            << actual.asLinesString();
       std::exit(2);
+      // gcov-end-ignore
     }
   }
   catch (GDValueReaderException const &e) {
@@ -689,8 +696,8 @@ static void checkLinesStringFor(
 {
   std::string actual = linesStringFor(value, targetWidth);
   if (actual != expect) {
-    DIAG("expect:\n" << expect);
-    DIAG("actual:\n" << actual);
+    DIAG("expect:\n" << expect);       // gcov-ignore
+    DIAG("actual:\n" << actual);       // gcov-ignore
   }
   xassert(actual == expect);
 }
@@ -1291,9 +1298,9 @@ void test_gdvalue()
   if (char const *widthStr = std::getenv("GDVALUE_TEST_WIDTH")) {
     // With envvar set, treat it as the target width for the
     // pretty-print tests so I can interactively experiment.
-    int width = std::atoi(widthStr);
+    int width = std::atoi(widthStr);   // gcov-ignore
 
-    testPrettyPrint(width);
+    testPrettyPrint(width);            // gcov-ignore
   }
   else {
     testNull();
