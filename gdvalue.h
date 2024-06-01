@@ -197,9 +197,9 @@ private:     // instance data
   } m_value;
 
 private:     // methods
-  // Clear this object, then take the data in 'obj', leaving 'obj' as
+  // Reset this object, then take the data in 'obj', leaving 'obj' as
   // the null value.
-  void clearSelfAndSwapWith(GDValue &obj) noexcept;
+  void resetSelfAndSwapWith(GDValue &obj) noexcept;
 
   // If `i` can fit into `m_smallInteger`, store it there and return
   // true, otherwise return false without changing anything.
@@ -284,7 +284,7 @@ public:      // methods
 
 
   // Reset to null.
-  void clear();
+  void reset();
 
   // Exchange values with 'obj'.
   void swap(GDValue &obj) noexcept;

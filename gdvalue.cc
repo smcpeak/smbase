@@ -83,11 +83,11 @@ unsigned GDValue::s_ct_mapSetMove = 0;
 
 
 // ---------------------- GDValue private helpers ----------------------
-void GDValue::clearSelfAndSwapWith(GDValue &obj) noexcept
+void GDValue::resetSelfAndSwapWith(GDValue &obj) noexcept
 {
   using std::swap;
 
-  clear();
+  reset();
 
   #define SWAP_MEMBER(member) \
     swap(m_value.member, obj.m_value.member)
@@ -147,7 +147,7 @@ GDValue::GDValue() noexcept
 
 GDValue::~GDValue()
 {
-  clear();
+  reset();
 
   ++s_ct_dtor;
 }
@@ -206,7 +206,7 @@ GDValue &GDValue::operator=(GDValue const &obj)
 {
   if (this != &obj) {
     GDValue tmp(obj);
-    clearSelfAndSwapWith(tmp);
+    resetSelfAndSwapWith(tmp);
   }
 
   ++s_ct_assignCopy;
@@ -218,7 +218,7 @@ GDValue &GDValue::operator=(GDValue const &obj)
 GDValue &GDValue::operator=(GDValue &&obj)
 {
   if (this != &obj) {
-    clearSelfAndSwapWith(obj);
+    resetSelfAndSwapWith(obj);
   }
 
   ++s_ct_assignMove;
@@ -414,7 +414,7 @@ STATICDEF unsigned GDValue::countConstructorCalls()
 }
 
 
-void GDValue::clear()
+void GDValue::reset()
 {
   switch (m_kind) {
     default:
@@ -455,9 +455,9 @@ void GDValue::clear()
 void GDValue::swap(GDValue &obj) noexcept
 {
   GDValue tmp;
-  tmp.clearSelfAndSwapWith(obj);
-  obj.clearSelfAndSwapWith(*this);
-  this->clearSelfAndSwapWith(tmp);
+  tmp.resetSelfAndSwapWith(obj);
+  obj.resetSelfAndSwapWith(*this);
+  this->resetSelfAndSwapWith(tmp);
 }
 
 
@@ -616,7 +616,7 @@ GDValue::GDValue(BoolTagType, bool b)
 
 void GDValue::boolSet(bool b)
 {
-  clear();
+  reset();
   m_kind = GDVK_SYMBOL;
   m_value.m_symbolName =
     b? s_symbolName_true : s_symbolName_false;
@@ -653,7 +653,7 @@ GDValue::GDValue(GDVSymbol sym)
 
 void GDValue::symbolSet(GDVSymbol sym)
 {
-  clear();
+  reset();
 
   m_value.m_symbolName = sym.getSymbolName();
   m_kind = GDVK_SYMBOL;
@@ -703,7 +703,7 @@ bool GDValue::trySmallIntegerSet(GDVInteger const &i)
 
 void GDValue::integerSet(GDVInteger const &i)
 {
-  clear();
+  reset();
 
   if (!trySmallIntegerSet(i)) {
     m_kind = GDVK_INTEGER;
@@ -714,7 +714,7 @@ void GDValue::integerSet(GDVInteger const &i)
 
 void GDValue::integerSet(GDVInteger &&i)
 {
-  clear();
+  reset();
 
   if (!trySmallIntegerSet(i)) {
     m_kind = GDVK_INTEGER;
@@ -769,7 +769,7 @@ GDValue::GDValue(GDVSmallInteger i)
 
 void GDValue::smallIntegerSet(GDVSmallInteger i)
 {
-  clear();
+  reset();
 
   m_kind = GDVK_SMALL_INTEGER;
   m_value.m_smallInteger = i;
@@ -811,7 +811,7 @@ GDValue::GDValue(char const *str)
 
 void GDValue::stringSet(GDVString const &str)
 {
-  clear();
+  reset();
   m_value.m_string = new GDVString(str);
   m_kind = GDVK_STRING;
 
@@ -821,7 +821,7 @@ void GDValue::stringSet(GDVString const &str)
 
 void GDValue::stringSet(GDVString &&str)
 {
-  clear();
+  reset();
   m_value.m_string = new GDVString(std::move(str));
   m_kind = GDVK_STRING;
 
@@ -915,7 +915,7 @@ GDValue::GDValue(GDVSequence &&vec)
 
 void GDValue::sequenceSet(GDVSequence const &vec)
 {
-  clear();
+  reset();
   m_value.m_sequence = new GDVSequence(vec);
   m_kind = GDVK_SEQUENCE;
 
@@ -925,7 +925,7 @@ void GDValue::sequenceSet(GDVSequence const &vec)
 
 void GDValue::sequenceSet(GDVSequence &&vec)
 {
-  clear();
+  reset();
   m_value.m_sequence = new GDVSequence(std::move(vec));
   m_kind = GDVK_SEQUENCE;
 
@@ -1019,7 +1019,7 @@ GDValue::GDValue(GDVSet &&set)
 
 void GDValue::setSet(GDVSet const &set)
 {
-  clear();
+  reset();
   m_value.m_set = new GDVSet(set);
   m_kind = GDVK_SET;
 
@@ -1029,7 +1029,7 @@ void GDValue::setSet(GDVSet const &set)
 
 void GDValue::setSet(GDVSet &&set)
 {
-  clear();
+  reset();
   m_value.m_set = new GDVSet(std::move(set));
   m_kind = GDVK_SET;
 
@@ -1112,7 +1112,7 @@ GDValue::GDValue(GDVMap &&map)
 
 void GDValue::mapSet(GDVMap const &map)
 {
-  clear();
+  reset();
   m_value.m_map = new GDVMap(map);
   m_kind = GDVK_MAP;
 
@@ -1122,7 +1122,7 @@ void GDValue::mapSet(GDVMap const &map)
 
 void GDValue::mapSet(GDVMap &&map)
 {
-  clear();
+  reset();
   m_value.m_map = new GDVMap(std::move(map));
   m_kind = GDVK_MAP;
 

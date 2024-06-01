@@ -96,7 +96,7 @@ static void testNull()
   xassert(v.isNull());
   xassert(v2.getKind() == GDVK_SYMBOL);
 
-  v2.clear();
+  v2.reset();
   xassert(v == v2);
   xassert(v.isNull());
   xassert(v2.getKind() == GDVK_SYMBOL);
@@ -165,7 +165,7 @@ static void testSymbol()
   xassert(dSym1 < dSym2);
   xassert(GDValue() < dSym1);
 
-  dSym2.clear();
+  dSym2.reset();
   xassert(dSym2.isNull());
   xassert(dSym2.getKind() == GDVK_SYMBOL);
 
@@ -269,7 +269,7 @@ static void testString()
   xassert(dStr1 < dStr2);
   xassert(GDValue() < dStr1);
 
-  dStr2.clear();
+  dStr2.reset();
   xassert(dStr2.isNull());
   xassert(dStr2.getKind() == GDVK_SYMBOL);
 
