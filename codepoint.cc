@@ -87,9 +87,15 @@ bool isCIdentifierCharacter(int c)
   // identifiers are restricted to code points in [0,127], whereas my
   // intent is to expand the Unicode functions to properly recognize
   // the full sets.
+  return isCIdentifierStartCharacter(c) ||
+          ('0' <= c && c <= '9');
+}
+
+
+bool isCIdentifierStartCharacter(int c)
+{
   return (('A' <= c && c <= 'Z') ||
           ('a' <= c && c <= 'z') ||
-          ('0' <= c && c <= '9') ||
           c == '_');
 }
 

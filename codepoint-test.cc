@@ -64,6 +64,18 @@ void test_codepoint()
 
   EXPECT_EQ(decodeSurrogatePair(0xD800, 0xDC00), 0x10000);
   EXPECT_EQ(decodeSurrogatePair(0xDBFF, 0xDFFF), 0x10FFFF);
+
+  xassert(isCIdentifierCharacter('x'));
+  xassert(isCIdentifierCharacter('Q'));
+  xassert(isCIdentifierCharacter('9'));
+  xassert(isCIdentifierCharacter('_'));
+  xassert(!isCIdentifierCharacter(','));
+
+  xassert(isCIdentifierStartCharacter('x'));
+  xassert(isCIdentifierStartCharacter('Q'));
+  xassert(!isCIdentifierStartCharacter('9'));
+  xassert(isCIdentifierStartCharacter('_'));
+  xassert(!isCIdentifierStartCharacter(','));
 }
 
 

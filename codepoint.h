@@ -43,6 +43,9 @@ bool isLowSurrogate(int c);
 // C programming language.
 bool isCIdentifierCharacter(int c);
 
+// True if `c` can appear at the start of a C identifier.
+bool isCIdentifierStartCharacter(int c);
+
 // True if 'c' is one of the printable ASCII characters.  Note that, as
 // best I can tell, the printable range is the same for all national
 // ASCII variants as it is for US-ASCII, namely [32,126].
