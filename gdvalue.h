@@ -106,20 +106,22 @@ char const *toString(GDValueKind gdvk);
 
    The logical hierarchy implemented by this class is:
 
-     Symbol
-       Null
-       Bool
-         True
-         False
-     Integer
-       SmallIneger
-     String
-     Sequence
-       TaggedSequence
-     Set
-       TaggedSet
-     Map
-       TaggedMap
+     Scalar
+       Symbol
+         Null
+         Bool
+           True
+           False
+       Integer
+         SmallIneger
+       String
+     Container
+       Sequence
+         TaggedSequence
+       Set
+         TaggedSet
+       Map
+         TaggedMap
 
    TODO: The Tagged containers aren't implemented yet.
 */
@@ -230,6 +232,9 @@ public:      // methods
   // the kind corresponding to the logical superclass.
   GDValueKind getSuperKind() const;
 
+  // True of sequence, set, and map.  False of others.
+  bool isContainer() const;
+
   bool isSymbol()       const { return m_kind == GDVK_SYMBOL;        }
   bool isInteger()      const { return m_kind == GDVK_INTEGER ||
                                        isSmallInteger();             }
@@ -277,20 +282,6 @@ public:      // methods
   // Return the sum of all of the 's_ct_XXXCtorXXX' counts.
   static unsigned countConstructorCalls();
 
-
-  // TODO: The following three methods should be removed or renamed.
-
-  // Number of contained values.  Result depends on kind of value:
-  //   - symbol that is null: 0
-  //   - symbol that is not null: 1
-  //   - integer: 1
-  //   - string: 1
-  //   - sequence, set: number of elements
-  //   - map: number of entries
-  GDVSize size() const;
-
-  // True if 'size()' is zero.
-  bool empty() const;
 
   // Reset to null.
   void clear();
@@ -488,6 +479,16 @@ public:      // methods
 
   // Declare string[C]{Begin,End} and stringIterable[C].
   DECLARE_GDV_KIND_ITERATORS(GDVString, string)
+
+
+  // ---- Container ----
+  // Number of elements in the container.
+  //
+  // Requires `isContainer()`.
+  GDVSize containerSize() const;
+
+  // True if the size is zero.
+  bool containerIsEmpty() const;
 
 
   // ---- Sequence ----

@@ -279,6 +279,14 @@ GDValueKind GDValue::getSuperKind() const
 }
 
 
+bool GDValue::isContainer() const
+{
+  return isSequence() ||
+         isSet() ||
+         isMap();
+}
+
+
 // -------------------------- GDValue compare --------------------------
 // This is a candidate for being moved to someplace more general.
 template <typename CONTAINER>
@@ -403,38 +411,6 @@ STATICDEF unsigned GDValue::countConstructorCalls()
     + s_ct_mapCtorCopy
     + s_ct_mapCtorMove
     ;
-}
-
-
-GDVSize GDValue::size() const
-{
-  switch (m_kind) {
-    default:
-      xfailureInvariant("invalid kind");
-
-    case GDVK_SYMBOL:
-      return isNull()? 0 : 1;
-
-    case GDVK_INTEGER:
-    case GDVK_SMALL_INTEGER:
-    case GDVK_STRING:
-      return 1;
-
-    case GDVK_SEQUENCE:
-      return m_value.m_sequence->size();
-
-    case GDVK_SET:
-      return m_value.m_set->size();
-
-    case GDVK_MAP:
-      return m_value.m_map->size();
-  }
-}
-
-
-bool GDValue::empty() const
-{
-  return size() == 0;
 }
 
 
@@ -893,6 +869,31 @@ GDVString const &GDValue::stringGet() const
 DEFINE_GDV_KIND_BEGIN_END(GDVString, string, GDVK_STRING)
 
 
+// ---------------------------- Container ------------------------------
+GDVSize GDValue::containerSize() const
+{
+  switch (m_kind) {
+    default:
+      xfailurePrecondition("not a container");
+
+    case GDVK_SEQUENCE:
+      return m_value.m_sequence->size();
+
+    case GDVK_SET:
+      return m_value.m_set->size();
+
+    case GDVK_MAP:
+      return m_value.m_map->size();
+  }
+}
+
+
+bool GDValue::containerIsEmpty() const
+{
+  return containerSize() == 0;
+}
+
+
 // ----------------------------- Sequence ------------------------------
 GDValue::GDValue(GDVSequence const &vec)
   : INIT_AS_NULL()
@@ -963,7 +964,7 @@ void GDValue::sequenceResize(GDVSize newSize)
 
 void GDValue::sequenceSetValueAt(GDVIndex index, GDValue const &value)
 {
-  if (index >= size()) {
+  if (index >= containerSize()) {
     sequenceResize(index+1);
   }
   sequenceGetMutable().at(index) = value;
@@ -972,7 +973,7 @@ void GDValue::sequenceSetValueAt(GDVIndex index, GDValue const &value)
 
 void GDValue::sequenceSetValueAt(GDVIndex index, GDValue &&value)
 {
-  if (index >= size()) {
+  if (index >= containerSize()) {
     sequenceResize(index+1);
   }
   sequenceGetMutable().at(index) = std::move(value);

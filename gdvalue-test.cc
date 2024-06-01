@@ -86,8 +86,6 @@ static void testNull()
   GDValue v;
   DIAG("null: " << v);
   xassert(v.asString() == "null");
-  xassert(v.size() == 0);
-  xassert(v.empty());
   xassert(v.isNull());
   xassert(v.getKind() == GDVK_SYMBOL);
   v.selfCheck();
@@ -121,8 +119,6 @@ static void testBool()
   GDValue dTrue(GDValue::BoolTag, true);
   VPVAL(dTrue);
   xassert(dTrue.asString() == "true");
-  xassert(dTrue.size() == 1);
-  xassert(!dTrue.empty());
   xassert(dTrue.getKind() == GDVK_SYMBOL);
   xassert(dTrue.isBool());
   xassert(dTrue.boolGet() == true);
@@ -130,8 +126,6 @@ static void testBool()
   GDValue dFalse(GDValue::BoolTag, false);
   VPVAL(dFalse);
   xassert(dFalse.asString() == "false");
-  xassert(dFalse.size() == 1);
-  xassert(!dFalse.empty());
   xassert(dFalse.getKind() == GDVK_SYMBOL);
   xassert(dFalse.isBool());
   xassert(dFalse.boolGet() == false);
@@ -157,8 +151,6 @@ static void testSymbol()
   GDValue dSym1(GDVSymbol("sym1"));
   VPVAL(dSym1);
   xassert(dSym1.asString() == "sym1");
-  xassert(dSym1.size() == 1);
-  xassert(!dSym1.empty());
   xassert(dSym1.getKind() == GDVK_SYMBOL);
   xassert(dSym1.isSymbol());
   xassert(dSym1.symbolGet() == GDVSymbol("sym1"));
@@ -166,8 +158,6 @@ static void testSymbol()
 
   GDValue dSym2(GDVSymbol("sym2"));
   xassert(dSym2.asString() == "sym2");
-  xassert(dSym2.size() == 1);
-  xassert(!dSym2.empty());
   xassert(dSym2.getKind() == GDVK_SYMBOL);
   xassert(dSym2.symbolGet() == GDVSymbol("sym2"));
   testSerializeRoundtrip(dSym2);
@@ -188,8 +178,6 @@ static void testInteger()
   GDValue d0(0);
   VPVAL(d0);
   xassert(d0.asString() == "0");
-  xassert(d0.size() == 1);
-  xassert(!d0.empty());
   xassert(d0.getSuperKind() == GDVK_INTEGER);
   xassert(d0.getKind() == GDVK_SMALL_INTEGER);
   xassert(d0.isInteger());
@@ -204,8 +192,6 @@ static void testInteger()
 
   GDValue d1(1);
   xassert(d1.asString() == "1");
-  xassert(d1.size() == 1);
-  xassert(!d1.empty());
   xassert(d1.getSuperKind() == GDVK_INTEGER);
   xassert(d1.integerGet() == 1);
   d1.selfCheck();
@@ -269,8 +255,6 @@ static void testString()
   CHECK_COUNTS(0, 1, 0, 1)
   VPVAL(dStr1);
   xassert(dStr1.asString() == "\"str1\"");
-  xassert(dStr1.size() == 1);
-  xassert(!dStr1.empty());
   xassert(dStr1.getKind() == GDVK_STRING);
   xassert(dStr1.isString());
   xassert(dStr1.stringGet() == GDVString("str1"));
@@ -279,8 +263,6 @@ static void testString()
   GDValue dStr2(GDVString("str2"));
   CHECK_COUNTS(0, 2, 0, 2)
   xassert(dStr2.asString() == "\"str2\"");
-  xassert(dStr2.size() == 1);
-  xassert(!dStr2.empty());
   xassert(dStr2.getKind() == GDVK_STRING);
   xassert(dStr2.stringGet() == GDVString("str2"));
 
@@ -357,8 +339,8 @@ static void testSequence()
   GDValue v1(GDVK_SEQUENCE);
   DIAG("empty seq: " << v1);
   xassert(v1.asString() == "[]");
-  xassert(v1.size() == 0);
-  xassert(v1.empty());
+  xassert(v1.containerSize() == 0);
+  xassert(v1.containerIsEmpty());
   xassert(v1.getKind() == GDVK_SEQUENCE);
   xassert(v1.isSequence());
   xassert(v1.sequenceGet() == GDVSequence());
@@ -372,8 +354,8 @@ static void testSequence()
   GDValue v3(seq1b3);
   DIAG("three-element seq: " << v3);
   xassert(v3.asString() == "[1 \"b\" 3]");
-  xassert(v3.size() == 3);
-  xassert(!v3.empty());
+  xassert(v3.containerSize() == 3);
+  xassert(!v3.containerIsEmpty());
   xassert(v3.getKind() == GDVK_SEQUENCE);
   xassert(v3.sequenceGet() == seq1b3);
   xassert(v1 < v3);
@@ -430,7 +412,7 @@ static void testSequence()
 
   v1.sequenceClear();
   xassert(v1 == v2);
-  xassert(v1.empty());
+  xassert(v1.containerIsEmpty());
   testSerializeRoundtrip(v1);
 }
 
@@ -440,8 +422,8 @@ static void testSet()
   GDValue v1((GDVSet()));
   DIAG("empty set: " << v1);
   xassert(v1.asString() == "{{}}");
-  xassert(v1.size() == 0);
-  xassert(v1.empty());
+  xassert(v1.containerSize() == 0);
+  xassert(v1.containerIsEmpty());
   xassert(v1.getKind() == GDVK_SET);
   xassert(v1.isSet());
   xassert(v1.setGet() == GDVSet());
@@ -452,7 +434,7 @@ static void testSet()
 
   v2.setInsert(GDValue(1));
   xassert(v2.setContains(GDValue(1)));
-  xassert(v2.size() == 1);
+  xassert(v2.containerSize() == 1);
   xassert(v1 < v2);
 
   v2.setInsert(GDValue(2));
@@ -520,8 +502,8 @@ static void testMap()
   GDValue v1((GDVMap()));
   DIAG("empty map: " << v1);
   xassert(v1.asString() == "{}");
-  xassert(v1.size() == 0);
-  xassert(v1.empty());
+  xassert(v1.containerSize() == 0);
+  xassert(v1.containerIsEmpty());
   xassert(v1.getKind() == GDVK_MAP);
   xassert(v1.isMap());
   xassert(v1.mapGet() == GDVMap());
@@ -531,7 +513,7 @@ static void testMap()
   xassert(v1 == v2);
 
   v2.mapSetValueAt(GDValue("one"), GDValue(1));
-  xassert(v2.size() == 1);
+  xassert(v2.containerSize() == 1);
   xassert(v2.mapGetValueAt(GDValue("one")) == GDValue(1));
   DIAG(v2);
   xassert(v2.asString() == R"({"one":1})");
@@ -546,7 +528,7 @@ static void testMap()
 
   v2.mapSetValueAt(GDValue("two"), GDValue(2));
   xassert(v2.asString() == R"({"one":2 "two":2})");
-  xassert(v2.size() == 2);
+  xassert(v2.containerSize() == 2);
   testSerializeRoundtrip(v2);
 
   v2.mapRemoveKey(GDValue("one"));
