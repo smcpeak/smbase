@@ -55,6 +55,8 @@ static void checkParse(GDValue const &expect, std::string const &ser)
       std::exit(2);
       // gcov-end-ignore
     }
+
+    actual.selfCheck();
   }
   catch (GDValueReaderException const &e) {
     cout << "During checkParse, caught exception:\n"
@@ -88,6 +90,7 @@ static void testNull()
   xassert(v.empty());
   xassert(v.isNull());
   xassert(v.getKind() == GDVK_SYMBOL);
+  v.selfCheck();
 
   GDValue v2;
   xassert(v == v2);
@@ -187,21 +190,25 @@ static void testInteger()
   xassert(d0.asString() == "0");
   xassert(d0.size() == 1);
   xassert(!d0.empty());
-  xassert(d0.getKind() == GDVK_INTEGER);
+  xassert(d0.getSuperKind() == GDVK_INTEGER);
+  xassert(d0.getKind() == GDVK_SMALL_INTEGER);
   xassert(d0.isInteger());
   xassert(d0.integerGet() == 0);
   xassert(!d0.isNull());
   xassert(!d0.isBool());
+  d0.selfCheck();
 
   // Ctor from the value kind.
   xassert(d0 == GDValue(GDVK_INTEGER));
+  xassert(d0 == GDValue(GDVK_SMALL_INTEGER));
 
   GDValue d1(1);
   xassert(d1.asString() == "1");
   xassert(d1.size() == 1);
   xassert(!d1.empty());
-  xassert(d1.getKind() == GDVK_INTEGER);
+  xassert(d1.getSuperKind() == GDVK_INTEGER);
   xassert(d1.integerGet() == 1);
+  d1.selfCheck();
 
   xassert(d0 < d1);
   xassert(GDValue() < d0);
@@ -213,10 +220,33 @@ static void testInteger()
   testSerializeRoundtrip(GDValue(-1234567890));
 
   GDValue big = GDVInteger::fromDigits("0x1234567890ABCDEF1234567890ABCDEF");
+  big.selfCheck();
+  xassert(big.getSuperKind() == GDVK_INTEGER);
+  xassert(big.getKind() == GDVK_INTEGER);
 
   // Copy ctor where the integer is not small.
   GDValue big2(big);
   xassert(big == big2);
+
+  // Largest small integer.
+  GDValue n = GDVInteger::fromDigits("0x7FFFFFFFFFFFFFFF");
+  n.selfCheck();
+  xassert(n.isSmallInteger());
+
+  // Smallest positive large integer.
+  n = n.integerGet() + 1;
+  n.selfCheck();
+  xassert(!n.isSmallInteger());
+
+  // Most negative small integer.
+  n = -n.integerGet();
+  n.selfCheck();
+  xassert(n.isSmallInteger());
+
+  // Smallest magnitude negative large integer.
+  n = n.integerGet() - 1;
+  n.selfCheck();
+  xassert(!n.isSmallInteger());
 }
 
 

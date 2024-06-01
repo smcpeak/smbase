@@ -69,29 +69,29 @@ using GDVMapEntry = std::pair<GDValue const, GDValue>;
 
 // Possible kinds of GDValues.
 enum GDValueKind : unsigned char {
-  // symbol: An identifier-like string that acts as a name of something
+  // Symbol: An identifier-like string that acts as a name of something
   // defined elsewhere.  This includes the special symbols `null`,
   // `false`, and `true`.
   GDVK_SYMBOL,
 
-  // integer: Unbounded mathematical integer.
+  // Integer: Unbounded mathematical integer.
   GDVK_INTEGER,
 
-  // string: Sequence of Unicode characters encoded as UTF-8.
+  // Small integer: A logical subclass of Integer that fits into the
+  // `GDVSmallInteger` type.
+  GDVK_SMALL_INTEGER,
+
+  // String: Sequence of Unicode characters encoded as UTF-8.
   GDVK_STRING,
 
-  // sequence: Ordered sequence of values.
+  // Sequence: Ordered sequence of values.
   GDVK_SEQUENCE,
 
-  // set: Unordered set of (unique) values.
+  // Set: Unordered set of (unique) values.
   GDVK_SET,
 
-  // map: Set of (key, value) pairs that are indexed by key.
+  // Map: Set of (key, value) pairs that are indexed by key.
   GDVK_MAP,
-
-  // This is a private code for internal use by `GDValue`.  It is not a
-  // valid code for use in the public API.
-  GDVK_SMALL_INTEGER,
 
   NUM_GDVALUE_KINDS
 };
@@ -101,8 +101,28 @@ enum GDValueKind : unsigned char {
 char const *toString(GDValueKind gdvk);
 
 
-// A General Data Value is a disjoint union of several different types
-// of data, enumerated as 'GDValueKind'.
+/* A General Data Value is a disjoint union of several different types
+   of data, enumerated as 'GDValueKind'.
+
+   The logical hierarchy implemented by this class is:
+
+     Symbol
+       Null
+       Bool
+         True
+         False
+     Integer
+       SmallIneger
+     String
+     Sequence
+       TaggedSequence
+     Set
+       TaggedSet
+     Map
+       TaggedMap
+
+   TODO: The Tagged containers aren't implemented yet.
+*/
 class GDValue {
 private:     // class data
   // Names of symbols with special semantics.
@@ -159,7 +179,8 @@ private:     // instance data
     GDVSet         *m_set;
     GDVMap         *m_map;
 
-    // The value for `GDVK_SMALL_INTEGER`.
+    // The value for `GDVK_SMALL_INTEGER`, which is used anytime an
+    // integer is representable as `GDVSmallInteger`.
     //
     // Given that `GDVInteger` also has a small-integer storage option,
     // why have one here?  To avoid allocating an extra object for every
@@ -180,7 +201,7 @@ private:     // methods
 
   // If `i` can fit into `m_smallInteger`, store it there and return
   // true, otherwise return false without changing anything.
-  bool tryStoreSmallInteger(GDVInteger const &i);
+  bool trySmallIntegerSet(GDVInteger const &i);
 
 public:      // methods
   // Make a `null` symbol value--that is, `isNull()` is true.
@@ -196,20 +217,27 @@ public:      // methods
 
 
   // Make an empty/zero value of 'kind':
-  //   symbol: null  (Note: This is not the empty symbol, ``.)
-  //   integer: 0
-  //   string: ""
-  //   container: empty
+  //   Symbol: null  (Note: This is not the empty symbol, ``.)
+  //   Integer or SmallInteger: 0
+  //   String: ""
+  //   Container: empty
   explicit GDValue(GDValueKind kind);
 
 
-  GDValueKind getKind() const;
-  bool isSymbol()   const { return getKind() == GDVK_SYMBOL;   }
-  bool isInteger()  const { return getKind() == GDVK_INTEGER;  }
-  bool isString()   const { return getKind() == GDVK_STRING;   }
-  bool isSequence() const { return getKind() == GDVK_SEQUENCE; }
-  bool isSet()      const { return getKind() == GDVK_SET;      }
-  bool isMap()      const { return getKind() == GDVK_MAP;      }
+  GDValueKind getKind() const { return m_kind; }
+
+  // Map SmallInteger to Integer, keeping other kinds the same, to get
+  // the kind corresponding to the logical superclass.
+  GDValueKind getSuperKind() const;
+
+  bool isSymbol()       const { return m_kind == GDVK_SYMBOL;        }
+  bool isInteger()      const { return m_kind == GDVK_INTEGER ||
+                                       isSmallInteger();             }
+  bool isSmallInteger() const { return m_kind == GDVK_SMALL_INTEGER; }
+  bool isString()       const { return m_kind == GDVK_STRING;        }
+  bool isSequence()     const { return m_kind == GDVK_SEQUENCE;      }
+  bool isSet()          const { return m_kind == GDVK_SET;           }
+  bool isMap()          const { return m_kind == GDVK_MAP;           }
 
 
   /* Return <0 if a<b, 0 if a==b, and >0 otherwise.
@@ -250,6 +278,8 @@ public:      // methods
   static unsigned countConstructorCalls();
 
 
+  // TODO: The following three methods should be removed or renamed.
+
   // Number of contained values.  Result depends on kind of value:
   //   - symbol that is null: 0
   //   - symbol that is not null: 1
@@ -267,6 +297,9 @@ public:      // methods
 
   // Exchange values with 'obj'.
   void swap(GDValue &obj) noexcept;
+
+  // Assert invariants.
+  void selfCheck() const;
 
 
   // ---- Write as text ----
@@ -361,11 +394,6 @@ public:      // methods
   /*implicit*/ GDValue(GDVInteger const &i);
   /*implicit*/ GDValue(GDVInteger      &&i);
 
-  // This overload is needed to allow `GDValue(0)` to work because
-  // otherwise it is ambiguous between the ctor accepting `GDVInteger`
-  // and the ones accepting `GDVString`.
-  /*implicit*/ GDValue(GDVSmallInteger i);
-
   void integerSet(GDVInteger const &i);
   void integerSet(GDVInteger      &&i);
 
@@ -376,16 +404,31 @@ public:      // methods
   // reference) when we are storing a large integer.
   GDVInteger integerGet() const;
 
-  // If the value can be represented as `GDVSmallInteger`, return it as
-  // such.  Otherwise return `nullopt`.
-  std::optional<GDVSmallInteger> integerGetSmallOpt() const;
+  // True if the integer is negative.
+  //
+  // Requires `isInteger()`.
+  bool integerIsNegative() const;
 
   // Given that the value cannot be represented as a `GDVSmallInteger`,
   // return a reference to the large integer.  This method should only
   // be used when there is some performance justification for it, as it
   // couples the client more closely to this class's implementation than
   // calling `integerGet()` does.
-  GDVInteger const &integerGetLargeRef() const;
+  //
+  // Requires `isInteger() && !isSmallInteger()`.
+  GDVInteger const &largeIntegerGet() const;
+
+
+  // ---- SmallInteger ----
+  // This overload is needed to allow `GDValue(0)` to work because
+  // otherwise it is ambiguous between the ctor accepting `GDVInteger`
+  // and the ones accepting `GDVString`.
+  /*implicit*/ GDValue(GDVSmallInteger i);
+
+  void smallIntegerSet(GDVSmallInteger i);
+
+  // Requires `isSmallInteger()`.
+  GDVSmallInteger smallIntegerGet() const;
 
 
   // ---- String ----
