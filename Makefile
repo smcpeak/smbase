@@ -354,6 +354,7 @@ UNIT_TEST_OBJS += exc-test.o
 UNIT_TEST_OBJS += functional-set-test.o
 UNIT_TEST_OBJS += gcc-options-test.o
 UNIT_TEST_OBJS += gdvalue-test.o
+UNIT_TEST_OBJS += gdvsymbol-test.o
 UNIT_TEST_OBJS += get-type-name-test.o
 UNIT_TEST_OBJS += gprintf-test.o
 UNIT_TEST_OBJS += growbuf-test.o
