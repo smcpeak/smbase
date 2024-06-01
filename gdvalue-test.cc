@@ -657,6 +657,49 @@ static void testTaggedMap()
   v.taggedMapGetMutable().m_container.erase(5);
   EXPECT_EQ(v.asString(), "z{3:4 8:9}");
   testSerializeRoundtrip(v);
+
+  // Use the constructor for GDVTaggedMap that takes a `const&`.
+  GDVMap m{{"a","b"}};
+  GDVTaggedMap tm2(GDVSymbol("_"), m);
+  v = tm2;
+  EXPECT_EQ(v.asString(), "_{\"a\":\"b\"}");
+
+  // Exercise `GDVTaggedMap::operator=(const&)`.
+  v.taggedMapGetMutable() = tm;
+  EXPECT_EQ(v.asString(), "z{3:4 5:6}");
+
+  {
+    // GDValue copy ctor with a tagged map.
+    GDValue v2(v);
+    EXPECT_EQ(v2.asString(), "z{3:4 5:6}");
+  }
+
+  // Exercise `GDVTaggedMap::operator=(&&)`.
+  v.taggedMapGetMutable() = GDVTaggedMap(GDVSymbol("a"), {});
+  EXPECT_EQ(v.asString(), "a{}");
+
+  // Exercise `GDVTaggedMap::swap`.
+  v.taggedMapGetMutable().swap(tm2);
+  EXPECT_EQ(v.asString(), "_{\"a\":\"b\"}");
+  v.taggedMapGetMutable().swap(tm2);
+  EXPECT_EQ(v.asString(), "a{}");
+
+  // `GDValue::mapSet(&&)` when the value already has a map.
+  v.mapSet(GDVMap{{-1,-2}});
+  EXPECT_EQ(v.asString(), "a{-1:-2}");
+
+  // `GDValue::mapSet(const&)` when the value already has a map.
+  v.mapSet(m);
+  EXPECT_EQ(v.asString(), "a{\"a\":\"b\"}");
+
+  // `GDValue::taggedMapSet(&&)` when the value is already a tagged map.
+  v.taggedMapSet(GDVTaggedMap(GDVSymbol("j"), {}));
+  EXPECT_EQ(v.asString(), "j{}");
+
+  // `GDValue::taggedMapSet(const&)` when the value is already a tagged
+  // map.
+  v.taggedMapSet(tm2);
+  EXPECT_EQ(v.asString(), "_{\"a\":\"b\"}");
 }
 
 
