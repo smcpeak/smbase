@@ -128,9 +128,8 @@ protected:   // methods
   GDValue readNextInteger(int firstChar);
 
   // Having seen and consumed 'firstChar', a character that starts a
-  // symbol or special name, read the remainder and put them into a
-  // GDVK_SYMBOL, GDVK_NULL, or GDKV_BOOL.
-  GDValue readNextSymbolOrSpecial(int firstChar);
+  // symbol, read the remainder and put them into a GDVK_SYMBOL.
+  GDValue readNextSymbol(int firstChar);
 
 public:      // methods
   GDValueReader(std::istream &is,

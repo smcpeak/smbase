@@ -585,7 +585,7 @@ GDValue GDValueReader::readNextInteger(int const firstChar)
 }
 
 
-GDValue GDValueReader::readNextSymbolOrSpecial(int firstChar)
+GDValue GDValueReader::readNextSymbol(int firstChar)
 {
   std::vector<char> letters;
   letters.push_back((char)firstChar);
@@ -602,12 +602,7 @@ GDValue GDValueReader::readNextSymbolOrSpecial(int firstChar)
 
   std::string symName(letters.begin(), letters.end());
 
-  if (symName == "null") {
-    return GDValue();
-  }
-  else {
-    return GDValue(GDVSymbol(symName));
-  }
+  return GDValue(GDVSymbol(symName));
 }
 
 
@@ -666,7 +661,7 @@ std::optional<GDValue> GDValueReader::readNextValue()
 
       default:
         if (isLetter(c) || c == '_') {
-          return std::make_optional(readNextSymbolOrSpecial(c));
+          return std::make_optional(readNextSymbol(c));
         }
         else {
           unexpectedCharErr(c, "looking for the start of a value");
