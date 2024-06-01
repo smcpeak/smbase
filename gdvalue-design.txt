@@ -74,7 +74,8 @@ one of the following:
   * Map: A finite unordered map from values to values.  An empty map is
     a distinct value from an empty set or empty sequence.
 
-  * TODO: Add a tagged map.
+  * Tagged container: A pair of a symbol and a sequence, set, or map.
+    The tag indicates the kind of thing the container represents.
 
 The meaning of a symbol is determined by mutual agreement between
 producer and consumer; its meaning is extrinsic rather than intrinsic.
@@ -280,6 +281,8 @@ A double-quoted string is as in JSON:
     well-formed surrogate pair.  Otherwise it directly denotes a code
     point.
 
+    TODO: Add "\U" escapes.
+
   * Any other character following backlash is an *error* and must be
     rejected by the GDVN parser.
 
@@ -370,6 +373,12 @@ Map: {a:1 b:2 c:3}
   insert at least one space after the outer map's opening brace (as
   shown above in the third example).
 
+Tagged container: Tag[...] or Tag{{...}} or Tag{...}
+
+  If the character immediately following a symbol, with no intervening
+  whitespace, is '[' or '{', then the symbol is combined with the
+  following container into a "tagged container".
+
 For all values, if their last character is not the last character in the
 file, then the following character must be one of:
 
@@ -414,7 +423,11 @@ to decimal digits requires repeated division by 10.  It does not follow
 the C/C++ convention of using a leading zero to indicate octal because
 that is octal is rare, and that notation is obscure and confusing to
 those only familiar with mathematical notation.  It allows redundant
-leading zeroes mostly because standard mathematical notation does.
+leading zeroes in part because standard mathematical notation does, and
+in part to allow situation-specific flexibility in formatting.  For
+example, "[1980 01 31]" is much better than "[1980 1 31]" for writing a
+date since only the former fits the ISO-8601 YYYY-MM-DD form (albeit
+without the hyphens).
 
 Within strings, unknown baskslash codes are disallowed in order to
 reserve them for possible future use.  If instead, say, "\c" just meant
@@ -445,6 +458,16 @@ likely to indicate a problem in the upstream production of the data,
 silently dropping one of two different values (which one?) would be
 quite surprising and constitute potential data loss, and that policy is
 extended to the case of identical values for uniformity.
+
+Tagged containers allow consumers to easily recognize what kind of thing
+a container represents without having to inspect its contents.  This is
+useful when the context does not sufficiently constrain the container.
+Because it is so useful, many JSON formats include a provision for a
+"type" or similar field in a map to indicate the entity kind, but that
+is awkward (since it is in the wrong place), and impossible for lists.
+An alternative is to wrap a two-element list around the outside, but
+that is a weak convention to try to follow and creates significant
+additional delimiter clutter.
 
 The restriction on what characters can follow a value, which has the
 effect of preventing values from being juxtaposed, is meant in part to

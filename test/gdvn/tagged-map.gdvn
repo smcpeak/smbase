@@ -1,0 +1,30 @@
+// tagged-map.gdvn
+// Example of what tagged containers might look like.
+
+//RandomThings
+[
+  Person {
+    name: "Sam"
+    // TODO: dob: Date(1980 01 31)
+    address: {
+      type: Address
+      num: 101
+      street: "Main St"
+      unit: "Apt 12"
+    }
+  }
+  Place {
+    name: "Central Park"
+    city: "NY"
+    state: "NY"
+    // TODO: lattitude: 40.123
+    // TODO: longitude: 75.3
+  }
+  Animal {
+    name: "Brown Bear"
+    genus: "Ursus"
+    species: "Somethingus"
+  }
+]
+
+// EOF
