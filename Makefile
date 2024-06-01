@@ -375,6 +375,7 @@ UNIT_TEST_OBJS += sm-ap-int-test.o
 UNIT_TEST_OBJS += sm-ap-uint-test.o
 UNIT_TEST_OBJS += sm-file-util-test.o
 UNIT_TEST_OBJS += sm-integer-test.o
+UNIT_TEST_OBJS += sm-is-equal-test.o
 UNIT_TEST_OBJS += sm-pp-util-test.o
 UNIT_TEST_OBJS += sm-rc-ptr-test.o
 UNIT_TEST_OBJS += sm-trace-test.o
