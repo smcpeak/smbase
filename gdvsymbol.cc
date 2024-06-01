@@ -59,6 +59,12 @@ int compare(GDVSymbol const &a, GDVSymbol const &b)
 }
 
 
+std::size_t GDVSymbol::size() const
+{
+  return std::strlen(m_symbolName);
+}
+
+
 STATICDEF char const *GDVSymbol::lookupSymbolName(char const *name)
 {
   return getStringTable()->add(name);

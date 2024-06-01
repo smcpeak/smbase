@@ -601,6 +601,55 @@ static void testMap()
 }
 
 
+static void testTaggedMap()
+{
+  GDValue v(GDVK_TAGGED_MAP);
+  EXPECT_EQ(v.asString(), "{}");    // This isn't right, should use ``.
+  xassert(v.isMap());
+  xassert(v.isTaggedContainer());
+  xassert(v.isTaggedMap());
+  xassert(v.containerIsEmpty());
+  v.selfCheck();
+
+  v = GDVTaggedMap(GDVSymbol("x"), {{1,2}});
+  EXPECT_EQ(v.asString(), "x{1:2}");
+  xassert(v.isMap());
+  xassert(v.isTaggedContainer());
+  xassert(v.isTaggedMap());
+  xassert(!v.containerIsEmpty());
+  v.selfCheck();
+
+  v.taggedContainerSetTag(GDVSymbol("y"));
+  EXPECT_EQ(v.asString(), "y{1:2}");
+
+  GDVTaggedMap tm(GDVSymbol("z"), {{3,4}, {5,6}});
+  v = tm;
+  EXPECT_EQ(v.asString(), "z{3:4 5:6}");
+
+  {
+    GDValue v2(tm);
+    xassert(v == v2);
+
+    v2.mapClear();
+    EXPECT_EQ(v2.asString(), "z{}");
+  }
+
+  xassert(v.taggedMapGet().m_container.size() == 2);
+
+  xassert(v.mapContains(3));
+  xassert(!v.mapContains(4));
+
+  v.mapSetValueAt(5,7);
+  EXPECT_EQ(v.asString(), "z{3:4 5:7}");
+
+  v.mapGetMutable().insert({8,9});
+  EXPECT_EQ(v.asString(), "z{3:4 5:7 8:9}");
+
+  v.taggedMapGetMutable().m_container.erase(5);
+  EXPECT_EQ(v.asString(), "z{3:4 8:9}");
+}
+
+
 // Print a little ruler to help judge the behavior.
 static void printRuler(int width)
 {
@@ -1338,6 +1387,7 @@ void test_gdvalue()
     testSequence();
     testSet();
     testMap();
+    testTaggedMap();
     testSyntaxErrors();
     testDeserializeMisc();
     testDeserializeIntegers();

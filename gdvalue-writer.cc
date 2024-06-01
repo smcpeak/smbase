@@ -9,6 +9,7 @@
 #include "counting-ostream.h"          // CountingOStream
 #include "gdvalue.h"                   // gdv::GDValue
 #include "gdvsymbol.h"                 // gdv::GDVSymbol
+#include "overflow.h"                  // safeToInt
 #include "save-restore.h"              // SAVE_RESTORE, SET_RESTORE
 #include "sm-macros.h"                 // OPEN_NAMESPACE
 #include "sm-trace.h"                  // INIT_TRACE
@@ -47,13 +48,19 @@ bool isPairWithMapAsFirstElement(GDVMapEntry const &entry)
 template <class CONTAINER>
 bool GDValueWriter::writeContainer(
   CONTAINER const &container,
+  char const * NULLABLE tagName,
   char const *openDelim,
   char const *closeDelim)
 {
   TRACE1_SCOPED("writeContainer:"
+    " tag=" << (tagName? tagName : "(null)") <<
     " delims=" << openDelim << closeDelim <<
     " enableIndentation=" << m_options.m_enableIndentation <<
     " indentLevel=" << m_options.m_indentLevel);
+
+  if (tagName) {
+    os() << tagName;
+  }
 
   os() << openDelim;
 
@@ -222,19 +229,28 @@ bool GDValueWriter::tryWrite(GDValue const &value,
     case GDVK_SEQUENCE:
       return writeContainer(
         value.sequenceGet(),
+        nullptr, // tagName
         "[",
         "]");
 
     case GDVK_SET:
-      // TODO: Explain the choice of syntax in the design doc.
       return writeContainer(
         value.setGet(),
+        nullptr, // tagName
         "{{",
         "}}");
 
     case GDVK_MAP:
       return writeContainer(
         value.mapGet(),
+        nullptr, // tagName
+        "{",
+        "}");
+
+    case GDVK_TAGGED_MAP:
+      return writeContainer(
+        value.mapGet(),
+        value.taggedContainerGetTag().getSymbolName(),
         "{",
         "}");
   }
@@ -303,7 +319,7 @@ bool GDValueWriter::tryWrite(GDVMapEntry const &pair,
     // Case 2: Key and value each fit onto their own line.
     printCase = 2;
   }
-  else if (isContainer(value) &&
+  else if (value.isContainer() &&
            valueFitsOnLineWithExtra(key, 1 + openDelimLength(value))) {
     // Case 3: Key and start of value fit on first line.
     printCase = 3;
@@ -468,20 +484,6 @@ void GDValueWriter::startNewIndentedLine()
 }
 
 
-bool GDValueWriter::isContainer(GDValue const &value) const
-{
-  switch (value.getKind()) {
-    case GDVK_SEQUENCE:
-    case GDVK_SET:
-    case GDVK_MAP:
-      return true;
-
-    default:
-      return false;
-  }
-}
-
-
 int GDValueWriter::openDelimLength(GDValue const &value) const
 {
   switch (value.getKind()) {
@@ -494,6 +496,9 @@ int GDValueWriter::openDelimLength(GDValue const &value) const
 
     case GDVK_SET:
       return 2;    // '{{'
+
+    case GDVK_TAGGED_MAP:
+      return safeToInt(value.taggedContainerGetTag().size()) + 1;
   }
 }
 

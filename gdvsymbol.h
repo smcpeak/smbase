@@ -88,6 +88,9 @@ public:      // methods
   friend int compare(GDVSymbol const &a, GDVSymbol const &b);
   DEFINE_FRIEND_RELATIONAL_OPERATORS(GDVSymbol)
 
+  // Get the number of bytes in this symbol's name.
+  std::size_t size() const;
+
   // Get a pointer to a NUL-terminated string of characters with the
   // symbol name.
   char const *getSymbolName() const { return m_symbolName; }

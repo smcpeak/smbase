@@ -67,6 +67,46 @@ using GDVMap = std::map<GDValue, GDValue>;
 using GDVMapEntry = std::pair<GDValue const, GDValue>;
 
 
+// A pair of a symbol tag and a container.
+//
+// The CONTAINER is one of GDVSequence, GDVSet, or GDVMap.
+template <typename CONTAINER>
+class GDVTaggedContainer {
+public:      // data
+  // The tag is meant to inform the consumer of the role that the
+  // container plays.
+  GDVSymbol m_tag;
+
+  // The associated container.
+  CONTAINER m_container;
+
+public:      // methods
+  ~GDVTaggedContainer();
+
+  // Empty symbol tag, empty container.
+  GDVTaggedContainer();
+
+  GDVTaggedContainer(GDVSymbol tag, CONTAINER const &container);
+  GDVTaggedContainer(GDVSymbol tag, CONTAINER &&container);
+
+  GDVTaggedContainer(GDVTaggedContainer const &obj);
+  GDVTaggedContainer(GDVTaggedContainer &&obj);
+
+  GDVTaggedContainer &operator=(GDVTaggedContainer const &obj);
+  GDVTaggedContainer &operator=(GDVTaggedContainer &&obj);
+
+  void swap(GDVTaggedContainer &obj);
+
+  // Lexicographic comparison by tag then container contents.
+  template <typename C>
+  friend int compare(GDVTaggedContainer<C> const &a,
+                     GDVTaggedContainer<C> const &b);
+  DEFINE_FRIEND_RELATIONAL_OPERATORS(GDVTaggedContainer)
+};
+
+using GDVTaggedMap = GDVTaggedContainer<GDVMap>;
+
+
 // Possible kinds of GDValues.
 enum GDValueKind : unsigned char {
   // Symbol: An identifier-like string that acts as a name of something
@@ -92,6 +132,9 @@ enum GDValueKind : unsigned char {
 
   // Map: Set of (key, value) pairs that are indexed by key.
   GDVK_MAP,
+
+  // Tag+map.
+  GDVK_TAGGED_MAP,
 
   NUM_GDVALUE_KINDS
 };
@@ -162,6 +205,8 @@ public:      // class data
   static unsigned s_ct_mapCtorMove;
   static unsigned s_ct_mapSetCopy;
   static unsigned s_ct_mapSetMove;
+  static unsigned s_ct_taggedMapCtorCopy;
+  static unsigned s_ct_taggedMapCtorMove;
 
 private:     // instance data
   // Tag indicating which kind of value is represented, and for
@@ -180,6 +225,7 @@ private:     // instance data
     GDVSequence    *m_sequence;
     GDVSet         *m_set;
     GDVMap         *m_map;
+    GDVTaggedMap   *m_taggedMap;
 
     // The value for `GDVK_SMALL_INTEGER`, which is used anytime an
     // integer is representable as `GDVSmallInteger`.
@@ -242,7 +288,11 @@ public:      // methods
   bool isString()       const { return m_kind == GDVK_STRING;        }
   bool isSequence()     const { return m_kind == GDVK_SEQUENCE;      }
   bool isSet()          const { return m_kind == GDVK_SET;           }
-  bool isMap()          const { return m_kind == GDVK_MAP;           }
+  bool isMap()          const { return m_kind == GDVK_MAP ||
+                                       isTaggedMap();                }
+  bool isTaggedMap()    const { return m_kind == GDVK_TAGGED_MAP;    }
+
+  bool isTaggedContainer() const;
 
 
   /* Return <0 if a<b, 0 if a==b, and >0 otherwise.
@@ -545,6 +595,7 @@ public:      // methods
   /*implicit*/ GDValue(GDVMap const &map);
   /*implicit*/ GDValue(GDVMap      &&map);
 
+  // If the current value is a tagged map, these retain the tag.
   void mapSet(GDVMap const &map);
   void mapSet(GDVMap      &&map);
 
@@ -565,6 +616,27 @@ public:      // methods
   bool mapRemoveKey(GDValue const &key);
 
   void mapClear();
+
+
+  // ---- TaggedContainer ----
+  // These methods require `isTaggedContainer()`.
+
+  void taggedContainerSetTag(GDVSymbol tag);
+
+  GDVSymbol taggedContainerGetTag() const;
+
+
+  // ---- TaggedMap ----
+  /*implicit*/ GDValue(GDVTaggedMap const &tmap);
+  /*implicit*/ GDValue(GDVTaggedMap      &&tmap);
+
+  void taggedMapSet(GDVTaggedMap const &tmap);
+  void taggedMapSet(GDVTaggedMap      &&tmap);
+
+  GDVTaggedMap const &taggedMapGet()        const;
+  GDVTaggedMap       &taggedMapGetMutable()      ;
+
+  // The map accessors work on tagged maps too.
 
 
   #undef DECLARE_GDV_KIND_ITERATORS
@@ -642,6 +714,10 @@ DEFINE_GDV_KIND_ITERABLE(GDVMap, map)
 
 
 #undef DEFINE_GDV_KIND_ITERABLE
+
+
+// Instantiated in gdvalue.cc.
+extern template class GDVTaggedContainer<GDVMap>;
 
 
 CLOSE_NAMESPACE(gdv)

@@ -356,6 +356,14 @@ DEST convertNumber(SRC const &src)
 }
 
 
+// Convenient alias for a common operation.
+template <class SRC>
+int safeToInt(SRC const &src)
+{
+  return convertNumber<int>(src);
+}
+
+
 // Unit tests, in overflow-test.cc.
 void test_overflow();
 

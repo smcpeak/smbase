@@ -26,6 +26,96 @@ using namespace smbase;
 OPEN_NAMESPACE(gdv)
 
 
+// ------------------------ GDVTaggedContainer -------------------------
+template <typename CONTAINER>
+GDVTaggedContainer<CONTAINER>::~GDVTaggedContainer()
+{}
+
+
+template <typename CONTAINER>
+GDVTaggedContainer<CONTAINER>::GDVTaggedContainer()
+  : m_tag(),
+    m_container()
+{}
+
+
+template <typename CONTAINER>
+GDVTaggedContainer<CONTAINER>::GDVTaggedContainer(
+  GDVSymbol tag,
+  CONTAINER const &container)
+  : m_tag(tag),
+    m_container(container)
+{}
+
+
+template <typename CONTAINER>
+GDVTaggedContainer<CONTAINER>::GDVTaggedContainer(
+  GDVSymbol tag,
+  CONTAINER &&container)
+  : m_tag(tag),
+    m_container(std::move(container))
+{}
+
+
+template <typename CONTAINER>
+GDVTaggedContainer<CONTAINER>::GDVTaggedContainer(
+  GDVTaggedContainer const &obj)
+  : DMEMB(m_tag),
+    DMEMB(m_container)
+{}
+
+
+template <typename CONTAINER>
+GDVTaggedContainer<CONTAINER>::GDVTaggedContainer(
+  GDVTaggedContainer &&obj)
+  : MDMEMB(m_tag),
+    MDMEMB(m_container)
+{}
+
+
+template <typename CONTAINER>
+GDVTaggedContainer<CONTAINER> &GDVTaggedContainer<CONTAINER>::operator=(
+  GDVTaggedContainer const &obj)
+{
+  if (this != &obj) {
+    CMEMB(m_tag);
+    CMEMB(m_container);
+  }
+  return *this;
+}
+
+
+template <typename CONTAINER>
+GDVTaggedContainer<CONTAINER> &GDVTaggedContainer<CONTAINER>::operator=(
+  GDVTaggedContainer &&obj)
+{
+  if (this != &obj) {
+    MCMEMB(m_tag);
+    MCMEMB(m_container);
+  }
+  return *this;
+}
+
+
+template <typename CONTAINER>
+void GDVTaggedContainer<CONTAINER>::swap(GDVTaggedContainer &obj)
+{
+  m_tag.swap(obj.m_tag);
+  m_container.swap(obj.m_container);
+}
+
+
+template <typename CONTAINER>
+int compare(
+  GDVTaggedContainer<CONTAINER> const &a,
+  GDVTaggedContainer<CONTAINER> const &b)
+{
+  RET_IF_COMPARE_MEMBERS(m_tag);
+  RET_IF_COMPARE_MEMBERS(m_container);
+  return 0;
+}
+
+
 // ---------------------------- GDValueKind ----------------------------
 #define CASE(kind) #kind
 
@@ -39,7 +129,8 @@ DEFINE_ENUMERATION_TO_STRING_OR(
     CASE(GDVK_STRING),
     CASE(GDVK_SEQUENCE),
     CASE(GDVK_SET),
-    CASE(GDVK_MAP)
+    CASE(GDVK_MAP),
+    CASE(GDVK_TAGGED_MAP)
   ),
   "GDVK_invalid"
 )
@@ -80,6 +171,8 @@ unsigned GDValue::s_ct_mapCtorCopy = 0;
 unsigned GDValue::s_ct_mapCtorMove = 0;
 unsigned GDValue::s_ct_mapSetCopy = 0;
 unsigned GDValue::s_ct_mapSetMove = 0;
+unsigned GDValue::s_ct_taggedMapCtorCopy = 0;
+unsigned GDValue::s_ct_taggedMapCtorMove = 0;
 
 
 // ---------------------- GDValue private helpers ----------------------
@@ -122,6 +215,10 @@ void GDValue::resetSelfAndSwapWith(GDValue &obj) noexcept
 
     case GDVK_MAP:
       SWAP_MEMBER(m_map);
+      break;
+
+    case GDVK_TAGGED_MAP:
+      SWAP_MEMBER(m_taggedMap);
       break;
   }
 
@@ -186,6 +283,10 @@ GDValue::GDValue(GDValue const &obj)
 
     case GDVK_MAP:
       mapSet(obj.mapGet());
+      break;
+
+    case GDVK_TAGGED_MAP:
+      taggedMapSet(obj.taggedMapGet());
       break;
   }
 
@@ -262,6 +363,10 @@ GDValue::GDValue(GDValueKind kind)
     case GDVK_MAP:
       m_value.m_map = new GDVMap;
       break;
+
+    case GDVK_TAGGED_MAP:
+      m_value.m_taggedMap = new GDVTaggedMap;
+      break;
   }
 
   ++s_ct_valueKindCtor;
@@ -284,6 +389,12 @@ bool GDValue::isContainer() const
   return isSequence() ||
          isSet() ||
          isMap();
+}
+
+
+bool GDValue::isTaggedContainer() const
+{
+  return isTaggedMap();
 }
 
 
@@ -385,6 +496,9 @@ int compare(GDValue const &a, GDValue const &b)
 
     case GDVK_MAP:
       return DEEP_COMPARE_PTR_MEMBERS(m_value.m_map);
+
+    case GDVK_TAGGED_MAP:
+      return DEEP_COMPARE_PTR_MEMBERS(m_value.m_taggedMap);
   }
 }
 
@@ -410,6 +524,8 @@ STATICDEF unsigned GDValue::countConstructorCalls()
     + s_ct_setCtorMove
     + s_ct_mapCtorCopy
     + s_ct_mapCtorMove
+    + s_ct_taggedMapCtorCopy
+    + s_ct_taggedMapCtorMove
     ;
 }
 
@@ -444,6 +560,10 @@ void GDValue::reset()
 
     case GDVK_MAP:
       delete m_value.m_map;
+      break;
+
+    case GDVK_TAGGED_MAP:
+      delete m_value.m_taggedMap;
       break;
   }
 
@@ -495,6 +615,10 @@ void GDValue::selfCheck() const
 
     case GDVK_MAP:
       xassertInvariant(m_value.m_map != nullptr);
+      break;
+
+    case GDVK_TAGGED_MAP:
+      xassertInvariant(m_value.m_taggedMap != nullptr);
       break;
   }
 }
@@ -884,6 +1008,9 @@ GDVSize GDValue::containerSize() const
 
     case GDVK_MAP:
       return m_value.m_map->size();
+
+    case GDVK_TAGGED_MAP:
+      return m_value.m_taggedMap->m_container.size();
   }
 }
 
@@ -1112,9 +1239,14 @@ GDValue::GDValue(GDVMap &&map)
 
 void GDValue::mapSet(GDVMap const &map)
 {
-  reset();
-  m_value.m_map = new GDVMap(map);
-  m_kind = GDVK_MAP;
+  if (isMap()) {
+    mapGetMutable() = map;
+  }
+  else {
+    reset();
+    m_value.m_map = new GDVMap(map);
+    m_kind = GDVK_MAP;
+  }
 
   ++s_ct_mapSetCopy;
 }
@@ -1122,9 +1254,14 @@ void GDValue::mapSet(GDVMap const &map)
 
 void GDValue::mapSet(GDVMap &&map)
 {
-  reset();
-  m_value.m_map = new GDVMap(std::move(map));
-  m_kind = GDVK_MAP;
+  if (isMap()) {
+    mapGetMutable() = map;
+  }
+  else {
+    reset();
+    m_value.m_map = new GDVMap(std::move(map));
+    m_kind = GDVK_MAP;
+  }
 
   ++s_ct_mapSetMove;
 }
@@ -1132,33 +1269,70 @@ void GDValue::mapSet(GDVMap &&map)
 
 GDVMap const &GDValue::mapGet() const
 {
-  xassertPrecondition(m_kind == GDVK_MAP);
-  return *(m_value.m_map);
+  xassertPrecondition(isMap());
+
+  if (m_kind == GDVK_MAP) {
+    return *(m_value.m_map);
+  }
+  else {
+    xassert(m_kind == GDVK_TAGGED_MAP);
+    return m_value.m_taggedMap->m_container;
+  }
 }
 
 
 GDVMap &GDValue::mapGetMutable()
 {
-  xassertPrecondition(m_kind == GDVK_MAP);
-  return *(m_value.m_map);
+  return const_cast<GDVMap&>(mapGet());
 }
 
 
-DEFINE_GDV_KIND_BEGIN_END(GDVMap, map, GDVK_MAP)
+// For the moment this is just used for `map` but the plan is to use it
+// for others later.
+#define DEFINE_GDV_TAGGABLE_CONTAINER_BEGIN_END(GDVKindName, kindName, isKindName) \
+  GDVKindName::const_iterator GDValue::kindName##CBegin() const                    \
+  {                                                                                \
+    xassertPrecondition(isKindName());                                             \
+    return kindName##Get().cbegin();                                               \
+  }                                                                                \
+                                                                                   \
+                                                                                   \
+  GDVKindName::const_iterator GDValue::kindName##CEnd() const                      \
+  {                                                                                \
+    xassertPrecondition(isKindName());                                             \
+    return kindName##Get().cend();                                                 \
+  }                                                                                \
+                                                                                   \
+                                                                                   \
+  GDVKindName::iterator GDValue::kindName##Begin()                                 \
+  {                                                                                \
+    xassertPrecondition(isKindName());                                             \
+    return kindName##GetMutable().begin();                                         \
+  }                                                                                \
+                                                                                   \
+                                                                                   \
+  GDVKindName::iterator GDValue::kindName##End()                                   \
+  {                                                                                \
+    xassertPrecondition(isKindName());                                             \
+    return kindName##GetMutable().end();                                           \
+  }
+
+
+DEFINE_GDV_TAGGABLE_CONTAINER_BEGIN_END(GDVMap, map, isMap)
 
 
 bool GDValue::mapContains(GDValue const &key) const
 {
   xassertPrecondition(isMap());
-  return m_value.m_map->find(key) != m_value.m_map->end();
+  return mapGet().find(key) != mapGet().end();
 }
 
 
 GDValue const &GDValue::mapGetValueAt(GDValue const &key) const
 {
   xassertPrecondition(isMap());
-  auto it = m_value.m_map->find(key);
-  xassertPrecondition(it != m_value.m_map->end());
+  auto it = mapGet().find(key);
+  xassertPrecondition(it != mapGet().end());
   return (*it).second;
 }
 
@@ -1166,8 +1340,8 @@ GDValue const &GDValue::mapGetValueAt(GDValue const &key) const
 GDValue &GDValue::mapGetValueAt(GDValue const &key)
 {
   xassertPrecondition(isMap());
-  auto it = m_value.m_map->find(key);
-  xassertPrecondition(it != m_value.m_map->end());
+  auto it = mapGetMutable().find(key);
+  xassertPrecondition(it != mapGetMutable().end());
   return (*it).second;
 }
 
@@ -1176,12 +1350,12 @@ void GDValue::mapSetValueAt(GDValue const &key, GDValue const &value)
 {
   xassertPrecondition(isMap());
 
-  auto it = m_value.m_map->find(key);
-  if (it != m_value.m_map->end()) {
+  auto it = mapGetMutable().find(key);
+  if (it != mapGetMutable().end()) {
     (*it).second = value;
   }
   else {
-    m_value.m_map->insert(std::make_pair(key, value));
+    mapGetMutable().insert(std::make_pair(key, value));
   }
 }
 
@@ -1190,12 +1364,12 @@ void GDValue::mapSetValueAt(GDValue &&key, GDValue &&value)
 {
   xassertPrecondition(isMap());
 
-  auto it = m_value.m_map->find(key);
-  if (it != m_value.m_map->end()) {
+  auto it = mapGetMutable().find(key);
+  if (it != mapGetMutable().end()) {
     (*it).second = std::move(value);
   }
   else {
-    m_value.m_map->emplace(
+    mapGetMutable().emplace(
       std::make_pair(std::move(key), std::move(value)));
   }
 }
@@ -1204,15 +1378,101 @@ void GDValue::mapSetValueAt(GDValue &&key, GDValue &&value)
 bool GDValue::mapRemoveKey(GDValue const &key)
 {
   xassertPrecondition(isMap());
-  return m_value.m_map->erase(key) != 0;
+  return mapGetMutable().erase(key) != 0;
 }
 
 
 void GDValue::mapClear()
 {
   xassertPrecondition(isMap());
-  return m_value.m_map->clear();
+  return mapGetMutable().clear();
 }
+
+
+// -------------------------- TaggedContainer --------------------------
+void GDValue::taggedContainerSetTag(GDVSymbol tag)
+{
+  switch (m_kind) {
+    default:
+      xfailurePrecondition("not a tagged container");
+
+    case GDVK_TAGGED_MAP:
+      m_value.m_taggedMap->m_tag = tag;
+      break;
+  }
+}
+
+
+GDVSymbol GDValue::taggedContainerGetTag() const
+{
+  switch (m_kind) {
+    default:
+      xfailurePrecondition("not a tagged container");
+
+    case GDVK_TAGGED_MAP:
+      return m_value.m_taggedMap->m_tag;
+  }
+}
+
+
+// ----------------------------- TaggedMap -----------------------------
+GDValue::GDValue(GDVTaggedMap const &tmap)
+  : INIT_AS_NULL()
+{
+  taggedMapSet(tmap);
+  ++s_ct_taggedMapCtorCopy;
+}
+
+
+GDValue::GDValue(GDVTaggedMap &&tmap)
+  : INIT_AS_NULL()
+{
+  taggedMapSet(std::move(tmap));
+  ++s_ct_taggedMapCtorMove;
+}
+
+
+void GDValue::taggedMapSet(GDVTaggedMap const &tmap)
+{
+  if (isTaggedMap()) {
+    taggedMapGetMutable() = tmap;
+  }
+  else {
+    reset();
+    m_kind = GDVK_TAGGED_MAP;
+    m_value.m_taggedMap = new GDVTaggedMap(tmap);
+  }
+}
+
+
+void GDValue::taggedMapSet(GDVTaggedMap &&tmap)
+{
+  if (isTaggedMap()) {
+    taggedMapGetMutable() = std::move(tmap);
+  }
+  else {
+    reset();
+    m_kind = GDVK_TAGGED_MAP;
+    m_value.m_taggedMap = new GDVTaggedMap(std::move(tmap));
+  }
+}
+
+
+GDVTaggedMap const &GDValue::taggedMapGet() const
+{
+  xassertPrecondition(isTaggedMap());
+  return *(m_value.m_taggedMap);
+}
+
+
+GDVTaggedMap &GDValue::taggedMapGetMutable()
+{
+  xassertPrecondition(isTaggedMap());
+  return *(m_value.m_taggedMap);
+}
+
+
+template class GDVTaggedContainer<GDVMap>;
 
 
 CLOSE_NAMESPACE(gdv)

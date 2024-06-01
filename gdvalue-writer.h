@@ -40,13 +40,15 @@ public:      // data
   GDValueWriteOptions m_options;
 
 private:     // methods
-  // Write 'container' using the specified open and closing delimiters.
+  // Write 'container' using the specified optional tag and open and
+  // closing delimiters.
   //
   // Return false if we are doing a speculative write and we exceeded
   // the available capacity.
   template <class CONTAINER>
   bool writeContainer(
     CONTAINER const &container,
+    char const * NULLABLE tagName,
     char const *openDelim,
     char const *closeDelim);
 
@@ -90,10 +92,7 @@ private:     // methods
   // Write a newline and then the current indentation.
   void startNewIndentedLine();
 
-  // True if 'value' is one of the kinds written by 'writeContainer'.
-  bool isContainer(GDValue const &value) const;
-
-  // Assuming 'isContainer' is true, return the number of characters in
+  // Assuming 'value.isContainer()', return the number of characters in
   // the opening delimiter used for its kind.
   int openDelimLength(GDValue const &value) const;
 
