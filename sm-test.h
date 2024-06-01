@@ -1,5 +1,6 @@
 // sm-test.h            see license.txt for copyright and terms of use
-// A few test-harness macros.
+// Various utilities for use in unit tests, especially those invoked by
+// `unit-test.cc`.
 
 #ifndef SMBASE_SM_TEST_H
 #define SMBASE_SM_TEST_H
@@ -8,13 +9,13 @@
 #include "dummy-printf.h"  // dummy_printf (provided for clients)
 #include "exc.h"           // smbase::XBase
 #include "nonport.h"       // getMilliseconds
+#include "sm-is-equal.h"   // smbase::is_equal
 #include "sm-iostream.h"   // cout
 #include "sm-macros.h"     // SM_PRINTF_ANNOTATION
 #include "str.h"           // stringb, string
 #include "xassert.h"       // xassert
 
 #include <iomanip>         // std::hex, std::dec
-#include <string_view>     // std::string_view [n]
 
 #include <stdio.h>         // printf
 
@@ -122,6 +123,8 @@ int main(int argc, char *argv[])                \
 
 
 // easy way to time a section of code
+//
+// TODO: This does not belong in his module.
 class TimedSection {
   char const *name;
   long start;
@@ -136,13 +139,16 @@ public:
 };
 
 
-// Throw an exception if `actual != expect`.
-template <class T>
-void expectEq(char const *label, T const &actual, T const &expect)
+// Throw an exception if `actual` does not equal `expect`.  This uses
+// `is_equal` to deal with the possibility that exactly one of the types
+// is a signed integral type.  According to that function, a negative
+// number is not equal to any non-negative number.
+template <typename TA, typename TE>
+void expectEq(char const *label, TA const &actual, TE const &expect)
 {
-  if (expect != actual) {
+  if (!smbase::is_equal(expect, actual)) {
     smbase::xmessage(stringb(
-      "While checking " << label << ":\n"
+      label << ": values are not equal:\n"
       "  actual: " << actual << "\n"
       "  expect: " << expect));
   }
@@ -154,26 +160,17 @@ void expectEq(char const *label, T const &actual, T const &expect)
 
 /* Variant for use when `actual` and `expect` are numbers.  This just
    applies unary `+` to them before checking.  That causes them to be
-   promoted to at least `int` if they are integral, which has two
-   benefits:
-
-   * If either is a `char` type (which `uint8_t` is), then it will
-     ensure they are printed as numbers rather than characters.
-
-   * It is more likely they will have the same type after promotion,
-     reducing the need for additional casts to make the `expectEq`
-     template happy.
+   promoted to at least `int` if they are integral, which ensures that
+   they will be printed as numbers even if one or both have a type based
+   on `char` (such as `uint8_t`).
 */
 #define EXPECT_EQ_NUMBERS(actual, expect) \
   expectEq(#actual, +(actual), +(expect)) /* user ; */
 
 
-// Overloads for some common cases that would otherwise either not work
-// due to template argument deduction failing due to a mismatch in
-// argument types, or else ambiguity in the conversions.
+// Overload for the `char*` case to ensure we compare string contents
+// rather than addresses.  Both arguments must be non-null.
 void expectEq(char const *label, char const *actual, char const *expect);
-void expectEq(char const *label, string const &actual, char const *expect);
-void expectEq(char const *label, std::string_view actual, char const *expect);
 
 
 // Check that 'hasSubstring(actual, expectSubstring)'.
