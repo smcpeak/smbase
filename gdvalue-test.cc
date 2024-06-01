@@ -733,16 +733,17 @@ static void testPrettyPrint(int width)
   DIAG("pretty print target width: " << width);
   printRuler(width);
 
+  GDValueWriteOptions options;
+  options.m_targetLineWidth = width;
+
   GDValue v(GDVSequence{1,2,3});
-  v.writeLines(tout, GDValueWriteOptions()
-                       .setTargetLineWidth(width));
+  v.writeLines(tout, options);
 
   GDValue m2(GDVMap{
                {GDVSymbol("a"), v},
                {v, v},
              });
-  m2.writeLines(tout, GDValueWriteOptions()
-                        .setTargetLineWidth(width));
+  m2.writeLines(tout, options);
 
   v = GDVSequence{
     1,
@@ -754,8 +755,7 @@ static void testPrettyPrint(int width)
       GDVSequence{2,3,4},
     }
   };
-  v.writeLines(tout, GDValueWriteOptions()
-                      .setTargetLineWidth(width));
+  v.writeLines(tout, options);
 
   GDValue m(GDVMap{
               { 8, 9},
@@ -763,8 +763,7 @@ static void testPrettyPrint(int width)
               {12,13},
               {14,15},
             });
-  m.writeLines(tout, GDValueWriteOptions()
-                      .setTargetLineWidth(width));
+  m.writeLines(tout, options);
 
   GDValue s(GDVSet{"eins", "zwei", "drei"});
 
@@ -775,13 +774,11 @@ static void testPrettyPrint(int width)
         {m,                     m},
         {GDVSymbol("counting"), s},
       });
-  v.writeLines(tout, GDValueWriteOptions()
-                      .setTargetLineWidth(width));
+  v.writeLines(tout, options);
 
   v = GDValue(GDVMap{ {1,2} });
   v = GDValue(GDVMap{ {v,s} });
-  v.writeLines(tout, GDValueWriteOptions()
-                      .setTargetLineWidth(width));
+  v.writeLines(tout, options);
 
   // Exercise printing where a map value is long but is not a container.
   // This is meant to barely not fit in 20 columns, thereby causing the
@@ -789,8 +786,27 @@ static void testPrettyPrint(int width)
   // not help here).
   v = GDValue(GDVMap{ {1, "long-ish value"},
                       {2, 3} });
-  v.writeLines(tout, GDValueWriteOptions()
-                      .setTargetLineWidth(width));
+  v.writeLines(tout, options);
+
+  v = GDVSequence{
+        GDVTaggedMap(GDVSymbol("tagName__"),
+                     {{1,2}, {3,4}}),
+        5
+      };
+  v.writeLines(tout, options);
+
+  v = GDVTaggedMap(
+        GDVSymbol("outer"), {
+          {
+            "x",
+            GDVTaggedMap(
+              GDVSymbol("inner12345678"), {
+                {1,2},
+                {3,4}
+              })
+          }
+        });
+  v.writeLines(tout, options);
 
   printRuler(width);
 }
