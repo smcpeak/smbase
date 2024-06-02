@@ -23,19 +23,15 @@ using namespace smbase;
 OPEN_NAMESPACE(gdv)
 
 
-IndexedStringTable *GDVSymbol::s_stringTable = nullptr;
-
-GDVSymbol::Index GDVSymbol::s_nullSymbolIndex = 0;
+IndexedStringTable * NULLABLE GDVSymbol::s_stringTable = nullptr;
 
 
 STATICDEF IndexedStringTable *GDVSymbol::getStringTable()
 {
   if (!s_stringTable) {
     s_stringTable = new IndexedStringTable;
-    s_nullSymbolIndex = s_stringTable->add("null");
-
-    // TODO: Maybe turn this into a symbolic constant?
-    xassert(s_nullSymbolIndex == 0);
+    Index i = s_stringTable->add("null");
+    xassert(i == s_nullSymbolIndex);
   }
   return s_stringTable;
 }
@@ -112,15 +108,6 @@ STATICDEF bool GDVSymbol::validIndex(Index i)
 STATICDEF int GDVSymbol::compareIndices(Index a, Index b)
 {
   return getStringTable()->compareIndexedStrings(a, b);
-}
-
-
-STATICDEF GDVSymbol::Index GDVSymbol::getNullSymbolIndex()
-{
-  getStringTable();
-
-  // This is always zero.
-  return s_nullSymbolIndex;
 }
 
 

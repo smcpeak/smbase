@@ -176,7 +176,8 @@ private:     // class data
   // to safely transport indices across the API.  Inside the
   // implementation, it is more convenient to work with indices
   // directly.
-  static GDVSymbol::Index s_symbolIndex_null;
+  static inline constexpr GDVSymbol::Index s_symbolIndex_null =
+    GDVSymbol::s_nullSymbolIndex;
   static GDVSymbol::Index s_symbolIndex_false;
   static GDVSymbol::Index s_symbolIndex_true;
 

@@ -32,6 +32,10 @@ public:      // types
   // Type of string table indices.
   using Index = smbase::IndexedStringTable::Index;
 
+  // The index of the `null` symbol.  It is guaranteed to be zero
+  // because it is always the first symbol inserted.
+  static inline constexpr Index s_nullSymbolIndex = 0;
+
 private:     // class data
   // Table of strings to which `m_symbolIndex` refers.  This table is
   // allocated the first time a symbol is created and lives for the
@@ -39,11 +43,7 @@ private:     // class data
   // can control the initialization order, and in particular, ensure
   // that a symbol can be created with program lifetime since I can
   // ensure the table gets built in time.
-  static smbase::IndexedStringTable *s_stringTable;
-
-  // Index of the string "null" in `s_stringTable`.  This allows the
-  // default constructor to avoid looking it up.
-  static Index s_nullSymbolIndex;
+  static smbase::IndexedStringTable * NULLABLE s_stringTable;
 
 private:     // instance data
   // Index into `m_stringTable`.
@@ -57,8 +57,12 @@ public:      // methods
   ~GDVSymbol() = default;
 
   // Null symbol, i.e., a symbol whose name is "null".
+  //
+  // This does not initialize `s_stringTable`.  The idea is the other
+  // methods will make it when needed, and we do not need it just to
+  // know the index of `null`.
   GDVSymbol()
-    : m_symbolIndex(getNullSymbolIndex())
+    : m_symbolIndex(s_nullSymbolIndex)
   {}
 
   // Convert string to corresponding symbol.  This makes a copy of the
@@ -130,8 +134,11 @@ public:      // methods
   static int compareIndices(Index a, Index b);
 
   // Get the null symbol index.  This is equivalent to
-  // `lookupSymbolIndex("null")` but may be faster.
-  static Index getNullSymbolIndex();
+  // `lookupSymbolIndex("null")` except the latter will also ensure that
+  // `s_stringTable` is initialized (which should not be a visible
+  // difference in the public API).
+  static constexpr Index getNullSymbolIndex()
+    { return s_nullSymbolIndex; }
 
   // Exchange names with 'obj'.
   void swap(GDVSymbol &obj);

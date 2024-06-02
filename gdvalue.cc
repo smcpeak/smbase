@@ -139,7 +139,6 @@ DEFINE_ENUMERATION_TO_STRING_OR(
 
 
 // ------------------------ GDValue static data ------------------------
-GDVSymbol::Index GDValue::s_symbolIndex_null  = GDVSymbol::lookupSymbolIndex("null");
 GDVSymbol::Index GDValue::s_symbolIndex_false = GDVSymbol::lookupSymbolIndex("false");;
 GDVSymbol::Index GDValue::s_symbolIndex_true  = GDVSymbol::lookupSymbolIndex("true");;
 
