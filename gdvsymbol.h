@@ -67,8 +67,6 @@ public:      // methods
 
   // Convert string to corresponding symbol.  This makes a copy of the
   // string in `m_stringTable` if it is not already there.
-  //
-  // Requires `validSymbolName(s)`.
   explicit GDVSymbol(std::string_view const &s);
 
   // Create a `GDVSymbol` that stores `symbolIndex` directly.  The
@@ -112,18 +110,14 @@ public:      // methods
   // view is valid until the next symbol lookup is performed.
   std::string_view getSymbolName() const;
 
-  // True if `name` conforms to the syntactic requirements of a symbol
-  // name.  Specifically, it must match the regex
+  // True if `name` conforms to the syntactic requirements of an
+  // unquoted symbol name.  Specifically, it must match the regex
   /// "[a-zA-Z_][a-zA-Z_0-9]*".
-  //
-  // TODO: Remove this.
-  static bool validSymbolName(std::string_view name);
+  static bool validUnquotedSymbolName(std::string_view name);
 
   // Pass 'name' through the symbol table to get its index.  This is
   // safe to call in a global variable initializer because it takes care
   // of initializing prerequisites when necessary.
-  //
-  // Requires `validSymbolName(name)`.
   static Index lookupSymbolIndex(std::string_view name);
 
   // True if `i` is a valid index.
@@ -143,9 +137,11 @@ public:      // methods
   // Exchange names with 'obj'.
   void swap(GDVSymbol &obj);
 
-  // Write the symbol to `os`.  Currently, this is just the name without
-  // any form of quoting or escaping.
-  void write(std::ostream &os) const;
+  // Write the symbol to `os`.  If `forceQuotes` is true or the name
+  // does not satisfy `validUnquotedSymbolName`, write the name enclosed
+  // in backticks with special characters escaped using GDVN backslash
+  // sequences.
+  void write(std::ostream &os, bool forceQuotes=false) const;
   friend std::ostream &operator<<(std::ostream &os, GDVSymbol const &obj)
     { obj.write(os); return os; }
 

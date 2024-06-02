@@ -163,8 +163,26 @@ static void testSymbol()
   dSym2.reset();
   xassert(dSym2.isNull());
   xassert(dSym2.getKind() == GDVK_SYMBOL);
-
   testSerializeRoundtrip(dSym2);
+
+  GDValue empty(GDVSymbol(""));
+  EXPECT_EQ(empty.asString(), "``");
+  EXPECT_EQ(empty.symbolGetName(), "");
+  EXPECT_EQ(empty.symbolGet().size(), 0);
+  testSerializeRoundtrip(empty);
+
+  std::string hasNulStr("has\0nul", 7);
+  GDValue hasNul{GDVSymbol(hasNulStr)};
+  EXPECT_EQ(hasNul.asString(), "`has\\u0000nul`");
+  EXPECT_EQ(hasNul.symbolGetName(), hasNulStr);
+  EXPECT_EQ(hasNul.symbolGet().size(), 7);
+  testSerializeRoundtrip(hasNul);
+
+  GDValue hasBacktick(GDVSymbol("has`back`tick"));
+  EXPECT_EQ(hasBacktick.asString(), "`has\\`back\\`tick`");
+  EXPECT_EQ(hasBacktick.symbolGetName(), "has`back`tick");
+  EXPECT_EQ(hasBacktick.symbolGet().size(), 13);
+  testSerializeRoundtrip(hasBacktick);
 }
 
 
@@ -695,6 +713,15 @@ static void testTaggedMap()
   // map.
   v.taggedMapSet(tm2);
   EXPECT_EQ(v.asString(), "_{\"a\":\"b\"}");
+  testSerializeRoundtrip(v);
+
+  v.taggedContainerSetTag(GDVSymbol(""));
+  EXPECT_EQ(v.asString(), "``{\"a\":\"b\"}");
+  testSerializeRoundtrip(v);
+
+  v.taggedContainerSetTag(GDVSymbol("some{crazy}char[act]ers"));
+  EXPECT_EQ(v.asString(), "`some{crazy}char[act]ers`{\"a\":\"b\"}");
+  testSerializeRoundtrip(v);
 }
 
 
@@ -1076,15 +1103,24 @@ static void testSyntaxErrors()
     testOneErrorSubstr("{1:2 {4:4}:4 11:2 {4:4}:5}", 1, 19, "Duplicate map key: {4:4}");
   }
 
-  // readNextDQString
+  // readNextQuotedStringContents
   {
-    // int c = readNotEOFCharOrErr("looking for closing '\"' in double-quoted string");
+    // int c = readNotEOFCharOrErr(
+    //   delim == '"'?
+    //     "looking for closing '\"' in double-quoted string" :
+    //     "looking for closing '`' in backtick-quoted symbol");
     testOneErrorRegex("\"", 1, 2, "end of file.*looking for closing '\"'");
     testOneErrorRegex("\"\\\"", 1, 4, "end of file.*looking for closing '\"'");
     testOneErrorRegex("\"\n", 2, 1, "end of file.*looking for closing '\"'");
+    //
+    testOneErrorRegex("`", 1, 2, "end of file.*looking for closing '`'");
+    testOneErrorRegex("`\\`", 1, 4, "end of file.*looking for closing '`'");
+    testOneErrorRegex("`\n", 2, 1, "end of file.*looking for closing '`'");
 
-    // c = readNotEOFCharOrErr("looking for character after '\\' in double-quoted string");
-    testOneErrorRegex("\"\\", 1, 3, "end of file.*looking for character after '\\\\'");
+    // c = readNotEOFCharOrErr(lookingForCharAfterBackslash);
+    testOneErrorRegex("\"\\", 1, 3, "end of file.*looking for character after '\\\\' in double");
+    //
+    testOneErrorRegex("`\\", 1, 3, "end of file.*looking for character after '\\\\' in backtick");
 
     // readCharOrErr('\\', "expecting '\\'");
     testOneErrorRegex("\"\\ud800", 1, 8, "After high surrogate.*uD800.*end of file.*expecting '\\\\'");
@@ -1102,8 +1138,10 @@ static void testSyntaxErrors()
     //   "Found low surrogate \"\\u%04X\" that is not preceded by "
     testOneErrorRegex("\"\\uDEAD", 1, 7, "Found low surrogate.*uDEAD.*not preceded");
 
-    // unexpectedCharErr(c, "looking for the character after a '\\' in a double-quoted string");
-    testOneErrorRegex("\"\\z", 1, 3, "'z'.*looking for the character after a '\\\\'");
+    // unexpectedCharErr(c, lookingForCharAfterBackslash);
+    testOneErrorRegex("\"\\z", 1, 3, "'z'.*looking for character after '\\\\' in double");
+    //
+    testOneErrorRegex("`\\z", 1, 3, "'z'.*looking for character after '\\\\' in backtick");
   }
 
   // readNextU4Escape

@@ -431,6 +431,10 @@ public:      // methods
 
   GDVSymbol symbolGet() const;
 
+  // Get a view onto the symbol name that is valid until a symbol lookup
+  // happens.
+  std::string_view symbolGetName() const;
+
 
   // ---- Integer ----
   // The GDValue ctors are safe to use implicitly because they are

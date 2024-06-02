@@ -7,6 +7,7 @@
 
 // this dir
 #include "codepoint.h"                 // isCIdentifierCharacter, isCIdentifierStartCharacter
+#include "gdvalue-writer.h"            // GDValueWriter::writeOneQuotedStringChar
 #include "sm-macros.h"                 // PRETEND_USED, OPEN_NAMESPACE
 #include "stringb.h"                   // stringb
 #include "indexed-string-table.h"      // smbase::IndexedStringTable
@@ -68,7 +69,7 @@ std::string_view GDVSymbol::getSymbolName() const
 }
 
 
-STATICDEF bool GDVSymbol::validSymbolName(std::string_view name)
+STATICDEF bool GDVSymbol::validUnquotedSymbolName(std::string_view name)
 {
   if (name.empty()) {
     return false;
@@ -94,7 +95,6 @@ STATICDEF bool GDVSymbol::validSymbolName(std::string_view name)
 STATICDEF GDVSymbol::Index GDVSymbol::lookupSymbolIndex(
   std::string_view name)
 {
-  xassertPrecondition(validSymbolName(name));
   return getStringTable()->add(name);
 }
 
@@ -118,9 +118,19 @@ void GDVSymbol::swap(GDVSymbol &obj)
 }
 
 
-void GDVSymbol::write(std::ostream &os) const
+void GDVSymbol::write(std::ostream &os, bool forceQuotes) const
 {
-  os << getSymbolName();
+  std::string_view name = getSymbolName();
+  if (!forceQuotes && validUnquotedSymbolName(name)) {
+    os << name;
+  }
+  else {
+    os << '`';
+    for (char c : name) {
+      GDValueWriter::writeOneQuotedStringChar(os, c, '`');
+    }
+    os << '`';
+  }
 }
 
 

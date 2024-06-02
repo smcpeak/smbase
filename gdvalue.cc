@@ -792,6 +792,12 @@ GDVSymbol GDValue::symbolGet() const
 }
 
 
+std::string_view GDValue::symbolGetName() const
+{
+  return symbolGet().getSymbolName();
+}
+
+
 // ------------------------------ Integer ------------------------------
 GDValue::GDValue(GDVInteger const &i)
   : INIT_AS_NULL()

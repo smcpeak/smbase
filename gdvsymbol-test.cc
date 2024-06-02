@@ -42,13 +42,13 @@ void test_gdvsymbol()
   EXPECT_EQ(s1, s3);
   EXPECT_EQ(compare(s1, s3), 0);
 
-  xassert(!GDVSymbol::validSymbolName(""));
-  xassert(GDVSymbol::validSymbolName("_"));
-  xassert(GDVSymbol::validSymbolName("_9"));
-  xassert(!GDVSymbol::validSymbolName("9"));
-  xassert(GDVSymbol::validSymbolName("a9"));
-  xassert(!GDVSymbol::validSymbolName("a!"));
-  xassert(!GDVSymbol::validSymbolName("!"));
+  xassert(!GDVSymbol::validUnquotedSymbolName(""));
+  xassert(GDVSymbol::validUnquotedSymbolName("_"));
+  xassert(GDVSymbol::validUnquotedSymbolName("_9"));
+  xassert(!GDVSymbol::validUnquotedSymbolName("9"));
+  xassert(GDVSymbol::validUnquotedSymbolName("a9"));
+  xassert(!GDVSymbol::validUnquotedSymbolName("a!"));
+  xassert(!GDVSymbol::validUnquotedSymbolName("!"));
 }
 
 

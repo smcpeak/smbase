@@ -119,6 +119,10 @@ protected:   // methods
   // put them into a string.  Return after consuming the final '"'.
   GDValue readNextDQString();
 
+  // Having seen and consumed `delim`, read the following characters and
+  // put them into a string.  Return after consuming the final `delim`.
+  std::string readNextQuotedStringContents(int delim);
+
   // Having seen and consumed "\u", read the following four hexadecimal
   // characters and decode them as a UTF-16 code unit.
   int readNextU4Escape();

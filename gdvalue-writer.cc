@@ -219,12 +219,19 @@ bool GDValueWriter::tryWrite(GDValue const &value,
       os() << value.smallIntegerGet();
       break;
 
-    case GDVK_SYMBOL:
-      os() << value.symbolGet().getSymbolName();
+    case GDVK_SYMBOL: {
+      std::string_view name = value.symbolGetName();
+      if (GDVSymbol::validUnquotedSymbolName(name)) {
+        os() << name;
+      }
+      else {
+        return writeQuotedString(value.symbolGetName(), '`');
+      }
       break;
+    }
 
     case GDVK_STRING:
-      return writeDQString(value.stringGet());
+      return writeQuotedString(value.stringGet(), '"');
 
     case GDVK_SEQUENCE:
       return writeContainer(
@@ -381,62 +388,19 @@ bool GDValueWriter::tryWrite(GDVMapEntry const &pair,
 }
 
 
-bool GDValueWriter::writeDQString(GDVString const &str)
+bool GDValueWriter::writeQuotedString(std::string_view str, char delim)
 {
-  os() << '"';
+  os() << delim;
 
   for (char c : str) {
-    switch (c) {
-      case '"':
-        os() << "\\\"";
-        break;
-
-      case '\\':
-        os() << "\\\\";
-        break;
-
-      case '\b':
-        os() << "\\b";
-        break;
-
-      case '\f':
-        os() << "\\f";
-        break;
-
-      case '\n':
-        os() << "\\n";
-        break;
-
-      case '\r':
-        os() << "\\r";
-        break;
-
-      case '\t':
-        os() << "\\t";
-        break;
-
-      default:
-        if ((unsigned char)c < 0x20) {
-          os() << stringf("\\u%04X", (int)(unsigned char)c);
-        }
-        else {
-          // I'm not using numeric escapes for anything except
-          // non-printable characters since, ideally, the producer and
-          // consumer both speak UTF-8 fluently.
-          //
-          // Note that UTF-8 code units will be written one at a time
-          // by this line.
-          os() << c;
-        }
-        break;
-    }
+    writeOneQuotedStringChar(os(), c, delim);
 
     if (exceededSpeculativeCapacity()) {
       return false;
     }
   }
 
-  os() << '"';
+  os() << delim;
   if (exceededSpeculativeCapacity()) {
     return false;
   }
@@ -518,6 +482,63 @@ void GDValueWriter::write(GDValue const &value)
   // will always return true.
   bool res = tryWrite(value);
   xassert(res);
+}
+
+
+STATICDEF void GDValueWriter::writeOneQuotedStringChar(
+  std::ostream &os,
+  char c,
+  char delim)
+{
+  switch (c) {
+    case '"':
+    case '`':
+      // Quote a delimiter only if it is the one we are using.
+      if (c == delim) {
+        os << "\\";
+      }
+      os << c;
+      break;
+
+    case '\\':
+      os << "\\\\";
+      break;
+
+    case '\b':
+      os << "\\b";
+      break;
+
+    case '\f':
+      os << "\\f";
+      break;
+
+    case '\n':
+      os << "\\n";
+      break;
+
+    case '\r':
+      os << "\\r";
+      break;
+
+    case '\t':
+      os << "\\t";
+      break;
+
+    default:
+      if ((unsigned char)c < 0x20) {
+        os << stringf("\\u%04X", (int)(unsigned char)c);
+      }
+      else {
+        // I'm not using numeric escapes for anything except
+        // non-printable characters since, ideally, the producer and
+        // consumer both speak UTF-8 fluently.
+        //
+        // Note that UTF-8 code units will be written one at a time
+        // by this line.
+        os << c;
+      }
+      break;
+  }
 }
 
 

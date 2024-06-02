@@ -79,9 +79,9 @@ private:     // methods
   // Same as 'tryWrite(GDValue)', but for 'GDVMapEntry'.
   bool tryWrite(GDVMapEntry const &entry, bool forceLineBreaks = false);
 
-  // Write 'str'.  Return false if we are doing a speculative write and
-  // we exceed the available capacity.
-  bool writeDQString(GDVString const &str);
+  // Write `str` surrounded by `delim`.  Return false if we are doing a
+  // speculative write and we exceed the available capacity.
+  bool writeQuotedString(std::string_view str, char delim);
 
   // True if we are performing a speculative write, and while doing so,
   // the number of written characters exceeds what is available.
@@ -111,6 +111,14 @@ public:      // methods
 
   // Write 'value' to the output stream at the current indentation level.
   void write(GDValue const &value);
+
+  // Write `c` to `os` as part of a quoted string bounded by `delim`.
+  //
+  // This is public so that `GDVSymbol` can use it in its own printer.
+  static void writeOneQuotedStringChar(
+    std::ostream &os,
+    char c,
+    char delim);
 };
 
 

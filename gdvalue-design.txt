@@ -48,15 +48,10 @@ Data model
 The core concept of a Generalized Data Value is the "value".  A value is
 one of the following:
 
-  * Symbol: A non-empty finite sequence of characters conforming to the
-    regex "[a-zA-Z_][a-zA-Z_0-9]+".  Symbols are distinct from strings,
-    and intended to be names of entities or concepts with semantics
-    specified elsewhere, rather than having intrinsic meaning.
-
-    * TODO: Generalize symbols.  Allow all unicode letters at least.
-      Perhaps dots too.  What is the standard used in certificates that
-      puts everything into one enormous concept hierarchy?  Symbols
-      should be able to represent those.
+  * Symbol: A (possibly-empty) finite sequence of Unicode code points.
+    Symbols are distinct from strings, and intended to be names of
+    entities or concepts with semantics specified elsewhere, rather than
+    having intrinsic meaning.
 
   * Integer: Positive or negative integer, of unbounded but finite
     magnitude.  There is only one zero value (not both a positive and
@@ -100,6 +95,51 @@ operations.
 
 Data model rationale
 ====================
+
+Symbols
+-------
+
+The inclusion of symbols distinct from strings is done to allow a
+distinction between "data", the main thing being described and
+manipulated, and "metadata", information related to the interpretation
+of that data or the mechanism by which it is processed.  In the JSON
+data model, these are conflated.  Consider:
+
+  {
+    "type": "diagram",
+    "name": "boxes",
+    "shapes": [],
+    "customColors": {
+      "red": "rgb(255,0,0)"
+    }
+  }
+
+In the preceding, "name" is metadata.  It has extrinsic meaning, agreed
+upon between producer and consumder.  In contrast, "boxes" is data with
+intrinsic meaning.  It is a name assigned by the user; the program
+does not treat it specially.
+
+But then, in "customColors", we have a map where both the key and the
+value are data.  The user of this hypothetical program can create an
+arbitrary collection of custom color names with assigned RGB values;
+"red" is not special.
+
+In JSON, there is no distinction between strings used as data and those
+used as metadata.  But of course real people find this distinction
+important, so JSON is somewhat commonly used in a relaxed form that
+allows unquoted keys, and people use unquoted keys to convey metadata.
+
+Rather than forcing people to bend the rules to express their intent,
+the GDV data model explicitly distinguishes strings from symbols, giving
+them different syntax.
+
+The choice to allow symbols to be arbitrary sequences of code points,
+including the empty sequence, reflects that the meaning of those symbols
+is *not* prescribed by the GDV data model.  It is up to the person
+producing or consuming the data to decide what symbols mean, so the
+model allows maximum flexibility.  Of course, in most situations it is
+wise to select symbols that are convenient for humans to read and write,
+but the data model does not insist on that.
 
 
 The name "sequence"
@@ -227,17 +267,20 @@ GDVN is a textual format, regarded as a sequence of Unicode code points.
 In principle any encoding can be used, but in practice UTF-8 encoding is
 strongly preferred.
 
-Symbols use the regex: [a-zA-Z_][a-zA-Z0-9_]
+Symbols have two forms, unquoted and quoted:
 
-  This includes symbols that are expected to have ubiquitous special
-  meaning such as "null", "true", and "false".  The syntax simply treats
-  them uniformly as symbols.
+  * An unquoted symbol conforms to the regex: [a-zA-Z_][a-zA-Z0-9_]
 
-  TODO: Ideally I would extend this to any unicode sequence that has
-  similar starting and continuation conditions.  Actually, now I'm
-  thinking to drop the restriction on what symbols are, letting them be
-  any string (including empty), and using backticks to enclose them if
-  not of a "simple" form.
+    This includes symbols that are expected to have ubiquitous special
+    meaning such as "null", "true", and "false".  The syntax simply
+    treats them uniformly as symbols.
+
+    TODO: I would like to allow arbitrary Unicode "letters" and
+    "digits" in the unquoted form.
+
+  * A quoted symbol begins and ends with backtick '`', and in between
+    has the same set of escape codes as double-quoted strings (see
+    below).
 
 Integers have the form <sign?><radix?><digits> where:
 
@@ -256,7 +299,7 @@ Integers have the form <sign?><radix?><digits> where:
 
 TODO: Specify a form for floating-point numbers.
 
-A double-quoted string is as in JSON:
+A double-quoted string is as in JSON, with a few extensions:
 
   * It begins and ends with '"'.
 
@@ -275,6 +318,8 @@ A double-quoted string is as in JSON:
     * \n     LineFeed (dec 10)
     * \r     CarriageReturn (dec 13)
     * \t     Tab (dec 9)
+    * \'     Single quote   # extension of JSON
+    * \`     Backtick       # extension of JSON
 
   * \uNNNN where N are hex to denote UTF-16 code unit in [0,0xFFFF].
     If the code unit is a surrogate element, it must be part of a
@@ -416,6 +461,11 @@ allows additional symbols such as "NaN", "PInf", and "NInf" to be used
 as alternatives to ordinary floating point numbers once floats are
 added.
 
+Quoted symbols are enclosed in backticks because this is becoming a
+common way to write symbol-like entities in general text due to the
+influence of Markdown.  Single-quote remain unused (and hence reserved)
+for possible future extension of the format.
+
 The notation for integers allows radix specifiers (unlike JSON) in part
 to allow large integers to be expressed as hexadecimal, which is much
 more efficient since conversion from an internal binary representation
@@ -433,6 +483,12 @@ Within strings, unknown baskslash codes are disallowed in order to
 reserve them for possible future use.  If instead, say, "\c" just meant
 "c", then there would be no room to expand without breaking backward
 compatibility.
+
+GDVN adds "\'" and "\`" codes that JSON does not have.  The latter is of
+course to ensure the escape codes are uniform inside strings and
+symbols.  The former anticipates possibly using single-quoted strings
+for some future purpose, and acknowledges that it would be surprising if
+"\'" were ever given a meaning *other than* single-quote.
 
 Using doubled braces for sets is imperfect, but using single braces is
 bad because then an empty set could not be distinguished from an empty

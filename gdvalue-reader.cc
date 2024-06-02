@@ -396,23 +396,39 @@ GDValue GDValueReader::readNextMap()
 
 GDValue GDValueReader::readNextDQString()
 {
+  return GDValue(readNextQuotedStringContents('"'));
+}
+
+
+std::string GDValueReader::readNextQuotedStringContents(int delim)
+{
   std::ostringstream oss;
   UTF8Writer utf8Writer(oss);
 
-  while (true) {
-    int c = readNotEOFCharOrErr("looking for closing '\"' in double-quoted string");
+  char const *lookingForCharAfterBackslash =
+    delim == '"'?
+      "looking for character after '\\' in double-quoted string" :
+      "looking for character after '\\' in backtick-quoted symbol";
 
-    if (c == '"') {
+  while (true) {
+    int c = readNotEOFCharOrErr(
+      delim == '"'?
+        "looking for closing '\"' in double-quoted string" :
+        "looking for closing '`' in backtick-quoted symbol");
+
+    if (c == delim) {
       break;
     }
 
     if (c == '\\') {
-      c = readNotEOFCharOrErr("looking for character after '\\' in double-quoted string");
+      c = readNotEOFCharOrErr(lookingForCharAfterBackslash);
 
       // Interpret what follows the backslash.
       switch (c) {
         // Characters that denote themselves.
         case '"':
+        case '\'':
+        case '`':
         case '\\':
         case '/':
           oss << (char)c;
@@ -481,7 +497,7 @@ GDValue GDValueReader::readNextDQString()
         }
 
         default:
-          unexpectedCharErr(c, "looking for the character after a '\\' in a double-quoted string");
+          unexpectedCharErr(c, lookingForCharAfterBackslash);
           break;
       } // switch(c) after backslash
     } // if(backslash)
@@ -492,7 +508,7 @@ GDValue GDValueReader::readNextDQString()
     }
   } // while(true)
 
-  return GDValue(oss.str());
+  return oss.str();
 }
 
 
@@ -587,22 +603,33 @@ GDValue GDValueReader::readNextInteger(int const firstChar)
 
 GDValue GDValueReader::readNextSymbolOrTaggedContainer(int firstChar)
 {
-  std::vector<char> letters;
-  letters.push_back((char)firstChar);
+  std::string symName;
+  if (firstChar == '`') {
+    symName = readNextQuotedStringContents(firstChar);
+  }
+  else {
+    // Read an unquoted symbol name.
 
-  int c;
-  while (true) {
-    c = readChar();
-    if (!isCIdentifierCharacter(c)) {
-      break;
+    // We will accumulate the letters of the symbol here.
+    std::vector<char> letters;
+    letters.push_back((char)firstChar);
+
+    int c;
+    while (true) {
+      c = readChar();
+      if (!isCIdentifierCharacter(c)) {
+        putback(c);
+        break;
+      }
+
+      letters.push_back((char)c);
     }
 
-    letters.push_back((char)c);
+    symName = std::string(letters.begin(), letters.end());
   }
-
-  std::string symName(letters.begin(), letters.end());
   GDVSymbol symbol(symName);
 
+  int c = readChar();
   if (c == '{') {
     // Tagged map or set.
     c = readNotEOFCharOrErr(
@@ -683,7 +710,7 @@ std::optional<GDValue> GDValueReader::readNextValue()
         return std::make_optional(readNextInteger(c));
 
       default:
-        if (isLetter(c) || c == '_') {
+        if (isLetter(c) || c == '_' || c == '`') {
           return std::make_optional(readNextSymbolOrTaggedContainer(c));
         }
         else {
