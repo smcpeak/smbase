@@ -8,6 +8,8 @@
 #ifndef SMBASE_INDEXED_STRING_TABLE_H
 #define SMBASE_INDEXED_STRING_TABLE_H
 
+#include "indexed-string-table-fwd.h"  // fwds for this module
+
 #include "hashtbl.h"                   // HashTable
 #include "rack-allocator.h"            // smbase::RackAllocator
 #include "sm-macros.h"                 // OPEN_NAMESPACE, NO_OBJECT_COPIES
