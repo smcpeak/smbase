@@ -8,7 +8,6 @@
 #include "dev-warning.h"   // g_abortUponDevWarning
 #include "dummy-printf.h"  // dummy_printf (provided for clients)
 #include "exc.h"           // smbase::XBase
-#include "nonport.h"       // getMilliseconds
 #include "sm-is-equal.h"   // smbase::is_equal
 #include "sm-iostream.h"   // cout
 #include "sm-macros.h"     // SM_PRINTF_ANNOTATION
@@ -122,21 +121,9 @@ int main(int argc, char *argv[])                \
   }
 
 
-// easy way to time a section of code
-//
-// TODO: This does not belong in his module.
-class TimedSection {
-  char const *name;
-  long start;
-
-public:
-  TimedSection(char const *n) : name(n) {
-    start = getMilliseconds();
-  }
-  ~TimedSection() {
-    cout << name << ": " << (getMilliseconds() - start) << " msecs\n";
-  }
-};
+// 2024-06-01: There was a class called `TimedSection` here but I
+// removed it because it did not belong in this file and was not being
+// used.
 
 
 // Throw an exception if `actual` does not equal `expect`.  This uses
