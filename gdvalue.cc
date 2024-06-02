@@ -139,9 +139,9 @@ DEFINE_ENUMERATION_TO_STRING_OR(
 
 
 // ------------------------ GDValue static data ------------------------
-char const *GDValue::s_symbolName_null  = GDVSymbol::lookupSymbolName("null");
-char const *GDValue::s_symbolName_false = GDVSymbol::lookupSymbolName("false");
-char const *GDValue::s_symbolName_true  = GDVSymbol::lookupSymbolName("true");
+GDVSymbol::Index GDValue::s_symbolIndex_null  = GDVSymbol::lookupSymbolIndex("null");
+GDVSymbol::Index GDValue::s_symbolIndex_false = GDVSymbol::lookupSymbolIndex("false");;
+GDVSymbol::Index GDValue::s_symbolIndex_true  = GDVSymbol::lookupSymbolIndex("true");;
 
 unsigned GDValue::s_ct_ctorDefault = 0;
 unsigned GDValue::s_ct_dtor = 0;
@@ -190,7 +190,7 @@ void GDValue::resetSelfAndSwapWith(GDValue &obj) noexcept
       xfailureInvariant("invalid kind");
 
     case GDVK_SYMBOL:
-      SWAP_MEMBER(m_symbolName);
+      SWAP_MEMBER(m_symbolIndex);
       break;
 
     case GDVK_INTEGER:
@@ -232,7 +232,7 @@ void GDValue::resetSelfAndSwapWith(GDValue &obj) noexcept
 // In a ctor, initialize fields for the null value.
 #define INIT_AS_NULL() \
     m_kind(GDVK_SYMBOL), \
-    m_value(s_symbolName_null)
+    m_value(s_symbolIndex_null)
 
 
 GDValue::GDValue() noexcept
@@ -330,7 +330,7 @@ GDValue &GDValue::operator=(GDValue &&obj)
 
 GDValue::GDValue(GDValueKind kind)
   : m_kind(kind),
-    m_value(s_symbolName_null)
+    m_value(s_symbolIndex_null)
 {
   switch (m_kind) {
     default:
@@ -338,8 +338,7 @@ GDValue::GDValue(GDValueKind kind)
 
     case GDVK_SYMBOL:
       // Redundant, but for clarity.
-      m_value.m_symbolName = s_symbolName_null;
-      xassert(m_value.m_symbolName != nullptr);
+      m_value.m_symbolIndex = s_symbolIndex_null;
       break;
 
     case GDVK_INTEGER:
@@ -477,7 +476,8 @@ int compare(GDValue const &a, GDValue const &b)
       xfailureInvariant("invalid kind");
 
     case GDVK_SYMBOL:
-      return std::strcmp(a.m_value.m_symbolName, b.m_value.m_symbolName);
+      return GDVSymbol::compareIndices(
+        a.m_value.m_symbolIndex, b.m_value.m_symbolIndex);
 
     case GDVK_INTEGER:
       return DEEP_COMPARE_PTR_MEMBERS(m_value.m_integer);
@@ -568,7 +568,7 @@ void GDValue::reset()
   }
 
   m_kind = GDVK_SYMBOL;
-  m_value.m_symbolName = s_symbolName_null;
+  m_value.m_symbolIndex = s_symbolIndex_null;
 }
 
 
@@ -588,7 +588,7 @@ void GDValue::selfCheck() const
       xfailureInvariant("bad kind");
 
     case GDVK_SYMBOL:
-      xassertInvariant(m_value.m_symbolName != nullptr);
+      xassertInvariant(GDVSymbol::validIndex(m_value.m_symbolIndex));
       break;
 
     case GDVK_INTEGER:
@@ -712,7 +712,7 @@ STATICDEF GDValue GDValue::readFromFile(std::string const &fileName)
 bool GDValue::isNull() const
 {
   if (m_kind == GDVK_SYMBOL) {
-    return m_value.m_symbolName == s_symbolName_null;
+    return m_value.m_symbolIndex == s_symbolIndex_null;
   }
   return false;
 }
@@ -722,8 +722,8 @@ bool GDValue::isNull() const
 bool GDValue::isBool() const
 {
   if (m_kind == GDVK_SYMBOL) {
-    return m_value.m_symbolName == s_symbolName_true ||
-           m_value.m_symbolName == s_symbolName_false;
+    return m_value.m_symbolIndex == s_symbolIndex_true ||
+           m_value.m_symbolIndex == s_symbolIndex_false;
   }
   return false;
 }
@@ -742,9 +742,11 @@ void GDValue::boolSet(bool b)
 {
   reset();
   m_kind = GDVK_SYMBOL;
-  m_value.m_symbolName =
-    b? s_symbolName_true : s_symbolName_false;
-  xassert(m_value.m_symbolName != nullptr);
+  m_value.m_symbolIndex =
+    b? s_symbolIndex_true : s_symbolIndex_false;
+
+  // I expect 0 to be the null symbol.
+  xassert(m_value.m_symbolIndex != 0);
 }
 
 
@@ -752,14 +754,14 @@ bool GDValue::boolGet() const
 {
   xassertPrecondition(m_kind == GDVK_SYMBOL);
 
-  if (m_value.m_symbolName == s_symbolName_true) {
+  if (m_value.m_symbolIndex == s_symbolIndex_true) {
     return true;
   }
-  else if (m_value.m_symbolName == s_symbolName_false) {
+  else if (m_value.m_symbolIndex == s_symbolIndex_false) {
     return false;
   }
   else {
-    xfailure("not one of the boolean symbols");
+    xfailurePrecondition("value is not a boolean");
     return false;  // Not reached.
   }
 }
@@ -779,7 +781,7 @@ void GDValue::symbolSet(GDVSymbol sym)
 {
   reset();
 
-  m_value.m_symbolName = sym.getSymbolName();
+  m_value.m_symbolIndex = sym.getSymbolIndex();
   m_kind = GDVK_SYMBOL;
 }
 
@@ -787,7 +789,7 @@ void GDValue::symbolSet(GDVSymbol sym)
 GDVSymbol GDValue::symbolGet() const
 {
   xassertPrecondition(m_kind == GDVK_SYMBOL);
-  return GDVSymbol(GDVSymbol::BypassSymbolLookup, m_value.m_symbolName);
+  return GDVSymbol(GDVSymbol::DirectIndex, m_value.m_symbolIndex);
 }
 
 

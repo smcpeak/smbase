@@ -1,5 +1,5 @@
 // gdvsymbol.h
-// GDVSymbol class.
+// `GDVSymbol`, which represents a symbol in a Generalized Data Value.
 
 // This file is in the public domain.
 
@@ -7,13 +7,15 @@
 #define SMBASE_GDVSYMBOL_H
 
 // this dir
-#include "compare-util.h"              // DEFINE_FRIEND_RELATIONAL_OPERATORS
-#include "sm-macros.h"                 // OPEN_NAMESPACE
-#include "strtable-fwd.h"              // StringTable [n]
+#include "compare-util.h"              // DEFINE_FRIEND_NON_EQUALITY_RELATIONAL_OPERATORS
+#include "sm-macros.h"                 // OPEN_NAMESPACE, DMEMB, CMEMB
+#include "indexed-string-table.h"      // smbase::IndexedStringTable::Index
 
 // libc++
 #include <cstddef>                     // std::size_t
+#include <iosfwd>                      // std::ostream [n]
 #include <string>                      // std::string [n]
+#include <string_view>                 // std::string_view [n]
 
 
 OPEN_NAMESPACE(gdv)
@@ -22,102 +24,126 @@ OPEN_NAMESPACE(gdv)
 // A symbol is the name of some entity or concept defined elsewhere.
 // For example, the symbol `true` is a name that refers to Boolean
 // truth, whereas the string "true" is simply a sequence of four
-// letters.
+// letters.  That is, a symbol has primarily *extrinsic* meaning that
+// depends on agreement between producer and consumer, whereas a string
+// has primarily *intrinsic* meaning that is independent of the context.
 class GDVSymbol {
+public:      // types
+  // Type of string table indices.
+  using Index = smbase::IndexedStringTable::Index;
+
 private:     // class data
-  // Table of strings to which `m_symbolName` points.  This table is
+  // Table of strings to which `m_symbolIndex` refers.  This table is
   // allocated the first time a symbol is created and lives for the
   // program lifetime.  It is a pointer rather than direct instance so I
   // can control the initialization order, and in particular, ensure
   // that a symbol can be created with program lifetime since I can
   // ensure the table gets built in time.
-  static StringTable *s_stringTable;
+  static smbase::IndexedStringTable *s_stringTable;
 
-  // Pointer to the string "null" in `s_stringTable`.  This allows the
+  // Index of the string "null" in `s_stringTable`.  This allows the
   // default constructor to avoid looking it up.
-  static char const *s_nullSymbolName;
+  static Index s_nullSymbolIndex;
 
 private:     // instance data
-  // Pointer into `m_stringTable` providing the symbol name.  All
-  // symbols that have the same name use the same pointer value.
-  //
-  // This always points to a non-empty string.  The end of the name is
-  // marked by a NUL terminator character.
-  //
-  // This is what strtable.h calls a `StringRef` but I think that name
-  // is a bit too collision-prone so I'm not using it here.
-  //
-  char const *m_symbolName;
+  // Index into `m_stringTable`.
+  Index m_symbolIndex;
 
 private:     // methods
   // Get the string table, making it if necessary.
-  static StringTable *getStringTable();
+  static smbase::IndexedStringTable *getStringTable();
 
 public:      // methods
+  ~GDVSymbol() = default;
+
   // Null symbol, i.e., a symbol whose name is "null".
   GDVSymbol()
-    : m_symbolName(getNullSymbolName())
+    : m_symbolIndex(getNullSymbolIndex())
   {}
 
   // Convert string to corresponding symbol.  This makes a copy of the
   // string in `m_stringTable` if it is not already there.
   //
-  // Requires `validSymbolName(c.s_tr())`.
-  explicit GDVSymbol(std::string const &s);
+  // Requires `validSymbolName(s)`.
+  explicit GDVSymbol(std::string_view const &s);
 
-  // Same, but using a NUL-terminated string pointer.  After this ctor,
-  // `m_symbolName` will usually *not* equal `p`; it would only be equal
-  // if `p` was itself some other symbol's `m_symbolName`.
+  // Create a `GDVSymbol` that stores `symbolIndex` directly.  The
+  // caller must have obtained `symbolIndex` from a previous call to
+  // `getSymbolIndex()`.
   //
-  // Requires `validSymbolName(p)`.
-  explicit GDVSymbol(char const *p);
-
-  // Create a `GDVSymbol` that points to `symbolName` directly, without
-  // looking it up in the symbol table.  The caller must have obtained
-  // `symbolName` from a previous call to `getSymbolName()`.
-  enum BypassSymbolLookupTag { BypassSymbolLookup };
-  GDVSymbol(BypassSymbolLookupTag, char const *symbolName);
-
-  // No deallocation is required since `m_symbolName` is not an owner
-  // pointer, but we increment a counter in order to later check that
-  // everything is balanced.
-  ~GDVSymbol() {}
+  // I use an extra "tag" argument to ensure this is not called
+  // unintentionally and does not conflict with the constructor that
+  // takes a string view.
+  enum DirectIndexTag { DirectIndex };
+  explicit GDVSymbol(DirectIndexTag, Index symbolIndex);
 
   // `GDVSymbol` objects can be freely and cheaply copied.
   GDVSymbol(GDVSymbol const &obj)
-    : m_symbolName(obj.m_symbolName) {}
+    : DMEMB(m_symbolIndex) {}
   GDVSymbol &operator=(GDVSymbol const &obj)
-    { m_symbolName = obj.m_symbolName; return *this; }
+    { CMEMB(m_symbolIndex); return *this; }
 
+  // Comparison is by string contents, *not* index.
   friend int compare(GDVSymbol const &a, GDVSymbol const &b);
-  DEFINE_FRIEND_RELATIONAL_OPERATORS(GDVSymbol)
+  DEFINE_FRIEND_NON_EQUALITY_RELATIONAL_OPERATORS(GDVSymbol)
+
+  // Comparison for equality can be done more efficiently by directly
+  // comparing indices rather than getting the string contents.
+  bool operator==(GDVSymbol const &obj) const
+    { return m_symbolIndex == obj.m_symbolIndex; }
+  bool operator!=(GDVSymbol const &obj) const
+    { return !operator==(obj); }
 
   // Get the number of bytes in this symbol's name.
   std::size_t size() const;
 
-  // Get a pointer to a NUL-terminated string of characters with the
-  // symbol name.
-  char const *getSymbolName() const { return m_symbolName; }
+  // Get the numeric index for this symbol.  This can later be used to
+  // construct a `GDVSymbol` without doing a lookup.  The actual index
+  // value of a symbol can potentially change from run to run, as it
+  // depends on the order in which symbols are seen, so should not
+  // generally be exposed to the user.
+  Index getSymbolIndex() const { return m_symbolIndex; }
+
+  // Get the sequence of characters with the symbol name.  The returned
+  // view is valid until the next symbol lookup is performed.
+  std::string_view getSymbolName() const;
 
   // True if `name` conforms to the syntactic requirements of a symbol
   // name.  Specifically, it must match the regex
   /// "[a-zA-Z_][a-zA-Z_0-9]*".
-  static bool validSymbolName(char const *name);
+  //
+  // TODO: Remove this.
+  static bool validSymbolName(std::string_view name);
 
-  // Pass 'name' through the symbol table to get the unique
-  // representative for the string it points to.  This is safe to call
-  // in a global variable initializer because it takes care of
-  // initializing prerequisites when necessary.
+  // Pass 'name' through the symbol table to get its index.  This is
+  // safe to call in a global variable initializer because it takes care
+  // of initializing prerequisites when necessary.
   //
   // Requires `validSymbolName(name)`.
-  static char const *lookupSymbolName(char const *name);
+  static Index lookupSymbolIndex(std::string_view name);
 
-  // Get the empty symbol name.  This is equivalent to
-  // `lookupSymbolName("null")` but may be faster.
-  static char const *getNullSymbolName();
+  // True if `i` is a valid index.
+  static bool validIndex(Index i);
+
+  // Given two indices obtained from `getSymbolIndex`, compare their
+  // strings relationally.
+  static int compareIndices(Index a, Index b);
+
+  // Get the null symbol index.  This is equivalent to
+  // `lookupSymbolIndex("null")` but may be faster.
+  static Index getNullSymbolIndex();
 
   // Exchange names with 'obj'.
   void swap(GDVSymbol &obj);
+
+  // Write the symbol to `os`.  Currently, this is just the name without
+  // any form of quoting or escaping.
+  void write(std::ostream &os) const;
+  friend std::ostream &operator<<(std::ostream &os, GDVSymbol const &obj)
+    { obj.write(os); return os; }
+
+  // Return the string that `write` would write.
+  std::string asString() const;
 };
 
 inline void swap(GDVSymbol &a, GDVSymbol &b)

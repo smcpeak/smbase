@@ -83,7 +83,7 @@ public:      // data
 public:      // methods
   ~GDVTaggedContainer();
 
-  // Empty symbol tag, empty container.
+  // Null symbol tag, empty container.
   GDVTaggedContainer();
 
   GDVTaggedContainer(GDVSymbol tag, CONTAINER const &container);
@@ -170,12 +170,15 @@ char const *toString(GDValueKind gdvk);
 */
 class GDValue {
 private:     // class data
-  // Names of symbols with special semantics.
+  // Symbol indices with special semantics.
   //
-  // TODO: These should be `GDVSymbol` objects.
-  static char const *s_symbolName_null;
-  static char const *s_symbolName_false;
-  static char const *s_symbolName_true;
+  // I do not store `GDVSymbol` objects because those are mainly meant
+  // to safely transport indices across the API.  Inside the
+  // implementation, it is more convenient to work with indices
+  // directly.
+  static GDVSymbol::Index s_symbolIndex_null;
+  static GDVSymbol::Index s_symbolIndex_false;
+  static GDVSymbol::Index s_symbolIndex_true;
 
 public:      // class data
   // Expose some method counts for testing purposes.
@@ -217,17 +220,16 @@ private:     // instance data
 
   // Representation of the value.
   union GDValueUnion {
-    // Non-owning pointer to a NUL-terminated string stored in
-    // 'GDVSymbol::s_stringTable'.
-    char const     *m_symbolName;
+    // Index of a symbol.
+    GDVSymbol::Index m_symbolIndex;
 
-    // These are all owner pointers.
-    GDVInteger     *m_integer;
-    GDVString      *m_string;
-    GDVSequence    *m_sequence;
-    GDVSet         *m_set;
-    GDVMap         *m_map;
-    GDVTaggedMap   *m_taggedMap;
+    // These are all owner pointers (when active, of course).
+    GDVInteger   *m_integer;
+    GDVString    *m_string;
+    GDVSequence  *m_sequence;
+    GDVSet       *m_set;
+    GDVMap       *m_map;
+    GDVTaggedMap *m_taggedMap;
 
     // The value for `GDVK_SMALL_INTEGER`, which is used anytime an
     // integer is representable as `GDVSmallInteger`.
@@ -239,8 +241,8 @@ private:     // instance data
     // does so for *storage* only.
     GDVSmallInteger m_smallInteger;
 
-    explicit GDValueUnion(char const *symbolName)
-      : m_symbolName(symbolName)
+    explicit GDValueUnion(GDVSymbol::Index symbolIndex)
+      : m_symbolIndex(symbolIndex)
     {}
   } m_value;
 

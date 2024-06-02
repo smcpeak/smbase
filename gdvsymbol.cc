@@ -8,74 +8,86 @@
 // this dir
 #include "codepoint.h"                 // isCIdentifierCharacter, isCIdentifierStartCharacter
 #include "sm-macros.h"                 // PRETEND_USED, OPEN_NAMESPACE
-#include "strtable.h"                  // StringTable
+#include "stringb.h"                   // stringb
+#include "indexed-string-table.h"      // smbase::IndexedStringTable
 #include "xassert.h"                   // xassertdb
 
 // libc++
-#include <cassert>                     // assert
 #include <cstring>                     // std::strcmp
+#include <iostream>                    // std::ostream
 #include <utility>                     // std::swap
+
+using namespace smbase;
 
 
 OPEN_NAMESPACE(gdv)
 
 
-StringTable *GDVSymbol::s_stringTable = nullptr;
+IndexedStringTable *GDVSymbol::s_stringTable = nullptr;
 
-char const *GDVSymbol::s_nullSymbolName = nullptr;
+GDVSymbol::Index GDVSymbol::s_nullSymbolIndex = 0;
 
 
-STATICDEF StringTable *GDVSymbol::getStringTable()
+STATICDEF IndexedStringTable *GDVSymbol::getStringTable()
 {
   if (!s_stringTable) {
-    s_stringTable = new StringTable;
-    s_nullSymbolName = s_stringTable->add("null");
+    s_stringTable = new IndexedStringTable;
+    s_nullSymbolIndex = s_stringTable->add("null");
+
+    // TODO: Maybe turn this into a symbolic constant?
+    xassert(s_nullSymbolIndex == 0);
   }
   return s_stringTable;
 }
 
 
-GDVSymbol::GDVSymbol(std::string const &s)
-  : GDVSymbol(s.c_str())
+GDVSymbol::GDVSymbol(std::string_view const &s)
+  : m_symbolIndex(lookupSymbolIndex(s))
 {}
 
 
-GDVSymbol::GDVSymbol(char const *p)
-  : m_symbolName(lookupSymbolName(p))
-{}
-
-
-GDVSymbol::GDVSymbol(BypassSymbolLookupTag, char const *symbolName)
-  : m_symbolName(symbolName)
+GDVSymbol::GDVSymbol(DirectIndexTag, Index symbolIndex)
+  : m_symbolIndex(symbolIndex)
 {
-  // Although the point of this ctor is to bypass the lookup for speed,
-  // during development I'd like to check anyway.
-  xassertdb(symbolName == getStringTable()->add(symbolName));
+  xassert(getStringTable()->validIndex(symbolIndex));
 }
 
 
 int compare(GDVSymbol const &a, GDVSymbol const &b)
 {
-  return std::strcmp(a.getSymbolName(), b.getSymbolName());
+  return GDVSymbol::getStringTable()->compareIndexedStrings(
+    a.m_symbolIndex, b.m_symbolIndex);
 }
 
 
 std::size_t GDVSymbol::size() const
 {
-  return std::strlen(m_symbolName);
+  return getSymbolName().size();
 }
 
 
-STATICDEF bool GDVSymbol::validSymbolName(char const *name)
+std::string_view GDVSymbol::getSymbolName() const
 {
-  if (!isCIdentifierStartCharacter(*name)) {
+  return getStringTable()->get(m_symbolIndex);
+}
+
+
+STATICDEF bool GDVSymbol::validSymbolName(std::string_view name)
+{
+  if (name.empty()) {
     return false;
   }
-  ++name;
 
-  for (; *name; ++name) {
-    if (!isCIdentifierCharacter(*name)) {
-      return false;
+  for (std::size_t i = 0; i < name.size(); ++i) {
+    if (i == 0) {
+      if (!isCIdentifierStartCharacter(name[i])) {
+        return false;
+      }
+    }
+    else {
+      if (!isCIdentifierCharacter(name[i])) {
+        return false;
+      }
     }
   }
 
@@ -83,24 +95,51 @@ STATICDEF bool GDVSymbol::validSymbolName(char const *name)
 }
 
 
-STATICDEF char const *GDVSymbol::lookupSymbolName(char const *name)
+STATICDEF GDVSymbol::Index GDVSymbol::lookupSymbolIndex(
+  std::string_view name)
 {
   xassertPrecondition(validSymbolName(name));
   return getStringTable()->add(name);
 }
 
 
-STATICDEF char const *GDVSymbol::getNullSymbolName()
+STATICDEF bool GDVSymbol::validIndex(Index i)
+{
+  return getStringTable()->validIndex(i);
+}
+
+
+STATICDEF int GDVSymbol::compareIndices(Index a, Index b)
+{
+  return getStringTable()->compareIndexedStrings(a, b);
+}
+
+
+STATICDEF GDVSymbol::Index GDVSymbol::getNullSymbolIndex()
 {
   getStringTable();
-  assert(s_nullSymbolName);
-  return s_nullSymbolName;
+
+  // This is always zero.
+  return s_nullSymbolIndex;
 }
 
 
 void GDVSymbol::swap(GDVSymbol &obj)
 {
-  std::swap(this->m_symbolName, obj.m_symbolName);
+  using std::swap;
+  swap(this->m_symbolIndex, obj.m_symbolIndex);
+}
+
+
+void GDVSymbol::write(std::ostream &os) const
+{
+  os << getSymbolName();
+}
+
+
+std::string GDVSymbol::asString() const
+{
+  return stringb(*this);
 }
 
 

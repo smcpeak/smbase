@@ -48,18 +48,18 @@ bool isPairWithMapAsFirstElement(GDVMapEntry const &entry)
 template <class CONTAINER>
 bool GDValueWriter::writeContainer(
   CONTAINER const &container,
-  char const * NULLABLE tagName,
+  std::optional<GDVSymbol> tag,
   char const *openDelim,
   char const *closeDelim)
 {
   TRACE1_SCOPED("writeContainer:"
-    " tag=" << (tagName? tagName : "(null)") <<
+    " tag=" << (tag? tag->asString() : std::string("(null)")) <<
     " delims=" << openDelim << closeDelim <<
     " enableIndentation=" << m_options.m_enableIndentation <<
     " indentLevel=" << m_options.m_indentLevel);
 
-  if (tagName) {
-    os() << tagName;
+  if (tag) {
+    os() << *tag;
   }
 
   os() << openDelim;
@@ -229,28 +229,28 @@ bool GDValueWriter::tryWrite(GDValue const &value,
     case GDVK_SEQUENCE:
       return writeContainer(
         value.sequenceGet(),
-        nullptr, // tagName
+        std::nullopt, // tag
         "[",
         "]");
 
     case GDVK_SET:
       return writeContainer(
         value.setGet(),
-        nullptr, // tagName
+        std::nullopt, // tag
         "{{",
         "}}");
 
     case GDVK_MAP:
       return writeContainer(
         value.mapGet(),
-        nullptr, // tagName
+        std::nullopt, // tag
         "{",
         "}");
 
     case GDVK_TAGGED_MAP:
       return writeContainer(
         value.mapGet(),
-        value.taggedContainerGetTag().getSymbolName(),
+        value.taggedContainerGetTag(),
         "{",
         "}");
   }

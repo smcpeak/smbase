@@ -12,6 +12,7 @@
 
 // libc++
 #include <iosfwd>                      // std::ostream
+#include <optional>                    // std::optional
 
 
 OPEN_NAMESPACE(gdv)
@@ -48,7 +49,7 @@ private:     // methods
   template <class CONTAINER>
   bool writeContainer(
     CONTAINER const &container,
-    char const * NULLABLE tagName,
+    std::optional<GDVSymbol> tag,
     char const *openDelim,
     char const *closeDelim);
 
