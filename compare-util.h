@@ -74,21 +74,27 @@ int compare(NUM const &a, NUM const &b)
 #define RET_ZERO_IF_EQUAL_MEMB(memb) RET_ZERO_IF_EQUAL(a.memb, b.memb)
 
 
-// Define a single friend relational operator.
+// Define a single friend relational operator in terms of `compare`.
 #define DEFINE_ONE_FRIEND_RELATIONAL_OPERATOR(Class, op) \
   friend bool operator op (Class const &a, Class const &b) \
     { return compare(a,b) op 0; }
 
 
+// Declare a set of friend comparison operators, *excluding* the
+// equality operators, assuming that a 'compare' function exists.
+#define DEFINE_FRIEND_NON_EQUALITY_RELATIONAL_OPERATORS(Class) \
+  DEFINE_ONE_FRIEND_RELATIONAL_OPERATOR(Class, < )             \
+  DEFINE_ONE_FRIEND_RELATIONAL_OPERATOR(Class, <=)             \
+  DEFINE_ONE_FRIEND_RELATIONAL_OPERATOR(Class, > )             \
+  DEFINE_ONE_FRIEND_RELATIONAL_OPERATOR(Class, >=)
+
+
 // Declare a set of friend comparison operators, assuming that a
 // 'compare' function exists.
-#define DEFINE_FRIEND_RELATIONAL_OPERATORS(Class)  \
-  DEFINE_ONE_FRIEND_RELATIONAL_OPERATOR(Class, ==) \
-  DEFINE_ONE_FRIEND_RELATIONAL_OPERATOR(Class, !=) \
-  DEFINE_ONE_FRIEND_RELATIONAL_OPERATOR(Class, < ) \
-  DEFINE_ONE_FRIEND_RELATIONAL_OPERATOR(Class, <=) \
-  DEFINE_ONE_FRIEND_RELATIONAL_OPERATOR(Class, > ) \
-  DEFINE_ONE_FRIEND_RELATIONAL_OPERATOR(Class, >=)
+#define DEFINE_FRIEND_RELATIONAL_OPERATORS(Class)        \
+  DEFINE_ONE_FRIEND_RELATIONAL_OPERATOR(Class, ==)       \
+  DEFINE_ONE_FRIEND_RELATIONAL_OPERATOR(Class, !=)       \
+  DEFINE_FRIEND_NON_EQUALITY_RELATIONAL_OPERATORS(Class)
 
 
 #endif // SMBASE_COMPARE_UTIL_H
