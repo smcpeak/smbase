@@ -15,6 +15,7 @@
 #include "xassert.h"       // xassert
 
 #include <iomanip>         // std::hex, std::dec
+#include <iosfwd>          // std::ostream
 
 #include <stdio.h>         // printf
 
@@ -25,6 +26,11 @@
 //
 // This has type `int` so it can be used from C modules too.
 extern int verbose;
+
+
+// "Test output", which goes nowhere unless `verbose` is true.
+#define tout getTout()
+std::ostream &getTout();
 
 
 // reports uncaught exceptions

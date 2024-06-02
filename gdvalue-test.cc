@@ -6,11 +6,10 @@
 #include "gdvalue.h"                   // module under test
 
 // this dir
-#include "counting-ostream.h"          // nullOStream
 #include "gdvsymbol.h"                 // gdv::GDVSymbol
 #include "gdvalue-reader-exception.h"  // GDValueReaderException
 #include "sm-file-util.h"              // SMFileUtil
-#include "sm-test.h"                   // EXPECT_EQ, EXPECT_MATCHES_REGEX, VPVAL, DIAG, verbose
+#include "sm-test.h"                   // EXPECT_EQ, EXPECT_MATCHES_REGEX, VPVAL, DIAG, verbose, tout
 #include "strutil.h"                   // hasSubstring
 #include "string-utils.h"              // doubleQuote
 #include "syserr.h"                    // smbase::XSysError
@@ -31,10 +30,6 @@ using std::cout;
 // Throughout this file, there are exception handlers that only run if
 // a test fails, so ignore them for coverage purposes:
 // gcov-exception-lines-ignore
-
-
-// "test out", which by default goes nowhere.
-#define tout (verbose? cout : nullOStream)
 
 
 // Check that 'ser' deserializes to 'expect'.
