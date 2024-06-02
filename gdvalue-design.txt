@@ -580,16 +580,71 @@ that the left-braces of a map not be consecutive to ease the
 implementation of a parser, as the cost in irregularity is minimal.
 
 
+Mapping to JSON
+===============
 
+If we have a GDV value that we want to express as JSON, how should we do
+so?  This section suggests a mapping.
 
+Symbol
 
+  GDVN: foo
 
+  JSON: { "_type": "symbol", "name": "foo" }
 
+Integer
 
+  GDVN: 123
 
+  If small enough to represent exactly as a 64-bit float:
 
+    JSON: 123
 
+  If too large:
 
+    JSON: { "_type": "large_integer", "value": "123" }
+
+String: Same representation.
+
+Sequence: Same representation.
+
+Set
+
+  GDVN: {{1 2}}
+
+  JSON: { "_type": "set", "elements": [1, 2] }
+
+Map
+
+  If all of the keys are strings:
+
+    GDVN: {"a":1 "b":2}
+
+    JSON: {"a":1, "b":2}
+
+  If some keys are not strings:
+
+    GDVN: {1:2 3:4}
+
+    JSON: { "_type": "map", "entries": [[1, 2], [3, 4]] }
+
+Tagged sequence:
+
+  GDVN: Foo[1 2]
+
+  JSON: { "_type": "sequence", "tag": "Foo", "elements": [1, 2] }
+
+Tagged set:
+
+  GDVN: Foo{{1 2}}
+
+  JSON: { "_type": "set", "tag": "Foo", "elements": [1, 2] }
+
+Tagged map:
+
+  GDVN: Foo{"a":1}
+
+  JSON: { "_type": "map", "tag": "Foo", "entries": [["a", 1]] }
 
 
 EOF
