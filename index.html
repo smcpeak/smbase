@@ -77,6 +77,7 @@ modules are now considered obsolete (marked below as such).
   <ul>
     <li><a class="toc" href="#owner_pointers">Owner pointers</a>
     <li><a class="toc" href="#reference_counting">Reference counting</a>
+    <li><a class="toc" href="#allocators">Allocators</a>
   </ul>
   <li><a class="toc" href="#interprocess">Interprocess communication</a>
   <ul>
@@ -941,6 +942,20 @@ These modules define or throw exceptions.
   <!-- AUTO --><dt><a href="objcount.h">objcount.h</a>
   <!-- AUTO --><dd>
   <!-- AUTO -->  Things related to "object count" idiom.
+<!-- end header -->
+
+</dl>
+
+
+<h2 id="allocators">Allocators</h2>
+
+<dl>
+
+<!-- begin header: rack-allocator.h -->
+  <!-- AUTO --><dt><a href="rack-allocator.h">rack-allocator.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Allocate small objects contiguously.  Does not allow deallocation of
+  <!-- AUTO -->  individual objects.
 <!-- end header -->
 
 </dl>
