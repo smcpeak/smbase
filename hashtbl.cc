@@ -4,7 +4,10 @@
 #include "hashtbl.h"                   // this module
 
 #include "pointer-utils.h"             // pointerToInteger
+#include "sm-test.h"                   // PVALTO
 #include "xassert.h"                   // xassert
+
+#include <iostream>                    // std::ostream
 
 #include <string.h>                    // memset
 
@@ -184,6 +187,13 @@ void HashTable::empty(int initSize)
 {
   delete[] hashTable;
   makeTable(initSize);
+}
+
+
+void HashTable::printStats(std::ostream &os) const
+{
+  PVALTO(os, tableSize);
+  PVALTO(os, numEntries);
 }
 
 

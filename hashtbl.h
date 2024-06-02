@@ -8,6 +8,9 @@
 
 #include "sm-macros.h"                 // STATICDEF
 
+#include <iosfwd>                      // std::ostream
+
+
 class HashTable {
 private:    // types
   friend class HashTableIter;
@@ -106,12 +109,18 @@ public:     // funcs
   // remove all mappings
   void empty(int initSize = HashTable::defaultSize);
 
+  // Alias for libc++ compatibility.
+  void clear() { empty(); }
+
   // set whether shrinkage is allowed; it's useful to be able to
   // disable this to avoid any allocation in certain situations
   void setEnableShrink(bool en) { enableShrink = en; }
 
   // allow external access to an accessor function
   void const *callGetKeyFn(void *data) { return getKey(data); }
+
+  // Print testing/performance stats to `os`.
+  void printStats(std::ostream &os) const;
 
   // check the data structure's invariants, and throw an exception
   // if there is a problem

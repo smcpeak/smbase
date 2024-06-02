@@ -120,6 +120,9 @@ int main(int argc, char *argv[])                \
     (void)stuff;                                            \
   }
 
+// PVAL with a specified output stream.
+#define PVALTO(os, val) (os) << #val ": " << (val) << std::endl /* user ; */
+
 // Conditionally write a line of diagnostic output.
 #define DIAG(stuff)                  \
   if (verbose) {                     \

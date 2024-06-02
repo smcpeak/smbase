@@ -57,7 +57,7 @@ modules are now considered obsolete (marked below as such).
     <li><a class="toc" href="#linked_lists">Linked Lists</a>
     <li><a class="toc" href="#arrays">Arrays</a>
     <li><a class="toc" href="#arrays_of_bits">Arrays of Bits</a>
-    <li><a class="toc" href="#maps">Hash Tables and Maps (obsolete)</a>
+    <li><a class="toc" href="#maps">Hash Tables and Maps (mostly obsolete)</a>
     <li><a class="toc" href="#maps_of_strings">Maps with Strings as Keys (obsolete)</a>
     <li><a class="toc" href="#std_container_utils">Standard container utilities</a>
     <li><a class="toc" href="#gdv">General data values</a>
@@ -304,7 +304,7 @@ storing multiple bits per byte.
 </dl>
 
 
-<h2 id="maps">Hash Tables and Maps (obsolete)</h2>
+<h2 id="maps">Hash Tables and Maps (mostly obsolete)</h2>
 
 <p>
 Maps support mapping from arbitrary domains to arbitrary ranges.  Mappings
@@ -312,9 +312,11 @@ can be added and queried in amortized O(1) time, but the constant factor
 is considerably higher than for arrays and lists.
 
 <p>
-Everything in this section is obsoleted by <code>std::map</code>,
+Most of what is in this section is obsoleted by <code>std::map</code>,
 possibly in combination with <code>std::unique_ptr</code>, and perhaps
-<code>std::unordered_map</code> in some cases.
+<code>std::unordered_map</code> in some cases.  But I've recently found
+`hashtbl.h` filling a need for which `unordered_map` did not seem to
+fit.
 
 <p>
 Probably the most common map is the PtrMap template, which will map
