@@ -106,6 +106,10 @@ public:      // methods
   // the space of indices (being max+1), not string sizes.
   Index size() const;
 
+  // True if `i` can be passed to `get`.
+  bool validIndex(Index i) const
+    { return 0 <= i && i < size(); }
+
   // Add `str` to the table, returning its index.  If the string is
   // already present, this returns the previously-assigned index.  The
   // returned value is always in [0,size()-1].
@@ -113,11 +117,20 @@ public:      // methods
 
   // Get the string at `index`.
   //
-  // Requires `0 <= index && index < size()`.
+  // Requires `validIndex(index)`.
   //
   // The returned view is invalidated by the next call to a non-const
   // method.
   std::string_view get(Index index) const;
+
+  // Return </=/>0 if a</=/>b when compared as string *contents*.
+  //
+  // Note that checking for string equality is equivalent to checking
+  // for index equality.  That is, `compareIndexedStrings(a,b)==0` iff
+  // `a==b`.
+  //
+  // Requires `validIndex(a) && validIndex(b)`.
+  int compareIndexedStrings(Index a, Index b) const;
 
   // Remove all entries.  This is the only way of removing entries.
   void clear();

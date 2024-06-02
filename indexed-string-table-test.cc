@@ -24,6 +24,7 @@ void testFixed()
   IndexedStringTable st;
   EXPECT_EQ(st.size(), 0);
   st.selfCheck();
+  xassert(!st.validIndex(0));
 
   using Index = IndexedStringTable::Index;
 
@@ -32,6 +33,7 @@ void testFixed()
   EXPECT_EQ(iFoo, 0);
   EXPECT_EQ(st.get(iFoo), "foo");
   EXPECT_EQ(st.add("foo"), iFoo);
+  xassert(st.validIndex(iFoo));
   st.selfCheck();
 
   Index iBar = st.add("bar");
@@ -41,6 +43,9 @@ void testFixed()
   EXPECT_EQ(st.add("bar"), iBar);
   EXPECT_EQ(st.get(iFoo), "foo");
   EXPECT_EQ(st.add("foo"), iFoo);
+  xassert(st.validIndex(iFoo));
+  xassert(st.validIndex(iBar));
+  EXPECT_EQ(st.compareIndexedStrings(0,1), +1);   // "foo" > "bar"
   st.selfCheck();
 
   std::string hasNul("has\0nul", 7);
@@ -49,6 +54,7 @@ void testFixed()
   EXPECT_EQ(iHN, 2);
   EXPECT_EQ(st.get(iHN), hasNul);
   EXPECT_EQ(st.add(hasNul), iHN);
+  EXPECT_EQ(st.compareIndexedStrings(1,2), -1);   // "bar" < "has\0nul"
   st.selfCheck();
 
   // Just "has" without any more characters.  This would collide with
@@ -61,6 +67,7 @@ void testFixed()
   EXPECT_EQ(st.add(has), iH);
   EXPECT_EQ(st.get(iHN), hasNul);
   EXPECT_EQ(st.add(hasNul), iHN);
+  EXPECT_EQ(st.compareIndexedStrings(3,2), -1);   // "has" < "has\0nul"
   st.selfCheck();
 
   std::string manyXs(2000, 'x');

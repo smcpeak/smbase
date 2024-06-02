@@ -3,6 +3,7 @@
 
 #include "indexed-string-table.h"      // this module
 
+#include "compare-util.h"              // compare
 #include "overflow.h"                  // convertNumber
 #include "sm-macros.h"                 // OPEN_NAMESPACE
 #include "string-hash.h"               // smbase::stringHash
@@ -111,10 +112,19 @@ IndexedStringTable::Index IndexedStringTable::add(std::string_view str)
 
 std::string_view IndexedStringTable::get(Index index) const
 {
-  xassertPrecondition(0 <= index);
-  xassertPrecondition(     index < size());
+  xassertPrecondition(validIndex(index));
 
   return m_indexToString.at(index)->getStringView();
+}
+
+
+int IndexedStringTable::compareIndexedStrings(Index a, Index b) const
+{
+  std::string_view svA = get(a);
+  std::string_view svB = get(b);
+
+  using ::compare;
+  return compare(svA, svB);
 }
 
 
