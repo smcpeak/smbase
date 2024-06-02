@@ -19,4 +19,12 @@ inline T div_up(T const &x, T const &y)
 }
 
 
+// Round `x` up to the next multiple of `y`.
+template <class T>
+inline T round_up(T const &x, T const &y)
+{
+  return div_up(x,y) * y;
+}
+
+
 #endif // SMBASE_DIV_UP_H
