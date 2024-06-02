@@ -101,6 +101,7 @@ static void entry(int argc, char **argv)
   RUN_TEST_NO_DECL(gprintf);
   RUN_TEST(growbuf);
   RUN_TEST(hashline);
+  RUN_TEST(indexed_string_table);
   RUN_TEST(map_utils);
   RUN_TEST_NO_DECL(mypopen);
   RUN_TEST(mysig);
