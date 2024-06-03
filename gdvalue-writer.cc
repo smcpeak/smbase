@@ -392,7 +392,8 @@ bool GDValueWriter::writeQuotedString(std::string_view str, char delim)
   os() << delim;
 
   for (char c : str) {
-    writeOneQuotedStringChar(os(), c, delim);
+    writeOneQuotedStringChar(os(), c, delim,
+      m_options.m_useUndelimitedHexEscapes);
 
     if (exceededSpeculativeCapacity()) {
       return false;
@@ -487,7 +488,8 @@ void GDValueWriter::write(GDValue const &value)
 STATICDEF void GDValueWriter::writeOneQuotedStringChar(
   std::ostream &os,
   char c,
-  char delim)
+  char delim,
+  bool useUndelimitedHexEscapes)
 {
   switch (c) {
     case '"':
@@ -525,7 +527,12 @@ STATICDEF void GDValueWriter::writeOneQuotedStringChar(
 
     default:
       if ((unsigned char)c < 0x20) {
-        os << stringf("\\u%04X", (int)(unsigned char)c);
+        if (useUndelimitedHexEscapes) {
+          os << stringf("\\u%04X", (int)(unsigned char)c);
+        }
+        else {
+          os << stringf("\\u{%X}", (int)(unsigned char)c);
+        }
       }
       else {
         // I'm not using numeric escapes for anything except

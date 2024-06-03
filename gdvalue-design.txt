@@ -326,7 +326,10 @@ A double-quoted string is as in JSON, with a few extensions:
     well-formed surrogate pair.  Otherwise it directly denotes a code
     point.
 
-    TODO: Add "\U" escapes.
+  * \u{N+} where N+ is a non-empty sequence of hex digits denoting a
+    Unicode code point in [0,0x10FFFF].  There is no limit on the number
+    of digits (there can be any number of leading 0s while adhering to
+    the value constraint).
 
   * Any other character following backlash is an *error* and must be
     rejected by the GDVN parser.
@@ -489,6 +492,16 @@ course to ensure the escape codes are uniform inside strings and
 symbols.  The former anticipates possibly using single-quoted strings
 for some future purpose, and acknowledges that it would be surprising if
 "\'" were ever given a meaning *other than* single-quote.
+
+GDVN adds "\u{N+}" from C++23, originally described in P2290R3:
+
+  https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2290r3.pdf
+
+The rationale is basically the same, that "\u" cannot express the entire
+range (without surrogates) and "\U" is awkwardly long.  "\u{N+}" allows
+a uniform notation from "\u{0}" (already one character shorter than
+"\u0000") to "\u{10FFFF}", while also permitting "\u{0010FFFF}" if
+someone likes digit counts that are a power of 2.
 
 Using doubled braces for sets is imperfect, but using single braces is
 bad because then an empty set could not be distinguished from an empty

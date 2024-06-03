@@ -175,7 +175,7 @@ static void testSymbol()
 
   std::string hasNulStr("has\0nul", 7);
   GDValue hasNul{GDVSymbol(hasNulStr)};
-  EXPECT_EQ(hasNul.asString(), "`has\\u0000nul`");
+  EXPECT_EQ(hasNul.asString(), "`has\\u{0}nul`");
   EXPECT_EQ(hasNul.symbolGetName(), hasNulStr);
   EXPECT_EQ(hasNul.symbolGet().size(), 7);
   testSerializeRoundtrip(hasNul);
@@ -1168,6 +1168,14 @@ static void testSyntaxErrors()
     //
     testOneErrorRegex("`\\", 1, 3, "end of file.*looking for character after '\\\\' in backtick");
 
+    // unexpectedCharErr(c, lookingForCharAfterBackslash);
+    testOneErrorRegex("\"\\z", 1, 3, "'z'.*looking for character after '\\\\' in double");
+    //
+    testOneErrorRegex("`\\z", 1, 3, "'z'.*looking for character after '\\\\' in backtick");
+  }
+
+  // readNextUniversalCharacterEscape
+  {
     // readCharOrErr('\\', "expecting '\\'");
     testOneErrorRegex("\"\\ud800", 1, 8, "After high surrogate.*uD800.*end of file.*expecting '\\\\'");
     testOneErrorRegex("\"\\ud8000", 1, 8, "After high surrogate.*uD800.*'0'.*expecting '\\\\'");
@@ -1183,11 +1191,6 @@ static void testSyntaxErrors()
     // err(stringf(
     //   "Found low surrogate \"\\u%04X\" that is not preceded by "
     testOneErrorRegex("\"\\uDEAD", 1, 7, "Found low surrogate.*uDEAD.*not preceded");
-
-    // unexpectedCharErr(c, lookingForCharAfterBackslash);
-    testOneErrorRegex("\"\\z", 1, 3, "'z'.*looking for character after '\\\\' in double");
-    //
-    testOneErrorRegex("`\\z", 1, 3, "'z'.*looking for character after '\\\\' in backtick");
   }
 
   // readNextU4Escape
@@ -1196,6 +1199,25 @@ static void testSyntaxErrors()
     testMultiErrorRegex("\"\\u", {-1, 'x', ' '}, 1, 4, "looking for digits");
     testMultiErrorRegex("\"\\u1", {-1, 'x', ' '}, 1, 5, "looking for digits");
     testMultiErrorRegex("\"\\u123", {-1, 'x', ' '}, 1, 7, "looking for digits");
+  }
+
+  // readNextDelimitedCharacterEscape
+  {
+    // unexpectedCharErr(c,
+    //   R"(looking for hex digit immediately after "\u{")");
+    testMultiErrorRegex("\"\\u{", {-1, 'x'}, 1, 5, "looking for hex digit immediately");
+
+    // unexpectedCharErr(c,
+    //   R"(looking for hex digit or '}' after "\u{")");
+    testMultiErrorRegex("\"\\u{A", {-1, 'x'}, 1, 6, "looking for hex digit or '}'");
+    testMultiErrorRegex("\"\\u{A3", {-1, 'x'}, 1, 7, "looking for hex digit or '}'");
+
+    // err(R"(value is larger than 0x10FFFF in "\u{N+}" escape sequence)");
+    testOneErrorSubstr("\"\\u{110000", 1, 10, "value is larger");
+    testOneErrorSubstr("\"\\u{0110000", 1, 11, "value is larger");
+    testOneErrorSubstr("\"\\u{200000", 1, 10, "value is larger");
+    testOneErrorSubstr("\"\\u{FFFFFF", 1, 10, "value is larger");
+    testOneErrorSubstr("\"\\u{aaaaaa", 1, 10, "value is larger");
   }
 
   // readNextInteger
@@ -1357,6 +1379,14 @@ static void testDeserializeStrings()
   // Surrogate pair.
   testOneDeserialize(R"("\uD800\uDC00")", utf8EncodeVector({0x10000}));
   testOneDeserialize(R"("\uDBFF\uDFFF")", utf8EncodeVector({0x10FFFF}));
+
+  // Delimited escape
+  testOneDeserialize(R"("\u{0}")", utf8EncodeVector({0x0}));
+  testOneDeserialize(R"("\u{00000000}")", utf8EncodeVector({0x0}));
+  testOneDeserialize(R"("\u{00000000000000001}")", utf8EncodeVector({0x1}));
+  testOneDeserialize(R"("\u{10000}")", utf8EncodeVector({0x10000}));
+  testOneDeserialize(R"("\u{10FFFF}")", utf8EncodeVector({0x10FFFF}));
+  testOneDeserialize(R"("\u{000000000010ffff}")", utf8EncodeVector({0x10FFFF}));
 }
 
 
@@ -1415,11 +1445,15 @@ static void testStringEscapes()
 {
   testOneStringEscapes("", "");
   testOneStringEscapes("\"\\\001\037",
-                       "\\\"\\\\\\u0001\\u001F");
+                       "\\\"\\\\\\u{1}\\u{1F}");
   testOneStringEscapes("\t\r\n\f\b/\\\"",
                        "\\t\\r\\n\\f\\b/\\\\\\\"");
   testOneStringEscapes(std::string("\0", 1),
-                       "\\u0000");
+                       "\\u{0}");
+
+  EXPECT_EQ(GDValue(GDVString("has\0nul", 7)).asString(
+              GDValueWriteOptions().setUseUndelimitedHexEscapes(true)),
+    "\"has\\u0000nul\"");
 
   // The JSON syntax, and hence GDVN, allows forward slash to be escaped
   // with backslash; I do not know why.
@@ -1431,6 +1465,7 @@ static void testStringEscapes()
   //    E   1    8   8    B   4
   // [--][--] [--][--] [--][--]
   testOneDecode("\\u1234", "\xE1\x88\xB4");
+  testOneDecode("\\u{1234}", "\xE1\x88\xB4");
 
   testOneDecodeCodePoint(0x01);
   testOneDecodeCodePoint(0x7F);

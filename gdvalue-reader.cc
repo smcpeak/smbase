@@ -454,47 +454,10 @@ std::string GDValueReader::readNextQuotedStringContents(int delim)
           oss << '\t';
           break;
 
-        case 'u': {
-          // Decode hex.
-          int decoded = readNextU4Escape();
-
-          if (isHighSurrogate(decoded)) {
-            try {
-              // This should be followed by the other half of a surrogate
-              // pair.
-              readCharOrErr('\\', "expecting '\\'");
-              readCharOrErr('u', "expecting 'u' after '\\'");
-              int decoded2 = readNextU4Escape();
-
-              if (isLowSurrogate(decoded2)) {
-                decoded = decodeSurrogatePair(decoded, decoded2);
-              }
-              else {
-                err(stringf(
-                  "Expected low surrogate in [U+DC00,U+DFFF], "
-                  "but instead found \"\\u%04X\".",
-                  decoded2));
-              }
-            }
-            catch (GDValueReaderException &e) {
-              // We do not compute the more detailed context above
-              // because we do not yet know we will report an error.
-              e.prependGDVNContext(stringf(
-                "After high surrogate \"\\u%04X\"", decoded));
-              throw;
-            }
-          }
-          else if (isLowSurrogate(decoded)) {
-            err(stringf(
-              "Found low surrogate \"\\u%04X\" that is not preceded by "
-              "a high surrogate in [U+D800,U+DBFF].",
-              decoded));
-          }
-
+        case 'u':
           // Store the decoded value as UTF-8.
-          utf8Writer.writeCodePoint(decoded);
+          utf8Writer.writeCodePoint(readNextUniversalCharacterEscape());
           break;
-        }
 
         default:
           unexpectedCharErr(c, lookingForCharAfterBackslash);
@@ -512,16 +475,101 @@ std::string GDValueReader::readNextQuotedStringContents(int delim)
 }
 
 
+int GDValueReader::readNextUniversalCharacterEscape()
+{
+  // Check for "\u{N+}".
+  int c = readChar();
+  if (c == '{') {
+    return readNextDelimitedCharacterEscape();
+  }
+  putback(c);
+
+  // Decode hex.
+  int decoded = readNextU4Escape();
+
+  if (isHighSurrogate(decoded)) {
+    try {
+      // This should be followed by the other half of a surrogate
+      // pair.
+      readCharOrErr('\\', "expecting '\\'");
+      readCharOrErr('u', "expecting 'u' after '\\'");
+      int decoded2 = readNextU4Escape();
+
+      if (isLowSurrogate(decoded2)) {
+        decoded = decodeSurrogatePair(decoded, decoded2);
+      }
+      else {
+        err(stringf(
+          "Expected low surrogate in [U+DC00,U+DFFF], "
+          "but instead found \"\\u%04X\".",
+          decoded2));
+      }
+    }
+    catch (GDValueReaderException &e) {
+      // We do not compute the more detailed context above
+      // because we do not yet know we will report an error.
+      e.prependGDVNContext(stringf(
+        "After high surrogate \"\\u%04X\"", decoded));
+      throw;
+    }
+  }
+  else if (isLowSurrogate(decoded)) {
+    err(stringf(
+      "Found low surrogate \"\\u%04X\" that is not preceded by "
+      "a high surrogate in [U+D800,U+DBFF].",
+      decoded));
+  }
+
+  return decoded;
+}
+
+
 int GDValueReader::readNextU4Escape()
 {
   int decoded = 0;
   for (int i=0; i < 4; ++i) {
     int c = readChar();
     if (isASCIIHexDigit(c)) {
+      // This can't overflow because there are only four digits (and I
+      // am assuming that `int` is at least 32 bits wide).
       decoded = decoded*16 + decodeASCIIHexDigit(c);
     }
     else {
-      unexpectedCharErr(c, "looking for digits in \"\\u\" escape sequence in double-quoted string");
+      unexpectedCharErr(c, "looking for digits in \"\\u\" escape sequence");
+    }
+  }
+
+  return decoded;
+}
+
+
+int GDValueReader::readNextDelimitedCharacterEscape()
+{
+  // There must always be at least one hex digit.
+  int c = readChar();
+  if (!isASCIIHexDigit(c)) {
+    unexpectedCharErr(c,
+      R"(looking for hex digit immediately after "\u{")");
+  }
+
+  int decoded = decodeASCIIHexDigit(c);
+
+  while (true) {
+    c = readChar();
+    if (c == '}') {
+      break;
+    }
+    else if (!isASCIIHexDigit(c)) {
+      unexpectedCharErr(c,
+        R"(looking for hex digit or '}' after "\u{")");
+    }
+
+    // This won't overflow because we would trip the "value too large"
+    // check first.
+    decoded = decoded*16 + decodeASCIIHexDigit(c);
+
+    if (decoded > 0x10FFFF) {
+      err(R"(value is larger than 0x10FFFF in "\u{N+}" escape sequence)");
     }
   }
 

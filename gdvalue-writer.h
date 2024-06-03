@@ -114,11 +114,15 @@ public:      // methods
 
   // Write `c` to `os` as part of a quoted string bounded by `delim`.
   //
+  // `useUndelimitedHexEscapes` has the same meaning as the
+  // similarly-named member of `GDValueWriteOptions`.
+  //
   // This is public so that `GDVSymbol` can use it in its own printer.
   static void writeOneQuotedStringChar(
     std::ostream &os,
     char c,
-    char delim);
+    char delim,
+    bool useUndelimitedHexEscapes);
 };
 
 

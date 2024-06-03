@@ -31,6 +31,11 @@ public:      // instance data
   // rather than hexadecimal.  Initially false.
   bool m_writeLargeIntegersAsDecimal;
 
+  // When true, and we want to write a hex escape "universal character"
+  // in a string or symbol, use the undelimited form "\u0000" instead of
+  // the delimited form "\u{0}".  Initially false.
+  bool m_useUndelimitedHexEscapes;
+
   // Current indentation level.  When we start a new line, we indent
   // 'm_indentLevel * SPACES_PER_INDENT_LEVEL' spaces.  Initially 0.
   int m_indentLevel;
@@ -48,6 +53,7 @@ public:      // methods
   GDValueWriteOptions()
     : m_enableIndentation(false),
       m_writeLargeIntegersAsDecimal(false),
+      m_useUndelimitedHexEscapes(false),
       m_indentLevel(0),
       m_spacesPerIndentLevel(s_defaultSpacesPerIndentLevel),
       m_targetLineWidth(s_defaultTargetLineWidth)
@@ -61,6 +67,8 @@ public:      // methods
     { m_enableIndentation = b; return *this; }
   GDValueWriteOptions &setWriteLargeIntegersAsDecimal(bool b)
     { m_writeLargeIntegersAsDecimal = b; return *this; }
+  GDValueWriteOptions &setUseUndelimitedHexEscapes(bool b)
+    { m_useUndelimitedHexEscapes = b; return *this; }
   GDValueWriteOptions &setIndentLevel(int newLevel)
     { m_indentLevel = newLevel; return *this; }
   GDValueWriteOptions &setSpacesPerIndentLevel(int newSpacesPer)

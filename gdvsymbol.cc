@@ -127,7 +127,9 @@ void GDVSymbol::write(std::ostream &os, bool forceQuotes) const
   else {
     os << '`';
     for (char c : name) {
-      GDValueWriter::writeOneQuotedStringChar(os, c, '`');
+      bool const useUndelimitedHexEscapes = false;
+      GDValueWriter::writeOneQuotedStringChar(os, c, '`',
+        useUndelimitedHexEscapes);
     }
     os << '`';
   }
