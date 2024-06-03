@@ -195,7 +195,7 @@ char const *toString(GDValueKind gdvk);
            True
            False
        Integer
-         SmallIneger
+         SmallInteger
        String
      Container
        Sequence

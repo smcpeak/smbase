@@ -202,6 +202,14 @@ bool GDValueWriter::tryWrite(GDValue const &value,
     m_options.m_enableIndentation = false;
   }
 
+  // For use inside the `CASE` macro below.
+  char const * const sequenceOpenDelim  = "[";
+  char const * const sequenceCloseDelim = "]";
+  char const * const setOpenDelim       = "{{";
+  char const * const setCloseDelim      = "}}";
+  char const * const mapOpenDelim       = "{";
+  char const * const mapCloseDelim      = "}";
+
   switch (value.getKind()) {
     default:
       xfailureInvariant("invalid kind");
@@ -233,33 +241,24 @@ bool GDValueWriter::tryWrite(GDValue const &value,
     case GDVK_STRING:
       return writeQuotedString(value.stringGet(), '"');
 
-    case GDVK_SEQUENCE:
-      return writeContainer(
-        value.sequenceGet(),
-        std::nullopt, // tag
-        "[",
-        "]");
+    #define CASE(KIND, Kind, kind)       \
+      case GDVK_##KIND:                  \
+        return writeContainer(           \
+          value.kind##Get(),             \
+          std::nullopt, /* tag */        \
+          kind##OpenDelim,               \
+          kind##CloseDelim);             \
+                                         \
+      case GDVK_TAGGED_##KIND:           \
+        return writeContainer(           \
+          value.kind##Get(),             \
+          value.taggedContainerGetTag(), \
+          kind##OpenDelim,               \
+          kind##CloseDelim);
 
-    case GDVK_SET:
-      return writeContainer(
-        value.setGet(),
-        std::nullopt, // tag
-        "{{",
-        "}}");
+    FOR_EACH_GDV_CONTAINER(CASE)
 
-    case GDVK_MAP:
-      return writeContainer(
-        value.mapGet(),
-        std::nullopt, // tag
-        "{",
-        "}");
-
-    case GDVK_TAGGED_MAP:
-      return writeContainer(
-        value.mapGet(),
-        value.taggedContainerGetTag(),
-        "{",
-        "}");
+    #undef CASE
   }
 
   return !exceededSpeculativeCapacity();

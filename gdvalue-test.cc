@@ -68,6 +68,8 @@ static void checkParse(GDValue const &expect, std::string const &ser)
 // equivalence.
 static void testSerializeRoundtrip(GDValue const &value)
 {
+  value.selfCheck();
+
   // Compact form.
   checkParse(value, value.asString());
 
@@ -725,6 +727,50 @@ static void testTaggedMap()
 }
 
 
+static void testTaggedSequence()
+{
+  GDValue v(GDVK_TAGGED_SEQUENCE);
+  EXPECT_EQ(v.asString(), "null[]");
+  xassert(v.isSequence());
+  xassert(v.isTaggedContainer());
+  xassert(v.isTaggedSequence());
+  xassert(v.containerIsEmpty());
+  xassert(v.taggedContainerGetTag() == GDVSymbol());
+  xassert(v.taggedContainerGetTag() == GDVSymbol("null"));
+  testSerializeRoundtrip(v);
+
+  v.taggedContainerSetTag(GDVSymbol("x"));
+  EXPECT_EQ(v.asString(), "x[]");
+  testSerializeRoundtrip(v);
+
+  v.sequenceAppend(1);
+  EXPECT_EQ(v.asString(), "x[1]");
+  testSerializeRoundtrip(v);
+}
+
+
+static void testTaggedSet()
+{
+  GDValue v(GDVK_TAGGED_SET);
+  EXPECT_EQ(v.asString(), "null{{}}");
+  xassert(v.isSet());
+  xassert(v.isTaggedContainer());
+  xassert(v.isTaggedSet());
+  xassert(v.containerIsEmpty());
+  xassert(v.taggedContainerGetTag() == GDVSymbol());
+  xassert(v.taggedContainerGetTag() == GDVSymbol("null"));
+  testSerializeRoundtrip(v);
+
+  v.taggedContainerSetTag(GDVSymbol("x"));
+  EXPECT_EQ(v.asString(), "x{{}}");
+  testSerializeRoundtrip(v);
+
+  v.setInsert(1);
+  EXPECT_EQ(v.asString(), "x{{1}}");
+  testSerializeRoundtrip(v);
+}
+
+
 // Print a little ruler to help judge the behavior.
 static void printRuler(int width)
 {
@@ -1176,11 +1222,12 @@ static void testSyntaxErrors()
     //   "looking for character after symbol and '{'");
     testOneErrorSubstr("x{", 1, 3, "after symbol and '{'");
 
-    // err("Tagged sets are not implemented yet.");
-    testOneErrorSubstr("x{{", 1, 3, "not implemented");
+    // These are no longer tied to a unique "err" site, but were in the
+    // past, so I keep them as tests.
+    testOneErrorRegex("x{{", 1, 4, "end of file.*end of set");
+    testOneErrorRegex("true[", 1, 6, "end of file.*end of sequence");
 
     // putbackAfterValueOrErr(c);       // Could be EOF, fine.
-    testOneErrorSubstr("true[", 1, 5, "'[' after a value");
     testOneErrorSubstr("true!", 1, 5, "'!' after a value");
   }
 
@@ -1496,6 +1543,8 @@ void test_gdvalue()
     testSequence();
     testSet();
     testMap();
+    testTaggedSequence();
+    testTaggedSet();
     testTaggedMap();
     testSyntaxErrors();
     testDeserializeMisc();

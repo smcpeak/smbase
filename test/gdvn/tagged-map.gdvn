@@ -1,8 +1,7 @@
 // tagged-map.gdvn
 // Example of what tagged containers might look like.
 
-//RandomThings
-[
+RandomThings[
   Person{
     name: "Sam"
     // TODO: dob: Date(1980 01 31)

@@ -908,20 +908,17 @@ GDVString &GDValue::stringGetMutable()
     return kind##Get().cbegin();                          \
   }                                                       \
                                                           \
-                                                          \
   GDV##Kind::const_iterator GDValue::kind##CEnd() const   \
   {                                                       \
     xassertPrecondition(is##Kind());                      \
     return kind##Get().cend();                            \
   }                                                       \
                                                           \
-                                                          \
   GDV##Kind::iterator GDValue::kind##Begin()              \
   {                                                       \
     xassertPrecondition(is##Kind());                      \
     return kind##GetMutable().begin();                    \
   }                                                       \
-                                                          \
                                                           \
   GDV##Kind::iterator GDValue::kind##End()                \
   {                                                       \
@@ -961,57 +958,73 @@ bool GDValue::containerIsEmpty() const
 
 
 // ----------------------------- Sequence ------------------------------
-GDValue::GDValue(GDVSequence const &vec)
-  : INIT_AS_NULL()
-{
-  sequenceSet(vec);
+// Define the constructor, `XXXSet`, and `XXXGet` methods for a
+// particular kind of container.
+#define DEFINE_CONTAINER_CTOR_SET_GET(KIND, Kind, kind)       \
+  GDValue::GDValue(GDV##Kind const &container)                \
+    : INIT_AS_NULL()                                          \
+  {                                                           \
+    kind##Set(container);                                     \
+                                                              \
+    ++s_ct_##kind##CtorCopy;                                  \
+  }                                                           \
+                                                              \
+  GDValue::GDValue(GDV##Kind &&container)                     \
+    : INIT_AS_NULL()                                          \
+  {                                                           \
+    kind##Set(std::move(container));                          \
+                                                              \
+    ++s_ct_##kind##CtorMove;                                  \
+  }                                                           \
+                                                              \
+  void GDValue::kind##Set(GDV##Kind const &container)         \
+  {                                                           \
+    if (is##Kind()) {                                         \
+      kind##GetMutable() = container;                         \
+    }                                                         \
+    else {                                                    \
+      reset();                                                \
+      m_value.m_##kind = new GDV##Kind(container);            \
+      m_kind = GDVK_##KIND;                                   \
+    }                                                         \
+                                                              \
+    ++s_ct_##kind##SetCopy;                                   \
+  }                                                           \
+                                                              \
+  void GDValue::kind##Set(GDV##Kind &&container)              \
+  {                                                           \
+    if (is##Kind()) {                                         \
+      kind##GetMutable() = container;                         \
+    }                                                         \
+    else {                                                    \
+      reset();                                                \
+      m_value.m_##kind = new GDV##Kind(std::move(container)); \
+      m_kind = GDVK_##KIND;                                   \
+    }                                                         \
+                                                              \
+    ++s_ct_##kind##SetMove;                                   \
+  }                                                           \
+                                                              \
+  GDV##Kind const &GDValue::kind##Get() const                 \
+  {                                                           \
+    xassertPrecondition(is##Kind());                          \
+                                                              \
+    if (m_kind == GDVK_##KIND) {                              \
+      return *(m_value.m_##kind);                             \
+    }                                                         \
+    else {                                                    \
+      xassert(m_kind == GDVK_TAGGED_##KIND);                  \
+      return m_value.m_tagged##Kind->m_container;             \
+    }                                                         \
+  }                                                           \
+                                                              \
+  GDV##Kind &GDValue::kind##GetMutable()                      \
+  {                                                           \
+    return const_cast<GDV##Kind&>(kind##Get());               \
+  }
 
-  ++s_ct_sequenceCtorCopy;
-}
 
-
-GDValue::GDValue(GDVSequence &&vec)
-  : INIT_AS_NULL()
-{
-  sequenceSet(std::move(vec));
-
-  ++s_ct_sequenceCtorMove;
-}
-
-
-void GDValue::sequenceSet(GDVSequence const &vec)
-{
-  reset();
-  m_value.m_sequence = new GDVSequence(vec);
-  m_kind = GDVK_SEQUENCE;
-
-  ++s_ct_sequenceSetCopy;
-}
-
-
-void GDValue::sequenceSet(GDVSequence &&vec)
-{
-  reset();
-  m_value.m_sequence = new GDVSequence(std::move(vec));
-  m_kind = GDVK_SEQUENCE;
-
-  ++s_ct_sequenceSetMove;
-}
-
-
-GDVSequence const &GDValue::sequenceGet() const
-{
-  xassertPrecondition(m_kind == GDVK_SEQUENCE);
-  return *(m_value.m_sequence);
-}
-
-
-GDVSequence &GDValue::sequenceGetMutable()
-{
-  xassertPrecondition(m_kind == GDVK_SEQUENCE);
-  return *(m_value.m_sequence);
-}
-
+DEFINE_CONTAINER_CTOR_SET_GET(SEQUENCE, Sequence, sequence)
 
 DEFINE_GDV_KIND_BEGIN_END(Sequence, sequence)
 
@@ -1065,57 +1078,7 @@ void GDValue::sequenceClear()
 
 
 // ------------------------------- Set ---------------------------------
-GDValue::GDValue(GDVSet const &set)
-  : INIT_AS_NULL()
-{
-  setSet(set);
-
-  ++s_ct_setCtorCopy;
-}
-
-
-GDValue::GDValue(GDVSet &&set)
-  : INIT_AS_NULL()
-{
-  setSet(std::move(set));
-
-  ++s_ct_setCtorMove;
-}
-
-
-void GDValue::setSet(GDVSet const &set)
-{
-  reset();
-  m_value.m_set = new GDVSet(set);
-  m_kind = GDVK_SET;
-
-  ++s_ct_setSetCopy;
-}
-
-
-void GDValue::setSet(GDVSet &&set)
-{
-  reset();
-  m_value.m_set = new GDVSet(std::move(set));
-  m_kind = GDVK_SET;
-
-  ++s_ct_setSetMove;
-}
-
-
-GDVSet const &GDValue::setGet() const
-{
-  xassertPrecondition(m_kind == GDVK_SET);
-  return *(m_value.m_set);
-}
-
-
-GDVSet &GDValue::setGetMutable()
-{
-  xassertPrecondition(m_kind == GDVK_SET);
-  return *(m_value.m_set);
-}
-
+DEFINE_CONTAINER_CTOR_SET_GET(SET, Set, set)
 
 DEFINE_GDV_KIND_BEGIN_END(Set, set)
 
@@ -1123,14 +1086,15 @@ DEFINE_GDV_KIND_BEGIN_END(Set, set)
 bool GDValue::setContains(GDValue const &elt) const
 {
   xassertPrecondition(isSet());
-  return m_value.m_set->find(elt) != m_value.m_set->end();
+  GDVSet const &set = setGet();
+  return set.find(elt) != set.end();
 }
 
 
 bool GDValue::setInsert(GDValue const &elt)
 {
   xassertPrecondition(isSet());
-  auto res = m_value.m_set->insert(elt);
+  auto res = setGetMutable().insert(elt);
   return res.second;
 }
 
@@ -1138,7 +1102,7 @@ bool GDValue::setInsert(GDValue const &elt)
 bool GDValue::setInsert(GDValue &&elt)
 {
   xassertPrecondition(isSet());
-  auto res = m_value.m_set->insert(std::move(elt));
+  auto res = setGetMutable().insert(std::move(elt));
   return res.second;
 }
 
@@ -1146,85 +1110,19 @@ bool GDValue::setInsert(GDValue &&elt)
 bool GDValue::setRemove(GDValue const &elt)
 {
   xassertPrecondition(isSet());
-  return m_value.m_set->erase(elt) != 0;
+  return setGetMutable().erase(elt) != 0;
 }
 
 
 void GDValue::setClear()
 {
   xassertPrecondition(isSet());
-  return m_value.m_set->clear();
+  return setGetMutable().clear();
 }
 
 
 // ------------------------------- Map ---------------------------------
-GDValue::GDValue(GDVMap const &map)
-  : INIT_AS_NULL()
-{
-  mapSet(map);
-
-  ++s_ct_mapCtorCopy;
-}
-
-
-GDValue::GDValue(GDVMap &&map)
-  : INIT_AS_NULL()
-{
-  mapSet(std::move(map));
-
-  ++s_ct_mapCtorMove;
-}
-
-
-void GDValue::mapSet(GDVMap const &map)
-{
-  if (isMap()) {
-    mapGetMutable() = map;
-  }
-  else {
-    reset();
-    m_value.m_map = new GDVMap(map);
-    m_kind = GDVK_MAP;
-  }
-
-  ++s_ct_mapSetCopy;
-}
-
-
-void GDValue::mapSet(GDVMap &&map)
-{
-  if (isMap()) {
-    mapGetMutable() = map;
-  }
-  else {
-    reset();
-    m_value.m_map = new GDVMap(std::move(map));
-    m_kind = GDVK_MAP;
-  }
-
-  ++s_ct_mapSetMove;
-}
-
-
-GDVMap const &GDValue::mapGet() const
-{
-  xassertPrecondition(isMap());
-
-  if (m_kind == GDVK_MAP) {
-    return *(m_value.m_map);
-  }
-  else {
-    xassert(m_kind == GDVK_TAGGED_MAP);
-    return m_value.m_taggedMap->m_container;
-  }
-}
-
-
-GDVMap &GDValue::mapGetMutable()
-{
-  return const_cast<GDVMap&>(mapGet());
-}
-
+DEFINE_CONTAINER_CTOR_SET_GET(MAP, Map, map)
 
 DEFINE_GDV_KIND_BEGIN_END(Map, map)
 

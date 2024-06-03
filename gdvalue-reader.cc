@@ -635,17 +635,30 @@ GDValue GDValueReader::readNextSymbolOrTaggedContainer(int firstChar)
     c = readNotEOFCharOrErr(
       "looking for character after symbol and '{'");
     if (c == '{') {
-      // Tagged set.
-      err("Tagged sets are not implemented yet.");
+      // Tagged set.  First parse the set by itself.
+      GDValue containedSet = readNextSet();
+
+      // Move the set into a tagged set object.
+      return GDValue(GDVTaggedSet(symbol,
+        std::move(containedSet.setGetMutable())));
     }
+    else {
+      // Tagged map.  We need to put back `c` since it is part of the
+      // map's contents.
+      putback(c);
 
-    // Tagged map.  First parse the map by itself.
-    putback(c);
-    GDValue containedMap = readNextMap();
+      // Now proceed like we did for sets.
+      GDValue containedMap = readNextMap();
+      return GDValue(GDVTaggedMap(symbol,
+        std::move(containedMap.mapGetMutable())));
+    }
+  }
 
-    // Move the map contents into a tagged map object.
-    return GDValue(GDVTaggedMap(symbol,
-      std::move(containedMap.mapGetMutable())));
+  else if (c == '[') {
+    // Tagged sequence.
+    GDValue containedSequence = readNextSequence();
+    return GDValue(GDVTaggedSequence(symbol,
+      std::move(containedSequence.sequenceGetMutable())));
   }
 
   else {

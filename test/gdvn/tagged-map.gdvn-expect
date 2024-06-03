@@ -1,5 +1,5 @@
 ---- stdout ----
-[
+RandomThings[
   Person{
     address:Address{num:101 street:"Main St" unit:"Apt 12"}
     name:"Sam"
