@@ -13,7 +13,7 @@
 #include "save-restore.h"              // SAVE_RESTORE, SET_RESTORE
 #include "sm-macros.h"                 // OPEN_NAMESPACE
 #include "sm-trace.h"                  // INIT_TRACE
-#include "string-utils.h"              // doubleQuote
+#include "string-util.h"               // doubleQuote
 #include "stringf.h"                   // stringf
 #include "xassert.h"                   // xfailure
 

@@ -1,7 +1,7 @@
-// string-utils-test.cc
-// Test code for string-utils.
+// string-util-test.cc
+// Test code for string-util.
 
-#include "string-utils.h"              // module under test
+#include "string-util.h"               // module under test
 
 #include "sm-test.h"                   // EXPECT_EQ
 

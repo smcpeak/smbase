@@ -5,9 +5,9 @@
 
 #include "syserr.h"                    // module under test
 
-#include "container-utils.h"           // contains
+#include "container-util.h"            // contains
 #include "nonport.h"                   // changeDirectory
-#include "set-utils.h"                 // setMapElements
+#include "set-util.h"                  // setMapElements
 
 #include <cstdlib>                     // std::exit
 #include <functional>                  // std::function

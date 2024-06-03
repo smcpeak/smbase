@@ -11,7 +11,7 @@
 #include "sm-file-util.h"              // SMFileUtil
 #include "sm-test.h"                   // EXPECT_EQ, EXPECT_MATCHES_REGEX, VPVAL, DIAG, verbose, tout
 #include "strutil.h"                   // hasSubstring
-#include "string-utils.h"              // doubleQuote
+#include "string-util.h"               // doubleQuote
 #include "syserr.h"                    // smbase::XSysError
 #include "utf8-writer.h"               // smbase::utf8EncodeVector
 #include "xassert.h"                   // xassert

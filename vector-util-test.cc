@@ -1,7 +1,7 @@
-// vector-utils-test.cc
-// Test code for vector-utils.h.
+// vector-util-test.cc
+// Test code for vector-util.h.
 
-#include "vector-utils.h"              // module under test
+#include "vector-util.h"               // module under test
 
 #include "sm-test.h"                   // EXPECT_EQ
 #include "str.h"                       // string

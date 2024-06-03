@@ -7,7 +7,7 @@
 #include "utf8-writer.h"               // module under test #2
 
 // This has to come before `sm-test.h` since it is needed by `expectEq`.
-#include "vector-utils.h"              // operator<< (std::vector)
+#include "vector-util.h"               // operator<< (std::vector)
 
 #include "sm-test.h"                   // EXPECT_EQ
 

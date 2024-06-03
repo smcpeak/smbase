@@ -15,8 +15,8 @@
 #include "double-width-type.h"         // smbase::DoubleWidthType
 #include "exc.h"                       // xformatsb
 #include "sm-macros.h"                 // OPEN_NAMESPACE, DMEMB, CMEMB
-#include "string-utils.h"              // singleQuoteChar
-#include "vector-utils.h"              // vectorReverseOf
+#include "string-util.h"               // singleQuoteChar
+#include "vector-util.h"               // vectorReverseOf
 #include "xarithmetic.h"               // XDivideByZero
 #include "xassert.h"                   // xassert
 #include "xoverflow.h"                 // XOverflow

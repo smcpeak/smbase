@@ -3,7 +3,7 @@
 
 #include "hashtbl.h"                   // this module
 
-#include "pointer-utils.h"             // pointerToInteger
+#include "pointer-util.h"              // pointerToInteger
 #include "sm-test.h"                   // PVALTO
 #include "xassert.h"                   // xassert
 

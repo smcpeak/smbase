@@ -1,10 +1,10 @@
-// vector-utils.h
+// vector-util.h
 // Utilities for std::vector.
 
 #ifndef SMBASE_VECTOR_UTILS_H
 #define SMBASE_VECTOR_UTILS_H
 
-#include "container-utils.h"           // CONTAINER_FOREACH
+#include "container-util.h"            // CONTAINER_FOREACH
 #include "overflow.h"                  // convertNumber
 #include "sm-macros.h"                 // NO_OBJECT_COPIES
 #include "xassert.h"                   // xfailure
@@ -90,7 +90,7 @@ std::vector<DEST> convertElements(std::vector<SRC> const &vec)
 // Print 'vec' to 'os' by using 'operator<<' on each element.  Returns
 // 'os'.
 //
-// Note that there is an operator<< in string-utils.h that operates on
+// Note that there is an operator<< in string-util.h that operates on
 // std::vector<std::string> and behaves differently (it quotes the
 // strings).
 template <class T>
@@ -108,7 +108,7 @@ std::ostream& operator<< (std::ostream &os, std::vector<T> const &vec)
 }
 
 
-// Note there is an overload for std::string in string-utils.h that
+// Note there is an overload for std::string in string-util.h that
 // behaves differently.
 template <class T>
 std::string toString(std::vector<T> const &vec)

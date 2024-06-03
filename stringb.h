@@ -18,7 +18,7 @@
 
    Why is this necessary?  For inscrutible reasons, without this, if I
    try to insert a `std::vector` by using the `operator<<` defined in
-   `vector-utils.h`, overload resolution fails and the compiler spews
+   `vector-util.h`, overload resolution fails and the compiler spews
    over 1000 lines of error messages.  But if I use this function to
    wrap the temporary, then it works.
 

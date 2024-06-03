@@ -8,7 +8,7 @@
 #include "dev-warning.h"               // DEV_WARNING
 #include "sm-iostream.h"               // clog
 #include "sm-macros.h"                 // DMEMB, CMEMB
-#include "string-utils.h"              // join
+#include "string-util.h"               // join
 
 // libc
 #include <ctype.h>                     // toupper, tolower

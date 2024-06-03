@@ -62,7 +62,7 @@ public:      // methods
 
 
   // Render `vec` as a string.  This does not use the `operator<<` on
-  // vectors declared in `vector-utils.h` because that would mishandle
+  // vectors declared in `vector-util.h` because that would mishandle
   // one-byte words in this context.
   std::string wordVectorString(WordVector const &vec)
   {

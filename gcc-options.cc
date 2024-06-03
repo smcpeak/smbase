@@ -4,12 +4,12 @@
 #include "gcc-options.h"               // this module
 
 #include "binary-lookup.h"             // binary_lookup
-#include "container-utils.h"           // insertUnique
+#include "container-util.h"            // insertUnique
 #include "sm-file-util.h"              // SMFileUtil
 #include "sm-macros.h"                 // EMEMB, DEFINE_ENUMERATION_TO_STRING
 #include "strcmp-compare.h"            // StrcmpCompare, etc.
 #include "strictly-sorted.h"           // is_strictly_sorted
-#include "string-utils.h"              // stripExtension, stringInSortedArray, join
+#include "string-util.h"               // stripExtension, stringInSortedArray, join
 #include "strutil.h"                   // prefixEquals
 #include "xassert.h"                   // xassert
 

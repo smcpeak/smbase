@@ -2,7 +2,7 @@
 // A set of generic string utilities, including replace(), translate(),
 // trimWhitespace(), encodeWithEscapes(), etc.
 //
-// TODO: This module should be combined with string-utils.h.
+// TODO: This module should be combined with string-util.h.
 
 #ifndef SMBASE_STRUTIL_H
 #define SMBASE_STRUTIL_H

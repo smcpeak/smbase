@@ -6,7 +6,7 @@
 #include "counting-ostream.h"          // nullOStream
 #include "stringb.h"                   // stringbc
 #include "strutil.h"                   // hasSubstring
-#include "string-utils.h"              // doubleQuote, matchesRegex
+#include "string-util.h"               // doubleQuote, matchesRegex
 #include "xassert.h"                   // xfailure
 
 #include <cstdlib>                     // std::getenv

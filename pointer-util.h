@@ -1,4 +1,4 @@
-// pointer-utils.h
+// pointer-util.h
 // Miscellaneous utilities related to pointer manipulation.
 
 // This file is in the public domain.

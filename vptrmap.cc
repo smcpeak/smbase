@@ -3,7 +3,7 @@
 
 #include "vptrmap.h"                   // this module
 
-#include "pointer-utils.h"             // pointerToInteger
+#include "pointer-util.h"              // pointerToInteger
 #include "xassert.h"                   // xfailure
 
 #include <stddef.h>                    // NULL

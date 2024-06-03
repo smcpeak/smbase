@@ -11,7 +11,7 @@
 #include "gdvsymbol.h"                 // GDVSymbol
 #include "overflow.h"                  // addWithOverflowCheck, multiplyWithOverflowCheck
 #include "sm-macros.h"                 // OPEN_NAMESPACE
-#include "string-utils.h"              // possiblyTruncatedWithEllipsis
+#include "string-util.h"               // possiblyTruncatedWithEllipsis
 #include "utf8-writer.h"               // smbase::UTF8Writer
 
 #include <iomanip>                     // std::hex

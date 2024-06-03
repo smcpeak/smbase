@@ -1,4 +1,4 @@
-// string-utils.h
+// string-util.h
 // Utilities related to std::string.
 
 // This was intended to eventually replace strutil.h, which was based on

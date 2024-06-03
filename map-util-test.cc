@@ -1,7 +1,7 @@
-// map-utils-test.cc
-// Tests for map-utils.h.
+// map-util-test.cc
+// Tests for map-util.h.
 
-#include "map-utils.h"                 // module under test
+#include "map-util.h"                  // module under test
 
 #include "exc.h"                       // smbase::XBase
 

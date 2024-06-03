@@ -6,7 +6,7 @@
 #include "exc.h"                       // smbase::{XBase, XFormat}
 #include "sm-test.h"                   // DIAG, verbose
 #include "sm-platform.h"               // PLATFORM_IS_POSIX
-#include "string-utils.h"              // splitNonEmpty
+#include "string-util.h"               // splitNonEmpty
 #include "xassert.h"                   // xassert
 
 #include <cstdlib>                     // std::exit

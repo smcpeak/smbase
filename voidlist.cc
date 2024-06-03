@@ -4,7 +4,7 @@
 #include "voidlist.h"                  // this module
 
 #include "breaker.h"                   // breaker
-#include "pointer-utils.h"             // comparePointerAddresses
+#include "pointer-util.h"              // comparePointerAddresses
 #include "str.h"                       // stringb
 
 #include <stdio.h>                     // printf

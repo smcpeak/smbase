@@ -4,7 +4,7 @@
 #include "codepoint.h"                 // this module
 
 #include "str.h"                       // stringf
-#include "string-utils.h"              // singleQuoteChar
+#include "string-util.h"               // singleQuoteChar
 #include "xassert.h"                   // xfailure_stringbc
 
 

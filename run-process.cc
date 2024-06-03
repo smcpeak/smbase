@@ -6,9 +6,9 @@
 #include "sm-iostream.h"               // cout, cerr
 #include "sm-posix.h"                  // fork, exec, etc.
 #include "sm-windows.h"                // Windows API
-#include "string-utils.h"              // contains
+#include "string-util.h"               // contains
 #include "syserr.h"                    // smbase::xsyserror
-#include "vector-utils.h"              // accumulateWith
+#include "vector-util.h"               // accumulateWith
 #include "xassert.h"                   // xassert
 
 #include <iomanip>                     // std::hex

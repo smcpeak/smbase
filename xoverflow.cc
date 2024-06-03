@@ -4,7 +4,7 @@
 #include "xoverflow.h"                 // this module
 
 #include "sm-macros.h"                 // DMEMB, CMEMB
-#include "string-utils.h"              // doubleQuote
+#include "string-util.h"               // doubleQuote
 #include "stringb.h"                   // stringb
 
 

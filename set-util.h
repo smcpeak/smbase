@@ -1,4 +1,4 @@
-// set-utils.h
+// set-util.h
 // Utilities related to std::set.
 
 // This is a candidate to eventually move into smbase.
@@ -6,7 +6,7 @@
 #ifndef SMBASE_SET_UTILS_H
 #define SMBASE_SET_UTILS_H
 
-#include "container-utils.h"           // CONTAINER_FOREACH
+#include "container-util.h"            // CONTAINER_FOREACH
 
 #include <ostream>                     // std::ostream
 #include <set>                         // std::set

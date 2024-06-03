@@ -1,4 +1,4 @@
-// map-utils.h
+// map-util.h
 // Utilities related to std::map.
 
 #ifndef SMBASE_MAP_UTILS_H

@@ -7,7 +7,7 @@
 
 #include "sm-test.h"                   // EXPECT_EQ, verbose
 #include "stringb.h"                   // stringb
-#include "vector-utils.h"              // operator<< (vector)
+#include "vector-util.h"               // operator<< (vector)
 
 
 // Called from unit-tests.cc.

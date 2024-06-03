@@ -1,4 +1,4 @@
-// container-utils.h
+// container-util.h
 // Utilities for C++ containers.
 
 #ifndef SMBASE_CONTAINER_UTILS_H

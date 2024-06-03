@@ -1,11 +1,11 @@
-// string-utils.cc
-// Code for string-utils.h.
+// string-util.cc
+// Code for string-util.h.
 
-#include "string-utils.h"              // this module
+#include "string-util.h"               // this module
 
 #include "strcmp-compare.h"            // StrcmpCompare
 #include "strutil.h"                   // stringf
-#include "vector-utils.h"              // accumulateWith
+#include "vector-util.h"               // accumulateWith
 #include "xassert.h"                   // xassertdb
 
 #include <algorithm>                   // std::binary_search

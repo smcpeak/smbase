@@ -225,7 +225,7 @@ inline bool streq(char const *s1, char const *s2) {return strcmp(s1, s2) == 0;}
 char const *strstr(rostring haystack, char const *needle);
 
 // There is no wrapper for 'strchr'; use the 'contains' function
-// declared in string-utils.h.
+// declared in string-util.h.
 
 int atoi(rostring s);
 
