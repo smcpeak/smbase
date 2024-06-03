@@ -122,6 +122,8 @@ int compare(
   macro(STRING,          String        , string        )  \
   macro(SEQUENCE,        Sequence      , sequence      )  \
   macro(TAGGED_SEQUENCE, TaggedSequence, taggedSequence)  \
+  macro(TUPLE,           Tuple         , tuple         )  \
+  macro(TAGGED_TUPLE,    TaggedTuple   , taggedTuple   )  \
   macro(SET,             Set           , set           )  \
   macro(TAGGED_SET,      TaggedSet     , taggedSet     )  \
   macro(MAP,             Map           , map           )  \
@@ -154,6 +156,8 @@ DEFINE_ENUMERATION_TO_STRING_OR(
     CASE(GDVK_STRING),
     CASE(GDVK_SEQUENCE),
     CASE(GDVK_TAGGED_SEQUENCE),
+    CASE(GDVK_TUPLE),
+    CASE(GDVK_TAGGED_TUPLE),
     CASE(GDVK_SET),
     CASE(GDVK_TAGGED_SET),
     CASE(GDVK_MAP),
@@ -347,6 +351,7 @@ GDValueKind GDValue::getSuperKind() const
 bool GDValue::isContainer() const
 {
   return isSequence() ||
+         isTuple() ||
          isSet() ||
          isMap();
 }
@@ -355,6 +360,7 @@ bool GDValue::isContainer() const
 bool GDValue::isTaggedContainer() const
 {
   return isTaggedSequence() ||
+         isTaggedTuple() ||
          isTaggedSet() ||
          isTaggedMap();
 }
@@ -1074,6 +1080,60 @@ GDValue &GDValue::sequenceGetValueAt(GDVIndex index)
 void GDValue::sequenceClear()
 {
   sequenceGetMutable().clear();
+}
+
+
+// ------------------------------ Tuple --------------------------------
+DEFINE_CONTAINER_CTOR_SET_GET(TUPLE, Tuple, tuple)
+
+DEFINE_GDV_KIND_BEGIN_END(Tuple, tuple)
+
+
+void GDValue::tupleAppend(GDValue value)
+{
+  tupleGetMutable().push_back(value);
+}
+
+
+void GDValue::tupleResize(GDVSize newSize)
+{
+  tupleGetMutable().resize(newSize);
+}
+
+
+void GDValue::tupleSetValueAt(GDVIndex index, GDValue const &value)
+{
+  if (index >= containerSize()) {
+    tupleResize(index+1);
+  }
+  tupleGetMutable().at(index) = value;
+}
+
+
+void GDValue::tupleSetValueAt(GDVIndex index, GDValue &&value)
+{
+  if (index >= containerSize()) {
+    tupleResize(index+1);
+  }
+  tupleGetMutable().at(index) = std::move(value);
+}
+
+
+GDValue const &GDValue::tupleGetValueAt(GDVIndex index) const
+{
+  return tupleGet().at(index);
+}
+
+
+GDValue &GDValue::tupleGetValueAt(GDVIndex index)
+{
+  return tupleGetMutable().at(index);
+}
+
+
+void GDValue::tupleClear()
+{
+  tupleGetMutable().clear();
 }
 
 

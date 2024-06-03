@@ -432,6 +432,75 @@ static void testSequence()
 }
 
 
+static void testTuple()
+{
+  GDValue v1((GDVTuple()));
+  EXPECT_EQ(v1.asString(), "()");
+  testSerializeRoundtrip(v1);
+
+  GDVTuple t{1,2,3};
+  GDValue v2(t);
+  EXPECT_EQ(v2.asString(), "(1 2 3)");
+  testSerializeRoundtrip(v2);
+
+  GDValue v3;
+  v3.tupleSet(t);
+  EXPECT_EQ(v3.asString(), "(1 2 3)");
+  testSerializeRoundtrip(v3);
+
+  v3.tupleSet(GDVTuple{4,5,6});
+  EXPECT_EQ(v3.asString(), "(4 5 6)");
+  testSerializeRoundtrip(v3);
+
+  GDValue const &cv3 = v3;
+
+  int sum = 0;
+  for (GDValue const &v : cv3.tupleIterableC()) {
+    sum += v.smallIntegerGet();
+  }
+  EXPECT_EQ(sum, 15);
+
+  sum = 0;
+  for (GDValue const &v : cv3.tupleIterable()) {
+    sum += v.smallIntegerGet();
+  }
+  EXPECT_EQ(sum, 15);
+
+  sum = 0;
+  for (GDValue &v : v3.tupleIterable()) {
+    sum += v.smallIntegerGet();
+  }
+  EXPECT_EQ(sum, 15);
+
+  v3.tupleAppend(7);
+  EXPECT_EQ(v3.asString(), "(4 5 6 7)");
+  testSerializeRoundtrip(v3);
+
+  v3.tupleResize(2);
+  EXPECT_EQ(v3.asString(), "(4 5)");
+  testSerializeRoundtrip(v3);
+
+  v3.tupleSetValueAt(1, 1);
+  EXPECT_EQ(v3.asString(), "(4 1)");
+  testSerializeRoundtrip(v3);
+
+  v3.tupleSetValueAt(3, v2);
+  EXPECT_EQ(v3.asString(), "(4 1 null (1 2 3))");
+  testSerializeRoundtrip(v3);
+
+  EXPECT_EQ(cv3.tupleGetValueAt(0).asString(), "4");
+  EXPECT_EQ(v3.tupleGetValueAt(2).asString(), "null");
+
+  v3.tupleSetValueAt(4, 4);
+  EXPECT_EQ(v3.asString(), "(4 1 null (1 2 3) 4)");
+  testSerializeRoundtrip(v3);
+
+  v3.tupleClear();
+  EXPECT_EQ(v3.asString(), "()");
+  testSerializeRoundtrip(v3);
+}
+
+
 static void testSet()
 {
   GDValue v1((GDVSet()));
@@ -745,6 +814,28 @@ static void testTaggedSequence()
 
   v.sequenceAppend(1);
   EXPECT_EQ(v.asString(), "x[1]");
+  testSerializeRoundtrip(v);
+}
+
+
+static void testTaggedTuple()
+{
+  GDValue v(GDVK_TAGGED_TUPLE);
+  EXPECT_EQ(v.asString(), "null()");
+  xassert(v.isTuple());
+  xassert(v.isTaggedContainer());
+  xassert(v.isTaggedTuple());
+  xassert(v.containerIsEmpty());
+  xassert(v.taggedContainerGetTag() == GDVSymbol());
+  xassert(v.taggedContainerGetTag() == GDVSymbol("null"));
+  testSerializeRoundtrip(v);
+
+  v.taggedContainerSetTag(GDVSymbol("x"));
+  EXPECT_EQ(v.asString(), "x()");
+  testSerializeRoundtrip(v);
+
+  v.tupleAppend(1);
+  EXPECT_EQ(v.asString(), "x(1)");
   testSerializeRoundtrip(v);
 }
 
@@ -1078,6 +1169,9 @@ static void testSyntaxErrors()
     // unexpectedCharErr(c, "looking for character after '/'");
     testOneErrorRegex(" /", 1, 3, "end of file.*after '/'");
     testOneErrorRegex("/-", 1, 2, "'-'.*after '/'");
+
+    // Comment-related: check that they do not mess up locations.
+    testOneErrorSubstr("//x\n3.4", 2, 2, "Unexpected '.'");
   }
 
   // skipCStyleComment
@@ -1106,6 +1200,13 @@ static void testSyntaxErrors()
     // readCharOrErr(']', "looking for ']' at end of sequence");
     testMultiErrorRegex("[", {-1, '}'}, 1, 2, "looking for ']' at end of sequence");
     testMultiErrorRegex("[1 ", {-1, '}'}, 1, 4, "looking for ']' at end of sequence");
+  }
+
+  // readNextTuple
+  {
+    // readCharOrErr(')', "looking for ')' at end of tuple");
+    testMultiErrorRegex("(", {-1, '}'}, 1, 2, "looking for '\\)' at end of tuple");
+    testMultiErrorRegex("(1 ", {-1, '}'}, 1, 4, "looking for '\\)' at end of tuple");
   }
 
   // readNextSet
@@ -1259,7 +1360,7 @@ static void testSyntaxErrors()
     testOneErrorSubstr("{", 1, 2, "end of file after '{'");
 
     // unexpectedCharErr(c, "looking for the start of a value");
-    testOneErrorSubstr("(", 1, 1, "'(' while looking for the start of a value");
+    testOneErrorSubstr(";", 1, 1, "';' while looking for the start of a value");
   }
 
   // readExactlyOneValue
@@ -1271,6 +1372,9 @@ static void testSyntaxErrors()
     // readEOFOrErr();
     testOneErrorSubstr("1 2", 1, 3, "only have one value");
   }
+
+  // Check for a problem with tagged containers and error locations.
+  testOneErrorSubstr("[\nx\n2;1]", 3, 2, "Unexpected ';'");
 }
 
 
@@ -1576,9 +1680,11 @@ void test_gdvalue()
     testInteger();
     testString();
     testSequence();
+    testTuple();
     testSet();
     testMap();
     testTaggedSequence();
+    testTaggedTuple();
     testTaggedSet();
     testTaggedMap();
     testSyntaxErrors();

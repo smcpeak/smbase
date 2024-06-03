@@ -14,6 +14,8 @@ class GDVStringIterableC;
 class GDVStringIterable;
 class GDVSequenceIterableC;
 class GDVSequenceIterable;
+class GDVTupleIterableC;
+class GDVTupleIterable;
 class GDVSetIterableC;
 class GDVSetIterable;
 class GDVMapIterableC;

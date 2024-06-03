@@ -61,7 +61,12 @@ one of the following:
 
   * String: A finite sequence of Unicode code points.
 
-  * Sequence: A finite ordered sequence of values.
+  * Sequence: Also a finite ordered sequence of values.  In a sequence,
+    the meaning of each element typically does not depend on its
+    position.
+
+  * Tuple: A finite ordered sequence of values.  In a tuple, the meaning
+    of each element typically depends on its position.
 
   * Set: A finite unordered set of values.  An empty set is distinct
     from an empty sequence.
@@ -176,6 +181,40 @@ abbreviation "seq" is concise and unambiguous, so works well as a
 substitute in cases where the longer term would get in the way.
 
 
+Tuples versus sequences
+-----------------------
+
+The model includes both tuples (like "(1 2 3)") and sequences (like "[1
+2 3]").  The reason is to better support the idea that the model is,
+to some extent, self-describing.  That is, one can look at a value and
+understand a lot about its intended purpose and meaning just from the
+available structure, without reference to an external document.
+
+In typical usage, a tuple is an object composed of several elements such
+that the *position* of each element is important to interpreting that
+element's meaning.  A good example is a date, e.g., "Date(2024 06 02)",
+or a rational number, "Rational(3 5)".  These are not mere lists of
+values that have an order, the exact position of each element is an
+essential part of determining the element's meaning.
+
+In contrast, while a sequence has an order (unlike a set), the precise
+position of an element does not normally determine how that element is
+interpreted.  That in turn *often* means that list elements are
+"homogeneous" to some degree, but really what is decisive when choosing
+a list over a tuple is whether you have to know the position to make
+sense of the element.  Moreover, it is precisely the *ability* to convey
+that distinction that I find compelling.
+
+Considering the alternative of exclusively using sequences, I find
+something like "[2024 06 02]" to be inadequate in an ostensibly
+self-describing format, with "Date[2024 06 02]" clearly better but still
+falling short of ideal.  Meanwhile, the cost of allowing one more kind
+of container is very small in terms of mechanical concerns like parsing,
+storing, and printing, and does not dramatically impact how the model is
+serialized into less expressive forms like JSON, particularly given the
+presence of tagged containers (discussed below).
+
+
 Sets versus maps
 ----------------
 
@@ -186,9 +225,8 @@ theorems that apply to sets also apply to maps.
 
 It's therefore tempting to try to do the same for GDValue.  In
 particular, the idea would be to say that a map is simply a set that
-conforms to the requirement of all elements being two-element sequences
-(as I do not have a distinct "pair" or even "tuple" notion) whose first
-elements are all unique within the map.
+conforms to the requirement of all elements being two-element tuples
+whose first elements are all unique within the map.
 
 However, having pursued it a certain distance, there are several
 problems:
@@ -254,6 +292,48 @@ doing something (what exactly?) when they are not.
 
 Consequently, in this design, I simply treat sets and maps as entirely
 different, unrelated containers.
+
+
+Tagged containers
+-----------------
+
+Tagged containers allow consumers to easily recognize what kind of thing
+a container represents without having to inspect either its context or
+contents.  This is another feature that advances the goal of being
+self-describing.  Because it is so useful, many JSON formats include a
+provision for a "type" or similar field in a map to indicate the entity
+kind, but that is awkward (since it is in the wrong place), and
+impossible for lists.  An alternative is to wrap a two-element list
+around the outside, but that is a weak convention to try to follow and
+creates significant additional delimiter clutter.
+
+Tagged containers have some arguable precedent in s-expressions, where
+one might see "(Date 2024 06 24)", and this prompts the question of why
+not follow that example.  In sort, that syntax puts the symbol ("Date")
+on the wrong side of the delimiter.  Syntactically it is symmetric with
+the following elements, but semantically plays an entirely different
+role.  By swapping them, "Date(2024 06 24)", the syntax reflects the
+role.
+
+As further elaboration, consider three alternative data models:
+
+* Java/C++/etc.: Objects have (class) names, fields have names.
+
+* JSON: Fields have names, objects do not.
+
+* XML: Elements (analogous to objects) have names, while sub-elements
+  (analogous to fields) do not.  XML also has named attributes, but
+  these are not recursive (an attribute cannot contain an element).
+
+The data models used by JSON and XML each drop one kind of name that a
+conventional programming language like Java or C++ has in its data
+model.  Names are the most fundamental and important abstraction
+mechanism in data modeling, and their loss is acutely felt in practical
+use of both JSON and XML, and people respond by contorting the
+respective models to shoehorn the missing names in various ways.  The
+GDV data follows the programming language examples by allowing names to
+be easily associated both with container and containee, but does not
+require either.
 
 
 GDVN: Text representation
@@ -361,6 +441,11 @@ Sequence: [1 2 3]
   annoying to deal with if not allowed at the end, while being somewhat
   ugly when they are.
 
+Tuple: (1 2 3)
+
+  The rules are the same as for sequences, except using round
+  parentheses instead of square brackets.
+
 Set: {{1 2 3}}
 
   There is no significance to the order in which elements appear.  The
@@ -433,6 +518,7 @@ file, then the following character must be one of:
   * Whitespace, including ','
   * '}'
   * ']'
+  * ')'
   * ':'
 
 Consequently, for example, "[1a]" is invalid, whereas without this rule,
@@ -527,16 +613,6 @@ likely to indicate a problem in the upstream production of the data,
 silently dropping one of two different values (which one?) would be
 quite surprising and constitute potential data loss, and that policy is
 extended to the case of identical values for uniformity.
-
-Tagged containers allow consumers to easily recognize what kind of thing
-a container represents without having to inspect its contents.  This is
-useful when the context does not sufficiently constrain the container.
-Because it is so useful, many JSON formats include a provision for a
-"type" or similar field in a map to indicate the entity kind, but that
-is awkward (since it is in the wrong place), and impossible for lists.
-An alternative is to wrap a two-element list around the outside, but
-that is a weak convention to try to follow and creates significant
-additional delimiter clutter.
 
 The restriction on what characters can follow a value, which has the
 effect of preventing values from being juxtaposed, is meant in part to

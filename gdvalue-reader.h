@@ -102,9 +102,13 @@ protected:   // methods
   // the comment we are about to scan is not nested in anything.
   void skipCStyleComment(int nestingDepth);
 
+  // Having seen and consumed '[', read the following values and put
+  // them into a sequence.  Return after consuming the ']'.
+  GDValue readNextSequence();
+
   // Having seen and consumed '(', read the following values and put
   // them into a sequence.  Return after consuming the ')'.
-  GDValue readNextSequence();
+  GDValue readNextTuple();
 
   // Having seen and consumed "{{", read the following values and put
   // them into a set.  Return after consuming the "}}".

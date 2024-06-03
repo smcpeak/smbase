@@ -19,6 +19,7 @@
 #include "compare-util.h"              // DEFINE_FRIEND_RELATIONAL_OPERATORS
 #include "gdvalue-write-options.h"     // gdv::GDValueWriteOptions
 #include "gdvsymbol.h"                 // gdv::GDVSymbol
+#include "gdvtuple.h"                  // gdv::GDVTuple
 #include "sm-integer.h"                // smbase::Integer
 #include "sm-macros.h"                 // OPEN_NAMESPACE
 
@@ -57,6 +58,8 @@ using GDVString = std::string;
 // GDValue(GDVK_SEQUENCE) holds this.
 using GDVSequence = std::vector<GDValue>;
 
+// `GDVTuple` is defined in `gdvtuple.h`.
+
 // GDValue(GDVK_SET) holds this.
 using GDVSet = std::set<GDValue>;
 
@@ -69,7 +72,7 @@ using GDVMapEntry = std::pair<GDValue const, GDValue>;
 
 // A pair of a symbol tag and a container.
 //
-// The CONTAINER is one of GDVSequence, GDVSet, or GDVMap.
+// The CONTAINER is one of GDVSequence, GDVTuple, GDVSet, or GDVMap.
 template <typename CONTAINER>
 class GDVTaggedContainer {
 public:      // data
@@ -106,6 +109,7 @@ public:      // methods
 
 
 using GDVTaggedSequence = GDVTaggedContainer<GDVSequence>;
+using GDVTaggedTuple    = GDVTaggedContainer<GDVTuple>;
 using GDVTaggedSet      = GDVTaggedContainer<GDVSet>;
 using GDVTaggedMap      = GDVTaggedContainer<GDVMap>;
 
@@ -118,8 +122,9 @@ using GDVTaggedMap      = GDVTaggedContainer<GDVMap>;
 // find.
 #define FOR_EACH_GDV_CONTAINER(macro) \
   macro(SEQUENCE, Sequence, sequence) \
-  macro(SET,      Set     , set     ) \
-  macro(MAP,      Map     , map     )
+  macro(TUPLE,    Tuple,    tuple   ) \
+  macro(SET,      Set,      set     ) \
+  macro(MAP,      Map,      map     )
 
 
 /* Possible kinds of GDValues.
@@ -163,6 +168,11 @@ enum GDValueKind : unsigned char {
   // Tagged sequence: A symbol and a sequence.
   GDVK_TAGGED_SEQUENCE,
 
+  // Tuple: Another kind of sequence, at least from a representation
+  // perspective.  (See gdvalue-design.txt, "Tuples versus sequences".)
+  GDVK_TUPLE,
+  GDVK_TAGGED_TUPLE,
+
   // Set: Unordered set of (unique) values.
   GDVK_SET,
 
@@ -198,12 +208,16 @@ char const *toString(GDValueKind gdvk);
          SmallInteger
        String
      Container
-       Sequence
-         TaggedSequence
-       Set
-         TaggedSet
-       Map
-         TaggedMap
+       OrderedContainer
+         Sequence
+           TaggedSequence
+         Tuple
+           TaggedTuple
+       UnorderedContainer
+         Set
+           TaggedSet
+         Map
+           TaggedMap
 */
 class GDValue {
 private:     // class data
@@ -264,6 +278,8 @@ private:     // instance data
     GDVString         *m_string;
     GDVSequence       *m_sequence;
     GDVTaggedSequence *m_taggedSequence;
+    GDVTuple          *m_tuple;
+    GDVTaggedTuple    *m_taggedTuple;
     GDVSet            *m_set;
     GDVTaggedSet      *m_taggedSet;
     GDVMap            *m_map;
@@ -332,6 +348,9 @@ public:      // methods
   bool isSequence()       const { return m_kind == GDVK_SEQUENCE      ||
                                          isTaggedSequence();             }
   bool isTaggedSequence() const { return m_kind == GDVK_TAGGED_SEQUENCE; }
+  bool isTuple()          const { return m_kind == GDVK_TUPLE         ||
+                                         isTaggedTuple();                }
+  bool isTaggedTuple()    const { return m_kind == GDVK_TAGGED_TUPLE;    }
   bool isSet()            const { return m_kind == GDVK_SET           ||
                                          isTaggedSet();                  }
   bool isTaggedSet()      const { return m_kind == GDVK_TAGGED_SET;      }
@@ -340,6 +359,12 @@ public:      // methods
   bool isTaggedMap()      const { return m_kind == GDVK_TAGGED_MAP;      }
 
   bool isTaggedContainer() const;
+
+  // True of Sequence and Tuple.
+  bool isOrderedContainer() const;
+
+  // True of Set and Map.
+  bool isUnorderedContainer() const;
 
 
   /* Return <0 if a<b, 0 if a==b, and >0 otherwise.
@@ -611,6 +636,32 @@ public:      // methods
   void sequenceClear();
 
 
+  // ---- Tuple ----
+  /*implicit*/ GDValue(GDVTuple const &tup);
+  /*implicit*/ GDValue(GDVTuple      &&tup);
+
+  void tupleSet(GDVTuple const &tup);
+  void tupleSet(GDVTuple      &&tup);
+
+  GDVTuple const &tupleGet()        const;
+  GDVTuple       &tupleGetMutable()      ;
+
+  DECLARE_GDV_KIND_ITERATORS(GDVTuple, tuple)
+
+  void tupleAppend(GDValue value);
+
+  // Discard extra elements or pad with nulls to match the size.
+  void tupleResize(GDVSize newSize);
+
+  void tupleSetValueAt(GDVIndex index, GDValue const &value);
+  void tupleSetValueAt(GDVIndex index, GDValue      &&value);
+
+  GDValue const &tupleGetValueAt(GDVIndex index) const;
+  GDValue       &tupleGetValueAt(GDVIndex index)      ;
+
+  void tupleClear();
+
+
   // ---- Set ---
   /*implicit*/ GDValue(GDVSet const &set);
   /*implicit*/ GDValue(GDVSet      &&set);
@@ -755,6 +806,8 @@ template <>
 DEFINE_GDV_KIND_ITERABLE(GDVString, string)
 
 DEFINE_GDV_KIND_ITERABLE(GDVSequence, sequence)
+
+DEFINE_GDV_KIND_ITERABLE(GDVTuple, tuple)
 
 DEFINE_GDV_KIND_ITERABLE(GDVSet, set)
 

@@ -5,8 +5,6 @@
 // more delimiters cluttering the view.
 
 [
-// This is commented until I add tuples.
-/*
   (Person {
     name: "Sam"
     dob: (Date 1980 01 31)
@@ -20,15 +18,15 @@
     name: "Central Park"
     city: "NY"
     state: "NY"
-    lattitude: 40.123
-    longitude: 75.3
+    // TODO: Need floats.
+    //lattitude: 40.123
+    //longitude: 75.3
   })
   (Animal {
     name: "Brown Bear"
     genus: "Ursus"
     species: "Somethingus"
   })
-*/
 ]
 
 

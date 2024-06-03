@@ -167,6 +167,7 @@ bool GDValueReader::isAllowedAfterValue(int c)
     case ',':
     case '}':
     case ']':
+    case ')':
     case ':':
       return true;
 
@@ -181,7 +182,7 @@ void GDValueReader::checkAfterValueOrErr(int c)
   if (!isAllowedAfterValue(c)) {
     inCtxUnexpectedCharErr(c,
       "after a value; every value must be followed by EOF, whitespace, "
-      "',', ':', ']', or '}'");
+      "',', ':', ']', ')', or '}'");
   }
 }
 
@@ -323,6 +324,22 @@ GDValue GDValueReader::readNextSequence()
     }
 
     ret.sequenceAppend(std::move(*next));
+  }
+}
+
+
+GDValue GDValueReader::readNextTuple()
+{
+  GDValue ret(GDVK_TUPLE);
+
+  while (true) {
+    std::optional<GDValue> next = readNextValue();
+    if (!next) {
+      readCharOrErr(')', "looking for ')' at end of tuple");
+      return ret;
+    }
+
+    ret.tupleAppend(std::move(*next));
   }
 }
 
@@ -709,6 +726,13 @@ GDValue GDValueReader::readNextSymbolOrTaggedContainer(int firstChar)
       std::move(containedSequence.sequenceGetMutable())));
   }
 
+  else if (c == '(') {
+    // Tagged tuple.
+    GDValue containedTuple = readNextTuple();
+    return GDValue(GDVTaggedTuple(symbol,
+      std::move(containedTuple.tupleGetMutable())));
+  }
+
   else {
     // Just a symbol.
     putbackAfterValueOrErr(c);       // Could be EOF, fine.
@@ -733,11 +757,15 @@ std::optional<GDValue> GDValueReader::readNextValue()
     switch (c) {
       case ']':
       case '}':
+      case ')':
         putback(c);
         return std::nullopt;
 
       case '[':
         return std::make_optional(readNextSequence());
+
+      case '(':
+        return std::make_optional(readNextTuple());
 
       case '{': {
         c = readChar();

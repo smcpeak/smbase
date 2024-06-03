@@ -205,6 +205,8 @@ bool GDValueWriter::tryWrite(GDValue const &value,
   // For use inside the `CASE` macro below.
   char const * const sequenceOpenDelim  = "[";
   char const * const sequenceCloseDelim = "]";
+  char const * const tupleOpenDelim     = "(";
+  char const * const tupleCloseDelim    = ")";
   char const * const setOpenDelim       = "{{";
   char const * const setCloseDelim      = "}}";
   char const * const mapOpenDelim       = "{";

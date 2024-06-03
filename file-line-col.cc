@@ -35,8 +35,10 @@ void LineCol::decrementColumn()
 void LineCol::decrementForChar(int c)
 {
   if (c == '\n') {
-    // We should never be putting back a newline, and we cannot recover
-    // the old column number.  Just use column 0 for this case.
+    // We put a newline back after seeing a symbol at the end of a
+    // line.  Decrement the line number and clear the column, expecting
+    // to restore them momentarily.
+    --m_line;
     m_column = 0;
   }
   else {
