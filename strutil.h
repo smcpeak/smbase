@@ -14,13 +14,6 @@
 #include <stdio.h>                     // FILE
 
 
-// direct string replacement, replacing instances of oldstr with newstr
-// (newstr may be "")
-std::string replace(
-  std::string const &src,
-  std::string const &oldstr,
-  std::string const &newstr);
-
 // Expand a string that may contain 'tr'-like ranges.
 std::string expandRanges(char const *chars);
 

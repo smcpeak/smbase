@@ -13,6 +13,7 @@
 #include <cstring>                     // std::{strchr, strrchr}
 #include <limits>                      // std::numeric_limits
 #include <sstream>                     // std::ostringstream
+#include <string_view>                 // std::string_view
 #include <regex>                       // std::regex
 
 
@@ -279,6 +280,45 @@ std::string possiblyTruncatedWithEllipsis(
   else {
     return str;
   }
+}
+
+
+std::string replace(
+  std::string const &origSrc,
+  std::string const &oldstr,
+  std::string const &newstr)
+{
+  std::ostringstream ret;
+
+  // Operate on a view of the source.
+  //
+  // TODO: This function should accept `string_view` arguments in the
+  // first place.
+  std::string_view src(origSrc);
+
+  // Position from which to begin the next search.
+  std::size_t i = 0;
+
+  while (i < src.size()) {
+    std::size_t next = src.find(oldstr, i);
+
+    if (next == std::string::npos) {
+      // No more occurrences, append the remainder.
+      ret << src.substr(i);
+      break;
+    }
+
+    // Add the characters between `i` and `next`.
+    ret << src.substr(i, next-i);
+
+    // Add the replacement string.
+    ret << newstr;
+
+    // Move `i` beyond the replacement string.
+    i += (next-i) + oldstr.size();
+  }
+
+  return ret.str();
 }
 
 

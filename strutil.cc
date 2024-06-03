@@ -22,33 +22,6 @@
 using namespace smbase;
 
 
-// replace all instances of oldstr in src with newstr, return result
-string replace(rostring origSrc, rostring oldstr, rostring newstr)
-{
-  stringBuilder ret;
-  char const *src = toCStr(origSrc);
-
-  while (*src) {
-    char const *next = strstr(src, toCStr(oldstr));
-    if (!next) {
-      ret << src;
-      break;
-    }
-
-    // add the characters between src and next
-    ret << substring(src, next-src);
-
-    // add the replace-with string
-    ret << newstr;
-
-    // move src to beyond replaced substring
-    src += (next-src) + strlen(oldstr);
-  }
-
-  return ret.str();
-}
-
-
 string expandRanges(char const *chars_)
 {
   stringBuilder ret;

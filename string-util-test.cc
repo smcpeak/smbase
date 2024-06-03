@@ -371,6 +371,16 @@ static void testInt64ToRadixDigits()
 }
 
 
+static void testReplace()
+{
+  EXPECT_EQ(replace("", "", ""), "");
+  EXPECT_EQ(replace("xxx", "x", "xxx"), "xxxxxxxxx");
+  EXPECT_EQ(replace("xxx", "x", ""), "");
+  EXPECT_EQ(replace("Just some text. Just some text.", "some", "SOME"),
+                    "Just SOME text. Just SOME text.");
+}
+
+
 void test_string_utils()
 {
   testSplitNonEmpty();
@@ -388,6 +398,7 @@ void test_string_utils()
   testSingleQuoteChar();
   testEscapeForRegex();
   testInt64ToRadixDigits();
+  testReplace();
 }
 
 

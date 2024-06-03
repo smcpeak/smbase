@@ -98,6 +98,15 @@ std::string stripExtension(std::string const &fname);
 std::string possiblyTruncatedWithEllipsis(
   std::string const &str, std::size_t maxLen);
 
+// Within `src`, replace occurrences of `oldstr` with `newstr` (which
+// may be empty).  After each replacement, searching for the next
+// occurrence begins right after the inserted text, so that text is not
+// subject to further replacement.
+std::string replace(
+  std::string const &src,
+  std::string const &oldstr,
+  std::string const &newstr);
+
 
 // ----------------------- Regular expressions -------------------------
 // True if 'str' matches 'regex'.
