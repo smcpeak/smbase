@@ -16,10 +16,22 @@
 #include <string>                      // std::string
 #include <vector>                      // std::vector
 
+
+// ------------------------------ Parsing ------------------------------
 // Split 'text' into non-empty words separated by 'sep', which never
 // appears in any of the result words.
 std::vector<std::string> splitNonEmpty(std::string const &text, char sep);
 
+
+// ------------------------- Tests on strings --------------------------
+// True if 'str' begins with 'prefix'.
+bool beginsWith(std::string const &str, std::string const &prefix);
+
+// True if 'str' contains 'c'.
+bool contains(std::string const &str, char c);
+
+
+// ------------------ Manipulating vectors of strings ------------------
 // Return elements of 'vec' separated by 'sep'.
 std::string join(std::vector<std::string> const &vec,
                  std::string const &sep);
@@ -32,6 +44,29 @@ std::vector<std::string> prefixAll(std::vector<std::string> const &vec,
 std::vector<std::string> suffixAll(std::vector<std::string> const &vec,
                                    std::string const &suffix);
 
+// Write 'vec' to 'os' like: ["first", "second", "third"].  The elements
+// are quoted using the 'insertDoubleQuoted' function.
+std::ostream& operator<< (std::ostream &os,
+                          std::vector<std::string> const &vec);
+
+// Convert 'vec' to a string using 'operator<<'.
+std::string toString(std::vector<std::string> const &vec);
+
+
+// --------------------- Searching array of char* ----------------------
+// True if 'arr' is strictly sorted in ascending order per 'strcmp',
+// which is equivalent to "LANG=C sort" order.
+bool isStrictlySortedStringArray(char const * const *arr,
+                                 std::size_t arrLength);
+
+// Return true if 'str' compares equal to any of the strings in 'arr',
+// whose length is 'arrLength'.  The array must satisfy
+// 'isStrictlySortedStringArray'.
+bool stringInSortedArray(char const *str, char const * const *arr,
+                         std::size_t arrLength);
+
+
+// ----------------------------- Escaping ------------------------------
 // Write `c` to `os`, substituting a C escape sequence if it is not
 // printable or is a metacharacter.
 void insertPossiblyEscapedChar(std::ostream &os, int c);
@@ -44,39 +79,18 @@ void insertDoubleQuoted(std::ostream &os, std::string const &str);
 // Return 's' in the 'insertDoubleQuoted' form.
 std::string doubleQuote(std::string const &s);
 
-// Write 'vec' to 'os' like: ["first", "second", "third"].  The elements
-// are quoted using the 'insertDoubleQuoted' function.
-std::ostream& operator<< (std::ostream &os,
-                          std::vector<std::string> const &vec);
-
-// Convert 'vec' to a string using 'operator<<'.
-std::string toString(std::vector<std::string> const &vec);
-
 // Return `c` enclosed in single quotes if it is printable and not a
 // metacharacter, or as an escape sequence if not.
 std::string singleQuoteChar(int c);
 
+
+// ---------------------------- File names -----------------------------
 // If 'fname' contains any '.' characters, remove the last one and all
 // following characters, and return that.  Otherwise return 'fname'.
 std::string stripExtension(std::string const &fname);
 
-// True if 'arr' is strictly sorted in ascending order per 'strcmp',
-// which is equivalent to "LANG=C sort" order.
-bool isStrictlySortedStringArray(char const * const *arr,
-                                 std::size_t arrLength);
 
-// Return true if 'str' compares equal to any of the strings in 'arr',
-// whose length is 'arrLength'.  The array must satisfy
-// 'isStrictlySortedStringArray'.
-bool stringInSortedArray(char const *str, char const * const *arr,
-                         std::size_t arrLength);
-
-// True if 'str' begins with 'prefix'.
-bool beginsWith(std::string const &str, std::string const &prefix);
-
-// True if 'str' contains 'c'.
-bool contains(std::string const &str, char c);
-
+// ----------------------- Manipulating strings ------------------------
 // If 'str' is longer than 'maxLen', truncate it to 'maxLen', with the
 // last three characters replaced with "...".  If 'maxLen' is less than
 // or equal to 3, and truncation is necessary, the result is 'maxLen'
@@ -84,6 +98,8 @@ bool contains(std::string const &str, char c);
 std::string possiblyTruncatedWithEllipsis(
   std::string const &str, std::size_t maxLen);
 
+
+// ----------------------- Regular expressions -------------------------
 // True if 'str' matches 'regex'.
 //
 // The regex match is performed by compiling it with the defaults for
@@ -98,6 +114,8 @@ bool matchesRegex(std::string const &str, std::string const &regex);
 // metacharacters it contains.
 std::string escapeForRegex(std::string const &s);
 
+
+// ---------------------- Stringifying numbers -------------------------
 // Return `value` as a string of digits in `radix`, itself in [2,36].
 std::string uint64ToRadixDigits(
   std::uint64_t magnitude, int radix);
@@ -118,5 +136,6 @@ std::string uint64ToRadixPrefixedDigits(
 */
 std::string int64ToRadixDigits(
   std::int64_t value, int radix, bool radixIndicator);
+
 
 #endif // STRING_UTILS_H
