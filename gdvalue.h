@@ -104,11 +104,40 @@ public:      // methods
   DEFINE_FRIEND_RELATIONAL_OPERATORS(GDVTaggedContainer)
 };
 
-using GDVTaggedMap = GDVTaggedContainer<GDVMap>;
+
+using GDVTaggedSequence = GDVTaggedContainer<GDVSequence>;
+using GDVTaggedSet      = GDVTaggedContainer<GDVSet>;
+using GDVTaggedMap      = GDVTaggedContainer<GDVMap>;
 
 
-// Possible kinds of GDValues.
+// Expand `macro` once for each kind of GDV container.
+//
+// I do not use this macro in every possible place because token pasting
+// makes it hard to find things with ordinary text search, and some
+// things are important enough that I want to ensure they are easy to
+// find.
+#define FOR_EACH_GDV_CONTAINER(macro) \
+  macro(SEQUENCE, Sequence, sequence) \
+  macro(SET,      Set     , set     ) \
+  macro(MAP,      Map     , map     )
+
+
+/* Possible kinds of GDValues.
+
+   The order of the enumerators is also the order into which the kinds
+   sort, *except* that Integer and SmallInteger sort with respect to
+   each other according to their numerical value, regardless of the
+   classification as "small" or not.  That is, we have:
+
+     large neg < small neg < 0 < small pos < large pos
+
+   (Zero is actually a small non-negative integer.)
+*/
 enum GDValueKind : unsigned char {
+  // ---- Scalars ----
+  // Scalars are tree "leaves" in that they do not contain other
+  // GDValues.
+
   // Symbol: An identifier-like string that acts as a name of something
   // defined elsewhere.  This includes the special symbols `null`,
   // `false`, and `true`.
@@ -124,16 +153,26 @@ enum GDValueKind : unsigned char {
   // String: Sequence of Unicode characters encoded as UTF-8.
   GDVK_STRING,
 
+  // ---- Containers ----
+  // Containers are potential interior tree "nodes" in that they can
+  // contain other GDValues.
+
   // Sequence: Ordered sequence of values.
   GDVK_SEQUENCE,
+
+  // Tagged sequence: A symbol and a sequence.
+  GDVK_TAGGED_SEQUENCE,
 
   // Set: Unordered set of (unique) values.
   GDVK_SET,
 
+  // Tagged set: A symbol and a set.
+  GDVK_TAGGED_SET,
+
   // Map: Set of (key, value) pairs that are indexed by key.
   GDVK_MAP,
 
-  // Tag+map.
+  // Tagged map: A symbol and a map.
   GDVK_TAGGED_MAP,
 
   NUM_GDVALUE_KINDS
@@ -165,8 +204,6 @@ char const *toString(GDValueKind gdvk);
          TaggedSet
        Map
          TaggedMap
-
-   TODO: The Tagged containers aren't implemented yet.
 */
 class GDValue {
 private:     // class data
@@ -192,27 +229,25 @@ public:      // class data
   static unsigned s_ct_valueKindCtor;
   static unsigned s_ct_boolCtor;
   static unsigned s_ct_symbolCtor;
-  static unsigned s_ct_integerCopyCtor;
-  static unsigned s_ct_integerMoveCtor;
+  static unsigned s_ct_integerCtorCopy;
+  static unsigned s_ct_integerCtorMove;
   static unsigned s_ct_integerSmallIntCtor;
   static unsigned s_ct_stringCtorCopy;
   static unsigned s_ct_stringCtorMove;
   static unsigned s_ct_stringSetCopy;
   static unsigned s_ct_stringSetMove;
-  static unsigned s_ct_sequenceCtorCopy;
-  static unsigned s_ct_sequenceCtorMove;
-  static unsigned s_ct_sequenceSetCopy;
-  static unsigned s_ct_sequenceSetMove;
-  static unsigned s_ct_setCtorCopy;
-  static unsigned s_ct_setCtorMove;
-  static unsigned s_ct_setSetCopy;
-  static unsigned s_ct_setSetMove;
-  static unsigned s_ct_mapCtorCopy;
-  static unsigned s_ct_mapCtorMove;
-  static unsigned s_ct_mapSetCopy;
-  static unsigned s_ct_mapSetMove;
-  static unsigned s_ct_taggedMapCtorCopy;
-  static unsigned s_ct_taggedMapCtorMove;
+
+  #define DECLARE_CTOR_COUNTS(KIND, Kind, kind)  \
+    static unsigned s_ct_##kind##CtorCopy;       \
+    static unsigned s_ct_##kind##CtorMove;       \
+    static unsigned s_ct_##kind##SetCopy;        \
+    static unsigned s_ct_##kind##SetMove;        \
+    static unsigned s_ct_tagged##Kind##CtorCopy; \
+    static unsigned s_ct_tagged##Kind##CtorMove;
+
+  FOR_EACH_GDV_CONTAINER(DECLARE_CTOR_COUNTS)
+
+  #undef DECLARE_CTOR_COUNTS
 
 private:     // instance data
   // Tag indicating which kind of value is represented, and for
@@ -222,15 +257,17 @@ private:     // instance data
   // Representation of the value.
   union GDValueUnion {
     // Index of a symbol.
-    GDVSymbol::Index m_symbolIndex;
+    GDVSymbol::Index m_symbol;
 
     // These are all owner pointers (when active, of course).
-    GDVInteger   *m_integer;
-    GDVString    *m_string;
-    GDVSequence  *m_sequence;
-    GDVSet       *m_set;
-    GDVMap       *m_map;
-    GDVTaggedMap *m_taggedMap;
+    GDVInteger        *m_integer;
+    GDVString         *m_string;
+    GDVSequence       *m_sequence;
+    GDVTaggedSequence *m_taggedSequence;
+    GDVSet            *m_set;
+    GDVTaggedSet      *m_taggedSet;
+    GDVMap            *m_map;
+    GDVTaggedMap      *m_taggedMap;
 
     // The value for `GDVK_SMALL_INTEGER`, which is used anytime an
     // integer is representable as `GDVSmallInteger`.
@@ -243,7 +280,7 @@ private:     // instance data
     GDVSmallInteger m_smallInteger;
 
     explicit GDValueUnion(GDVSymbol::Index symbolIndex)
-      : m_symbolIndex(symbolIndex)
+      : m_symbol(symbolIndex)
     {}
   } m_value;
 
@@ -287,16 +324,20 @@ public:      // methods
   // True of sequence, set, and map.  False of others.
   bool isContainer() const;
 
-  bool isSymbol()       const { return m_kind == GDVK_SYMBOL;        }
-  bool isInteger()      const { return m_kind == GDVK_INTEGER ||
-                                       isSmallInteger();             }
-  bool isSmallInteger() const { return m_kind == GDVK_SMALL_INTEGER; }
-  bool isString()       const { return m_kind == GDVK_STRING;        }
-  bool isSequence()     const { return m_kind == GDVK_SEQUENCE;      }
-  bool isSet()          const { return m_kind == GDVK_SET;           }
-  bool isMap()          const { return m_kind == GDVK_MAP ||
-                                       isTaggedMap();                }
-  bool isTaggedMap()    const { return m_kind == GDVK_TAGGED_MAP;    }
+  bool isSymbol()         const { return m_kind == GDVK_SYMBOL;          }
+  bool isInteger()        const { return m_kind == GDVK_INTEGER       ||
+                                         isSmallInteger();               }
+  bool isSmallInteger()   const { return m_kind == GDVK_SMALL_INTEGER;   }
+  bool isString()         const { return m_kind == GDVK_STRING;          }
+  bool isSequence()       const { return m_kind == GDVK_SEQUENCE      ||
+                                         isTaggedSequence();             }
+  bool isTaggedSequence() const { return m_kind == GDVK_TAGGED_SEQUENCE; }
+  bool isSet()            const { return m_kind == GDVK_SET           ||
+                                         isTaggedSet();                  }
+  bool isTaggedSet()      const { return m_kind == GDVK_TAGGED_SET;      }
+  bool isMap()            const { return m_kind == GDVK_MAP           ||
+                                         isTaggedMap();                  }
+  bool isTaggedMap()      const { return m_kind == GDVK_TAGGED_MAP;      }
 
   bool isTaggedContainer() const;
 
@@ -507,14 +548,7 @@ public:      // methods
   void stringSet(GDVString      &&str);
 
   GDVString const &stringGet()        const;
-
-  // For containers, I think it is important for efficiency to be able
-  // to modify them in-place, hence the "mutable" methods.  Strings have
-  // aspects of both a scalar and a container, so it's plausible to
-  // allow them to be mutated too.  However, I don't often mutate
-  // strings, the potential efficiency benefit for them is limited, and
-  // I'd like to leave the door open to a small-string optimization, so
-  // for now there is no `stringGetMutable`.
+  GDVString       &stringGetMutable()      ;
 
   // Declare the iterators for a particular kind of GDValue.
   #define DECLARE_GDV_KIND_ITERATORS(GDVKindName, kindName)    \
@@ -547,7 +581,7 @@ public:      // methods
   // Requires `isContainer()`.
   GDVSize containerSize() const;
 
-  // True if the size is zero.
+  // True if `containerSize()==0`.
   bool containerIsEmpty() const;
 
 
@@ -635,18 +669,22 @@ public:      // methods
 
   GDVSymbol taggedContainerGetTag() const;
 
+  #define DECLARE_TAGGED_CONTAINER_METHODS(KIND, Kind, kind) \
+    /*implicit*/ GDValue(GDVTagged##Kind const &tcont);      \
+    /*implicit*/ GDValue(GDVTagged##Kind      &&tcont);      \
+                                                             \
+    void tagged##Kind##Set(GDVTagged##Kind const &tcont);    \
+    void tagged##Kind##Set(GDVTagged##Kind      &&tcont);    \
+                                                             \
+    GDVTagged##Kind const &tagged##Kind##Get()        const; \
+    GDVTagged##Kind       &tagged##Kind##GetMutable()      ;
 
-  // ---- TaggedMap ----
-  /*implicit*/ GDValue(GDVTaggedMap const &tmap);
-  /*implicit*/ GDValue(GDVTaggedMap      &&tmap);
+  FOR_EACH_GDV_CONTAINER(DECLARE_TAGGED_CONTAINER_METHODS)
 
-  void taggedMapSet(GDVTaggedMap const &tmap);
-  void taggedMapSet(GDVTaggedMap      &&tmap);
+  #undef DECLARE_TAGGED_CONTAINER_METHODS
 
-  GDVTaggedMap const &taggedMapGet()        const;
-  GDVTaggedMap       &taggedMapGetMutable()      ;
-
-  // The map accessors work on tagged maps too.
+  // Note: The accessors that work on untagged containers also work on
+  // their tagged counterparts.
 
 
   #undef DECLARE_GDV_KIND_ITERATORS
@@ -726,8 +764,13 @@ DEFINE_GDV_KIND_ITERABLE(GDVMap, map)
 #undef DEFINE_GDV_KIND_ITERABLE
 
 
+#define DEFER_INSTANTIATE(KIND, Kind, kind) \
+  extern template class GDVTaggedContainer<GDV##Kind>;
+
 // Instantiated in gdvalue.cc.
-extern template class GDVTaggedContainer<GDVMap>;
+FOR_EACH_GDV_CONTAINER(DEFER_INSTANTIATE)
+
+#undef DEFER_INSTANTIATE
 
 
 CLOSE_NAMESPACE(gdv)

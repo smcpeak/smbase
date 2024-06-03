@@ -117,18 +117,45 @@ int compare(
 
 
 // ---------------------------- GDValueKind ----------------------------
+// Like `FOR_EACH_GDV_ALLOCATED_KIND`, but missing Integer.
+#define FOR_EACH_GDV_ALLOCATED_KIND_EXCEPT_INTEGER(macro) \
+  macro(STRING,          String        , string        )  \
+  macro(SEQUENCE,        Sequence      , sequence      )  \
+  macro(TAGGED_SEQUENCE, TaggedSequence, taggedSequence)  \
+  macro(SET,             Set           , set           )  \
+  macro(TAGGED_SET,      TaggedSet     , taggedSet     )  \
+  macro(MAP,             Map           , map           )  \
+  macro(TAGGED_MAP,      TaggedMap     , taggedMap     )
+
+// Invoke `macro` for all of the kinds where the data is represented
+// using an owner pointer to a GDVXXX object.
+#define FOR_EACH_GDV_ALLOCATED_KIND(macro)               \
+  macro(INTEGER,         Integer       , integer       ) \
+  FOR_EACH_GDV_ALLOCATED_KIND_EXCEPT_INTEGER(macro)
+
+// Invoke `macro` for all of the kinds.
+#define FOR_EACH_GDV_KIND(macro)                         \
+  macro(SYMBOL,          Symbol        , symbol        ) \
+  macro(SMALL_INTEGER,   SmallInteger  , smallInteger  ) \
+  FOR_EACH_GDV_ALLOCATED_KIND(macro)
+
+
 #define CASE(kind) #kind
 
 DEFINE_ENUMERATION_TO_STRING_OR(
   GDValueKind,
   NUM_GDVALUE_KINDS,
   (
+    // I can't apply `FOR_EACH_GDV_KIND` here because that would make
+    // one too many commas.
     CASE(GDVK_SYMBOL),
     CASE(GDVK_INTEGER),
     CASE(GDVK_SMALL_INTEGER),
     CASE(GDVK_STRING),
     CASE(GDVK_SEQUENCE),
+    CASE(GDVK_TAGGED_SEQUENCE),
     CASE(GDVK_SET),
+    CASE(GDVK_TAGGED_SET),
     CASE(GDVK_MAP),
     CASE(GDVK_TAGGED_MAP)
   ),
@@ -151,28 +178,25 @@ unsigned GDValue::s_ct_assignMove = 0;
 unsigned GDValue::s_ct_valueKindCtor = 0;
 unsigned GDValue::s_ct_boolCtor = 0;
 unsigned GDValue::s_ct_symbolCtor = 0;
-unsigned GDValue::s_ct_integerCopyCtor = 0;
-unsigned GDValue::s_ct_integerMoveCtor = 0;
+unsigned GDValue::s_ct_integerCtorCopy = 0;
+unsigned GDValue::s_ct_integerCtorMove = 0;
 unsigned GDValue::s_ct_integerSmallIntCtor = 0;
 unsigned GDValue::s_ct_stringCtorCopy = 0;
 unsigned GDValue::s_ct_stringCtorMove = 0;
 unsigned GDValue::s_ct_stringSetCopy = 0;
 unsigned GDValue::s_ct_stringSetMove = 0;
-unsigned GDValue::s_ct_sequenceCtorCopy = 0;
-unsigned GDValue::s_ct_sequenceCtorMove = 0;
-unsigned GDValue::s_ct_sequenceSetCopy = 0;
-unsigned GDValue::s_ct_sequenceSetMove = 0;
-unsigned GDValue::s_ct_setCtorCopy = 0;
-unsigned GDValue::s_ct_setCtorMove = 0;
-unsigned GDValue::s_ct_setSetCopy = 0;
-unsigned GDValue::s_ct_setSetMove = 0;
-unsigned GDValue::s_ct_mapCtorCopy = 0;
-unsigned GDValue::s_ct_mapCtorMove = 0;
-unsigned GDValue::s_ct_mapSetCopy = 0;
-unsigned GDValue::s_ct_mapSetMove = 0;
-unsigned GDValue::s_ct_taggedMapCtorCopy = 0;
-unsigned GDValue::s_ct_taggedMapCtorMove = 0;
 
+#define DEFINE_CTOR_COUNTS(KIND, Kind, kind)         \
+  unsigned GDValue::s_ct_##kind##CtorCopy = 0;       \
+  unsigned GDValue::s_ct_##kind##CtorMove = 0;       \
+  unsigned GDValue::s_ct_##kind##SetCopy = 0;        \
+  unsigned GDValue::s_ct_##kind##SetMove = 0;        \
+  unsigned GDValue::s_ct_tagged##Kind##CtorCopy = 0; \
+  unsigned GDValue::s_ct_tagged##Kind##CtorMove = 0;
+
+FOR_EACH_GDV_CONTAINER(DEFINE_CTOR_COUNTS)
+
+#undef DEFINE_CTOR_COUNTS
 
 // ---------------------- GDValue private helpers ----------------------
 void GDValue::resetSelfAndSwapWith(GDValue &obj) noexcept
@@ -181,47 +205,19 @@ void GDValue::resetSelfAndSwapWith(GDValue &obj) noexcept
 
   reset();
 
-  #define SWAP_MEMBER(member) \
-    swap(m_value.member, obj.m_value.member)
-
   switch (obj.m_kind) {
     default:
       xfailureInvariant("invalid kind");
 
-    case GDVK_SYMBOL:
-      SWAP_MEMBER(m_symbolIndex);
-      break;
+    #define CASE(KIND, Kind, kind)                    \
+      case GDVK_##KIND:                               \
+        swap(m_value.m_##kind, obj.m_value.m_##kind); \
+        break;
 
-    case GDVK_INTEGER:
-      SWAP_MEMBER(m_integer);
-      break;
+    FOR_EACH_GDV_KIND(CASE)
 
-    case GDVK_SMALL_INTEGER:
-      SWAP_MEMBER(m_smallInteger);
-      break;
-
-    case GDVK_STRING:
-      SWAP_MEMBER(m_string);
-      break;
-
-    case GDVK_SEQUENCE:
-      SWAP_MEMBER(m_sequence);
-      break;
-
-    case GDVK_SET:
-      SWAP_MEMBER(m_set);
-      break;
-
-    case GDVK_MAP:
-      SWAP_MEMBER(m_map);
-      break;
-
-    case GDVK_TAGGED_MAP:
-      SWAP_MEMBER(m_taggedMap);
-      break;
+    #undef CASE
   }
-
-  #undef SWAP_MEMBER
 
   std::swap(m_kind, obj.m_kind);
 }
@@ -256,37 +252,14 @@ GDValue::GDValue(GDValue const &obj)
     default:
       xfailureInvariant("invalid kind");
 
-    case GDVK_SYMBOL:
-      symbolSet(obj.symbolGet());
-      break;
+    #define CASE(KIND, Kind, kind)  \
+      case GDVK_##KIND:             \
+        kind##Set(obj.kind##Get()); \
+        break;
 
-    case GDVK_INTEGER:
-      integerSet(obj.largeIntegerGet());
-      break;
+    FOR_EACH_GDV_KIND(CASE)
 
-    case GDVK_SMALL_INTEGER:
-      smallIntegerSet(obj.smallIntegerGet());
-      break;
-
-    case GDVK_STRING:
-      stringSet(obj.stringGet());
-      break;
-
-    case GDVK_SEQUENCE:
-      sequenceSet(obj.sequenceGet());
-      break;
-
-    case GDVK_SET:
-      setSet(obj.setGet());
-      break;
-
-    case GDVK_MAP:
-      mapSet(obj.mapGet());
-      break;
-
-    case GDVK_TAGGED_MAP:
-      taggedMapSet(obj.taggedMapGet());
-      break;
+    #undef CASE
   }
 
   ++s_ct_ctorCopy;
@@ -337,7 +310,7 @@ GDValue::GDValue(GDValueKind kind)
 
     case GDVK_SYMBOL:
       // Redundant, but for clarity.
-      m_value.m_symbolIndex = s_symbolIndex_null;
+      m_value.m_symbol = s_symbolIndex_null;
       break;
 
     case GDVK_INTEGER:
@@ -346,25 +319,14 @@ GDValue::GDValue(GDValueKind kind)
       m_value.m_smallInteger = 0;
       break;
 
-    case GDVK_STRING:
-      m_value.m_string = new GDVString;
-      break;
+    #define CASE(KIND, Kind, kind)        \
+      case GDVK_##KIND:                   \
+        m_value.m_##kind = new GDV##Kind; \
+        break;
 
-    case GDVK_SEQUENCE:
-      m_value.m_sequence = new GDVSequence;
-      break;
+    FOR_EACH_GDV_ALLOCATED_KIND_EXCEPT_INTEGER(CASE)
 
-    case GDVK_SET:
-      m_value.m_set = new GDVSet;
-      break;
-
-    case GDVK_MAP:
-      m_value.m_map = new GDVMap;
-      break;
-
-    case GDVK_TAGGED_MAP:
-      m_value.m_taggedMap = new GDVTaggedMap;
-      break;
+    #undef CASE
   }
 
   ++s_ct_valueKindCtor;
@@ -392,7 +354,9 @@ bool GDValue::isContainer() const
 
 bool GDValue::isTaggedContainer() const
 {
-  return isTaggedMap();
+  return isTaggedSequence() ||
+         isTaggedSet() ||
+         isTaggedMap();
 }
 
 
@@ -476,28 +440,18 @@ int compare(GDValue const &a, GDValue const &b)
 
     case GDVK_SYMBOL:
       return GDVSymbol::compareIndices(
-        a.m_value.m_symbolIndex, b.m_value.m_symbolIndex);
-
-    case GDVK_INTEGER:
-      return DEEP_COMPARE_PTR_MEMBERS(m_value.m_integer);
+        a.m_value.m_symbol, b.m_value.m_symbol);
 
     case GDVK_SMALL_INTEGER:
       return COMPARE_MEMBERS(m_value.m_smallInteger);
 
-    case GDVK_STRING:
-      return DEEP_COMPARE_PTR_MEMBERS(m_value.m_string);
+    #define CASE(KIND, Kind, kind)                         \
+      case GDVK_##KIND:                                    \
+        return DEEP_COMPARE_PTR_MEMBERS(m_value.m_##kind);
 
-    case GDVK_SEQUENCE:
-      return DEEP_COMPARE_PTR_MEMBERS(m_value.m_sequence);
+    FOR_EACH_GDV_ALLOCATED_KIND(CASE)
 
-    case GDVK_SET:
-      return DEEP_COMPARE_PTR_MEMBERS(m_value.m_set);
-
-    case GDVK_MAP:
-      return DEEP_COMPARE_PTR_MEMBERS(m_value.m_map);
-
-    case GDVK_TAGGED_MAP:
-      return DEEP_COMPARE_PTR_MEMBERS(m_value.m_taggedMap);
+    #undef CASE
   }
 }
 
@@ -512,19 +466,16 @@ STATICDEF unsigned GDValue::countConstructorCalls()
     + s_ct_valueKindCtor
     + s_ct_boolCtor
     + s_ct_symbolCtor
-    + s_ct_integerCopyCtor
-    + s_ct_integerMoveCtor
     + s_ct_integerSmallIntCtor
-    + s_ct_stringCtorCopy
-    + s_ct_stringCtorMove
-    + s_ct_sequenceCtorCopy
-    + s_ct_sequenceCtorMove
-    + s_ct_setCtorCopy
-    + s_ct_setCtorMove
-    + s_ct_mapCtorCopy
-    + s_ct_mapCtorMove
-    + s_ct_taggedMapCtorCopy
-    + s_ct_taggedMapCtorMove
+
+    #define CASE(KIND, Kind, kind) \
+      + s_ct_##kind##CtorCopy      \
+      + s_ct_##kind##CtorMove
+
+    FOR_EACH_GDV_ALLOCATED_KIND(CASE)
+
+    #undef CASE
+
     ;
 }
 
@@ -538,36 +489,21 @@ void GDValue::reset()
     case GDVK_SYMBOL:
       break;
 
-    case GDVK_INTEGER:
-      delete m_value.m_integer;
-      break;
-
     case GDVK_SMALL_INTEGER:
       break;
 
-    case GDVK_STRING:
-      delete m_value.m_string;
-      break;
+    #define CASE(KIND, Kind, kind) \
+      case GDVK_##KIND:            \
+        delete m_value.m_##kind;   \
+        break;
 
-    case GDVK_SEQUENCE:
-      delete m_value.m_sequence;
-      break;
+    FOR_EACH_GDV_ALLOCATED_KIND(CASE)
 
-    case GDVK_SET:
-      delete m_value.m_set;
-      break;
-
-    case GDVK_MAP:
-      delete m_value.m_map;
-      break;
-
-    case GDVK_TAGGED_MAP:
-      delete m_value.m_taggedMap;
-      break;
+    #undef CASE
   }
 
   m_kind = GDVK_SYMBOL;
-  m_value.m_symbolIndex = s_symbolIndex_null;
+  m_value.m_symbol = s_symbolIndex_null;
 }
 
 
@@ -587,7 +523,7 @@ void GDValue::selfCheck() const
       xfailureInvariant("bad kind");
 
     case GDVK_SYMBOL:
-      xassertInvariant(GDVSymbol::validIndex(m_value.m_symbolIndex));
+      xassertInvariant(GDVSymbol::validIndex(m_value.m_symbol));
       break;
 
     case GDVK_INTEGER:
@@ -600,25 +536,14 @@ void GDValue::selfCheck() const
     case GDVK_SMALL_INTEGER:
       break;
 
-    case GDVK_STRING:
-      xassertInvariant(m_value.m_string != nullptr);
-      break;
+    #define CASE(KIND, Kind, kind)                     \
+      case GDVK_##KIND:                                \
+        xassertInvariant(m_value.m_##kind != nullptr); \
+        break;
 
-    case GDVK_SEQUENCE:
-      xassertInvariant(m_value.m_sequence != nullptr);
-      break;
+    FOR_EACH_GDV_ALLOCATED_KIND_EXCEPT_INTEGER(CASE)
 
-    case GDVK_SET:
-      xassertInvariant(m_value.m_set != nullptr);
-      break;
-
-    case GDVK_MAP:
-      xassertInvariant(m_value.m_map != nullptr);
-      break;
-
-    case GDVK_TAGGED_MAP:
-      xassertInvariant(m_value.m_taggedMap != nullptr);
-      break;
+    #undef CASE
   }
 }
 
@@ -711,7 +636,7 @@ STATICDEF GDValue GDValue::readFromFile(std::string const &fileName)
 bool GDValue::isNull() const
 {
   if (m_kind == GDVK_SYMBOL) {
-    return m_value.m_symbolIndex == s_symbolIndex_null;
+    return m_value.m_symbol == s_symbolIndex_null;
   }
   return false;
 }
@@ -721,8 +646,8 @@ bool GDValue::isNull() const
 bool GDValue::isBool() const
 {
   if (m_kind == GDVK_SYMBOL) {
-    return m_value.m_symbolIndex == s_symbolIndex_true ||
-           m_value.m_symbolIndex == s_symbolIndex_false;
+    return m_value.m_symbol == s_symbolIndex_true ||
+           m_value.m_symbol == s_symbolIndex_false;
   }
   return false;
 }
@@ -741,11 +666,11 @@ void GDValue::boolSet(bool b)
 {
   reset();
   m_kind = GDVK_SYMBOL;
-  m_value.m_symbolIndex =
+  m_value.m_symbol =
     b? s_symbolIndex_true : s_symbolIndex_false;
 
   // I expect 0 to be the null symbol.
-  xassert(m_value.m_symbolIndex != 0);
+  xassert(m_value.m_symbol != 0);
 }
 
 
@@ -753,10 +678,10 @@ bool GDValue::boolGet() const
 {
   xassertPrecondition(m_kind == GDVK_SYMBOL);
 
-  if (m_value.m_symbolIndex == s_symbolIndex_true) {
+  if (m_value.m_symbol == s_symbolIndex_true) {
     return true;
   }
-  else if (m_value.m_symbolIndex == s_symbolIndex_false) {
+  else if (m_value.m_symbol == s_symbolIndex_false) {
     return false;
   }
   else {
@@ -780,7 +705,7 @@ void GDValue::symbolSet(GDVSymbol sym)
 {
   reset();
 
-  m_value.m_symbolIndex = sym.getSymbolIndex();
+  m_value.m_symbol = sym.getSymbolIndex();
   m_kind = GDVK_SYMBOL;
 }
 
@@ -788,7 +713,7 @@ void GDValue::symbolSet(GDVSymbol sym)
 GDVSymbol GDValue::symbolGet() const
 {
   xassertPrecondition(m_kind == GDVK_SYMBOL);
-  return GDVSymbol(GDVSymbol::DirectIndex, m_value.m_symbolIndex);
+  return GDVSymbol(GDVSymbol::DirectIndex, m_value.m_symbol);
 }
 
 
@@ -804,7 +729,7 @@ GDValue::GDValue(GDVInteger const &i)
 {
   integerSet(i);
 
-  ++s_ct_integerCopyCtor;
+  ++s_ct_integerCtorCopy;
 }
 
 
@@ -813,7 +738,7 @@ GDValue::GDValue(GDVInteger &&i)
 {
   integerSet(std::move(i));
 
-  ++s_ct_integerMoveCtor;
+  ++s_ct_integerCtorMove;
 }
 
 
@@ -962,42 +887,50 @@ void GDValue::stringSet(GDVString &&str)
 
 GDVString const &GDValue::stringGet() const
 {
-  xassertPrecondition(m_kind == GDVK_STRING);
+  xassertPrecondition(isString());
   return *(m_value.m_string);
 }
 
 
-// Define the begin/end methods that are not defined in the GDValue
-// class body.
-#define DEFINE_GDV_KIND_BEGIN_END(GDVKindName, kindName, GDVK_CODE) \
-  GDVKindName::const_iterator GDValue::kindName##CBegin() const     \
-  {                                                                 \
-    xassertPrecondition(m_kind == GDVK_CODE);                       \
-    return m_value.m_##kindName->cbegin();                          \
-  }                                                                 \
-                                                                    \
-                                                                    \
-  GDVKindName::const_iterator GDValue::kindName##CEnd() const       \
-  {                                                                 \
-    xassertPrecondition(m_kind == GDVK_CODE);                       \
-    return m_value.m_##kindName->cend();                            \
-  }                                                                 \
-                                                                    \
-                                                                    \
-  GDVKindName::iterator GDValue::kindName##Begin()                  \
-  {                                                                 \
-    xassertPrecondition(m_kind == GDVK_CODE);                       \
-    return m_value.m_##kindName->begin();                           \
-  }                                                                 \
-                                                                    \
-                                                                    \
-  GDVKindName::iterator GDValue::kindName##End()                    \
-  {                                                                 \
-    xassertPrecondition(m_kind == GDVK_CODE);                       \
-    return m_value.m_##kindName->end();                             \
+GDVString &GDValue::stringGetMutable()
+{
+  xassertPrecondition(isString());
+  return *(m_value.m_string);
+}
+
+
+// Define the kind-specific begin/end methods that are not defined in
+// clas `GDValue` class body.
+#define DEFINE_GDV_KIND_BEGIN_END(Kind, kind)             \
+  GDV##Kind::const_iterator GDValue::kind##CBegin() const \
+  {                                                       \
+    xassertPrecondition(is##Kind());                      \
+    return kind##Get().cbegin();                          \
+  }                                                       \
+                                                          \
+                                                          \
+  GDV##Kind::const_iterator GDValue::kind##CEnd() const   \
+  {                                                       \
+    xassertPrecondition(is##Kind());                      \
+    return kind##Get().cend();                            \
+  }                                                       \
+                                                          \
+                                                          \
+  GDV##Kind::iterator GDValue::kind##Begin()              \
+  {                                                       \
+    xassertPrecondition(is##Kind());                      \
+    return kind##GetMutable().begin();                    \
+  }                                                       \
+                                                          \
+                                                          \
+  GDV##Kind::iterator GDValue::kind##End()                \
+  {                                                       \
+    xassertPrecondition(is##Kind());                      \
+    return kind##GetMutable().end();                      \
   }
 
-DEFINE_GDV_KIND_BEGIN_END(GDVString, string, GDVK_STRING)
+
+DEFINE_GDV_KIND_BEGIN_END(String, string)
 
 
 // ---------------------------- Container ------------------------------
@@ -1007,17 +940,16 @@ GDVSize GDValue::containerSize() const
     default:
       xfailurePrecondition("not a container");
 
-    case GDVK_SEQUENCE:
-      return m_value.m_sequence->size();
+    #define CASE(KIND, Kind, kind)                         \
+      case GDVK_##KIND:                                    \
+        return m_value.m_##kind->size();                   \
+                                                           \
+      case GDVK_TAGGED_##KIND:                             \
+        return m_value.m_tagged##Kind->m_container.size();
 
-    case GDVK_SET:
-      return m_value.m_set->size();
+    FOR_EACH_GDV_CONTAINER(CASE)
 
-    case GDVK_MAP:
-      return m_value.m_map->size();
-
-    case GDVK_TAGGED_MAP:
-      return m_value.m_taggedMap->m_container.size();
+    #undef CASE
   }
 }
 
@@ -1081,7 +1013,7 @@ GDVSequence &GDValue::sequenceGetMutable()
 }
 
 
-DEFINE_GDV_KIND_BEGIN_END(GDVSequence, sequence, GDVK_SEQUENCE)
+DEFINE_GDV_KIND_BEGIN_END(Sequence, sequence)
 
 
 void GDValue::sequenceAppend(GDValue value)
@@ -1185,7 +1117,7 @@ GDVSet &GDValue::setGetMutable()
 }
 
 
-DEFINE_GDV_KIND_BEGIN_END(GDVSet, set, GDVK_SET)
+DEFINE_GDV_KIND_BEGIN_END(Set, set)
 
 
 bool GDValue::setContains(GDValue const &elt) const
@@ -1294,38 +1226,7 @@ GDVMap &GDValue::mapGetMutable()
 }
 
 
-// For the moment this is just used for `map` but the plan is to use it
-// for others later.
-#define DEFINE_GDV_TAGGABLE_CONTAINER_BEGIN_END(GDVKindName, kindName, isKindName) \
-  GDVKindName::const_iterator GDValue::kindName##CBegin() const                    \
-  {                                                                                \
-    xassertPrecondition(isKindName());                                             \
-    return kindName##Get().cbegin();                                               \
-  }                                                                                \
-                                                                                   \
-                                                                                   \
-  GDVKindName::const_iterator GDValue::kindName##CEnd() const                      \
-  {                                                                                \
-    xassertPrecondition(isKindName());                                             \
-    return kindName##Get().cend();                                                 \
-  }                                                                                \
-                                                                                   \
-                                                                                   \
-  GDVKindName::iterator GDValue::kindName##Begin()                                 \
-  {                                                                                \
-    xassertPrecondition(isKindName());                                             \
-    return kindName##GetMutable().begin();                                         \
-  }                                                                                \
-                                                                                   \
-                                                                                   \
-  GDVKindName::iterator GDValue::kindName##End()                                   \
-  {                                                                                \
-    xassertPrecondition(isKindName());                                             \
-    return kindName##GetMutable().end();                                           \
-  }
-
-
-DEFINE_GDV_TAGGABLE_CONTAINER_BEGIN_END(GDVMap, map, isMap)
+DEFINE_GDV_KIND_BEGIN_END(Map, map)
 
 
 bool GDValue::mapContains(GDValue const &key) const
@@ -1403,9 +1304,14 @@ void GDValue::taggedContainerSetTag(GDVSymbol tag)
     default:
       xfailurePrecondition("not a tagged container");
 
-    case GDVK_TAGGED_MAP:
-      m_value.m_taggedMap->m_tag = tag;
-      break;
+    #define CASE(KIND, Container, container)      \
+      case GDVK_TAGGED_##KIND:                    \
+        m_value.m_tagged##Container->m_tag = tag; \
+        break;
+
+    FOR_EACH_GDV_CONTAINER(CASE)
+
+    #undef CASE
   }
 }
 
@@ -1416,70 +1322,76 @@ GDVSymbol GDValue::taggedContainerGetTag() const
     default:
       xfailurePrecondition("not a tagged container");
 
-    case GDVK_TAGGED_MAP:
-      return m_value.m_taggedMap->m_tag;
+    #define CASE(KIND, Container, container)       \
+      case GDVK_TAGGED_##KIND:                     \
+        return m_value.m_tagged##Container->m_tag;
+
+    FOR_EACH_GDV_CONTAINER(CASE)
+
+    #undef CASE
   }
 }
 
 
-// ----------------------------- TaggedMap -----------------------------
-GDValue::GDValue(GDVTaggedMap const &tmap)
-  : INIT_AS_NULL()
-{
-  taggedMapSet(tmap);
-  ++s_ct_taggedMapCtorCopy;
-}
-
-
-GDValue::GDValue(GDVTaggedMap &&tmap)
-  : INIT_AS_NULL()
-{
-  taggedMapSet(std::move(tmap));
-  ++s_ct_taggedMapCtorMove;
-}
-
-
-void GDValue::taggedMapSet(GDVTaggedMap const &tmap)
-{
-  if (isTaggedMap()) {
-    taggedMapGetMutable() = tmap;
+#define DEFINE_TAGGED_CONTAINER_METHODS(KIND, Container, container)             \
+  GDValue::GDValue(GDVTagged##Container const &tcont)                           \
+    : INIT_AS_NULL()                                                            \
+  {                                                                             \
+    tagged##Container##Set(tcont);                                              \
+    ++s_ct_tagged##Container##CtorCopy;                                         \
+  }                                                                             \
+                                                                                \
+  GDValue::GDValue(GDVTagged##Container &&tcont)                                \
+    : INIT_AS_NULL()                                                            \
+  {                                                                             \
+    tagged##Container##Set(std::move(tcont));                                   \
+    ++s_ct_tagged##Container##CtorMove;                                         \
+  }                                                                             \
+                                                                                \
+  void GDValue::tagged##Container##Set(GDVTagged##Container const &tcont)       \
+  {                                                                             \
+    if (isTagged##Container()) {                                                \
+      tagged##Container##GetMutable() = tcont;                                  \
+    }                                                                           \
+    else {                                                                      \
+      reset();                                                                  \
+      m_kind = GDVK_TAGGED_##KIND;                                              \
+      m_value.m_tagged##Container = new GDVTagged##Container(tcont);            \
+    }                                                                           \
+  }                                                                             \
+                                                                                \
+  void GDValue::tagged##Container##Set(GDVTagged##Container &&tcont)            \
+  {                                                                             \
+    if (isTagged##Container()) {                                                \
+      tagged##Container##GetMutable() = std::move(tcont);                       \
+    }                                                                           \
+    else {                                                                      \
+      reset();                                                                  \
+      m_kind = GDVK_TAGGED_##KIND;                                              \
+      m_value.m_tagged##Container = new GDVTagged##Container(std::move(tcont)); \
+    }                                                                           \
+  }                                                                             \
+                                                                                \
+  GDVTagged##Container const &GDValue::tagged##Container##Get() const           \
+  {                                                                             \
+    xassertPrecondition(isTagged##Container());                                 \
+    return *(m_value.m_tagged##Container);                                      \
+  }                                                                             \
+                                                                                \
+  GDVTagged##Container &GDValue::tagged##Container##GetMutable()                \
+  {                                                                             \
+    xassertPrecondition(isTagged##Container());                                 \
+    return *(m_value.m_tagged##Container);                                      \
   }
-  else {
-    reset();
-    m_kind = GDVK_TAGGED_MAP;
-    m_value.m_taggedMap = new GDVTaggedMap(tmap);
-  }
-}
 
 
-void GDValue::taggedMapSet(GDVTaggedMap &&tmap)
-{
-  if (isTaggedMap()) {
-    taggedMapGetMutable() = std::move(tmap);
-  }
-  else {
-    reset();
-    m_kind = GDVK_TAGGED_MAP;
-    m_value.m_taggedMap = new GDVTaggedMap(std::move(tmap));
-  }
-}
+FOR_EACH_GDV_CONTAINER(DEFINE_TAGGED_CONTAINER_METHODS)
 
 
-GDVTaggedMap const &GDValue::taggedMapGet() const
-{
-  xassertPrecondition(isTaggedMap());
-  return *(m_value.m_taggedMap);
-}
+#define EXPLICITLY_INSTANTIATE(KIND, Kind, kind) \
+  template class GDVTaggedContainer<GDV##Kind>;
 
-
-GDVTaggedMap &GDValue::taggedMapGetMutable()
-{
-  xassertPrecondition(isTaggedMap());
-  return *(m_value.m_taggedMap);
-}
-
-
-template class GDVTaggedContainer<GDVMap>;
+FOR_EACH_GDV_CONTAINER(EXPLICITLY_INSTANTIATE)
 
 
 CLOSE_NAMESPACE(gdv)
