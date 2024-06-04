@@ -19,20 +19,6 @@
 OPEN_ANONYMOUS_NAMESPACE
 
 
-void expRangeVector(char const *in, char const *out)
-{
-  printf("expRangeVector(%s, %s)\n", in, out);
-  string result = expandRanges(in);
-  xassert(result == out);
-}
-
-void trVector(char const *in, char const *srcSpec, char const *destSpec, char const *out)
-{
-  printf("trVector(%s, %s, %s, %s)\n", in, srcSpec, destSpec, out);
-  string result = translate(in, srcSpec, destSpec);
-  xassert(result == out);
-}
-
 void decodeVector(char const *in, char const *out, int outLen)
 {
   printf("decodeVector: \"%s\"\n", in);
@@ -61,36 +47,6 @@ void pluralVector(int n, char const *in, char const *out)
   printf("pluralVector(%d, %s, %s)\n", n, in, out);
   string result = plural(n, in);
   xassert(result == out);
-}
-
-
-// testcase from Hendrik Tews
-void translateAscii()
-{
-  char ascii[256];
-  char underscore[256];
-
-  for(int i=0; i<=254; i++){
-    ascii[i] = i+1;
-    underscore[i] = '_';
-  }
-  ascii[255] = 0;
-  underscore[255] = 0;
-
-  {
-    ofstream file("strutil.out");
-    assert(file);
-    file << "Hallo" << endl
-         << ascii << endl
-         << "Hallo2" << endl
-         << translate(ascii, "\001-\057\072-\101\133-\140\173-\377", underscore)
-                                          // ^^^ probably should be 100, no biggie
-         << endl;
-  }
-
-  if (!getenv("SAVE_OUTPUT")) {
-    remove("strutil.out");
-  }
 }
 
 
@@ -218,15 +174,6 @@ CLOSE_ANONYMOUS_NAMESPACE
 // Called from unit-tests.cc.
 void test_strutil()
 {
-  expRangeVector("abcd", "abcd");
-  expRangeVector("a", "a");
-  expRangeVector("a-k", "abcdefghijk");
-  expRangeVector("0-9E-Qz", "0123456789EFGHIJKLMNOPQz");
-
-  trVector("foo", "a-z", "A-Z", "FOO");
-  trVector("foo BaR", "a-z", "A-Z", "FOO BAR");
-  trVector("foo BaR", "m-z", "M-Z", "fOO BaR");
-
   decodeVector("\\r\\n", "\r\n", 2);
   decodeVector("abc\\0def", "abc\0def", 7);
   decodeVector("\\033", "\033", 1);
@@ -249,8 +196,6 @@ void test_strutil()
   pluralVector(1, "fly", "fly");
   pluralVector(2, "fly", "flies");
   pluralVector(2, "was", "were");
-
-  translateAscii();
 
   {
     string x("x");

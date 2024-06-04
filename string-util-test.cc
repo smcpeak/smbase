@@ -381,6 +381,76 @@ static void testReplace()
 }
 
 
+static void expRangeVector(char const *in, char const *out)
+{
+  printf("expRangeVector(%s, %s)\n", in, out);
+  string result = expandRanges(in);
+  xassert(result == out);
+}
+
+
+static void testExpandRanges()
+{
+  expRangeVector("abcd", "abcd");
+  expRangeVector("a", "a");
+  expRangeVector("a-k", "abcdefghijk");
+  expRangeVector("0-9E-Qz", "0123456789EFGHIJKLMNOPQz");
+}
+
+
+static void trVector(char const *in, char const *srcSpec, char const *destSpec, char const *out)
+{
+  printf("trVector(%s, %s, %s, %s)\n", in, srcSpec, destSpec, out);
+  string result = translate(in, srcSpec, destSpec);
+  EXPECT_EQ(result, out);
+}
+
+
+// testcase from Hendrik Tews
+static void translateAscii()
+{
+  char input[256];
+  char underscores[256];
+  char expect[256];
+
+  for(int i=0; i<=254; i++){
+    input[i] = i+1;
+    underscores[i] = '_';
+
+    // The character value stored in `input[i]`.
+    int c = i+1;
+
+    // Apply the transformation specification below.
+    int c_out =
+      (0001 <= c && c <= 0057) ||
+      (0072 <= c && c <= 0101) ||
+      (0133 <= c && c <= 0140) ||
+      (0173 <= c && c <= 0377)     ? '_' : c;
+
+    expect[i] = c_out;
+  }
+  input[255] = 0;
+  underscores[255] = 0;
+  expect[255] = 0;
+
+  std::string actual =
+    translate(input, "\001-\057\072-\101\133-\140\173-\377", underscores);
+                                  // ^^^ probably should be 100, no biggie
+
+  EXPECT_EQ(actual, expect);
+}
+
+
+static void testTranslate()
+{
+  trVector("foo", "a-z", "A-Z", "FOO");
+  trVector("foo BaR", "a-z", "A-Z", "FOO BAR");
+  trVector("foo BaR", "m-z", "M-Z", "fOO BaR");
+
+  translateAscii();
+}
+
+
 void test_string_utils()
 {
   testSplitNonEmpty();
@@ -399,6 +469,8 @@ void test_string_utils()
   testEscapeForRegex();
   testInt64ToRadixDigits();
   testReplace();
+  testExpandRanges();
+  testTranslate();
 }
 
 

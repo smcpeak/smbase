@@ -3,6 +3,7 @@
 
 #include "string-util.h"               // this module
 
+#include "exc.h"                       // smbase::xmessage
 #include "strcmp-compare.h"            // StrcmpCompare
 #include "strutil.h"                   // stringf
 #include "vector-util.h"               // accumulateWith
@@ -15,6 +16,9 @@
 #include <sstream>                     // std::ostringstream
 #include <string_view>                 // std::string_view
 #include <regex>                       // std::regex
+#include <vector>                      // std::vector
+
+using namespace smbase;
 
 
 // ------------------------------ Parsing ------------------------------
@@ -319,6 +323,89 @@ std::string replace(
   }
 
   return ret.str();
+}
+
+
+std::string expandRanges(char const *chars_)
+{
+  std::ostringstream ret;
+
+  // Fix from Hendrik Tews: use unsigned chars to as not to fall over
+  // when ranges have values near 127 on compilers for which 'char' is
+  // signed by default (which is probably the common case)
+  unsigned char *chars = (unsigned char*)chars_;
+
+  while (*chars) {
+    if (chars[1] == '-' && chars[2] != 0) {
+      // range specification
+      if (chars[0] > chars[2]) {
+        xmessage("expandRanges: range specification with wrong collation order");
+      }
+
+      // use 'int' so we can handle chars[2] == 255 (otherwise we get
+      // infinite loop)
+      for (int c = chars[0]; c <= chars[2]; c++) {
+        ret << (unsigned char)c;
+      }
+      chars += 3;
+    }
+    else {
+      // simple character specification
+      ret << chars[0];
+      chars++;
+    }
+  }
+
+  return ret.str();
+}
+
+
+std::string translate(
+  std::string const &origSrc,
+  std::string const &srcchars,
+  std::string const &destchars)
+{
+  // first, expand range notation in the specification sequences
+  std::string srcSpec = expandRanges(toCStr(srcchars));
+  std::string destSpec = expandRanges(toCStr(destchars));
+
+  // Build a translation map.  Initially it maps every character to
+  // itself.
+  char map[256];
+  std::string::size_type i;
+  for (i=0; i<256; i++) {
+    map[i] = (char)i;
+  }
+
+  // Now set map elements corresponding to entries in `srcSpec` to their
+  // counterparts in `destSpec`.  If the specifications are not the same
+  // size, ignore the excess from the longer ("SysV" behavior).
+  for (i=0; i < srcSpec.length() && i < destSpec.length(); i++) {
+    map[(unsigned char)( srcSpec[i] )] = destSpec[i];
+  }
+
+  // Array of characters holding the result of translation.
+  std::vector<char> ret(origSrc.size());
+
+  // Run through `src`, applying `map`.
+  i = 0;
+  for (char c : origSrc) {
+    ret[i] = (char)map[(unsigned char)c];
+    ++i;
+  }
+
+  return std::string(ret.data(), origSrc.size());
+}
+
+
+std::string stringToupper(std::string const &src)
+{
+  return translate(src, "a-z", "A-Z");
+}
+
+std::string stringTolower(std::string const &src)
+{
+  return translate(src, "A-Z", "a-z");
 }
 
 

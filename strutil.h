@@ -14,26 +14,6 @@
 #include <stdio.h>                     // FILE
 
 
-// Expand a string that may contain 'tr'-like ranges.
-std::string expandRanges(char const *chars);
-
-// works like unix "tr": the source string is translated character-by-character,
-// with occurrences of 'srcchars' replaced by corresponding characters from
-// 'destchars'; further, either set may use the "X-Y" notation to denote a
-// range of characters from X to Y
-std::string translate(
-  std::string const &src,
-  std::string const &srcchars,
-  std::string const &destchars);
-
-// a simple example of using translate; it was originally inline, but a bug
-// in egcs made me move it out of line
-std::string stringToupper(std::string const &src);
-//  { return translate(src, "a-z", "A-Z"); }
-
-std::string stringTolower(std::string const &src);
-
-
 // remove any whitespace at the beginning or end of the string
 std::string trimWhitespace(std::string const &str);
 // dsw: get the first alphanum token in the string

@@ -98,6 +98,7 @@ std::string stripExtension(std::string const &fname);
 std::string possiblyTruncatedWithEllipsis(
   std::string const &str, std::size_t maxLen);
 
+
 // Within `src`, replace occurrences of `oldstr` with `newstr` (which
 // may be empty).  After each replacement, searching for the next
 // occurrence begins right after the inserted text, so that text is not
@@ -106,6 +107,33 @@ std::string replace(
   std::string const &src,
   std::string const &oldstr,
   std::string const &newstr);
+
+
+// Expand a string that may contain 'tr'-like ranges.  For example,
+// "A-F" becomes "ABCDEF".
+std::string expandRanges(char const *chars);
+
+/* This is sort of like unix "tr" in that it returns `str` after
+   translating each of its characters.
+
+   For each character, if it is in `srcChars`, then it is translated to
+   the character at the same position in `destChars`, or to itself if
+   there is no corresponding character in `destChars` because it is too
+   short.
+
+   Both `srcChars` and `destChars` are first processed with
+   `expandRange` so that, for example "A-Z" becomes "ABC...XYZ".
+*/
+std::string translate(
+  std::string const &str,
+  std::string const &srcChars,
+  std::string const &destChars);
+
+// Convert all of the US-ASCII letters in `src` to uppercase.
+std::string stringToupper(std::string const &src);
+
+// Convert all of the US-ASCII letters in `src` to lowercase.
+std::string stringTolower(std::string const &src);
 
 
 // ----------------------- Regular expressions -------------------------
