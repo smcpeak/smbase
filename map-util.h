@@ -54,7 +54,7 @@ V atOrNull(std::map<K,V> const &m, K const &k)
 
 // Insert '(k,v)' into 'm'.  Throw if 'k' is already mapped.
 template <class K, class V>
-void insertMapUnique(std::map<K,V> &map, K const &k, V const &v)
+void mapInsertUnique(std::map<K,V> &map, K const &k, V const &v)
 {
   auto it = map.insert(std::make_pair(k, v));
   xassert(it.second);
@@ -63,7 +63,7 @@ void insertMapUnique(std::map<K,V> &map, K const &k, V const &v)
 
 // Insert '(k,v)' into 'm', moving 'v'.  Throw if 'k' is already mapped.
 template <class K, class V>
-void insertMapUniqueMove(std::map<K,V> &map, K const &k, V &&v)
+void mapInsertUniqueMove(std::map<K,V> &map, K const &k, V &&v)
 {
   auto it = map.insert(std::make_pair(k, std::move(v)));
   xassert(it.second);
