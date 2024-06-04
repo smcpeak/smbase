@@ -337,11 +337,36 @@ static void testInsertPossiblyEscapedChar()
 }
 
 
+static void expectSingleQuoteChar(int c, string const &expect)
+{
+  string actual = singleQuoteChar(c);
+  EXPECT_EQ(actual, expect);
+}
+
 static void testSingleQuoteChar()
 {
   EXPECT_EQ(singleQuoteChar('x'), std::string("'x'"));
   EXPECT_EQ(singleQuoteChar('\0'), std::string("'\\000'"));
   EXPECT_EQ(singleQuoteChar('\n'), std::string("'\\n'"));
+
+  expectSingleQuoteChar(0,    "'\\000'");
+  expectSingleQuoteChar(1,    "'\\001'");
+  expectSingleQuoteChar(31,   "'\\037'");
+  expectSingleQuoteChar(32,   "' '");
+  expectSingleQuoteChar('"',  "'\"'");
+  expectSingleQuoteChar('\'', "'\\''");
+  expectSingleQuoteChar('A',  "'A'");
+  expectSingleQuoteChar('\\', "'\\\\'");
+  expectSingleQuoteChar(126,  "'~'");
+  expectSingleQuoteChar(127,  "'\\177'");
+  expectSingleQuoteChar(128,  "'\\200'");
+  expectSingleQuoteChar(255,  "'\\377'");
+
+  expectSingleQuoteChar(256,    "'\\u{100}'");
+  expectSingleQuoteChar(0xFFFF, "'\\u{FFFF}'");
+
+  expectSingleQuoteChar(0x10000,  "'\\u{10000}'");
+  expectSingleQuoteChar(0x10FFFF, "'\\u{10FFFF}'");
 }
 
 
@@ -499,6 +524,15 @@ static void testRemoveSuffix()
 }
 
 
+static void testEncodeWithEscapes()
+{
+  EXPECT_EQ(encodeWithEscapes(""), "");
+  EXPECT_EQ(encodeWithEscapes("abc"), "abc");
+  EXPECT_EQ(encodeWithEscapes("\r\n"), "\\r\\n");
+  EXPECT_EQ(encodeWithEscapes(std::string("a\0b", 3)), "a\\000b");
+}
+
+
 void test_string_util()
 {
   testSplitNonEmpty();
@@ -522,6 +556,7 @@ void test_string_util()
   testTranslate();
   testTrimWhitespace();
   testRemoveSuffix();
+  testEncodeWithEscapes();
 }
 
 

@@ -45,67 +45,9 @@ string firstAlphanumToken(rostring origStr)
 }
 
 
-// table of escape codes
-static struct Escape {
-  char actual;      // actual character in string
-  char escape;      // char that follows backslash to produce 'actual'
-} const escapes[] = {
-  { '\0', '0' },  // nul
-  { '\a', 'a' },  // bell
-  { '\b', 'b' },  // backspace
-  { '\f', 'f' },  // form feed
-  { '\n', 'n' },  // newline
-  { '\r', 'r' },  // carriage return
-  { '\t', 't' },  // tab
-  { '\v', 'v' },  // vertical tab
-  { '\\', '\\'},  // backslash
-  { '"',  '"' },  // double-quote
-  { '\'', '\''},  // single-quote
-};
-
-
-string encodeWithEscapes(char const *p, int len)
-{
-  stringBuilder sb;
-
-  for (; len>0; len--, p++) {
-    // look for an escape code
-    unsigned i;
-    for (i=0; i<TABLESIZE(escapes); i++) {
-      if (escapes[i].actual == *p) {
-        sb << '\\' << escapes[i].escape;
-        break;
-      }
-    }
-    if (i<TABLESIZE(escapes)) {
-      continue;   // found it and printed it
-    }
-
-    // try itself
-    if (isprint(*p)) {
-      sb << *p;
-      continue;
-    }
-
-    // use the most general notation
-    char tmp[5];
-    sprintf(tmp, "\\x%02X", (unsigned char)(*p));
-    sb << tmp;
-  }
-
-  return sb.str();
-}
-
-
-string encodeWithEscapes(rostring p)
-{
-  return encodeWithEscapes(toCStr(p), strlen(p));
-}
-
-
 string quoted(rostring src)
 {
-  return stringb("\"" << encodeWithEscapes(src) << "\"");
+  return doubleQuote(src);
 }
 
 
@@ -128,6 +70,8 @@ std::string parseQuotedString(std::string const &text)
 
 string quoteCharacter(int c)
 {
+  // TODO: Implement with `singleQuoteChar`.
+
   if (isASCIIPrintable(c)) {
     if (c == '\'') {
       return "'\\''";

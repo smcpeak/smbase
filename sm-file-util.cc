@@ -9,9 +9,8 @@
 #include "codepoint.h"                 // isLetter
 #include "compare-util.h"              // compare
 #include "sm-windows.h"                // PLATFORM_IS_WINDOWS
-#include "string-util.h"               // endsWith
+#include "string-util.h"               // endsWith, doubleQuote
 #include "strtokp.h"                   // StrtokParse
-#include "strutil.h"                   // quoted
 #include "syserr.h"                    // smbase::xsyserror
 
 // libc++
@@ -383,7 +382,7 @@ STATICDEF int SMFileUtil::DirEntryInfo::compare(
 string SMFileUtil::DirEntryInfo::asString() const
 {
   return stringb(
-    "{name:" << quoted(m_name) <<
+    "{name:" << doubleQuote(m_name) <<
     " kind:" << m_kind <<
     "}");
 }
@@ -1251,7 +1250,7 @@ void SMFileUtil::atomicallyRenameFile(string const &oldPath,
   // another process to get a transient permission error when querying
   // 'newPath' at just the wrong moment.)
   if (directoryExists(oldPath)) {
-    xfatal(stringb("atomicallyRenameFile: " << quoted(oldPath) <<
+    xfatal(stringb("atomicallyRenameFile: " << doubleQuote(oldPath) <<
                    " is a directory but this can only be used"
                    " with files"));
   }

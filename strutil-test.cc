@@ -97,40 +97,6 @@ static void testIndexOfSubstring()
 }
 
 
-static void expectQuoteCharacter(int c, string const &expect)
-{
-  string actual = quoteCharacter(c);
-  EXPECT_EQ(actual, expect);
-}
-
-static void testQuoteCharacter()
-{
-  expectQuoteCharacter(0,    "\\x00");
-  expectQuoteCharacter(1,    "\\x01");
-  expectQuoteCharacter(31,   "\\x1F");
-  expectQuoteCharacter(32,   "' '");
-  expectQuoteCharacter('"',  "'\"'");
-  expectQuoteCharacter('\'', "'\\''");
-  expectQuoteCharacter('A',  "'A'");
-  expectQuoteCharacter('\\', "'\\\\'");
-  expectQuoteCharacter(126,  "'~'");
-  expectQuoteCharacter(127,  "\\x7F");
-  expectQuoteCharacter(128,  "\\x80");
-  expectQuoteCharacter(255,  "\\xFF");
-
-  expectQuoteCharacter(256,    "\\u0100");
-  expectQuoteCharacter(0xFFFF, "\\uFFFF");
-
-  expectQuoteCharacter(0x10000,         "\\U00010000");
-  expectQuoteCharacter(0x7FFFFFFF,      "\\U7FFFFFFF");
-  expectQuoteCharacter(-0x7FFFFFFF - 1, "\\U80000000");
-  expectQuoteCharacter(-0xFFFF,         "\\UFFFF0001");
-  expectQuoteCharacter(-0xFF,           "\\UFFFFFF01");
-  expectQuoteCharacter(-1,              "\\UFFFFFFFF");
-  expectQuoteCharacter((unsigned)-1,    "\\UFFFFFFFF");
-}
-
-
 static void testReadLinesFromFile()
 {
   ArrayStack<string> lines;
@@ -192,7 +158,6 @@ void test_strutil()
 
   testShellDoubleQuote();
   testIndexOfSubstring();
-  testQuoteCharacter();
   testReadLinesFromFile();
 }
 

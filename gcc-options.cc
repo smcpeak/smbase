@@ -9,7 +9,7 @@
 #include "sm-macros.h"                 // EMEMB, DEFINE_ENUMERATION_TO_STRING
 #include "strcmp-compare.h"            // StrcmpCompare, etc.
 #include "strictly-sorted.h"           // is_strictly_sorted
-#include "string-util.h"               // stripExtension, stringInSortedArray, join, beginsWith
+#include "string-util.h"               // stripExtension, stringInSortedArray, join, beginsWith, doubleQuote
 #include "xassert.h"                   // xassert
 
 #include <sstream>                     // std::ostringstream
@@ -290,9 +290,9 @@ void GCCOptions::Option::appendWords(std::vector<std::string> &dest) const
 
 std::ostream& GCCOptions::Option::insert(std::ostream &os) const
 {
-  os << "{ name=" << quoted(m_name.c_str())
+  os << "{ name=" << doubleQuote(m_name.c_str())
      << ", sep=" << ::toString(m_separator)
-     << ", arg=" << quoted(m_argument.c_str())
+     << ", arg=" << doubleQuote(m_argument.c_str())
      << ", syn=" << ::toString(m_syntaxError)
      << " }";
   return os;

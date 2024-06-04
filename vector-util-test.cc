@@ -4,10 +4,11 @@
 #include "vector-util.h"               // module under test
 
 #include "sm-test.h"                   // EXPECT_EQ
-#include "str.h"                       // string
-#include "strutil.h"                   // quoted
+#include "string-util.h"               // doubleQuote
 
 #include <string>                      // std::string
+
+using std::string;
 
 
 static void testAccumulateWith()
@@ -58,12 +59,12 @@ static void testMapElements()
 {
   std::vector<string> src {"a", "b"};
   std::vector<string> dest(mapElements<string>(src,
-    [](string const &s) { return quoted(s); }));
+    [](string const &s) { return doubleQuote(s); }));
   EXPECT_EQ(dest, (std::vector<string>{"\"a\"", "\"b\""}));
 
   // I do not like that I have to specify '<string>' here, but I do not
   // know how to avoid it.
-  dest = mapElements<string>(src, quoted);
+  dest = mapElements<string>(src, doubleQuote);
   EXPECT_EQ(dest, (std::vector<string>{"\"a\"", "\"b\""}));
 }
 

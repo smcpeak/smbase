@@ -77,17 +77,40 @@ bool stringInSortedArray(char const *str, char const * const *arr,
 
 // ----------------------------- Escaping ------------------------------
 /*
-  Write `c` to `os`, substituting a C escape sequence if it is not
-  printable or is a metacharacter.  Specifically:
+  Write unicode code point `c` to `os`, substituting a C escape sequence
+  if it is not printable US-ASCII or is a metacharacter.  Specifically:
 
-  - non-printing characters escaped using octal,
+  - non-printing characters <= 255 escaped using octal,
 
-  - whitespace and metacharacters (backslash and double-quote) escaped
-    using backslash mnemonics, and
+  - characters >= 256 escaped using "\u{N+}" with capital hex digits,
+
+  - whitespace and metacharacters (backslash, single-, and double-quote)
+    escaped using backslash mnemonics, and
 
   - all other characters represent themselves.
+
+  If `delim` is not 0, then if it is double-quote, do not escape single
+  quotes, and vice-versa.
+
+  Requires: `0 <= c && c <= 0x10FFFF`.
 */
-void insertPossiblyEscapedChar(std::ostream &os, int c);
+void insertPossiblyEscapedChar(std::ostream &os, int c, int delim=0);
+
+
+// Return `src` with all of its characters escaped using
+// `insertPossiblyEscapedChar`, but without surrounding the result with
+// quotation marks.
+std::string encodeWithEscapes(std::string const &src);
+
+// Same, but with the source specified by a pointer and byte length.
+std::string encodeWithEscapes(char const *src, int len);
+
+// Overloads for the other variants of 'char'.
+inline std::string encodeWithEscapes(unsigned char const *src, int len)
+  { return encodeWithEscapes((char const *)src, len); }
+inline std::string encodeWithEscapes(signed char const *src, int len)
+  { return encodeWithEscapes((char const *)src, len); }
+
 
 // Insert 'str' into 'os', surrounded by double quotes, and using C-like
 // escape sequences for double-quotes, backslashes, and all

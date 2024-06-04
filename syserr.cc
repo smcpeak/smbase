@@ -5,7 +5,7 @@
 #include "syserr.h"                    // this module
 
 #include "dev-warning.h"               // devWarning
-#include "strutil.h"                   // quoted
+#include "string-util.h"               // doubleQuote
 
 
 // ---------------- portable code ----------------
@@ -72,7 +72,7 @@ STATICDEF string XSysError::
   stringBuilder sb;
   sb << syscall;
   if (!ctx.empty()) {
-    sb << ": " << quoted(ctx);
+    sb << ": " << doubleQuote(ctx);
   }
   sb << ": ";
 

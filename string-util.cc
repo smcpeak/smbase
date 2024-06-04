@@ -211,10 +211,21 @@ bool stringInSortedArray(char const *str, char const * const *arr,
 
 
 // ----------------------------- Escaping ------------------------------
-void insertPossiblyEscapedChar(std::ostream &os, int c)
+void insertPossiblyEscapedChar(std::ostream &os, int c, int delim)
 {
+  xassertPrecondition(0 <= c && c <= 0x10FFFF);
+
   switch (c) {
     case '"':
+    case '\'':
+      if (!delim || delim == c) {
+        // If there is no active delimiter context, or it is the same
+        // as the quotation mark `c`, escape `c`.
+        os << '\\';
+      }
+      os << (char)c;
+      break;
+
     case '\\':
       os << '\\' << (char)c;
       break;
@@ -251,16 +262,36 @@ void insertPossiblyEscapedChar(std::ostream &os, int c)
       if (32 <= c && c <= 126) {
         os << (char)c;
       }
-      else {
+      else if (c <= 255) {
         // I choose to print in octal rather than hex because a hex
         // sequence does not have any length limit, meaning if the
         // hex sequence is followed by a printable character that is
         // also a hex digit, that will be misinterpreted (unless I
         // use a hex escape for it too).
-        os << stringf("\\%03o", (int)c);
+        os << stringf("\\%03o", c);
+      }
+      else {
+        os << stringf("\\u{%X}", c);
       }
       break;
   }
+}
+
+
+std::string encodeWithEscapes(std::string const &src)
+{
+  return encodeWithEscapes(src.data(), src.size());
+}
+
+
+std::string encodeWithEscapes(char const *src, int len)
+{
+  std::ostringstream oss;
+  while (len-- > 0) {
+    insertPossiblyEscapedChar(oss, (unsigned char)*src);
+    ++src;
+  }
+  return oss.str();
 }
 
 
@@ -270,7 +301,7 @@ void insertDoubleQuoted(std::ostream &os, std::string const &str)
 
   for (char c : str) {
     unsigned char uc = (unsigned char)c;
-    insertPossiblyEscapedChar(os, (int)uc);
+    insertPossiblyEscapedChar(os, (int)uc, '"');
   }
 
   os << '"';
@@ -289,7 +320,7 @@ std::string singleQuoteChar(int c)
 {
   std::ostringstream oss;
   oss << '\'';
-  insertPossiblyEscapedChar(oss, c);
+  insertPossiblyEscapedChar(oss, c, '\'');
   oss << '\'';
   return oss.str();
 }

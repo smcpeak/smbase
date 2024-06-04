@@ -2,7 +2,8 @@
 // code for boxprint.h
 
 #include "boxprint.h"       // this module
-#include "strutil.h"        // quoted
+
+#include "string-util.h"    // doubleQuote
 
 #include <string.h>         // strlen
 
@@ -100,7 +101,7 @@ void BPText::render(BPRender &mgr)
 
 void BPText::debugPrint(ostream &os, int /*ind*/) const
 {
-  os << "text(" << quoted(text) << ")";
+  os << "text(" << doubleQuote(text) << ")";
 }
 
 

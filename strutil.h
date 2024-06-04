@@ -25,63 +25,34 @@
 
 // dsw: get the first alphanum token in the string
 //
-// Deprecated: I think this is not a good way to do parsing, so I am
-// not moving this to `string-util`.
+// Silently deprecated: I think this is not a good way to do parsing, so
+// I am not moving this to `string-util`.
 //
 std::string firstAlphanumToken(std::string const &str);
 
 
-// encode a block of bytes as a string with C backslash escape
-// sequences (but without the opening or closing quotes)
-//
-// 'src' is *not* rostring, since it is not NUL terminated
-//
-// Deprecated: `string-util` has `doubleQuote`, which should be used
-// instad.
-//
-std::string encodeWithEscapes(char const *src, int len);
-
-// Overloads for the other variants of 'char'.
-inline std::string encodeWithEscapes(unsigned char const *src, int len)
-  { return encodeWithEscapes((char const *)src, len); }
-inline std::string encodeWithEscapes(signed char const *src, int len)
-  { return encodeWithEscapes((char const *)src, len); }
-
-// safe when the text has no NUL characters
-std::string encodeWithEscapes(std::string const &src);
-
-// adds the quotes too
-//
-// Deprecated: `string-util` has `doubleQuote`, which should be used
-// instad.
-//
-std::string quoted(std::string const &src);
+std::string quoted(std::string const &src)
+  DEPRECATED("Use `doubleQuote` in `string-util` instead.");
 
 
 // decode an escaped string; throw XFormat if there is a problem
 // with the escape syntax; if 'delim' is specified, it will also
 // make sure there are no unescaped instances of that
-//
-// Deprecated: Use `decodeCStringEscapesToStream` or
-// `decodeCStringEscapesToString` in `c-string-reader`.
-//
 void decodeEscapes(ArrayStack<char> &dest, std::string const &src,
                    char delim = 0, bool allowNewlines=false);
+  DEPRECATED("Use `decodeCStringEscapesToStream` or "
+             "`decodeCStringEscapesToString` in `c-string-reader`.");
 
 // given a string with quotes and escapes, yield just the string;
 // works if there are no escaped NULs
-//
-// Deprecated: Use `parseQuotedCString` in `c-string-reader`.
-//
-std::string parseQuotedString(std::string const &text);
+std::string parseQuotedString(std::string const &text)
+  DEPRECATED("Use `parseQuotedCString` in `c-string-reader`.");
 
 
 // For printable ASCII other than single quote or backslash, return 'c'.
 // Otherwise, return '\'', '\\', '\xNN', '\uNNNN', or '\UNNNNNNNN'.
-//
-// Deprecated: Use `singleQuoteChar` in `string-util`.
-//
-std::string quoteCharacter(int c);
+std::string quoteCharacter(int c)
+  DEPRECATED("Use `singleQuoteChar` in `string-util`.");
 
 
 // Return a string that, in the POSIX shell syntax, denotes 's'.  If no
