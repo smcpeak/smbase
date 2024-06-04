@@ -76,6 +76,10 @@ void test_codepoint()
   xassert(!isCIdentifierStartCharacter('9'));
   xassert(isCIdentifierStartCharacter('_'));
   xassert(!isCIdentifierStartCharacter(','));
+
+  xassert(isCWhitespace(' '));
+  xassert(isCWhitespace('\t'));
+  xassert(!isCWhitespace('x'));
 }
 
 

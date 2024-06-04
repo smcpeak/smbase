@@ -100,6 +100,23 @@ bool isCIdentifierStartCharacter(int c)
 }
 
 
+bool isCWhitespace(int c)
+{
+  switch (c) {
+    case ' ':
+    case '\t':
+    case '\n':
+    case '\r':
+    case '\f':
+    case '\v':
+      return true;
+
+    default:
+      return false;
+  }
+}
+
+
 bool isASCIIPrintable(int c)
 {
   return 32 <= c && c <= 126;
