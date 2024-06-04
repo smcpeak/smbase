@@ -3,16 +3,13 @@
 
 #include "crc.h"                       // module under test
 
-#include "sm-test.h"                   // dummy_printf, verbose
+#include "sm-test.h"                   // tprintf
 
 #include <errno.h>                     // errno
 #include <stdint.h>                    // uint32_t
-#include <stdio.h>                     // printf, FILE, etc.
+#include <stdio.h>                     // FILE, etc.
 #include <stdlib.h>                    // malloc, exit
 #include <string.h>                    // strerror
-
-
-#define printf (verbose? printf : dummy_printf)
 
 
 static int errors=0;
@@ -20,9 +17,9 @@ static int errors=0;
 static void testCrc(unsigned char const *data, int length, uint32_t crc)
 {
   uint32_t val = crc32(data, length);
-  printf("computed crc is 0x%08lX, expected is 0x%08lX\n",
-         (unsigned long)val,
-         (unsigned long)~crc);       // why is 'crc' inverted?
+  tprintf("computed crc is 0x%08lX, expected is 0x%08lX\n",
+          (unsigned long)val,
+          (unsigned long)~crc);       // why is 'crc' inverted?
   if (val != ~crc) {
     errors++;
   }
@@ -35,7 +32,7 @@ void test_crc()
   if (char const *fname = getenv("TEST_CRC_FNAME")) {
     FILE *fp = fopen(fname, "r");
     if (!fp) {
-      printf("error opening %s: %s\n", fname, strerror(errno));
+      tprintf("error opening %s: %s\n", fname, strerror(errno));
       exit(2);
     }
 
@@ -47,13 +44,13 @@ void test_crc()
     // read the entire contents
     unsigned char *buf = (unsigned char*)malloc(len);
     if (fread(buf, 1, len, fp) != (size_t)len) {
-      printf("read error, or short count..\n");
+      tprintf("read error, or short count..\n");
       exit(2);
     }
 
     // crc it
     long val = crc32(buf, len);
-    printf("crc32 of %s: 0x%08lX\n", fname, val);
+    tprintf("crc32 of %s: 0x%08lX\n", fname, val);
 
     return;
   }

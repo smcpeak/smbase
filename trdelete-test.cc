@@ -4,14 +4,10 @@
 #include "trdelete.h"                  // module under test
 
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
-#include "sm-test.h"                   // dummy_printf, verbose
+#include "sm-test.h"                   // tprintf
 
 #include <assert.h>                    // assert
-#include <stdio.h>                     // printf
 #include <stdlib.h>                    // malloc, exit, getenv
-
-
-#define printf (verbose? printf : dummy_printf)
 
 
 OPEN_ANONYMOUS_NAMESPACE
@@ -48,11 +44,11 @@ void test_trdelete()
 {
   if (getenv("UNDER_VALGRIND")) {
     // Valgrind sees and complains about the deliberate use-after-free.
-    printf("skipping test due to UNDER_VALGRIND\n");
+    tprintf("skipping test due to UNDER_VALGRIND\n");
     return;
   }
 
-  printf("malloc: %p\n", malloc(10));
+  tprintf("malloc: %p\n", malloc(10));
 
   Foo *f = new Foo;
   f->x = 5;
@@ -60,7 +56,7 @@ void test_trdelete()
   assert(*fieldptr == 5);
   delete f;
   if (*fieldptr == 5) {
-    printf("trashing-delete failed\n");
+    tprintf("trashing-delete failed\n");
     exit(2);
   }
 
@@ -70,11 +66,11 @@ void test_trdelete()
   assert(*fieldptr == 7);
   delete b;
   if ((unsigned)(*fieldptr) == 0xAAAAAAAAu) {    // did it trash it anyway?
-    printf("non-trashing-delete failed\n");
+    tprintf("non-trashing-delete failed\n");
     exit(2);
   }
 
-  printf("trashing delete works\n");
+  tprintf("trashing delete works\n");
 }
 
 

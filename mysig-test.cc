@@ -3,16 +3,12 @@
 
 #include "mysig.h"                     // module under test
 
-#include "sm-test.h"                   // dummy_printf, verbose
+#include "sm-test.h"                   // tprintf
 
 #include <setjmp.h>                    // setjmp
 #include <stdint.h>                    // uintptr_t
-#include <stdio.h>                     // printf
 #include <stdlib.h>                    // strtoul, exit, getenv
 #include <string.h>                    // strcmp
-
-
-#define printf (verbose? printf : dummy_printf)
 
 
 static void infiniteRecursion()
@@ -38,12 +34,12 @@ static void runTest()
 
     if (0==strcmp(segfaultAddr, "inf")) {
       // die by stack overflow.. interesting, I can't catch it..
-      printf("going into infinite recursion...\n");
+      tprintf("going into infinite recursion...\n");
       infiniteRecursion();
     }
 
     uintptr_t addr = strtoul(segfaultAddr, NULL /*endp*/, 0 /*radix*/);
-    printf("about to access 0x%lX ...\n", (long)addr);
+    tprintf("about to access 0x%lX ...\n", (long)addr);
     *((int volatile*)addr) = 0;
     return;     // won't be reached for most values of 'addr'
   }
@@ -62,20 +58,20 @@ static void runTest()
       setHandler(SIGBUS, jmpHandler);   // osx gives SIBGUS instead of SIGSEGV
     #endif
 
-    //printf("I'm pid %d waiting to be killed...\n", getpid());
+    //tprintf("I'm pid %d waiting to be killed...\n", getpid());
     //sleep(10);
-    printf("about to deliberately cause a segfault ...\n");
-    printf("(Note: 'gcc -fsanitize=undefined' will report a "
+    tprintf("about to deliberately cause a segfault ...\n");
+    tprintf("(Note: 'gcc -fsanitize=undefined' will report a "
            "\"runtime error\" here too, which can be ignored.)\n");
     *((int volatile*)0) = 0;    // segfault!
 
-    printf("didn't segfault??\n");
+    tprintf("didn't segfault??\n");
     exit(2);
   }
 
   else {         // from longjmp
-    printf("came back from a longjmp!\n");
-    printf("\nmysig works\n");
+    tprintf("came back from a longjmp!\n");
+    tprintf("\nmysig works\n");
   }
 }
 
@@ -85,13 +81,13 @@ void test_mysig()
 {
   if (getenv("UNDER_VALGRIND")) {
     // The test deliberately segfaults, which valgrind of course sees.
-    printf("skipping test due to UNDER_VALGRIND\n");
+    tprintf("skipping test due to UNDER_VALGRIND\n");
   }
   else if (mysigModuleWorks()) {
     runTest();
   }
   else {
-    printf("mysig does not work on this platform, skipping test\n");
+    tprintf("mysig does not work on this platform, skipping test\n");
   }
 }
 
