@@ -6,7 +6,7 @@
 #define SMBASE_SM_TEST_H
 
 #include "dev-warning.h"   // g_abortUponDevWarning
-#include "dummy-printf.h"  // dummy_printf (provided for clients)
+#include "dummy-printf.h"  // dummy_printf
 #include "exc.h"           // smbase::XBase
 #include "sm-is-equal.h"   // smbase::is_equal
 #include "sm-iostream.h"   // cout
@@ -31,6 +31,10 @@ extern int verbose;
 // "Test output", which goes nowhere unless `verbose` is true.
 #define tout getTout()
 std::ostream &getTout();
+
+
+// "Test printf", which goes nowhere unless `verbose` is true.
+#define tprintf (verbose? printf : dummy_printf)
 
 
 // reports uncaught exceptions

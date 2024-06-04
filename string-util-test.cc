@@ -3,7 +3,7 @@
 
 #include "string-util.h"               // module under test
 
-#include "sm-test.h"                   // EXPECT_EQ
+#include "sm-test.h"                   // EXPECT_EQ, tprintf
 
 #include <exception>                   // std::exception
 #include <iostream>                    // std::ostream
@@ -383,7 +383,7 @@ static void testReplace()
 
 static void expRangeVector(char const *in, char const *out)
 {
-  printf("expRangeVector(%s, %s)\n", in, out);
+  tprintf("expRangeVector(%s, %s)\n", in, out);
   string result = expandRanges(in);
   xassert(result == out);
 }
@@ -400,7 +400,7 @@ static void testExpandRanges()
 
 static void trVector(char const *in, char const *srcSpec, char const *destSpec, char const *out)
 {
-  printf("trVector(%s, %s, %s, %s)\n", in, srcSpec, destSpec, out);
+  tprintf("trVector(%s, %s, %s, %s)\n", in, srcSpec, destSpec, out);
   string result = translate(in, srcSpec, destSpec);
   EXPECT_EQ(result, out);
 }
