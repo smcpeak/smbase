@@ -9,8 +9,7 @@
 #include "sm-macros.h"                 // EMEMB, DEFINE_ENUMERATION_TO_STRING
 #include "strcmp-compare.h"            // StrcmpCompare, etc.
 #include "strictly-sorted.h"           // is_strictly_sorted
-#include "string-util.h"               // stripExtension, stringInSortedArray, join
-#include "strutil.h"                   // prefixEquals
+#include "string-util.h"               // stripExtension, stringInSortedArray, join, beginsWith
 #include "xassert.h"                   // xassert
 
 #include <sstream>                     // std::ostringstream
@@ -730,7 +729,7 @@ bool GCCOptions::parseOption(
   // easily march through the string's contents.
   char const *optWord = optWordString.c_str();
 
-  if (prefixEquals(optWord, name)) {
+  if (beginsWith(optWord, name)) {
     char const *after = optWord + strlen(name);
 
     if ((syntax & OS_EXACT) && *after != 0) {

@@ -11,6 +11,7 @@
 #include "compare-util.h"              // compare
 #include "exc.h"                       // smbase::xformat
 #include "nonport.h"                   // vnprintf
+#include "string-util.h"               // beginsWith, endsWith
 
 // libc
 #include <ctype.h>                     // isspace
@@ -312,18 +313,12 @@ char *copyToStaticBuffer(char const *s)
 
 bool prefixEquals(rostring str, rostring prefix)
 {
-  int slen = strlen(str);
-  int plen = strlen(prefix);
-  return slen >= plen &&
-         0==memcmp(toCStr(str), toCStr(prefix), plen);
+  return beginsWith(str, prefix);
 }
 
 bool suffixEquals(rostring str, rostring suffix)
 {
-  int slen = strlen(str);
-  int ulen = strlen(suffix);    // sUffix
-  return slen >= ulen &&
-         0==memcmp(toCStr(str)+slen-ulen, toCStr(suffix), ulen);
+  return endsWith(str, suffix);
 }
 
 

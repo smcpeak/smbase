@@ -9,6 +9,7 @@
 #define SMBASE_STRUTIL_H
 
 #include "array.h"                     // ArrayStack
+#include "sm-macros.h"                 // DEPRECATED
 
 // My basic plan is to move the functionality that I think is worth
 // keeping over into `string-util`, leaving the `strutil` module with
@@ -128,10 +129,12 @@ char *copyToStaticBuffer(char const *src);
 
 
 // true if the first part of 'str' matches 'prefix'
-bool prefixEquals(std::string const &str, std::string const &prefix);
+bool prefixEquals(std::string const &str, std::string const &prefix)
+  DEPRECATED("Use `beginsWith` in `string-util` instead.");
 
 // and similar for last part
-bool suffixEquals(std::string const &str, std::string const &suffix);
+bool suffixEquals(std::string const &str, std::string const &suffix)
+  DEPRECATED("Use `endsWith` in `string-util` instead.");
 
 
 // True if 'needle' occurs as a substring within 'haystack'.  If

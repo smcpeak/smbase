@@ -9,8 +9,9 @@
 #include "codepoint.h"                 // isLetter
 #include "compare-util.h"              // compare
 #include "sm-windows.h"                // PLATFORM_IS_WINDOWS
+#include "string-util.h"               // endsWith
 #include "strtokp.h"                   // StrtokParse
-#include "strutil.h"                   // suffixEquals, quoted
+#include "strutil.h"                   // quoted
 #include "syserr.h"                    // smbase::xsyserror
 
 // libc++
@@ -649,7 +650,7 @@ SMFileUtil::FileKind SMFileUtil::getFileKind(string const &path)
     return FK_DIRECTORY;
   }
   else if (S_ISREG(st.st_mode)) {
-    if (suffixEquals(path, "/")) {
+    if (endsWith(path, "/")) {
       // On Linux, if you 'stat' a name with a trailing slash but it is
       // a regular file, 'stat' returns ENOTDIR, which I map to FK_NONE
       // above.  But on Windows, the same thing yields a 0 return and
