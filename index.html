@@ -83,7 +83,8 @@ modules are now considered obsolete (marked below as such).
   <ul>
     <li><a class="toc" href="#system_utilities">System Utilities</a>
     <li><a class="toc" href="#streams">Character streams</a>
-    <li><a class="toc" href="#serialization">Serialization</a>
+    <li><a class="toc" href="#parsing">Parsing</a>
+    <li><a class="toc" href="#serialization">Binary serialization</a>
   </ul>
   <li><a class="toc" href="#application_domains">Application domains</a>
   <ul>
@@ -682,28 +683,6 @@ operations treat them as a unit.
   <!-- AUTO -->  This file is in the public domain.
 <!-- end header -->
 
-<!-- begin header: strtokp.h -->
-  <!-- AUTO --><dt><a href="strtokp.h">strtokp.h</a>
-  <!-- AUTO --><dd>
-  <!-- AUTO -->  StrtokParse, a class that parses a string similar to how strtok()
-  <!-- AUTO -->  works, but provides a more convenient (and thread-safe) interface.
-  <!-- AUTO -->  Similar to Java's StringTokenizer.
-<!-- end header -->
-
-<!-- begin header: strtokpc.h -->
-  <!-- AUTO --><dt><a href="strtokpc.h">strtokpc.h</a>
-  <!-- AUTO --><dd>
-  <!-- AUTO -->  String tokenizing class.  Modifies an input string in-place to
-  <!-- AUTO -->  null-terminate individual tokens, and undoes modifications on
-  <!-- AUTO -->  destruction.
-<!-- end header -->
-
-<!-- begin header: parsestring.h -->
-  <!-- AUTO --><dt><a href="parsestring.h">parsestring.h</a>
-  <!-- AUTO --><dd>
-  <!-- AUTO -->  ParseString class.
-<!-- end header -->
-
 </dl>
 
 All of these are obsolete:
@@ -1088,7 +1067,42 @@ This is obsolete:
 </dl>
 
 
-<h2 id="serialization">Serialization</h2>
+<h2 id="parsing">Parsing</h2>
+
+<dl>
+
+<!-- begin header: strtokp.h -->
+  <!-- AUTO --><dt><a href="strtokp.h">strtokp.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  StrtokParse, a class that parses a string similar to how strtok()
+  <!-- AUTO -->  works, but provides a more convenient (and thread-safe) interface.
+  <!-- AUTO -->  Similar to Java's StringTokenizer.
+<!-- end header -->
+
+<!-- begin header: strtokpc.h -->
+  <!-- AUTO --><dt><a href="strtokpc.h">strtokpc.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  String tokenizing class.  Modifies an input string in-place to
+  <!-- AUTO -->  null-terminate individual tokens, and undoes modifications on
+  <!-- AUTO -->  destruction.
+<!-- end header -->
+
+<!-- begin header: parsestring.h -->
+  <!-- AUTO --><dt><a href="parsestring.h">parsestring.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  ParseString class.
+<!-- end header -->
+
+<!-- begin header: reader.h -->
+  <!-- AUTO --><dt><a href="reader.h">reader.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  <code>Reader</code> base class for <code>char</code> stream readers/parsers.
+<!-- end header -->
+
+</dl>
+
+
+<h2 id="serialization">Binary serialization</h2>
 
 <p>
 The "flatten" serialization scheme is intended to allow sets of objects
