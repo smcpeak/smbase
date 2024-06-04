@@ -451,6 +451,17 @@ static void testTranslate()
 }
 
 
+static void testTrimWhitespace()
+{
+  EXPECT_EQ(trimWhitespace(""), "");
+  EXPECT_EQ(trimWhitespace(" "), "");
+  EXPECT_EQ(trimWhitespace("  "), "");
+  EXPECT_EQ(trimWhitespace(" x"), "x");
+  EXPECT_EQ(trimWhitespace(" x y "), "x y");
+  EXPECT_EQ(trimWhitespace("\t x y "), "x y");
+}
+
+
 void test_string_utils()
 {
   testSplitNonEmpty();
@@ -471,6 +482,7 @@ void test_string_utils()
   testReplace();
   testExpandRanges();
   testTranslate();
+  testTrimWhitespace();
 }
 
 

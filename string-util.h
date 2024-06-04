@@ -23,6 +23,11 @@
 std::vector<std::string> splitNonEmpty(std::string const &text, char sep);
 
 
+// Remove any whitespace (as determined by `std::isspace`) at the
+// beginning or end of the string.
+std::string trimWhitespace(std::string const &str);
+
+
 // ------------------------- Tests on strings --------------------------
 // True if 'str' begins with 'prefix'.
 bool beginsWith(std::string const &str, std::string const &prefix);

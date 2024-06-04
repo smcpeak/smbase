@@ -14,8 +14,6 @@
 #include <stdio.h>                     // FILE
 
 
-// remove any whitespace at the beginning or end of the string
-std::string trimWhitespace(std::string const &str);
 // dsw: get the first alphanum token in the string
 std::string firstAlphanumToken(std::string const &str);
 

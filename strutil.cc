@@ -22,27 +22,6 @@
 using namespace smbase;
 
 
-string trimWhitespace(rostring origStr)
-{
-  char const *str = toCStr(origStr);
-
-  // trim leading whitespace
-  while (isspace(*str)) {
-    str++;
-  }
-
-  // trim trailing whitespace
-  char const *end = str + strlen(str);
-  while (end > str &&
-         isspace(end[-1])) {
-    end--;
-  }
-
-  // return it
-  return substring(str, end-str);
-}
-
-
 string firstAlphanumToken(rostring origStr)
 {
   char const *str = toCStr(origStr);

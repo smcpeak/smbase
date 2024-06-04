@@ -7,9 +7,10 @@
 #include "strcmp-compare.h"            // StrcmpCompare
 #include "strutil.h"                   // stringf
 #include "vector-util.h"               // accumulateWith
-#include "xassert.h"                   // xassertdb
+#include "xassert.h"                   // xassert, xassertdb
 
 #include <algorithm>                   // std::binary_search
+#include <cctype>                      // std::isspace
 #include <cstdlib>                     // std::abs
 #include <cstring>                     // std::{strchr, strrchr}
 #include <limits>                      // std::numeric_limits
@@ -58,6 +59,33 @@ std::vector<std::string> splitNonEmpty(std::string const &text, char sep)
   }
 
   return tokens;
+}
+
+
+std::string trimWhitespace(string const &origStr)
+{
+  std::string_view str(origStr);
+
+  // Indices enclosing the portion of the string that remains a
+  // candidate to return.
+  std::size_t begin = 0;
+  std::size_t end = str.size();
+
+  // Set `begin` to the index of the first non-ws character.
+  while (begin < end &&
+         std::isspace(static_cast<unsigned char>(str[begin]))) {
+    ++begin;
+  }
+
+  // Set `end` to the index+1 of the last non-ws character.
+  while (begin < end &&
+         std::isspace(static_cast<unsigned char>(str[end-1]))) {
+    --end;
+  }
+
+  xassert(begin <= end);
+
+  return std::string(str.substr(begin, end-begin));
 }
 
 
