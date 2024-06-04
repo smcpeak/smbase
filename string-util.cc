@@ -4,6 +4,7 @@
 #include "string-util.h"               // this module
 
 #include "exc.h"                       // smbase::xmessage
+#include "overflow.h"                  // safeToInt
 #include "strcmp-compare.h"            // StrcmpCompare
 #include "strutil.h"                   // stringf
 #include "vector-util.h"               // accumulateWith
@@ -116,6 +117,25 @@ bool endsWith(std::string const &str, std::string const &suffix)
 bool contains(std::string const &str, char c)
 {
   return str.find(c) != std::string::npos;
+}
+
+
+bool hasSubstring(
+  std::string const &haystack, std::string const &needle)
+{
+  return indexOfSubstring(haystack, needle) >= 0;
+}
+
+int indexOfSubstring(
+  std::string const &haystack, std::string const &needle)
+{
+  std::string::size_type i = haystack.find(needle);
+  if (i == std::string::npos) {
+    return -1;
+  }
+  else {
+    return safeToInt(i);
+  }
 }
 
 

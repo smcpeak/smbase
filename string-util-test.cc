@@ -533,6 +533,33 @@ static void testEncodeWithEscapes()
 }
 
 
+static void expectIndexOfSubstring(std::string const &haystack,
+  std::string const &needle, int expect)
+{
+  int actual = indexOfSubstring(haystack, needle);
+  EXPECT_EQ(actual, expect);
+
+  // Make sure 'hasSubstring' agrees.
+  EXPECT_EQ(hasSubstring(haystack, needle), expect != -1);
+}
+
+
+static void testIndexOfSubstring()
+{
+  expectIndexOfSubstring("", "", 0);
+  expectIndexOfSubstring("", "x", -1);
+  expectIndexOfSubstring("x", "", 0);
+  expectIndexOfSubstring("x", "x", 0);
+  expectIndexOfSubstring("abcdcde", "c", 2);
+  expectIndexOfSubstring("abcdcde", "e", 6);
+  expectIndexOfSubstring("abcdcde", "cd", 2);
+  expectIndexOfSubstring("abcdcde", "ce", -1);
+  expectIndexOfSubstring("foofoobar", "foobar", 3);
+  expectIndexOfSubstring("foofoofoobar", "foofoobar", 3);
+  expectIndexOfSubstring("foofoofooba", "foofoobar", -1);
+}
+
+
 void test_string_util()
 {
   testSplitNonEmpty();
@@ -557,6 +584,7 @@ void test_string_util()
   testTrimWhitespace();
   testRemoveSuffix();
   testEncodeWithEscapes();
+  testIndexOfSubstring();
 }
 
 

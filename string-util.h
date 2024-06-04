@@ -40,6 +40,15 @@ bool endsWith(std::string const &str, std::string const &suffix);
 bool contains(std::string const &str, char c);
 
 
+// True if 'needle' occurs as a substring within 'haystack'.  If
+// 'needle' is empty, this always returns true.
+bool hasSubstring(std::string const &haystack, std::string const &needle);
+
+// If 'needle' occurs within 'haystack', return the byte offset of the
+// first byte of the first occurrence.  Otherwise, return -1.
+int indexOfSubstring(std::string const &haystack, std::string const &needle);
+
+
 // ------------------ Manipulating vectors of strings ------------------
 // Return elements of 'vec' separated by 'sep'.
 std::string join(std::vector<std::string> const &vec,

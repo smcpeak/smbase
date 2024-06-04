@@ -108,13 +108,8 @@ bool suffixEquals(std::string const &str, std::string const &suffix)
   DEPRECATED("Use `endsWith` in `string-util` instead.");
 
 
-// True if 'needle' occurs as a substring within 'haystack'.  If
-// 'needle' is empty, this always returns true.
-bool hasSubstring(std::string const &haystack, std::string const &needle);
-
-// If 'needle' occurs within 'haystack', return the byte offset of the
-// first byte of the first occurrence.  Otherwise, return -1.
-int indexOfSubstring(std::string const &haystack, std::string const &needle);
+// 2024-06-04: Moved `hasSubstring` and `indexOfSubstring` to
+// `string-util`.
 
 
 // read/write strings <-> files
