@@ -73,8 +73,17 @@ bool stringInSortedArray(char const *str, char const * const *arr,
 
 
 // ----------------------------- Escaping ------------------------------
-// Write `c` to `os`, substituting a C escape sequence if it is not
-// printable or is a metacharacter.
+/*
+  Write `c` to `os`, substituting a C escape sequence if it is not
+  printable or is a metacharacter.  Specifically:
+
+  - non-printing characters escaped using octal,
+
+  - whitespace and metacharacters (backslash and double-quote) escaped
+    using backslash mnemonics, and
+
+  - all other characters represent themselves.
+*/
 void insertPossiblyEscapedChar(std::ostream &os, int c);
 
 // Insert 'str' into 'os', surrounded by double quotes, and using C-like
