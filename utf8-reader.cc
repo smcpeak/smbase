@@ -14,22 +14,12 @@ OPEN_NAMESPACE(smbase)
 
 // ------------------------ UTF8ReaderException ------------------------
 UTF8ReaderException::UTF8ReaderException(
-  Kind kind,
-  std::string const &utf8Details,
-  std::size_t byteOffset)
-  : XBase(),
-    m_kind(kind),
-    m_utf8Details(utf8Details),
-    m_byteOffset(byteOffset)
+  FileLineCol const &location,
+  std::string const &syntaxError,
+  Kind kind)
+  : ReaderException(location, syntaxError),
+    m_kind(kind)
 {}
-
-
-std::string UTF8ReaderException::getConflict() const
-{
-  return stringb(
-    "Invalid UTF-8 encoding at byte offset " << m_byteOffset <<
-    ": " << m_utf8Details);
-}
 
 
 // ---------------------------- UTF8Reader -----------------------------
@@ -37,25 +27,25 @@ void UTF8Reader::err(UTF8ReaderException::Kind kind,
                      std::size_t adjust,
                      std::string const &utf8Details) const
 {
-  std::size_t offset = m_curByteOffset;
+  FileLineCol loc = m_location;
 
   // The byte that caused the error may not be (typically is not) the
   // one at the current offset.
-  xassert(offset >= adjust);
-  offset -= adjust;
+  while (adjust-- > 0) {
+    loc.decrementColumn();
+  }
 
-  THROW(UTF8ReaderException(kind, utf8Details, offset));
+  THROW(UTF8ReaderException(loc, utf8Details, kind));
 }
 
 
 unsigned char UTF8Reader::readContinuationByte()
 {
-  int c = m_is.get();
-  if (c == std::istream::traits_type::eof()) {
+  int c = readChar();
+  if (c == eofCode()) {
     err(UTF8ReaderException::K_TRUNCATED_STREAM, 0 /*adjust*/,
       "The byte stream stops in the middle of a character encoding.");
   }
-  ++m_curByteOffset;
 
   xassert(0 <= c && c <= 0xFF);
   unsigned char b = (unsigned char)c;

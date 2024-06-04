@@ -7,7 +7,7 @@
 
 // this dir
 #include "gdvsymbol.h"                 // gdv::GDVSymbol
-#include "gdvalue-reader-exception.h"  // GDValueReaderException
+#include "reader.h"                    // smbase::ReaderException
 #include "sm-file-util.h"              // SMFileUtil
 #include "sm-test.h"                   // EXPECT_EQ, EXPECT_MATCHES_REGEX, VPVAL, DIAG, verbose, tout
 #include "strutil.h"                   // hasSubstring
@@ -53,7 +53,7 @@ static void checkParse(GDValue const &expect, std::string const &ser)
 
     actual.selfCheck();
   }
-  catch (GDValueReaderException const &e) {
+  catch (ReaderException const &e) {
     cout << "During checkParse, caught exception:\n"
          << "---- expect ----\n"
          << expect.asLinesString()
@@ -1067,7 +1067,7 @@ static void testOneErrorSubstrOrRegex(
       GDValue::readFromString(input);
       xfailure("should have failed");
     }
-    catch (GDValueReaderException &e) {
+    catch (ReaderException &e) {
       EXPECT_EQ(e.m_location.m_lc.m_line, expectLine);
       EXPECT_EQ(e.m_location.m_lc.m_column, expectColumn);
       if (expectErrorSubstring) {

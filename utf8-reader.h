@@ -7,10 +7,12 @@
 #define SMBASE_UTF8_READER_H
 
 #include "exc.h"                       // XBase
+#include "reader.h"                    // Reader, ReaderException
 #include "xassert.h"                   // xassert
 
 #include <cstddef>                     // std::size_t
 #include <iostream>                    // std::istream
+#include <optional>                    // std::optional
 #include <string>                      // std::string
 
 
@@ -22,7 +24,7 @@ static_assert(sizeof(int) >= 4);
 
 
 // Report an issue with UTF-8 input.
-class UTF8ReaderException : public XBase {
+class UTF8ReaderException : public ReaderException {
 public:      // types
   enum Kind {
     K_UNKNOWN,
@@ -46,38 +48,19 @@ public:      // data
   // What sort of problem happened.
   Kind m_kind;
 
-  // The specific complaint about the UTF-8 input.  (In contrast,
-  // `XFormat::condition` combines all of the information into one
-  // string.)
-  std::string m_utf8Details;
-
-  // Byte offset from `m_start` in the throwing reader.
-  std::size_t m_byteOffset;
-
 public:      // methods
   UTF8ReaderException(
-    Kind kind,
-    std::string const &utf8Details,
-    std::size_t byteOffset);
+    FileLineCol const &location,
+    std::string const &syntaxError,
+    Kind kind);
 
   UTF8ReaderException(UTF8ReaderException const &obj) = default;
   UTF8ReaderException &operator=(UTF8ReaderException const &obj) = default;
-
-  // XBase methods.
-  virtual std::string getConflict() const override;
 };
 
 
 // Manage process of reading from an input stream.
-class UTF8Reader {
-public:      // data
-  // Data source.
-  std::istream &m_is;
-
-  // How many bytes we have read from `m_is`.  This is used for error
-  // reporting.  The client can clear this if/when needed.
-  std::size_t m_curByteOffset;
-
+class UTF8Reader : public Reader {
 private:     // methods
   // Throw an exception due to malformed input.
   //
@@ -96,9 +79,9 @@ private:     // methods
   int readCodePointSlow(unsigned char firstByte);
 
 public:      // methods
-  UTF8Reader(std::istream &is)
-    : m_is(is),
-      m_curByteOffset(0)
+  UTF8Reader(std::istream &is,
+             std::optional<std::string> fileName = std::nullopt)
+    : Reader(is, fileName)
   {}
 
   // Read the next Unicode code point from `m_current`, advancing it.
@@ -106,11 +89,10 @@ public:      // methods
   // the input reached, return -1.
   int readCodePoint()
   {
-    int c = m_is.get();
-    if (c == std::istream::traits_type::eof()) {
+    int c = readChar();
+    if (c == eofCode()) {
       return -1;
     }
-    ++m_curByteOffset;
 
     if (c <= 127) {
       // Inline fast path.

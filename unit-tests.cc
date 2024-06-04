@@ -114,6 +114,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(parsestring);
   RUN_TEST(pprint);
   RUN_TEST(rack_allocator);
+  RUN_TEST(reader);
   RUN_TEST(refct_serf);
   RUN_TEST(run_process);
   RUN_TEST(sm_ap_int);

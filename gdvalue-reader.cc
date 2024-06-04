@@ -7,14 +7,12 @@
 
 #include "codepoint.h"                 // isWhitespace, decodeRadixIndicatorLetter, isASCIIRadixDigit
 #include "exc.h"                       // THROW
-#include "gdvalue-reader-exception.h"  // GDValueReaderException
 #include "gdvsymbol.h"                 // GDVSymbol
 #include "overflow.h"                  // addWithOverflowCheck, multiplyWithOverflowCheck
 #include "sm-macros.h"                 // OPEN_NAMESPACE
 #include "string-util.h"               // possiblyTruncatedWithEllipsis
 #include "utf8-writer.h"               // smbase::UTF8Writer
 
-#include <iomanip>                     // std::hex
 #include <utility>                     // std::move
 
 using namespace smbase;
@@ -25,104 +23,12 @@ OPEN_NAMESPACE(gdv)
 
 GDValueReader::GDValueReader(std::istream &is,
                              std::optional<std::string> fileName)
-  : m_is(is),
-    m_location(fileName)
+  : Reader(is, fileName)
 {}
 
 
 GDValueReader::~GDValueReader()
 {}
-
-
-STATICDEF constexpr int GDValueReader::eofCode()
-{
-  return std::istream::traits_type::eof();
-}
-
-
-void GDValueReader::err(string const &syntaxError) const
-{
-  locErr(m_location, syntaxError);
-}
-
-
-void GDValueReader::locErr(FileLineCol const &loc,
-                           string const &syntaxError) const
-{
-  // Generally, we read a character, advancing the location in the
-  // process, then check for an error.  Consequently, when we report an
-  // error the location is one past the place the erroneous character
-  // was.  So, back the location spot up.
-  FileLineCol prev(loc);
-  prev.decrementColumn();
-
-  THROW(GDValueReaderException(prev, syntaxError));
-}
-
-
-void GDValueReader::unexpectedCharErr(int c, char const *lookingFor) const
-{
-  inCtxUnexpectedCharErr(c, stringbc("while " << lookingFor));
-}
-
-
-void GDValueReader::inCtxUnexpectedCharErr(int c, char const *context) const
-{
-  if (c == eofCode()) {
-    err(stringb("Unexpected end of file " <<
-                context << "."));
-  }
-  else if (isASCIIPrintable(c)) {
-    err(stringb("Unexpected '" << (char)c << "' " <<
-                context << "."));
-  }
-  else {
-    err(stringb("Unexpected unprintable character code " <<
-                (unsigned)c << " (0x" << std::hex << std::setw(2) <<
-                std::setfill('0') << (unsigned)c <<
-                ") " << context << "."));
-  }
-
-  // Not reached.
-}
-
-
-int GDValueReader::readChar()
-{
-  int c = m_is.get();
-
-  // Update the location.
-  //
-  // Note: We do this even for EOF for uniformity.
-  m_location.incrementForChar(c);
-
-  return c;
-}
-
-
-void GDValueReader::readCharOrErr(int expectChar, char const *lookingFor)
-{
-  processCharOrErr(readChar(), expectChar, lookingFor);
-}
-
-
-void GDValueReader::processCharOrErr(int actualChar, int expectChar,
-                                     char const *lookingFor)
-{
-  if (actualChar != expectChar) {
-    unexpectedCharErr(actualChar, lookingFor);
-  }
-}
-
-
-int GDValueReader::readNotEOFCharOrErr(char const *lookingFor)
-{
-  int c = readChar();
-  if (c == eofCode()) {
-    unexpectedCharErr(c, lookingFor);
-  }
-  return c;
-}
 
 
 void GDValueReader::readEOFOrErr()
@@ -131,25 +37,6 @@ void GDValueReader::readEOFOrErr()
   if (c != eofCode()) {
     unexpectedCharErr(c, "looking for the end of a file that should only have one value");
   }
-}
-
-
-void GDValueReader::putback(int c)
-{
-  if (c == eofCode()) {
-    // It is convenient to allow this to make the parsing code more
-    // uniform in its treatment of EOF versus other terminators in
-    // some places.  But we do not actually put anything back into the
-    // stream.
-  }
-  else {
-    m_is.putback(c);
-  }
-
-  // Either way, however, the location must be decremented because it
-  // was incremented when when we did the corresponding 'readChar', even
-  // if it returned EOF.
-  m_location.decrementForChar(c);
 }
 
 
@@ -522,10 +409,10 @@ int GDValueReader::readNextUniversalCharacterEscape()
           decoded2));
       }
     }
-    catch (GDValueReaderException &e) {
+    catch (ReaderException &e) {
       // We do not compute the more detailed context above
       // because we do not yet know we will report an error.
-      e.prependGDVNContext(stringf(
+      e.prependErrorContext(stringf(
         "After high surrogate \"\\u%04X\"", decoded));
       throw;
     }
@@ -658,7 +545,7 @@ GDValue GDValueReader::readNextInteger(int const firstChar)
   }
   catch (XFormat &x) {       // gcov-ignore
     // We already validated the syntax, so this should not be possible.
-    // But if it happens, map it into a `GDValueReaderException` for
+    // But if it happens, map it into a `ReaderException` for
     // uniformity.
     err(x.getMessage());     // gcov-ignore
     return GDValue();        // Not reached.

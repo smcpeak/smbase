@@ -451,8 +451,8 @@ public:      // methods
   //
   // If there is no value before EOF, this returns nullopt.
   //
-  // If a syntax error is encountered, throws 'GDValueReaderException'
-  // (declared in gdvalue-reader-exception.h).
+  // If a syntax error is encountered, throws 'ReaderException'
+  // (declared in `reader.h`).
   //
   static std::optional<GDValue> readNextValue(std::istream &is);
 
