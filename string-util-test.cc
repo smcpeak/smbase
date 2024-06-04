@@ -490,6 +490,15 @@ static void testTrimWhitespace()
 }
 
 
+static void testRemoveSuffix()
+{
+  EXPECT_EQ(removeSuffix("", ""), "");
+  EXPECT_EQ(removeSuffix("xyz", "z"), "xy");
+  EXPECT_EQ(removeSuffix("xyz", "Z"), "xyz");
+  EXPECT_EQ(removeSuffix("xyz", "xyz"), "");
+}
+
+
 void test_string_util()
 {
   testSplitNonEmpty();
@@ -512,6 +521,7 @@ void test_string_util()
   testExpandRanges();
   testTranslate();
   testTrimWhitespace();
+  testRemoveSuffix();
 }
 
 

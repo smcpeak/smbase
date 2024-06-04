@@ -366,6 +366,18 @@ std::string replace(
 }
 
 
+std::string removeSuffix(std::string const &full,
+                         std::string const &suffix)
+{
+  if (endsWith(full, suffix)) {
+    return full.substr(0, full.size() - suffix.size());
+  }
+  else {
+    return full;
+  }
+}
+
+
 std::string expandRanges(char const *chars_)
 {
   std::ostringstream ret;

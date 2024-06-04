@@ -127,6 +127,12 @@ std::string replace(
   std::string const &newstr);
 
 
+// If 'full' ends with 'suffix', return a string like 'full' but with
+// that suffix removed.  Otherwise just return 'full'.
+std::string removeSuffix(std::string const &full,
+                         std::string const &suffix);
+
+
 // Expand a string that may contain 'tr'-like ranges.  For example,
 // "A-F" becomes "ABCDEF".
 std::string expandRanges(char const *chars);
