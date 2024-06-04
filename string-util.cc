@@ -378,7 +378,7 @@ std::string possiblyTruncatedWithEllipsis(
 }
 
 
-std::string replace(
+std::string replaceAll(
   std::string const &origSrc,
   std::string const &oldstr,
   std::string const &newstr)
@@ -414,6 +414,15 @@ std::string replace(
   }
 
   return ret.str();
+}
+
+
+std::string replace(
+  std::string const &origSrc,
+  std::string const &oldstr,
+  std::string const &newstr)
+{
+  return replaceAll(origSrc, oldstr, newstr);
 }
 
 

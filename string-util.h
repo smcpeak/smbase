@@ -12,6 +12,8 @@
 #ifndef SMBASE_STRING_UTIL_H
 #define SMBASE_STRING_UTIL_H
 
+#include "sm-macros.h"                 // DEPRECATED
+
 #include <cstdint>                     // std::{int64_t, uint64_t}
 #include <iosfwd>                      // std::ostream
 #include <string>                      // std::string
@@ -153,10 +155,17 @@ std::string possiblyTruncatedWithEllipsis(
 // may be empty).  After each replacement, searching for the next
 // occurrence begins right after the inserted text, so that text is not
 // subject to further replacement.
-std::string replace(
+std::string replaceAll(
   std::string const &src,
   std::string const &oldstr,
   std::string const &newstr);
+
+// Old name that I think is a little too short.
+std::string replace(
+  std::string const &src,
+  std::string const &oldstr,
+  std::string const &newstr)
+  DEPRECATED("Use `replaceAll` instead.");
 
 
 // If 'full' ends with 'suffix', return a string like 'full' but with
