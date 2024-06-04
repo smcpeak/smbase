@@ -1,15 +1,16 @@
 // string-util.h
-// Utilities related to std::string.
+// Utilities related to `std::string`.
 
 // This was intended to eventually replace strutil.h, which was based on
 // the old smbase 'string' class.  However, I have now changed str.h to
 // declare 'string' as an alias for 'std::string', so both modules now
 // use 'std::string', making them somewhat redundant.
 //
-// TODO: Combine them.
+// My current plan is to move what I want to keep from `strutil` into
+// this module, leaving `strutil` deprecated.
 
-#ifndef STRING_UTILS_H
-#define STRING_UTILS_H
+#ifndef SMBASE_STRING_UTILS_H
+#define SMBASE_STRING_UTILS_H
 
 #include <cstdint>                     // std::{int64_t, uint64_t}
 #include <iosfwd>                      // std::ostream
@@ -180,4 +181,4 @@ std::string int64ToRadixDigits(
   std::int64_t value, int radix, bool radixIndicator);
 
 
-#endif // STRING_UTILS_H
+#endif // SMBASE_STRING_UTILS_H

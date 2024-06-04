@@ -2,12 +2,20 @@
 // A set of generic string utilities, including replace(), translate(),
 // trimWhitespace(), encodeWithEscapes(), etc.
 //
-// TODO: This module should be combined with string-util.h.
+// TODO: Move the parts of this module I want to keep into
+// string-util.h.
 
 #ifndef SMBASE_STRUTIL_H
 #define SMBASE_STRUTIL_H
 
 #include "array.h"                     // ArrayStack
+
+// My basic plan is to move the functionality that I think is worth
+// keeping over into `string-util`, leaving the `strutil` module with
+// only legacy compatibility aliases.  As I do that, modules that are
+// still including `strutil` need access to the moved functions, so I
+// pull them in here.
+#include "string-util.h"               // moved functions
 
 #include <string>                      // std::string
 
@@ -17,7 +25,8 @@
 // dsw: get the first alphanum token in the string
 //
 // Deprecated: I think this is not a good way to do parsing, so I am
-// not moving this to `string-util`, but it can stay here.
+// not moving this to `string-util`.
+//
 std::string firstAlphanumToken(std::string const &str);
 
 
@@ -48,12 +57,29 @@ std::string encodeWithEscapes(std::string const &src);
 std::string quoted(std::string const &src);
 
 
-// 2024-06-03: Removed `decodeEscapes` and `parseQuotedString`, which
-// have replacements (with different names) in `c-string-reader`.
+// decode an escaped string; throw XFormat if there is a problem
+// with the escape syntax; if 'delim' is specified, it will also
+// make sure there are no unescaped instances of that
+//
+// Deprecated: Use `decodeCStringEscapesToStream` or
+// `decodeCStringEscapesToString` in `c-string-reader`.
+//
+void decodeEscapes(ArrayStack<char> &dest, std::string const &src,
+                   char delim = 0, bool allowNewlines=false);
+
+// given a string with quotes and escapes, yield just the string;
+// works if there are no escaped NULs
+//
+// Deprecated: Use `parseQuotedCString` in `c-string-reader`.
+//
+std::string parseQuotedString(std::string const &text);
 
 
 // For printable ASCII other than single quote or backslash, return 'c'.
 // Otherwise, return '\'', '\\', '\xNN', '\uNNNN', or '\UNNNNNNNN'.
+//
+// Deprecated: Use `singleQuoteChar` in `string-util`.
+//
 std::string quoteCharacter(int c);
 
 

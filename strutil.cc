@@ -6,6 +6,7 @@
 // smbase
 #include "array.h"                     // Array
 #include "autofile.h"                  // AutoFILE
+#include "c-string-reader.h"           // decodeCStringEscapesToString, parseQuotedCString
 #include "codepoint.h"                 // isPrintableASCII, isShellMetacharacter
 #include "compare-util.h"              // compare
 #include "exc.h"                       // smbase::xformat
@@ -104,6 +105,23 @@ string encodeWithEscapes(rostring p)
 string quoted(rostring src)
 {
   return stringb("\"" << encodeWithEscapes(src) << "\"");
+}
+
+
+void decodeEscapes(ArrayStack<char> &dest, std::string const &src,
+                   char delim, bool allowNewlines)
+{
+  std::string decoded =
+    decodeCStringEscapesToString(src, delim, allowNewlines);
+  for (char c : decoded) {
+    dest.push(c);
+  }
+}
+
+
+std::string parseQuotedString(std::string const &text)
+{
+  return parseQuotedCString(text);
 }
 
 
