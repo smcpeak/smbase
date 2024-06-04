@@ -9,8 +9,8 @@
 // My current plan is to move what I want to keep from `strutil` into
 // this module, leaving `strutil` deprecated.
 
-#ifndef SMBASE_STRING_UTILS_H
-#define SMBASE_STRING_UTILS_H
+#ifndef SMBASE_STRING_UTIL_H
+#define SMBASE_STRING_UTIL_H
 
 #include <cstdint>                     // std::{int64_t, uint64_t}
 #include <iosfwd>                      // std::ostream
@@ -181,4 +181,4 @@ std::string int64ToRadixDigits(
   std::int64_t value, int radix, bool radixIndicator);
 
 
-#endif // SMBASE_STRING_UTILS_H
+#endif // SMBASE_STRING_UTIL_H

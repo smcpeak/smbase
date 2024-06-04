@@ -1,8 +1,8 @@
 // vector-util.h
 // Utilities for std::vector.
 
-#ifndef SMBASE_VECTOR_UTILS_H
-#define SMBASE_VECTOR_UTILS_H
+#ifndef SMBASE_VECTOR_UTIL_H
+#define SMBASE_VECTOR_UTIL_H
 
 #include "container-util.h"            // CONTAINER_FOREACH
 #include "overflow.h"                  // convertNumber
@@ -218,4 +218,4 @@ std::vector<T> vectorReverseOf(std::vector<T> const &vec)
 }
 
 
-#endif // SMBASE_VECTOR_UTILS_H
+#endif // SMBASE_VECTOR_UTIL_H

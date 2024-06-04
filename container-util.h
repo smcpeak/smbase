@@ -1,8 +1,8 @@
 // container-util.h
 // Utilities for C++ containers.
 
-#ifndef SMBASE_CONTAINER_UTILS_H
-#define SMBASE_CONTAINER_UTILS_H
+#ifndef SMBASE_CONTAINER_UTIL_H
+#define SMBASE_CONTAINER_UTIL_H
 
 #include "xassert.h"                   // xassert
 
@@ -40,4 +40,4 @@ void insertUnique(CONTAINER &container, VALUE const &value)
        ++iterator)
 
 
-#endif // SMBASE_CONTAINER_UTILS_H
+#endif // SMBASE_CONTAINER_UTIL_H

@@ -1,8 +1,8 @@
 // map-util.h
 // Utilities related to std::map.
 
-#ifndef SMBASE_MAP_UTILS_H
-#define SMBASE_MAP_UTILS_H
+#ifndef SMBASE_MAP_UTIL_H
+#define SMBASE_MAP_UTIL_H
 
 // smbase
 #include "xassert.h"                   // xassert
@@ -70,4 +70,4 @@ void insertMapUniqueMove(std::map<K,V> &map, K const &k, V &&v)
 }
 
 
-#endif // SMBASE_MAP_UTILS_H
+#endif // SMBASE_MAP_UTIL_H

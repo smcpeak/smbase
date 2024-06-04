@@ -462,7 +462,7 @@ static void testTrimWhitespace()
 }
 
 
-void test_string_utils()
+void test_string_util()
 {
   testSplitNonEmpty();
   testJoin();

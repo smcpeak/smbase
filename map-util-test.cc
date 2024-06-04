@@ -31,7 +31,7 @@ static void testInsertMapUnique()
 }
 
 
-void test_map_utils()
+void test_map_util()
 {
   testInsertMapUnique();
 }

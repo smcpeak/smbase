@@ -104,7 +104,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(growbuf);
   RUN_TEST(hashline);
   RUN_TEST(indexed_string_table);
-  RUN_TEST(map_utils);
+  RUN_TEST(map_util);
   RUN_TEST_NO_DECL(mypopen);
   RUN_TEST(mysig);
   RUN_TEST(nonport);
@@ -133,7 +133,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(strdict);
   RUN_TEST(strhash);
   RUN_TEST(string_hash);
-  RUN_TEST(string_utils);
+  RUN_TEST(string_util);
   RUN_TEST(stringf);
   RUN_TEST(stringset);
   RUN_TEST(strutil);
@@ -145,7 +145,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(utf8);
   RUN_TEST(vdtllist);
   RUN_TEST(vector_push_pop);
-  RUN_TEST(vector_utils);
+  RUN_TEST(vector_util);
   RUN_TEST(voidlist);
   RUN_TEST(vptrmap);
 

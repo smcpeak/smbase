@@ -3,8 +3,8 @@
 
 // This file is in the public domain.
 
-#ifndef SMBASE_POINTER_UTILS_H
-#define SMBASE_POINTER_UTILS_H
+#ifndef SMBASE_POINTER_UTIL_H
+#define SMBASE_POINTER_UTIL_H
 
 #include <stdint.h>                    // uintptr_t
 
@@ -31,4 +31,4 @@ inline int comparePointerAddresses(void const *p, void const *q)
 }
 
 
-#endif // SMBASE_POINTER_UTILS_H
+#endif // SMBASE_POINTER_UTIL_H

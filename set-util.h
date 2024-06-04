@@ -3,8 +3,8 @@
 
 // This is a candidate to eventually move into smbase.
 
-#ifndef SMBASE_SET_UTILS_H
-#define SMBASE_SET_UTILS_H
+#ifndef SMBASE_SET_UTIL_H
+#define SMBASE_SET_UTIL_H
 
 #include "container-util.h"            // CONTAINER_FOREACH
 
@@ -62,4 +62,4 @@ std::ostream& operator<< (std::ostream &os, std::set<T> const &s)
 }
 
 
-#endif // SMBASE_SET_UTILS_H
+#endif // SMBASE_SET_UTIL_H

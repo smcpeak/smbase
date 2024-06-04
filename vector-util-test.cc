@@ -78,7 +78,7 @@ static void testConvertElements()
 }
 
 
-void test_vector_utils()
+void test_vector_util()
 {
   testAccumulateWith();
   testVecErase();
