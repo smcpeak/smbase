@@ -113,7 +113,9 @@ int Reader::readChar()
   int c = m_is.get();
 
   // TODO: Do the correct song-and-dance to interpret the result of
-  // `get`.
+  // `get`:
+  //
+  //   https://stackoverflow.com/questions/24482728/return-value-of-istreamget
 
   // Update the location.
   //

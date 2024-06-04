@@ -19,15 +19,6 @@
 OPEN_ANONYMOUS_NAMESPACE
 
 
-void decodeVector(char const *in, char const *out, int outLen)
-{
-  printf("decodeVector: \"%s\"\n", in);
-  ArrayStack<char> dest;
-  decodeEscapes(dest, in, '\0' /*delim, ignored*/, false /*allowNewlines*/);
-  xassert(dest.length() == outLen);
-  xassert(0==memcmp(out, dest.getArray(), dest.length()));
-}
-
 void basenameVector(char const *in, char const *out)
 {
   printf("basenameVector(%s, %s)\n", in, out);
@@ -174,12 +165,6 @@ CLOSE_ANONYMOUS_NAMESPACE
 // Called from unit-tests.cc.
 void test_strutil()
 {
-  decodeVector("\\r\\n", "\r\n", 2);
-  decodeVector("abc\\0def", "abc\0def", 7);
-  decodeVector("\\033", "\033", 1);
-  decodeVector("\\x33", "\x33", 1);
-  decodeVector("\\?", "?", 1);
-
   basenameVector("a/b/c", "c");
   basenameVector("abc", "abc");
   basenameVector("/", "");

@@ -41,18 +41,15 @@ inline std::string encodeWithEscapes(signed char const *src, int len)
 std::string encodeWithEscapes(std::string const &src);
 
 // adds the quotes too
+//
+// Deprecated: `string-util` has `doubleQuote`, which should be used
+// instad.
+//
 std::string quoted(std::string const &src);
 
 
-// decode an escaped string; throw XFormat if there is a problem
-// with the escape syntax; if 'delim' is specified, it will also
-// make sure there are no unescaped instances of that
-void decodeEscapes(ArrayStack<char> &dest, std::string const &src,
-                   char delim = 0, bool allowNewlines=false);
-
-// given a string with quotes and escapes, yield just the string;
-// works if there are no escaped NULs
-std::string parseQuotedString(std::string const &text);
+// 2024-06-03: Removed `decodeEscapes` and `parseQuotedString`, which
+// have replacements (with different names) in `c-string-reader`.
 
 
 // For printable ASCII other than single quote or backslash, return 'c'.

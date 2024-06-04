@@ -400,4 +400,3 @@ CLOSE_NAMESPACE(smbase)
 
 
 #endif // SMBASE_EXC_H
-
