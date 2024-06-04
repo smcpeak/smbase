@@ -153,15 +153,31 @@ inline void pretendUsedFn(T const &) {}
 #define IGNORE_RESULT(expr) ((void)!(expr))
 
 
-// appended to function declarations to indicate they do not
-// return control to their caller; e.g.:
-//   void exit(int code) NORETURN;
-#ifdef __GNUC__
+#if defined(__GNUC__) || defined(__clang__)
+  // Appended function declarations (not definitions!) to indicate they
+  // do not return control to their caller; e.g.:
+  //
+  //   void exit(int code) NORETURN;
+  //
   #define NORETURN __attribute__((noreturn))
 
   // Declare that a variable may be unused, e.g.:
+  //
   //   int UNUSED some_var = 5;
+  //
   #define UNUSED __attribute__((unused))
+
+  // Declare that a function is deprecated, and provide a string to
+  // explain why or what to use instead:
+  //
+  //   void oldFunc() DEPRECATED("Use `newFunc` instead.")
+  //
+  // The GCC macro does not actually do anything with the reason string,
+  // but this provides a standard place to put it, and in the future
+  // perhaps there would be a way for the compiler to use it.
+  //
+  #define DEPRECATED(reasonString) __attribute__((deprecated))
+
 #else
   // just let the warnings roll if we can't suppress them
   #define NORETURN
