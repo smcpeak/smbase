@@ -274,6 +274,34 @@ static void testBeginsWith()
 }
 
 
+static void testEndsWith()
+{
+  static struct Test {
+    char const *m_str;
+    char const *m_suffix;
+    bool m_expect;
+  }
+  const tests[] = {
+    // Columns: \S+ \S+ \S+ \S+ \S+
+    { "",       "",    true  },
+    { "",       "x",   false },
+    { "x",      "",    true  },
+    { "x",      "x",   true  },
+    { "x",      "y",   false },
+    { "xy",     "y",   true  },
+    { "yx",     "y",   false },
+    { "abcdef", "abc", false },
+    { "defabc", "abc", true  },
+    { "a\n",    "\n",  true  },
+  };
+
+  for (auto t : tests) {
+    bool actual = endsWith(t.m_str, t.m_suffix);
+    EXPECT_EQ(actual, t.m_expect);
+  }
+}
+
+
 static void testOneMatchesRegex(
   char const *str,
   char const *re,
@@ -474,6 +502,7 @@ void test_string_util()
   testIsStrictlySortedArray();
   testStringInSortedArray();
   testBeginsWith();
+  testEndsWith();
   testMatchesRegex();
   testInsertPossiblyEscapedChar();
   testSingleQuoteChar();

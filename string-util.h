@@ -33,6 +33,9 @@ std::string trimWhitespace(std::string const &str);
 // True if 'str' begins with 'prefix'.
 bool beginsWith(std::string const &str, std::string const &prefix);
 
+// True if 'str' ends with 'suffix'.
+bool endsWith(std::string const &str, std::string const &suffix);
+
 // True if 'str' contains 'c'.
 bool contains(std::string const &str, char c);
 

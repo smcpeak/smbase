@@ -101,6 +101,18 @@ bool beginsWith(std::string const &str, std::string const &prefix)
 }
 
 
+bool endsWith(std::string const &str, std::string const &suffix)
+{
+  if (str.size() >= suffix.size()) {
+    return str.find(suffix, str.size() - suffix.size() /*pos*/) !=
+           std::string::npos;
+  }
+  else {
+    return false;
+  }
+}
+
+
 bool contains(std::string const &str, char c)
 {
   return str.find(c) != std::string::npos;
