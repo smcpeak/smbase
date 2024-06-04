@@ -4,7 +4,11 @@
 #ifndef SMBASE_CONTAINER_UTIL_H
 #define SMBASE_CONTAINER_UTIL_H
 
+#include "sm-macros.h"                 // OPEN_NAMESPACE
 #include "xassert.h"                   // xassert
+
+
+OPEN_NAMESPACE(smbase)
 
 
 // Return true if 'container' contains 'value'.
@@ -38,6 +42,9 @@ void insertUnique(CONTAINER &container, VALUE const &value)
   for (auto iterator = (container).rbegin();           \
        iterator != (container).rend();                 \
        ++iterator)
+
+
+CLOSE_NAMESPACE(smbase)
 
 
 #endif // SMBASE_CONTAINER_UTIL_H
