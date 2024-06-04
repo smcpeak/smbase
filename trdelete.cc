@@ -1,6 +1,11 @@
 // trdelete.cc            see license.txt for copyright and terms of use
 // code for trdelete.h
 
+// When compiling with Clang-16 against the GCC-9 libc++, I need to set
+// this to get the `operator delete` functions that take a `size_t`
+// argument.
+#define __cpp_sized_deallocation 1
+
 #include "trdelete.h"     // this module
 
 #include "breaker.h"      // breaker
