@@ -15,6 +15,9 @@
 
 
 // dsw: get the first alphanum token in the string
+//
+// Deprecated: I think this is not a good way to do parsing, so I am
+// not moving this to `string-util`, but it can stay here.
 std::string firstAlphanumToken(std::string const &str);
 
 
@@ -22,6 +25,10 @@ std::string firstAlphanumToken(std::string const &str);
 // sequences (but without the opening or closing quotes)
 //
 // 'src' is *not* rostring, since it is not NUL terminated
+//
+// Deprecated: `string-util` has `doubleQuote`, which should be used
+// instad.
+//
 std::string encodeWithEscapes(char const *src, int len);
 
 // Overloads for the other variants of 'char'.
