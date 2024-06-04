@@ -383,37 +383,17 @@ std::string replaceAll(
   std::string const &oldstr,
   std::string const &newstr)
 {
-  std::ostringstream ret;
+  // It doesn't make sense to replace an empty substring, and if we
+  // tried we would get into an infinite loop.
+  xassertPrecondition(!oldstr.empty());
 
-  // Operate on a view of the source.
-  //
-  // TODO: This function should accept `string_view` arguments in the
-  // first place.
-  std::string_view src(origSrc);
-
-  // Position from which to begin the next search.
-  std::size_t i = 0;
-
-  while (i < src.size()) {
-    std::size_t next = src.find(oldstr, i);
-
-    if (next == std::string::npos) {
-      // No more occurrences, append the remainder.
-      ret << src.substr(i);
-      break;
-    }
-
-    // Add the characters between `i` and `next`.
-    ret << src.substr(i, next-i);
-
-    // Add the replacement string.
-    ret << newstr;
-
-    // Move `i` beyond the replacement string.
-    i += (next-i) + oldstr.size();
+  std::string ret(origSrc);
+  std::string::size_type i = ret.find(oldstr);
+  while (i != std::string::npos) {
+    ret.replace(i, oldstr.size(), newstr);
+    i = ret.find(oldstr, i + newstr.size());
   }
-
-  return ret.str();
+  return ret;
 }
 
 

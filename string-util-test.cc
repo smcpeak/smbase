@@ -426,7 +426,8 @@ static void testInt64ToRadixDigits()
 
 static void testReplaceAll()
 {
-  EXPECT_EQ(replaceAll("", "", ""), "");
+  EXPECT_EQ(replaceAll("", "x", ""), "");
+  EXPECT_EQ(replaceAll("", "x", "y"), "");
   EXPECT_EQ(replaceAll("xxx", "x", "xxx"), "xxxxxxxxx");
   EXPECT_EQ(replaceAll("xxx", "x", ""), "");
   EXPECT_EQ(replaceAll("Just some text. Just some text.", "some", "SOME"),

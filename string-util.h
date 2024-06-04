@@ -155,6 +155,8 @@ std::string possiblyTruncatedWithEllipsis(
 // may be empty).  After each replacement, searching for the next
 // occurrence begins right after the inserted text, so that text is not
 // subject to further replacement.
+//
+// Requires: `!oldstr.empty()`.
 std::string replaceAll(
   std::string const &src,
   std::string const &oldstr,
