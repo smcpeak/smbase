@@ -304,12 +304,11 @@ inline void pretendUsedFn(T const &) {}
 #endif
 
 
-// put at the top of a class for which the default copy ctor
-// and operator= are not desired; then don't define these functions
-#define NO_OBJECT_COPIES(name)   \
-  private:                       \
-    name(name&);                 \
-    void operator=(name&) /*user ;*/
+// Place in a class definition to inhibit the auto-generated copy
+// operations.
+#define NO_OBJECT_COPIES(name)              \
+  name(name&) = delete;                     \
+  void operator=(name&) = delete /*user ;*/
 
 
 // In the past, I had "#define override virtual" here, intended as
