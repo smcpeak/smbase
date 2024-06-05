@@ -2,6 +2,12 @@ gdvalue-design.txt
 ==================
 
 
+Revision history
+================
+
+* 0.1 2024-06-05: Pre-publication phase.
+
+
 Introduction
 ============
 
@@ -46,6 +52,9 @@ The goals for the text representation are:
 
 * Familiarity to those already familiar with JSON.
 
+* Free-form: All whitespace is equivalent.  In particular, users have
+  full control over whether and how to indent.
+
 * Priority is given to the human-readable and self-describing aspects
   over making the format particular compact.  (But a TODO is to also
   specify a compact binary representation.)
@@ -82,6 +91,8 @@ one of the following:
 
   * Map: A finite unordered map from values to values.  An empty map is
     a distinct value from an empty set (or any other container).
+
+  * TODO: Ordered map?
 
   * Tagged container: A pair of a symbol (which is the tag) and a
     container (sequence, tuple, set, or map).  The tag indicates the
@@ -499,9 +510,9 @@ Map: {a:1 b:2 c:3}
 
   The character immediately following the '{' must not be the start
   character of a container, that is, it must not be '{', '[', or '('.
-  An immediately following '{' is interpreted as the start of a set
-  (below), while an immediately following '[' or '(' is reserved for
-  future extensions.
+  An immediately following '{' is interpreted as the start of a set,
+  while an immediately following '[' or '(' is reserved for future
+  extensions.
 
 Tagged container: Tag[...] or Tag(...) or Tag{{...}} or Tag{...}
 
@@ -510,7 +521,7 @@ Tagged container: Tag[...] or Tag(...) or Tag{{...}} or Tag{...}
   following container into a "tagged container".
 
   For a tagged map, like an untagged map, it is prohibited for the
-  character immediately following '{' to be '{' or '['.
+  character immediately following '{' to be '{' or '[' or '('.
 
 For all values, if their last character is not the last character in the
 serialization (e.g., file), then the following character must be one of:
@@ -530,10 +541,10 @@ GDVN Rationale
 
 The biggest choice is to be a superset of JSON.  The rationale is fairly
 simple: lots of software can produce and consume JSON already, so this
-faciliates interoperability.  It also makes it easier for people to
-learn since the foundation is well known.  JSON brings some baggage,
-such as tolerating UTF-16 surrogate code pairs in strings, but this is a
-small price to pay.
+faciliates interoperability.  More importantly, it makes it easier for
+people to learn since the foundation is well known.  JSON brings some
+baggage, such as tolerating UTF-16 surrogate code pairs in strings, but
+this is a small price to pay.
 
 An unusual choice is to regard the comma character as "whitespace" since
 it obviously isn't "white" (graphically invisible).  Commas are a
@@ -563,8 +574,8 @@ the C/C++ convention of using a leading zero to indicate octal because
 octal is rare, and that notation is obscure and confusing to those only
 familiar with mathematical notation.  It allows redundant leading zeroes
 in part because standard mathematical notation does, and in part to
-allow situation-specific flexibility in formatting.  For example, "[1980
-01 31]" is much better than "[1980 1 31]" for writing a date since only
+allow situation-specific flexibility in formatting.  For example, "(1980
+01 31)" is much better than "(1980 1 31)" for writing a date since only
 the former fits the ISO-8601 YYYY-MM-DD form (albeit without the
 hyphens).
 
@@ -616,9 +627,195 @@ extended to the case of identical values for uniformity.
 
 The restriction on what characters can follow a value, which has the
 effect of preventing values from being juxtaposed, is meant in part to
-ensure readability, and also to preserve future extension points.  In
-particular, it means that three double-quotes in a row remains reserved
-for a possible triple-quoted string extension.
+ensure readability, and also to preserve future extension points.  For
+example, it means that three double-quotes in a row remains reserved for
+a possible triple-quoted string extension.
+
+I chose to restrict the characters that follow '{' in order to leave
+open the possibility of extending to more containers.  As I have been
+using GDVN, I have found that having the right container available for
+each use is very beneficial, both for convenience of manipulation and
+for its self-describing properties, so being able to add more (ordered
+maps are particularly appearling) is important.  So why not also
+restrict what follows '(' and '[' for regularity and in order to reserve
+even more?  First, I think it is simply too valuable to be able to write
+things like:
+
+  [[1 2] [3 4]]
+
+rather than:
+
+  [ [1 2] [3 4] ]
+
+Tuples and sequences are commonly nested, and being able to do so
+ompactly is a significant benefit to readability and intuitive
+writability.  In contrast, it is much less common to want to compactly
+denote a set or map that contains containers as elements or keys.
+Second, I do not have in mind a likely extension that would take
+advantage of those reservations.
+
+
+Is GDVN syntax self-evident?
+============================
+
+Quoting one of the goals at the top:
+
+  * Self-evident syntax: A person unfamiliar with the notation can infer
+    most of the syntax rules from almost any non-trivial example.
+
+Is this the case?  I think it partly is, although not as strongly as in
+the case of JSON.  Let's look at a realistic example:
+
+  {{
+    Dep{
+      meta: DepMeta{
+        dmf: {{DMF_VISIBLE}}
+        rctx: RCTX_DECL_REF_EXPR
+        refLoc: "in/deps/src/stmt-expr.cc:10:5"
+      }
+      source: Node(
+        "FunctionDecl \"f()\" at in/deps/src/stmt-expr.cc:7:1"
+        DA_DEFINITION
+      )
+      target:
+        Node("VarDecl \"g\" at in/deps/src/stmt-expr.cc:4:1" DA_INTERFACE)
+    }
+  }}
+
+Some issues:
+
+* I must acknowledge that removing the commas in fact does have a cost
+  in this regard.  Without them, someone unfamiliar with the format
+  might conclude that elements are separated by newlines (rather than
+  any whitespace), which would be an unfortunate mistake.  In the
+  example above, the fact that "dmf:" is on the same line as its value
+  while "target:" is on a different line might be a clue.  Ideally, a
+  user would understand that the syntax is free-form, but without the
+  commas, that is not quite as obvious as it would otherwise be.
+
+* The tagged containers are unconventional.  A novice might not realize
+  they have to immediately precede the container opening delimiter with
+  no intervening whitespace.  In a map context, inserting a space after
+  the tag will cause an error due to having multiple values where one is
+  expected, but in other container contexts it will be successfully
+  parsed (at the GDVN level) as multiple values.
+
+* The rules for symbols are not at all self-evident.  You have to be
+  familiar with the lexical rules from a language like C or Java to
+  properly guess the unquoted symbol syntax, and the quoted form is
+  unlikely to be guessed by more than a small fraction of users.  That
+  said, I see a lot of JSON using unquoted keys for precisely the sorts
+  of keys that are treated as symbols by GDVN, so the required
+  familiarity seems commonplace, at least among current JSON users.
+
+* While the syntax for maps, sequences, and tuples is fairly common and
+  intuitive, the notation for sets is not.  Unless someone sees an
+  example in the text they are studying, they won't guess it.  And upon
+  seeing an example, I'd estimate only half of users will correctly
+  guess what it means.
+
+Despite the above, GDVN retains the most important self-evident syntax
+from JSON, that of quoted strings.  This is what YAML gets most wrong
+IMO.  With GDVN, the boundaries of strings *are* manifest, and I think
+that will give many new users the confidence needed to determine many of
+the other rules through experimentation.  And of course the
+documentation exists and is reasonably short.
+
+
+Versioning GDVN
+===============
+
+There is currently no way to indicate the version of GDVN in use.
+
+The primary purpose of an explicit version number is to provide a good
+error message and prevent possible misinterpretation of data when an
+older tool is used on a newer format.
+
+Misinterpretation can, in principle, be prevented by ensuring that the
+progression of versions monotonically transforms previously-invalid
+syntax into valid syntax.  The GDVN form has been designed with this in
+mind, with extension points explicitly preserved in various places.  But
+of course one cannot guarantee that there will not be a need for an
+incompatible change at some point.
+
+Even without the risk of misinterpretation, it is very frustrating for
+users when they get a mysterious error message (like, "unexpected
+<something> at <somewhere deep in the file>") that turns out to be due
+to using a tool that is too old.
+
+Consequently, it would be good to have an explicit versioning scheme.
+However, adding one in a straightforward way would compromise the
+recursive compositionality of GDVN.  For example, if we say "All GDVN
+begins with a version marker" (of whatever syntax), then now GDVN cannot
+contain itself.  It is similar to the way adding a byte order marker to
+text breaks the ability of text to be concatenated.
+
+I don't have a full solution at this time, but my current thinking is
+that when a tool exports and imports GDVN data to a file or other medium
+where versioning makes sense, the form could consist of *two* GDVN
+values where the first is a version marker.  The marker would primarily
+indicate the version of the *tool* and its own formatting semantics, and
+only secondarily imply a certain level of GDVN syntax.  For example:
+
+  MyDrawingProgram{
+    version: (1 2 3)       // Meaning 1.2.3 but in GDVN.
+  }
+  Drawing{
+    title: "Some drawing title"
+    contents: { ... }
+  }
+
+The first value is a tagged map that clearly identifies the tool or
+kind of data and its version.  This first value should be expressed in
+lowest-common-denominator GDVN 1.0 syntax.  The second value can then
+freely use whatever GDVN extensions that MyDrawingProgram 1.2.3 uses.
+
+A GDVN parser should have the ability to open a file and provide the
+client with a stream of parsed values on demand.  With such an API, the
+tool can get the first value, check that the version is understood, and
+error out appropriately if not, thus preventing the GDVN parser from
+choking on some new syntax in the second value.
+
+
+Discouraged versioning alternative: comments
+--------------------------------------------
+
+I think this sequence-of-values strategy is better than putting a
+version number into a comment:
+
+  // MyDrawingProgram{version: (1 2 3)}       // I do NOT recommend!
+  Drawing{...}
+
+Putting that into a comment conveys to the user that it can be removed.
+After all, comments are specifically intended to be for humans only.
+What does the tool do if it is removed?  Or if it is edited in a way
+that breaks whatever syntax containts it has?  There is no good answer
+other than to strictly enforce its presence and well-formedness.  But if
+we are going to do that, then it should not be inside a comment in the
+first place.
+
+
+Discouraged versioning alternative: special keys
+------------------------------------------------
+
+With JSON, the most common approach is to make the version be a special
+key and value of the top-level object:
+
+  {
+    "MyDrawingProgram_version": "1.2.3",
+    "Drawing": {...}
+  }
+
+The obvious problem with that strategy is there is no good way for a
+GDVN parser API to provide the client access to the version information
+without parsing everything else, at which point it is too late if the
+"everything else" contains something that makes the GDVN parser choke.
+
+Sure, you could use a streaming parser, and that is sometimes done for
+efficiency to avoid materializing a large intermediate structure, but
+that design is burdensome to the typical consumer (who usually will not
+regard versioning as being worth the associated pain), and gives
+undesirable implicit meaning to the relative ordering of map entries.
 
 
 Mapping to JSON
@@ -734,10 +931,16 @@ The problems with the JSON data model are:
   * It does not include sets, requiring that a set be expressed as
     either an array, which misleadingly suggests order matters, or a map
     to 1, which is verbose for that application (and only works for
-    strings).
+    sets of strings).
 
   * It does not have a way to express an octet sequence other than by
     abusing strings.
+
+  * Many other common kinds of data can only be expressed as strings,
+    requiring further steps of substantial parsing and validation work
+    after the JSON phase is complete.  Version numbers, dates, and
+    rationals are just a few examples of data that must be packed into
+    strings.
 
 * Limited self-description: Although JSON is pretty good at being
   self-describing, there are still a couple problems.  The lack of
@@ -940,8 +1143,9 @@ them, these questions spring to mind:
 
   * Example 2.3: Ouch.  I have to put "!!str" before a string that
     might, unbenownst to me, be interpreted as a date.  How many other
-    landmines are waiting?  Otherwise, tags seem useful, but the rules
-    about usage are not self-evident.
+    landmines are waiting?  This alone is a deal-breaker for me.
+    Otherwise, tags seem useful, but the rules about usage are dangerous
+    and not self-evident.
 
   * And so on.
 
@@ -959,13 +1163,13 @@ With JSON (and GDVN), I claim the answers to these questions are clear
 from mere inspection of almost any non-trivial idiomatic example.  These
 formats use explicit delimiters (not mere whitespace) at the start and
 end of values, which is both intuitive and familiar.  Nesting is uniform
-and regular (except for JSON keys being required to be strings).  Sure,
-one still would need to occasionally consult the spec, for example to
-see exactly which backslash escapes exist, but the vast majority of the
-time the spec is not required to either read or write JSON (or GDVN).
-And when I do, it's clear where to look, in part because the spec is
-very small, and in part because the delimiters make it clear which part
-of the spec applies.
+and regular (except in JSON, which requires map keys to be strings).
+Sure, one still would need to occasionally consult the spec, for example
+to see exactly which backslash escapes exist, but the vast majority of
+the time the spec is not required to either read or write JSON (or
+GDVN).  And when I do, it's clear where to look, in part because the
+spec is very small, and in part because the delimiters make it clear
+which part of the spec applies.
 
 I am aware that YAML is (or at least purports to be) a superset of JSON.
 That does not help because *idiomatic* YAML is completely different.
