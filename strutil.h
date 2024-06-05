@@ -39,7 +39,7 @@ std::string quoted(std::string const &src)
 // with the escape syntax; if 'delim' is specified, it will also
 // make sure there are no unescaped instances of that
 void decodeEscapes(ArrayStack<char> &dest, std::string const &src,
-                   char delim = 0, bool allowNewlines=false);
+                   char delim = 0, bool allowNewlines=false)
   DEPRECATED("Use `decodeCStringEscapesToStream` or "
              "`decodeCStringEscapesToString` in `c-string-reader`.");
 
