@@ -336,11 +336,11 @@ std::string doubleQuote(std::string const &s)
 }
 
 
-std::string singleQuoteChar(int c)
+std::string singleQuoteChar(CodePoint c)
 {
   std::ostringstream oss;
   oss << '\'';
-  insertPossiblyEscapedChar(oss, c, '\'');
+  insertPossiblyEscapedChar(oss, c.value(), '\'');
   oss << '\'';
   return oss.str();
 }

@@ -7,34 +7,53 @@
 #include "string-util.h"               // singleQuoteChar
 #include "xassert.h"                   // xfailure_stringbc
 
+#include <iostream>                    // std::ostream
 
-bool isUppercaseLetter(int c)
+
+void CodePoint::write(std::ostream &os) const
 {
-  return 'A' <= c && c <= 'Z';
+  os << valueOrN1();
 }
 
 
-bool isLowercaseLetter(int c)
+// Return true if `c` is in [`lo`,`hi`].
+static bool inRange(CodePoint c, int lo, int hi)
 {
-  return 'a' <= c && c <= 'z';
+  int v = c.valueOrN1();
+  return lo <= v && v <= hi;
 }
 
 
-bool isLetter(int c)
+bool isUppercaseLetter(CodePoint c)
+{
+  // TODO: This is incomplete.
+  return isASCIIUppercaseLetter(c);
+}
+
+
+bool isLowercaseLetter(CodePoint c)
+{
+  // TODO: This is incomplete.
+  return isASCIILowercaseLetter(c);
+}
+
+
+bool isLetter(CodePoint c)
 {
   return isUppercaseLetter(c) || isLowercaseLetter(c);
 }
 
 
-bool isDecimalDigit(int c)
+bool isDecimalDigit(CodePoint c)
 {
-  return '0' <= c && c <= '9';
+  // TODO: This might be incomplete.
+  return isASCIIDigit(c);
 }
 
 
-bool isWhitespace(int c)
+bool isWhitespace(CodePoint c)
 {
-  switch (c) {
+  switch (c.valueOrN1()) {
     // List from https://en.wikipedia.org/wiki/Whitespace_character.
     case 0x9: // tab
     case 0xA: // line feed
@@ -69,40 +88,39 @@ bool isWhitespace(int c)
 }
 
 
-bool isHighSurrogate(int c)
+bool isHighSurrogate(CodePoint c)
 {
-  return 0xD800 <= c && c < 0xDC00;
+  return inRange(c, 0xD800, 0xDBFF);
 }
 
 
-bool isLowSurrogate(int c)
+bool isLowSurrogate(CodePoint c)
 {
-  return 0xDC00 <= c && c < 0xE000;
+  return inRange(c, 0xDC00, 0xDFFF);
 }
 
 
-bool isCIdentifierCharacter(int c)
+bool isCIdentifierCharacter(CodePoint c)
 {
   // These do *not* use the Unicode functions defined above because C
   // identifiers are restricted to code points in [0,127], whereas my
   // intent is to expand the Unicode functions to properly recognize
   // the full sets.
   return isCIdentifierStartCharacter(c) ||
-          ('0' <= c && c <= '9');
+         isASCIIDigit(c);
 }
 
 
-bool isCIdentifierStartCharacter(int c)
+bool isCIdentifierStartCharacter(CodePoint c)
 {
-  return (('A' <= c && c <= 'Z') ||
-          ('a' <= c && c <= 'z') ||
-          c == '_');
+  return isASCIILetter(c) ||
+         c == '_';
 }
 
 
-bool isCWhitespace(int c)
+bool isCWhitespace(CodePoint c)
 {
-  switch (c) {
+  switch (c.valueOrN1()) {
     case ' ':
     case '\t':
     case '\n':
@@ -117,29 +135,48 @@ bool isCWhitespace(int c)
 }
 
 
-bool isASCIIPrintable(int c)
+bool isASCIIPrintable(CodePoint c)
 {
-  return 32 <= c && c <= 126;
+  return inRange(c, 32, 126);
 }
 
 
-bool isASCIIDigit(int c)
+bool isASCIIDigit(CodePoint c)
 {
-  return '0' <= c && c <= '9';
+  return inRange(c, '0', '9');
 }
 
 
-bool isASCIIHexDigit(int c)
+bool isASCIIUppercaseLetter(CodePoint c)
+{
+  return inRange(c, 'A', 'Z');
+}
+
+
+bool isASCIILowercaseLetter(CodePoint c)
+{
+  return inRange(c, 'a', 'z');
+}
+
+
+bool isASCIILetter(CodePoint c)
+{
+  return isASCIIUppercaseLetter(c) ||
+         isASCIILowercaseLetter(c);
+}
+
+
+bool isASCIIHexDigit(CodePoint c)
 {
   return isASCIIDigit(c) ||
-         ('A' <= c && c <= 'F') ||
-         ('a' <= c && c <= 'f');
+         inRange(c, 'A', 'F') ||
+         inRange(c, 'a', 'f');
 }
 
 
-bool isASCIIOctDigit(int c)
+bool isASCIIOctDigit(CodePoint c)
 {
-  return '0' <= c && c <= '7';
+  return inRange(c, '0', '7');
 }
 
 
@@ -147,9 +184,9 @@ bool isASCIIOctDigit(int c)
 // this list, but I'm not sure I understood it all correctly.  This
 // leans to the conservative side; I might be calling something meta
 // that isn't, but hopefully I didn't miss any metacharacters.
-bool isShellMetacharacter(int c)
+bool isShellMetacharacter(CodePoint c)
 {
-  switch (c) {
+  switch (c.valueOrN1()) {
     // Order: Going left to right then top to bottom across a US
     // Qwerty keyboard, unshifted before shifted.
     case '`':
@@ -193,16 +230,18 @@ bool isShellMetacharacter(int c)
 }
 
 
-int decodeASCIIHexDigit(int c)
+int decodeASCIIHexDigit(CodePoint c)
 {
+  xassertPrecondition(c.has_value());
+
   if (isASCIIDigit(c)) {
-    return c - '0';
+    return c.value() - '0';
   }
-  else if ('A' <= c && c <= 'F') {
-    return c - 'A' + 10;
+  else if (inRange(c, 'A', 'F')) {
+    return c.value() - 'A' + 10;
   }
-  else if ('a' <= c && c <= 'f') {
-    return c - 'a' + 10;
+  else if (inRange(c, 'a', 'f')) {
+    return c.value() - 'a' + 10;
   }
   else {
     xfailure_stringbc("bad hex digit: " << singleQuoteChar(c));
@@ -211,20 +250,21 @@ int decodeASCIIHexDigit(int c)
 }
 
 
-int decodeSurrogatePair(int highSurrogate, int lowSurrogate)
+CodePoint decodeSurrogatePair(
+  CodePoint highSurrogate, CodePoint lowSurrogate)
 {
   xassert(isHighSurrogate(highSurrogate));
   xassert(isLowSurrogate(lowSurrogate));
 
   return 0x10000 +
-         (((highSurrogate & 0x3FF) << 10) |
-          (lowSurrogate & 0x3FF));
+         (((highSurrogate.value() & 0x3FF) << 10) |
+          (lowSurrogate.value() & 0x3FF));
 }
 
 
-int decodeRadixIndicatorLetter(int c)
+int decodeRadixIndicatorLetter(CodePoint c)
 {
-  switch (c) {
+  switch (c.value()) {
     case 'b':
     case 'B':
       return 2;
@@ -243,19 +283,20 @@ int decodeRadixIndicatorLetter(int c)
 }
 
 
-int decodeASCIIRadixDigit(int c, int radix)
+int decodeASCIIRadixDigit(CodePoint c, int radix)
 {
   xassertPrecondition(2 <= radix && radix <= 36);
+  xassertPrecondition(c.has_value());
 
   int dv = -1;
-  if ('0' <= c && c <= '9') {
-    dv = c - '0';
+  if (inRange(c, '0', '9')) {
+    dv = c.value() - '0';
   }
-  else if ('A' <= c && c <= 'Z') {
-    dv = c - 'A' + 10;
+  else if (inRange(c, 'A', 'Z')) {
+    dv = c.value() - 'A' + 10;
   }
-  else if ('a' <= c && c <= 'z') {
-    dv = c - 'a' + 10;
+  else if (inRange(c, 'a', 'z')) {
+    dv = c.value() - 'a' + 10;
   }
 
   if (dv < 0 || dv >= radix) {
@@ -267,9 +308,14 @@ int decodeASCIIRadixDigit(int c, int radix)
 }
 
 
-bool isASCIIRadixDigit(int c, int radix)
+bool isASCIIRadixDigit(CodePoint c, int radix)
 {
-  return decodeASCIIRadixDigit(c, radix) >= 0;
+  if (c.has_value()) {
+    return decodeASCIIRadixDigit(c, radix) >= 0;
+  }
+  else {
+    return false;
+  }
 }
 
 

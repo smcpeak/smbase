@@ -102,6 +102,8 @@ public:      // methods
      that the caller can consistently say that an error occurred one
      column earlier than the current location if the return value of
      `readChar` triggers an error.
+
+     TODO: Return an instance of `CodePoint` instead of `int`.
   */
   int readChar();
 

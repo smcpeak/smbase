@@ -46,7 +46,7 @@ void test_codepoint()
   EXPECT_EQ(decodeRadixIndicatorLetter('O'), 8);
   EXPECT_EQ(decodeRadixIndicatorLetter('x'), 16);
   EXPECT_EQ(decodeRadixIndicatorLetter('t'), 0);
-  EXPECT_EQ(decodeRadixIndicatorLetter(-1), 0);
+  EXPECT_EQ(decodeRadixIndicatorLetter(0), 0);
 
   EXPECT_EQ(decodeASCIIRadixDigit('F', 16), 15);
   EXPECT_EQ(decodeASCIIRadixDigit('F', 10), -1);
@@ -62,8 +62,8 @@ void test_codepoint()
   EXPECT_EQ(encodeRadixIndicatorLetter(8), 'o');
   EXPECT_EQ(encodeRadixIndicatorLetter(2), 'b');
 
-  EXPECT_EQ(decodeSurrogatePair(0xD800, 0xDC00), 0x10000);
-  EXPECT_EQ(decodeSurrogatePair(0xDBFF, 0xDFFF), 0x10FFFF);
+  EXPECT_EQ(decodeSurrogatePair(0xD800, 0xDC00), CodePoint(0x10000));
+  EXPECT_EQ(decodeSurrogatePair(0xDBFF, 0xDFFF), CodePoint(0x10FFFF));
 
   xassert(isCIdentifierCharacter('x'));
   xassert(isCIdentifierCharacter('Q'));
@@ -80,6 +80,20 @@ void test_codepoint()
   xassert(isCWhitespace(' '));
   xassert(isCWhitespace('\t'));
   xassert(!isCWhitespace('x'));
+
+  // Check that the implicit conversion from `char` to `CodePoint` works
+  // as intended when it is negative.
+  {
+    char c = -1;
+    xassert(CodePoint(c).value() == 255);
+  }
+
+  {
+    signed char c = -1;
+    xassert(CodePoint(c).value() == 255);
+  }
+
+  xassert(!CodePoint(-1 /*int*/).has_value());
 }
 
 

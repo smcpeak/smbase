@@ -12,6 +12,7 @@
 #ifndef SMBASE_STRING_UTIL_H
 #define SMBASE_STRING_UTIL_H
 
+#include "codepoint.h"                 // CodePoint
 #include "sm-macros.h"                 // DEPRECATED
 
 #include <cstdint>                     // std::{int64_t, uint64_t}
@@ -133,7 +134,9 @@ std::string doubleQuote(std::string const &s);
 
 // Return `c` enclosed in single quotes if it is printable and not a
 // metacharacter, or as an escape sequence if not.
-std::string singleQuoteChar(int c);
+//
+// Requires: `c.has_value()`.
+std::string singleQuoteChar(CodePoint c);
 
 
 // ---------------------------- File names -----------------------------

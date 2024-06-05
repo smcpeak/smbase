@@ -400,7 +400,7 @@ int GDValueReader::readNextUniversalCharacterEscape()
       int decoded2 = readNextU4Escape();
 
       if (isLowSurrogate(decoded2)) {
-        decoded = decodeSurrogatePair(decoded, decoded2);
+        decoded = decodeSurrogatePair(decoded, decoded2).value();
       }
       else {
         err(stringf(
