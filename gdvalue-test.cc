@@ -6,6 +6,7 @@
 #include "gdvalue.h"                   // module under test
 
 // this dir
+#include "counting-ostream.h"          // nullOStream
 #include "gdvsymbol.h"                 // gdv::GDVSymbol
 #include "reader.h"                    // smbase::ReaderException
 #include "sm-file-util.h"              // SMFileUtil
@@ -818,6 +819,31 @@ static void testTaggedSequence()
 }
 
 
+static void writeManyWidths(GDValue const &v)
+{
+  // Try writing the value with every column width in [1,80].  This is
+  // particularly intended to stress the logic that prints maps by
+  // checking which of key, key+value, etc., will fit on a line.
+  GDValueWriteOptions options;
+  for (int w=1; w <= 80; ++w) {
+    options.m_targetLineWidth = w;
+
+    // Just throw away the result.  The point is to check that no
+    // assertion fails.
+    v.writeLines(nullOStream, options);
+  }
+}
+
+
+// Write `v` with many widths where it is both the key and value of a
+// map entry.
+static void writeAsMapElementManyWidths(GDValue const &v)
+{
+  GDValue map = GDVMap{{v,v}};
+  writeManyWidths(map);
+}
+
+
 static void testTaggedTuple()
 {
   GDValue v(GDVK_TAGGED_TUPLE);
@@ -837,6 +863,12 @@ static void testTaggedTuple()
   v.tupleAppend(1);
   EXPECT_EQ(v.asString(), "x(1)");
   testSerializeRoundtrip(v);
+  writeAsMapElementManyWidths(v);
+
+  v.tupleAppend(2);
+  EXPECT_EQ(v.asString(), "x(1 2)");
+  testSerializeRoundtrip(v);
+  writeAsMapElementManyWidths(v);
 }
 
 
@@ -885,6 +917,16 @@ static void printRuler(int width)
 }
 
 
+static void toutLinesPlus(
+  GDValue const &v,
+  GDValueWriteOptions const &options)
+{
+  v.writeLines(tout, options);
+
+  writeManyWidths(v);
+}
+
+
 // This is an ad-hoc collection of things to print, meant for
 // interactive experimentation and verification.
 static void testPrettyPrint(int width)
@@ -896,7 +938,7 @@ static void testPrettyPrint(int width)
   options.m_targetLineWidth = width;
 
   GDValue v(GDVSequence{1,2,3});
-  v.writeLines(tout, options);
+  toutLinesPlus(v, options);
 
   GDValue m2(GDVMap{
                {GDVSymbol("a"), v},
@@ -914,7 +956,7 @@ static void testPrettyPrint(int width)
       GDVSequence{2,3,4},
     }
   };
-  v.writeLines(tout, options);
+  toutLinesPlus(v, options);
 
   GDValue m(GDVMap{
               { 8, 9},
@@ -933,11 +975,11 @@ static void testPrettyPrint(int width)
         {m,                     m},
         {GDVSymbol("counting"), s},
       });
-  v.writeLines(tout, options);
+  toutLinesPlus(v, options);
 
   v = GDValue(GDVMap{ {1,2} });
   v = GDValue(GDVMap{ {v,s} });
-  v.writeLines(tout, options);
+  toutLinesPlus(v, options);
 
   // Exercise printing where a map value is long but is not a container.
   // This is meant to barely not fit in 20 columns, thereby causing the
@@ -945,14 +987,14 @@ static void testPrettyPrint(int width)
   // not help here).
   v = GDValue(GDVMap{ {1, "long-ish value"},
                       {2, 3} });
-  v.writeLines(tout, options);
+  toutLinesPlus(v, options);
 
   v = GDVSequence{
         GDVTaggedMap(GDVSymbol("tagName__"),
                      {{1,2}, {3,4}}),
         5
       };
-  v.writeLines(tout, options);
+  toutLinesPlus(v, options);
 
   v = GDVTaggedMap(
         GDVSymbol("outer"), {
@@ -965,7 +1007,7 @@ static void testPrettyPrint(int width)
               })
           }
         });
-  v.writeLines(tout, options);
+  toutLinesPlus(v, options);
 
   printRuler(width);
 }

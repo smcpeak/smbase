@@ -452,20 +452,14 @@ void GDValueWriter::startNewIndentedLine()
 
 int GDValueWriter::openDelimLength(GDValue const &value) const
 {
-  switch (value.getKind()) {
-    default:
-      xfailurePrecondition("not a container");
+  // Either '{{' for a set, or '[' or '(' or '{' for the others.
+  int ret = value.isSet()? 2 : 1;
 
-    case GDVK_SEQUENCE:
-    case GDVK_MAP:
-      return 1;    // '(' or '{'
-
-    case GDVK_SET:
-      return 2;    // '{{'
-
-    case GDVK_TAGGED_MAP:
-      return safeToInt(value.taggedContainerGetTag().size()) + 1;
+  if (value.isTaggedContainer()) {
+    ret += safeToInt(value.taggedContainerGetTag().size());
   }
+
+  return ret;
 }
 
 
