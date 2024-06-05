@@ -26,8 +26,7 @@ ReaderException::ReaderException(
   if (location.m_fileName) {
     oss << *location.m_fileName << ":";
   }
-  oss << location.m_lc.m_line << ":" << location.m_lc.m_column << ": "
-      << "GDV syntax error";
+  oss << location.m_lc.m_line << ":" << location.m_lc.m_column;
   prependContext(oss.str());
 }
 

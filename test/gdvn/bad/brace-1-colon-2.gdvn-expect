@@ -1,5 +1,5 @@
 ---- stdout ----
 ---- stderr ----
-test/gdvn/bad/brace-1-colon-2.gdvn:1:5: GDV syntax error: Unexpected end of file while looking for '}' at end of map.
+test/gdvn/bad/brace-1-colon-2.gdvn:1:5: Unexpected end of file while looking for '}' at end of map.
 ---- exit status ----
 Exit 2

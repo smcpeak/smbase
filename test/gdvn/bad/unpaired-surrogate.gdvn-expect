@@ -1,5 +1,5 @@
 ---- stdout ----
 ---- stderr ----
-test/gdvn/bad/unpaired-surrogate.gdvn:1:8: GDV syntax error: After high surrogate "\uDBFF": Unexpected '"' while expecting '\'.
+test/gdvn/bad/unpaired-surrogate.gdvn:1:8: After high surrogate "\uDBFF": Unexpected '"' while expecting '\'.
 ---- exit status ----
 Exit 2
