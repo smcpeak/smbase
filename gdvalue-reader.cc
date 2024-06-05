@@ -658,15 +658,19 @@ std::optional<GDValue> GDValueReader::readNextValue()
         c = readChar();
         if (c == eofCode()) {
           inCtxUnexpectedCharErr(c, "after '{'");
-          return std::nullopt;    // Not reached.
         }
         else if (c == '{') {
           return std::make_optional(readNextSet());
+        }
+        else if (c == '[') {
+          err("The '{' character must not be immediately followed by "
+              "'['.  Insert a space between them.");
         }
         else {
           putback(c);
           return std::make_optional(readNextMap());
         }
+        return std::nullopt;    // Not reached.
       }
 
       case '"':

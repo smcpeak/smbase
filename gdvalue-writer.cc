@@ -27,11 +27,12 @@ OPEN_NAMESPACE(gdv)
 INIT_TRACE("gdvalue-writer");
 
 
-// True if 't' is a GDVPair whose first element is a GDVMap.
+// True if 't' is a GDVPair whose first element is a container.
 //
-// In the general case, no.
+// In the general case, which is used when `T` is not a `GDVMapEntry`,
+// no.
 template <class T>
-static bool isPairWithMapAsFirstElement(T const & /*t*/)
+static bool isPairWithContainerAsFirstElement(T const & /*t*/)
 {
   return false;
 }
@@ -39,9 +40,9 @@ static bool isPairWithMapAsFirstElement(T const & /*t*/)
 
 // Specialize for map entries.
 template <>
-bool isPairWithMapAsFirstElement(GDVMapEntry const &entry)
+bool isPairWithContainerAsFirstElement(GDVMapEntry const &entry)
 {
-  return entry.first.isMap();
+  return entry.first.isContainer();
 }
 
 
@@ -80,6 +81,7 @@ bool GDValueWriter::writeContainer(
   }
 
   int curIndex = 0;
+  bool emittedLeadingSpace = false;
 
   // This function is a template so this iteration is generic w.r.t.
   // the container type.
@@ -90,12 +92,12 @@ bool GDValueWriter::writeContainer(
     else if (curIndex > 0) {
       os() << ' ';
     }
-    else if (isPairWithMapAsFirstElement(val)) {
-      // We are writing the first entry of a map, and the first key is
-      // also a map.  We need to emit a space in order to separate the
-      // opening braces of the two maps, since otherwise they will be
-      // treated as the start of a set.
+    else if (isPairWithContainerAsFirstElement(val)) {
+      // We are writing the first entry of a map, and the first key is a
+      // container.  We need to emit a space in order to separate the
+      // opening brace from the key container start character.
       os() << ' ';
+      emittedLeadingSpace = true;
     }
 
     ++curIndex;
@@ -112,6 +114,12 @@ bool GDValueWriter::writeContainer(
     if (curIndex > 0) {
       startNewIndentedLine();
     }
+  }
+
+  if (emittedLeadingSpace) {
+    // This space is not needed for parsing but makes the output
+    // visually symmetric.
+    os() << ' ';
   }
 
   os() << closeDelim;

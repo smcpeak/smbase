@@ -497,30 +497,20 @@ Map: {a:1 b:2 c:3}
       {x:y z:w}:{d:e f:g}
     }
 
-  There is a parsing non-determinism when there are two consecutive open
-  braces.  This is resolved by saying each consecutive pair of braces,
-  after all previous braces have been accounted for, is the start of a
-  *set*, not a map:
-
-    {{A}}                # set containing A
-    {{{{1 2}}}}          # set containing set containing 1 and 2
-    { {1:2}:3}           # map from {1:2} to 3
-    {{1:2}:3}            # syntax error: colon after set element 1
-    {{{1:2}}}            # set containing map from 1 to 2
-    {{}}                 # empty set
-    {}                   # empty map
-    {{{{{1:2}}}}}        # set containing set containing map from 1 to 2
-
-  As a consequence of this disambiguation rule, when the first key (in a
-  given serialization) of a map is another map, it is necessary to
-  insert at least one space after the outer map's opening brace (as
-  shown above in the third example).
+  The character immediately following the '{' must not be the start
+  character of a container, that is, it must not be '{', '[', or '('.
+  An immediately following '{' is interpreted as the start of a set
+  (below), while an immediately following '[' or '(' is reserved for
+  future extensions.
 
 Tagged container: Tag[...] or Tag(...) or Tag{{...}} or Tag{...}
 
   If the character immediately following a symbol, with no intervening
   whitespace, is '[', '(', or '{', then the symbol is combined with the
   following container into a "tagged container".
+
+  For a tagged map, like an untagged map, it is prohibited for the
+  character immediately following '{' to be '{' or '['.
 
 For all values, if their last character is not the last character in the
 serialization (e.g., file), then the following character must be one of:
@@ -626,7 +616,9 @@ extended to the case of identical values for uniformity.
 
 The restriction on what characters can follow a value, which has the
 effect of preventing values from being juxtaposed, is meant in part to
-ensure readability, and also to preserve future extension points.
+ensure readability, and also to preserve future extension points.  In
+particular, it means that three double-quotes in a row remains reserved
+for a possible triple-quoted string extension.
 
 
 Mapping to JSON

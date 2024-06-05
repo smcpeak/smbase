@@ -648,6 +648,7 @@ static void testMap()
   GDVMap tmpMap{ {1,2}, {3,4} };
   v2 = tmpMap;
   EXPECT_EQ(v2.asString(), "{1:2 3:4}");
+  testSerializeRoundtrip(v2);
 
   // Call 'mapIterableC'.
   auto expectIt = tmpMap.begin();
@@ -671,6 +672,7 @@ static void testMap()
   v2.mapGetMutable().insert({5,6});
   EXPECT_EQ(v2.asString(), "{1:2 3:4 5:6}");
 
+  testSerializeRoundtrip(v2);
   // Call `mapGetValueAt() const`.
   GDValue const &v2c = v2;
   EXPECT_EQ(v2c.mapGetValueAt(3), GDValue(4));
@@ -679,10 +681,41 @@ static void testMap()
   GDValue eight(8);
   v2.mapSetValueAt(7, eight);
   EXPECT_EQ(v2.asString(), "{1:2 3:4 5:6 7:8}");
+  testSerializeRoundtrip(v2);
 
   // Again, but this time replacing an existing value.
   v2.mapSetValueAt(5, eight);
   EXPECT_EQ(v2.asString(), "{1:2 3:4 5:8 7:8}");
+  testSerializeRoundtrip(v2);
+
+  // Various containers as keys.
+  v2 = GDVMap{
+    { GDVSequence{1,2,3}, 4 },
+    { GDVTuple{1,2,3},    4 },
+    { GDVSet{1,2,3},      4 },
+    { GDVMap{{1,2}},      4 },
+  };
+  EXPECT_EQ(v2.asString(), "{ [1 2 3]:4 (1 2 3):4 {{1 2 3}}:4 {1:2}:4 }");
+  testSerializeRoundtrip(v2);
+
+  // Various containers as first keys.
+  v2 = GDVMap{
+    { GDVTuple{1,2,3},    4 },
+  };
+  EXPECT_EQ(v2.asString(), "{ (1 2 3):4 }");
+  testSerializeRoundtrip(v2);
+
+  v2 = GDVMap{
+    { GDVSet{1,2,3},      4 },
+  };
+  EXPECT_EQ(v2.asString(), "{ {{1 2 3}}:4 }");
+  testSerializeRoundtrip(v2);
+
+  v2 = GDVMap{
+    { GDVMap{{1,2}},      4 },
+  };
+  EXPECT_EQ(v2.asString(), "{ {1:2}:4 }");
+  testSerializeRoundtrip(v2);
 }
 
 
@@ -1400,6 +1433,10 @@ static void testSyntaxErrors()
   {
     // inCtxUnexpectedCharErr(c, "after '{'");
     testOneErrorSubstr("{", 1, 2, "end of file after '{'");
+
+    // err("The '{' character must not be immediately followed by "
+    //     "'['.  Insert a space between them.");
+    testOneErrorSubstr("{[", 1, 2, "'{' character must not be immediately followed by '['");
 
     // unexpectedCharErr(c, "looking for the start of a value");
     testOneErrorSubstr(";", 1, 1, "';' while looking for the start of a value");
