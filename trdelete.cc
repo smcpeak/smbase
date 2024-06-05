@@ -4,7 +4,9 @@
 // When compiling with Clang-16 against the GCC-9 libc++, I need to set
 // this to get the `operator delete` functions that take a `size_t`
 // argument.
+#ifndef __cpp_sized_deallocation
 #define __cpp_sized_deallocation 1
+#endif
 
 #include "trdelete.h"     // this module
 
