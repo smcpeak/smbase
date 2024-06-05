@@ -85,8 +85,14 @@ int CStringReader::decodeHexOrOctal(bool hex)
     decoded = decoded*(hex?16:8) + decodeASCIIHexDigit(c);
 
     if (decoded > 0x10FFFF) {
-      err(hex? "Hex escape sequence denotes value larger than 0x10FFFF." :
-               "Octal escape sequence denotes value larger than 0x10FFFF.");
+      if (allowTooLargeCodePoints()) {
+        // Clamp it.
+        decoded = 0x10FFFF;
+      }
+      else {
+        err(hex? "Hex escape sequence denotes value larger than 0x10FFFF." :
+                 "Octal escape sequence denotes value larger than 0x10FFFF.");
+      }
     }
 
     ++numDigitsRead;
@@ -117,10 +123,10 @@ CStringReader::~CStringReader()
 CStringReader::CStringReader(
   std::istream &is,
   char delim,
-  bool allowNewlines)
+  CStringReaderFlags flags)
   : Reader(is),
     m_delim(delim),
-    m_allowNewlines(allowNewlines)
+    m_flags(flags)
 {}
 
 
@@ -129,10 +135,10 @@ void decodeCStringEscapesToStream(
   std::ostream &os,
   std::string const &str,
   char delim,
-  bool allowNewlines)
+  CStringReaderFlags flags)
 {
   std::istringstream iss(str);
-  CStringReader reader(iss, delim, allowNewlines);
+  CStringReader reader(iss, delim, flags);
 
   int c;
   while (c = reader.readCodePoint(), c >= 0) {
@@ -146,19 +152,22 @@ void decodeCStringEscapesToStream(
 std::string decodeCStringEscapesToString(
   std::string const &str,
   char delim,
-  bool allowNewlines)
+  CStringReaderFlags flags)
 {
   std::ostringstream oss;
-  decodeCStringEscapesToStream(oss, str, delim, allowNewlines);
+  decodeCStringEscapesToStream(oss, str, delim, flags);
   return oss.str();
 }
 
 
-std::string parseQuotedCString(std::string const &text)
+std::string parseQuotedCString(
+  std::string const &text,
+  char delim,
+  CStringReaderFlags flags)
 {
   if (!( text.size() >= 2 &&
-         text[0] == '"' &&
-         text[text.size()-1] == '"' )) {
+         text[0] == delim &&
+         text[text.size()-1] == delim )) {
     xformat(stringb("quoted string is missing quotes: " << text));
   }
 
@@ -166,7 +175,7 @@ std::string parseQuotedCString(std::string const &text)
   std::string noQuotes = text.substr(1, text.size()-2);
 
   // Decode escapes.
-  return decodeCStringEscapesToString(noQuotes, '"');
+  return decodeCStringEscapesToString(noQuotes, delim, flags);
 }
 
 

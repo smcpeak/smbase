@@ -54,8 +54,10 @@ string quoted(rostring src)
 void decodeEscapes(ArrayStack<char> &dest, std::string const &src,
                    char delim, bool allowNewlines)
 {
+  CStringReaderFlags flags =
+    allowNewlines? CSRF_ALLOW_NEWLINES : CSRF_NONE;
   std::string decoded =
-    decodeCStringEscapesToString(src, delim, allowNewlines);
+    decodeCStringEscapesToString(src, delim, flags);
   for (char c : decoded) {
     dest.push(c);
   }

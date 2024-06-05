@@ -16,7 +16,7 @@ static void decodeVector(char const *in, char const *out, int outLen)
 
   std::string expect(out, outLen);
   std::string actual =
-    decodeCStringEscapesToString(in, 0 /*delim*/, false /*allowNewlines*/);
+    decodeCStringEscapesToString(in, 0 /*delim*/, CSRF_NONE);
 
   EXPECT_EQ(actual, expect);
 }
@@ -53,8 +53,23 @@ static void testDecodeEscapes()
   }
 
   // Succeed with unescaped newline when allowed.
-  EXPECT_EQ(decodeCStringEscapesToString("a\nb", 0, true /*allowNewlines*/),
+  EXPECT_EQ(decodeCStringEscapesToString("a\nb", 0, CSRF_ALLOW_NEWLINES),
             "a\nb");
+
+  // Fail due to excessive value.
+  try {
+    decodeCStringEscapesToString("\\xFFFFFFFF");
+    xfailure("should have failed");
+  }
+  catch (ReaderException &x) {
+    EXPECT_HAS_SUBSTRING(x.getMessage(), "larger than 0x10FFFF");
+  }
+
+  // Succeed when large values are allowed.  The large value gets
+  // clamped then truncated to one byte.
+  EXPECT_EQ(decodeCStringEscapesToString(
+              "\\xFFFFFFFF", 0, CSRF_ALLOW_TOO_LARGE_CODE_POINTS),
+            "\xFF");
 }
 
 
