@@ -497,15 +497,6 @@ Map: {a:1 b:2 c:3}
       {x:y z:w}:{d:e f:g}
     }
 
-  Often, a map represents something like a programming language
-  "structure", i.e., a heterogeneous tuple with elements that have
-  named, pre-assigned roles.  Such a map would use symbols as keys.  In
-  contrast, a map that represents a fully general map from the end
-  user's perspective would use other sorts of values (especially
-  strings) as keys.  The data model and text format are agnostic with
-  regard to what kinds of values are used as keys (except that keys must
-  be unique).
-
   There is a parsing non-determinism when there are two consecutive open
   braces.  This is resolved by saying each consecutive pair of braces,
   after all previous braces have been accounted for, is the start of a
@@ -636,56 +627,6 @@ extended to the case of identical values for uniformity.
 The restriction on what characters can follow a value, which has the
 effect of preventing values from being juxtaposed, is meant in part to
 ensure readability, and also to preserve future extension points.
-
-
-The double-brace conflict
-=========================
-
-Although this specification currently resolves the double-brace conflict
-by requiring a map whose first key is a map to be written with
-separating whitespace, this is not strictly necessary.  That is, there
-is not a true grammatical ambiguity.  In particular, the following
-parsing strategy would work:
-
-1. When consecutive left braces are seen uninterrupted by whitespace,
-   count them.  Let N be the current number of unresolved consecutive
-   left-braces.
-
-     Example: After "{{{{{", N is 5.
-
-2. After consecutive left braces, if what follows is a single
-   right-brace, that must be the closing delimiter of an empty map, so
-   reduce N by one and regard the empty map as a value in step 3.
-
-     Example: "{{{{{} " -> "{{{{<emptymap>", N is 4.
-
-3. After consecutive left braces, if what follows is a value:
-
-   3a. If the value is followed by a colon, that must be a map key.
-       Finish parsing the map to its closing delimiter, reduce N by one,
-       and treat the map as the value for step 3.
-
-         Example: "{{{{{3:" -> parse map -> "{{{{<map>", N is 4.
-
-   3b. If the value is followed by another value or a close-brace, then
-       it must be a set element.  Finish parsing the set to its
-       double-brace closing delimiter, reduce N by 2, and treat the set
-       as a value for step 3.  It is a syntax error if N is only 1 at
-       this point.
-
-         Example: "{{{{{3 4" -> parse set -> "{{{<set>", N is 3.
-         Example: "{{{{{3}"  -> eat "}"   -> "{{{<set>", N is 3.
-
-4. After consecutive left braces, if what follows is at least two
-   right-braces, they must be the closing delimiter of an empty set, so
-   reduce N by 2 and regard the empty set as the value in step 3.  It
-   is a syntax error if N is only 1.
-
-     Example: "{{{{{}}" -> "{{{<set>", N is 3.
-
-Despite the existence of this parsing strategy, I have chosen to require
-that the left-braces of a map not be consecutive to ease the
-implementation of a parser, as the cost in irregularity is minimal.
 
 
 Mapping to JSON
