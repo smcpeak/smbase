@@ -1058,12 +1058,14 @@ static void checkLinesStringFor(
   int targetWidth,
   std::string expect)
 {
+  EXN_CONTEXT_EXPR(targetWidth);
+
   std::string actual = linesStringFor(value, targetWidth);
   if (actual != expect) {
     DIAG("expect:\n" << expect);       // gcov-ignore
     DIAG("actual:\n" << actual);       // gcov-ignore
   }
-  xassert(actual == expect);
+  EXPECT_EQ(actual, expect);
 }
 
 
@@ -1085,7 +1087,7 @@ static void testPrettyExpect()
     GDVMapEntry(oneTwo, counting)
   });
 
-  checkLinesStringFor(m, 9, R"({
+  checkLinesStringFor(m, 10, R"({
   {1:2}:
     {{
       "drei"
@@ -1095,8 +1097,8 @@ static void testPrettyExpect()
 }
 )");
 
-  checkLinesStringFor(m, 10, R"({
-  {1:2}:{{
+  checkLinesStringFor(m, 11, R"({
+  {1:2}: {{
     "drei"
     "ein"
     "zwei"
@@ -1104,8 +1106,8 @@ static void testPrettyExpect()
 }
 )");
 
-  checkLinesStringFor(m, 11, R"({
-  {1:2}:{{
+  checkLinesStringFor(m, 12, R"({
+  {1:2}: {{
     "drei"
     "ein"
     "zwei"
@@ -1114,7 +1116,7 @@ static void testPrettyExpect()
 )");
 
   checkLinesStringFor(m, 26, R"({
-  {1:2}:{{
+  {1:2}: {{
     "drei"
     "ein"
     "zwei"

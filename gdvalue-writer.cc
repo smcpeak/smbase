@@ -173,8 +173,9 @@ bool GDValueWriter::valueFitsOnLine(
 }
 
 
+template <typename VALUE_TYPE>
 bool GDValueWriter::valueFitsOnLineWithExtra(
-  GDValue const &value,
+  VALUE_TYPE const &value,
   int numExtra)
 {
   SAVE_RESTORE(m_numExtraChars);
@@ -275,30 +276,35 @@ bool GDValueWriter::tryWrite(GDValue const &value,
 }
 
 
-/* Case 1: If (a) indentation is disabled, or (b) the key and value both
-   fit on one line, print them on one line:
+/* Case 1: If indentation is disabled, then we print in the most
+   compact form:
 
      key:value
 
-   Case 2: Otherwise, if the key and colon fit on the first line and the
-   value fits on the second line after one level indentation, print them
-   on two lines:
+   Case 2: If the key and value both fit on one line, print them on one
+   line with a space after the ':':
+
+     key: value
+
+   Case 3: Otherwise, if the key and colon fit on the first line and the
+   value fits on the second line after one level of indentation, print
+   them on two lines:
 
      key:
        value
 
-   Case 3: Otherwise, if the value is a container and the key, colon,
-   and opening delimiter of the container all fit on the first line,
-   then put them there, followed by indented elements of the container,
-   ending with its closing delimiter on its own line:
+   Case 4: Otherwise, if the value is a container and the key, colon,
+   space, and opening delimiter of the container all fit on the first
+   line, then put them there, followed by indented elements of the
+   container, ending with its closing delimiter on its own line:
 
-     key:(
+     key: (
        value
        value
        value
      )
 
-   Case 4: Otherwise, split the key across lines, then print the value
+   Case 5: Otherwise, split the key across lines, then print the value
    on the next line, indented if necessary:
 
      (
@@ -319,45 +325,54 @@ bool GDValueWriter::tryWrite(GDVMapEntry const &pair,
   GDValue const &key   = pair.first;
   GDValue const &value = pair.second;
 
-  // The case to use, from among those described in the comment above.
-  int printCase;
+  // The printing case to use.
+  enum PrintCase {
+    PC_NONE                = 0,
+    PC_COMPACT             = 1, // No indentation or space.
+    PC_ONE_LINE_WITH_SPACE = 2, // No indentation, but a space.
+    PC_TWO_LINES           = 3, // Key on one line, value on next.
+    PC_KEY_COLON_OPEN      = 4, // First line has key and container opener.
+    PC_KEY_MULTI_LINE      = 5, // Key is spread across multiple lines.
+  } printCase = PC_NONE;
 
   if (!usingIndentation()) {
-    // Case 1a: Indentation already disabled.
-    printCase = 1;
+    // Case 1: Indentation already disabled.
+    printCase = PC_COMPACT;
   }
-  else if (valueFitsOnLine(pair)) {
-    // Case 1b: Both fit, so disable indentation.
-    printCase = 1;
+  else if (valueFitsOnLineWithExtra(pair, 1/*space*/)) {
+    // Case 2: Both fit on a line with a space.
+    printCase = PC_ONE_LINE_WITH_SPACE;
   }
   else if (valueFitsOnLineWithExtra(key, 1) &&
            valueFitsOnLineAfterIndent(value)) {
-    // Case 2: Key and value each fit onto their own line.
-    printCase = 2;
+    // Case 3: Key and value each fit onto their own line.
+    printCase = PC_TWO_LINES;
   }
   else if (value.isContainer() &&
-           valueFitsOnLineWithExtra(key, 1 + openDelimLength(value))) {
-    // Case 3: Key and start of value fit on first line.
-    printCase = 3;
+           valueFitsOnLineWithExtra(key, 1/*colon*/ + 1/*space*/ +
+                                         openDelimLength(value))) {
+    // Case 4: Key and start of value fit on first line.
+    printCase = PC_KEY_COLON_OPEN;
   }
   else {
     // Case 4: Put the key on multiple lines, and let the recursive call
     // handle the value.
-    printCase = 4;
+    printCase = PC_KEY_MULTI_LINE;
   }
 
   TRACE2_SCOPED("tryWrite(GDVMapEntry): printCase=" << printCase);
+  xassert(printCase != PC_NONE);
 
   // Print the key.
   {
     SAVE_RESTORE(m_numExtraChars);
     SAVE_RESTORE(m_options.m_enableIndentation);
 
-    if (printCase == 2 || printCase == 3) {
+    if (printCase == PC_TWO_LINES || printCase == PC_KEY_COLON_OPEN) {
       ++m_numExtraChars;     // For the colon.
       m_options.m_enableIndentation = false;
 
-      if (printCase == 3) {
+      if (printCase == PC_KEY_COLON_OPEN) {
         m_numExtraChars += openDelimLength(value);
       }
     }
@@ -366,6 +381,11 @@ bool GDValueWriter::tryWrite(GDVMapEntry const &pair,
       return false;
     }
     os() << ':';
+
+    if (printCase == PC_ONE_LINE_WITH_SPACE ||
+        printCase == PC_KEY_COLON_OPEN) {
+      os() << ' ';
+    }
   }
 
   // Value.
@@ -373,7 +393,7 @@ bool GDValueWriter::tryWrite(GDVMapEntry const &pair,
     SAVE_RESTORE(m_options.m_indentLevel);
     SAVE_RESTORE(m_options.m_enableIndentation);
 
-    if (usingIndentation() && printCase != 3) {
+    if (usingIndentation() && printCase != PC_KEY_COLON_OPEN) {
       // In case 3, the value container itself is effectively not
       // indented; the elements of the container will be indented
       // because of what the container does, but its opening delimiter
@@ -381,13 +401,13 @@ bool GDValueWriter::tryWrite(GDVMapEntry const &pair,
       // lined up vertically with the start of the key.
       ++m_options.m_indentLevel;
     }
-    if (printCase == 1) {
+    if (printCase == PC_COMPACT || printCase == PC_ONE_LINE_WITH_SPACE) {
       m_options.m_enableIndentation = false;
     }
-    if (printCase == 2 || printCase == 4) {
+    if (printCase == PC_TWO_LINES || printCase == PC_KEY_MULTI_LINE) {
       startNewIndentedLine();
     }
-    bool const forceLineBreaks = (printCase==3);
+    bool const forceLineBreaks = (printCase==PC_KEY_COLON_OPEN);
     if (!tryWrite(value, forceLineBreaks)) {
       return false;
     }

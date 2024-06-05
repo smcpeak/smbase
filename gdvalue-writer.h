@@ -60,8 +60,9 @@ private:     // methods
     VALUE_TYPE const &value);
 
   // Would 'value' plus 'numExtra' chars fit?
+  template <typename VALUE_TYPE>
   bool valueFitsOnLineWithExtra(
-    GDValue const &value,
+    VALUE_TYPE const &value,
     int numExtra);
 
   // Would 'value' fit with one more indentation level?
