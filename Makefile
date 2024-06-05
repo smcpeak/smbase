@@ -440,13 +440,15 @@ test.dir/read-only.txt:
 test/%.expect:
 	touch $@
 
+# This variable is used as a dependency on targets that I only want to
+# run after the unit tests have passed, both because the unit tests are
+# more fundamental, and because I do not want the output of both kinds
+# of tests being interleaved during parallel `make`.  Those rules do not
+# actually have a dependency on this file.
+AFTER_UNIT_TESTS := out/unit-tests.exe.ok
+
 # Run one unit test and compare to expected output.
-#
-# This rule depends on `out/unit-tests.exe.ok` because I do not want to
-# run this until the unit tests have all passed, both because the unit
-# tests are more fundamental, and because I do not want the output of
-# both kinds of tests being interleaved during parallel `make`.
-out/%.unit.ok: test/%.expect out/unit-tests.exe.ok
+out/%.unit.ok: test/%.expect $(AFTER_UNIT_TESTS)
 	$(CREATE_OUTPUT_DIRECTORY)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/$*.actual \
@@ -514,7 +516,7 @@ test/gdvn/%-expect: test/gdvn/%
 	touch $@
 
 # Run a file through gdvn.exe.
-out/gdvn/%-ok: test/gdvn/% test/gdvn/%-expect gdvn.exe
+out/gdvn/%-ok: test/gdvn/% test/gdvn/%-expect gdvn.exe $(AFTER_UNIT_TESTS)
 	$(CREATE_OUTPUT_DIRECTORY)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/gdvn/$*-actual \
@@ -536,7 +538,7 @@ check-gdvn: $(GDVN_OKFILES)
 
 
 # Run one input through `gdvn` via stdin.
-out/gdvn/123-stdin.ok: test/gdvn/123.gdvn test/gdvn/123-stdin-expect gdvn.exe
+out/gdvn/123-stdin.ok: test/gdvn/123.gdvn test/gdvn/123-stdin-expect gdvn.exe $(AFTER_UNIT_TESTS)
 	$(CREATE_OUTPUT_DIRECTORY)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/gdvn/123-stdin-actual \
