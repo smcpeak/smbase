@@ -526,6 +526,16 @@ std::string escapeForRegex(std::string const &s)
 }
 
 
+std::string replaceAllRegex(
+  std::string const &str,
+  std::string const &regexToReplace,
+  std::string const &replacement)
+{
+  std::regex re(regexToReplace);
+  return std::regex_replace(str, re, replacement);
+}
+
+
 // ---------------------- Stringifying numbers -------------------------
 std::string uint64ToRadixDigits(
   std::uint64_t magnitude, int radix)

@@ -221,6 +221,13 @@ bool matchesRegex(std::string const &str, std::string const &regex);
 // metacharacters it contains.
 std::string escapeForRegex(std::string const &s);
 
+// Replace every occurrence of `regexToReplace` with `replacement`.
+// The regex uses the default syntax of `std::regex`.
+std::string replaceAllRegex(
+  std::string const &str,
+  std::string const &regexToReplace,
+  std::string const &replacement);
+
 
 // ---------------------- Stringifying numbers -------------------------
 // Return `value` as a string of digits in `radix`, itself in [2,36].

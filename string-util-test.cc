@@ -561,6 +561,19 @@ static void testIndexOfSubstring()
 }
 
 
+static void testReplaceAllRegex()
+{
+  EXPECT_EQ(replaceAllRegex("", "x", ""), "");
+  EXPECT_EQ(replaceAllRegex("x", "x", ""), "");
+  EXPECT_EQ(replaceAllRegex("xx", "x", ""), "");
+  EXPECT_EQ(replaceAllRegex("xyz", "x", ""), "yz");
+  EXPECT_EQ(replaceAllRegex("xyz", "x", "yz"), "yzyz");
+  EXPECT_EQ(replaceAllRegex("SOME text SAMPLE", "[a-z]", "Q"), "SOME QQQQ SAMPLE");
+  EXPECT_EQ(replaceAllRegex("code // d: comment", " *// d: .*", ""), "code");
+  EXPECT_EQ(replaceAllRegex("code // comment", " *// d: *", ""), "code // comment");
+}
+
+
 void test_string_util()
 {
   testSplitNonEmpty();
@@ -586,6 +599,7 @@ void test_string_util()
   testRemoveSuffix();
   testEncodeWithEscapes();
   testIndexOfSubstring();
+  testReplaceAllRegex();
 }
 
 
