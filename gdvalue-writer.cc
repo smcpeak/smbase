@@ -54,7 +54,7 @@ bool GDValueWriter::writeContainer(
   char const *closeDelim)
 {
   TRACE1_SCOPED("writeContainer:"
-    " tag=" << (tag? tag->asString() : std::string("(null)")) <<
+    " tag=" << (tag? tag->asString() : std::string("(absent)")) <<
     " delims=" << openDelim << closeDelim <<
     " enableIndentation=" << m_options.m_enableIndentation <<
     " indentLevel=" << m_options.m_indentLevel);
