@@ -36,11 +36,8 @@ using std::cout;
 OPEN_ANONYMOUS_NAMESPACE
 
 
-// TODO: Remove the unnecessary `static` keywords.
-
-
 // Check that 'ser' deserializes to 'expect'.
-static void checkParse(GDValue const &expect, std::string const &ser)
+void checkParse(GDValue const &expect, std::string const &ser)
 {
   try {
     GDValue actual(GDValue::readFromString(ser));
@@ -73,7 +70,7 @@ static void checkParse(GDValue const &expect, std::string const &ser)
 
 // Serialize and deserialize 'value', a couple ways, expecting
 // equivalence.
-static void testSerializeRoundtrip(GDValue const &value)
+void testSerializeRoundtrip(GDValue const &value)
 {
   value.selfCheck();
 
@@ -85,7 +82,7 @@ static void testSerializeRoundtrip(GDValue const &value)
 }
 
 
-static void testNull()
+void testNull()
 {
   GDValue v;
   DIAG("null: " << v);
@@ -118,7 +115,7 @@ static void testNull()
 }
 
 
-static void testBool()
+void testBool()
 {
   GDValue dTrue(GDValue::BoolTag, true);
   VPVAL(dTrue);
@@ -150,7 +147,7 @@ static void testBool()
 }
 
 
-static void testSymbol()
+void testSymbol()
 {
   GDValue dSym1(GDVSymbol("sym1"));
   VPVAL(dSym1);
@@ -195,7 +192,7 @@ static void testSymbol()
 }
 
 
-static void testInteger()
+void testInteger()
 {
   GDValue d0(0);
   VPVAL(d0);
@@ -258,7 +255,7 @@ static void testInteger()
 }
 
 
-static void testString()
+void testString()
 {
   // Get initial counts.
   unsigned initCtSetCopy = GDValue::s_ct_stringSetCopy;
@@ -356,7 +353,7 @@ static void testString()
 }
 
 
-static void testSequence()
+void testSequence()
 {
   GDValue v1(GDVK_SEQUENCE);
   DIAG("empty seq: " << v1);
@@ -439,7 +436,7 @@ static void testSequence()
 }
 
 
-static void testTuple()
+void testTuple()
 {
   GDValue v1((GDVTuple()));
   EXPECT_EQ(v1.asString(), "()");
@@ -508,7 +505,7 @@ static void testTuple()
 }
 
 
-static void testSet()
+void testSet()
 {
   GDValue v1((GDVSet()));
   DIAG("empty set: " << v1);
@@ -588,7 +585,7 @@ static void testSet()
 }
 
 
-static void testMap()
+void testMap()
 {
   GDValue v1((GDVMap()));
   DIAG("empty map: " << v1);
@@ -743,7 +740,7 @@ static void testMap()
 }
 
 
-static void testTaggedMap()
+void testTaggedMap()
 {
   GDValue v(GDVK_TAGGED_MAP);
   EXPECT_EQ(v.asString(), "null{}");
@@ -854,7 +851,7 @@ static void testTaggedMap()
 }
 
 
-static void testTaggedSequence()
+void testTaggedSequence()
 {
   GDValue v(GDVK_TAGGED_SEQUENCE);
   EXPECT_EQ(v.asString(), "null[]");
@@ -876,7 +873,7 @@ static void testTaggedSequence()
 }
 
 
-static void writeManyWidths(GDValue const &v)
+void writeManyWidths(GDValue const &v)
 {
   // Try writing the value with every column width in [1,80].  This is
   // particularly intended to stress the logic that prints maps by
@@ -894,14 +891,14 @@ static void writeManyWidths(GDValue const &v)
 
 // Write `v` with many widths where it is both the key and value of a
 // map entry.
-static void writeAsMapElementManyWidths(GDValue const &v)
+void writeAsMapElementManyWidths(GDValue const &v)
 {
   GDValue map = GDVMap{{v,v}};
   writeManyWidths(map);
 }
 
 
-static void testTaggedTuple()
+void testTaggedTuple()
 {
   GDValue v(GDVK_TAGGED_TUPLE);
   EXPECT_EQ(v.asString(), "null()");
@@ -929,7 +926,7 @@ static void testTaggedTuple()
 }
 
 
-static void testTaggedSet()
+void testTaggedSet()
 {
   GDValue v(GDVK_TAGGED_SET);
   EXPECT_EQ(v.asString(), "null{{}}");
@@ -952,7 +949,7 @@ static void testTaggedSet()
 
 
 // Print a little ruler to help judge the behavior.
-static void printRuler(int width)
+void printRuler(int width)
 {
   if (!verbose) {
     return;
@@ -974,7 +971,7 @@ static void printRuler(int width)
 }
 
 
-static void toutLinesPlus(
+void toutLinesPlus(
   GDValue const &v,
   GDValueWriteOptions const &options)
 {
@@ -986,7 +983,7 @@ static void toutLinesPlus(
 
 // This is an ad-hoc collection of things to print, meant for
 // interactive experimentation and verification.
-static void testPrettyPrint(int width)
+void testPrettyPrint(int width)
 {
   DIAG("pretty print target width: " << width);
   printRuler(width);
@@ -1070,14 +1067,14 @@ static void testPrettyPrint(int width)
 }
 
 
-static std::string linesStringFor(GDValue const &value, int targetWidth)
+std::string linesStringFor(GDValue const &value, int targetWidth)
 {
   return value.asLinesString(GDValueWriteOptions()
                                .setTargetLineWidth(targetWidth));
 }
 
 
-static void checkLinesStringFor(
+void checkLinesStringFor(
   GDValue const &value,
   int targetWidth,
   std::string expect)
@@ -1097,7 +1094,7 @@ static void checkLinesStringFor(
 //
 // This test mechanism is very crude.  I should be able to replace it
 // with something better once I have text deserialization.
-static void testPrettyExpect()
+void testPrettyExpect()
 {
   GDValue counting(GDVSet{
     GDValue("ein"),
@@ -1156,7 +1153,7 @@ static void testPrettyExpect()
 }
 
 
-static void testOneErrorSubstrOrRegex(
+void testOneErrorSubstrOrRegex(
   char const *input,
   int expectLine,
   int expectColumn,
@@ -1186,7 +1183,7 @@ static void testOneErrorSubstrOrRegex(
 }
 
 
-static void testOneErrorSubstr(
+void testOneErrorSubstr(
   char const *input,
   int expectLine,
   int expectColumn,
@@ -1201,7 +1198,7 @@ static void testOneErrorSubstr(
 }
 
 
-static void testOneErrorRegex(
+void testOneErrorRegex(
   char const *input,
   int expectLine,
   int expectColumn,
@@ -1219,7 +1216,7 @@ static void testOneErrorRegex(
 /* Invoke `testOneErrorRegex` on `input` followed by each character in
    `nextChar`.  A character can be -1 to mean EOF.
 */
-static void testMultiErrorRegex(
+void testMultiErrorRegex(
   char const *inputPrefix,
   std::vector<int> nextChar,
   int expectLine,
@@ -1257,7 +1254,7 @@ static void testMultiErrorRegex(
 }
 
 
-static void testSyntaxErrors()
+void testSyntaxErrors()
 {
   // This test is meant to correspond to gdvalue-reader.cc, exercising
   // each of the error paths evident in each function.  Basically, I
@@ -1484,7 +1481,7 @@ static void testSyntaxErrors()
 
 
 // Check that deserializing 'input' succeeds and yields 'expect'.
-static void testOneDeserialize(
+void testOneDeserialize(
   char const *input,
   GDValue expect)
 {
@@ -1509,7 +1506,7 @@ static void testOneDeserialize(
 }
 
 
-static void testDeserializeMisc()
+void testDeserializeMisc()
 {
   // Comma is whitespace.
   testOneDeserialize(",1", 1);
@@ -1538,7 +1535,7 @@ static void testDeserializeMisc()
 }
 
 
-static void testDeserializeIntegers()
+void testDeserializeIntegers()
 {
   // Confirm we can deserialize a value near the top of the range for a
   // signed 64-bit integer.
@@ -1583,7 +1580,7 @@ static void testDeserializeIntegers()
 }
 
 
-static void testDeserializeStrings()
+void testDeserializeStrings()
 {
   // Surrogate pair.
   testOneDeserialize(R"("\uD800\uDC00")", utf8EncodeVector({0x10000}));
@@ -1603,7 +1600,7 @@ static void testDeserializeStrings()
 // a double-quoted string in GDVN.  `expectEncodedNoQuotes` is what it
 // should yield, without the double-quotes (just so the tests are a
 // little less cluttered).
-static void testOneStringEscapes(
+void testOneStringEscapes(
   std::string const &plain,
   std::string const &expectEncodedNoQuotes)
 {
@@ -1622,7 +1619,7 @@ static void testOneStringEscapes(
 
 // Test decode only.  This is useful when I want to test the
 // interpretation of a form my encoder does not produce.
-static void testOneDecode(
+void testOneDecode(
   std::string const &encodedNoQuotes,
   std::string const &expect)
 {
@@ -1636,7 +1633,7 @@ static void testOneDecode(
 
 // Encode `c` as a UTF-8 string, encoded it as GDVN, decode that, and
 // check the result is the original UTF-8 string.
-static void testOneDecodeCodePoint(int c)
+void testOneDecodeCodePoint(int c)
 {
   std::string plain = utf8EncodeVector({c});
   std::string encoded = GDValue(plain).asString();
@@ -1650,7 +1647,7 @@ static void testOneDecodeCodePoint(int c)
 }
 
 
-static void testStringEscapes()
+void testStringEscapes()
 {
   testOneStringEscapes("", "");
   testOneStringEscapes("\"\\\001\037",
@@ -1688,14 +1685,14 @@ static void testStringEscapes()
 }
 
 
-static void testGDValueKindToString()
+void testGDValueKindToString()
 {
   EXPECT_EQ(toString(GDVK_SYMBOL), "GDVK_SYMBOL");
   EXPECT_EQ(toString(GDVK_MAP), "GDVK_MAP");
 }
 
 
-static void testWriteReadFile()
+void testWriteReadFile()
 {
   SMFileUtil sfu;
   sfu.createDirectoryAndParents("out/gdvn");
@@ -1731,7 +1728,7 @@ static void testWriteReadFile()
 // There is already a test of `readNextValue` above, but it only returns
 // one value.  Here I want it to return multiple values before hitting
 // EOF.
-static void testReadNextValue()
+void testReadNextValue()
 {
   std::string input("1 2 3");
   std::istringstream iss(input);
@@ -1751,7 +1748,7 @@ static void testReadNextValue()
 }
 
 
-static void testGDValueWriter()
+void testGDValueWriter()
 {
   GDValue small = GDVInteger::fromDigits("12345");
   EXPECT_EQ(small.asString(), "12345");
@@ -1766,7 +1763,7 @@ static void testGDValueWriter()
 }
 
 
-static void testAsIndentedString()
+void testAsIndentedString()
 {
   GDValue v(GDVSequence{1,2});
   GDValueWriteOptions options;
