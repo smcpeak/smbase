@@ -95,6 +95,8 @@ public:      // methods
   GDVTaggedContainer(GDVSymbol tag, CONTAINER const &container);
   GDVTaggedContainer(GDVSymbol tag, CONTAINER &&container);
 
+  // TODO: Allow passing `char const *` as first argument?
+
   GDVTaggedContainer(GDVTaggedContainer const &obj);
   GDVTaggedContainer(GDVTaggedContainer &&obj);
 
@@ -494,6 +496,8 @@ public:      // methods
   // safe to make usable implicitly in brace initializers.
   enum BoolTagType { BoolTag };
   /*implicit*/ GDValue(BoolTagType, bool b);
+
+  static GDValue makeBool(bool b);
 
   void boolSet(bool b);
 

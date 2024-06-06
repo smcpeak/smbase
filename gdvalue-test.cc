@@ -144,6 +144,10 @@ void testBool()
 
   testSerializeRoundtrip(dTrue);
   testSerializeRoundtrip(dFalse);
+
+  GDValue b = GDValue::makeBool(true);
+  xassert(b == dTrue);
+  xassert(GDValue::makeBool(false) == dFalse);
 }
 
 

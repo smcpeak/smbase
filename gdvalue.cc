@@ -675,6 +675,12 @@ GDValue::GDValue(BoolTagType, bool b)
 }
 
 
+STATICDEF GDValue GDValue::makeBool(bool b)
+{
+  return GDValue(BoolTag, b);
+}
+
+
 void GDValue::boolSet(bool b)
 {
   reset();
