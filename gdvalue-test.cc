@@ -1742,6 +1742,20 @@ static void testGDValueWriter()
 }
 
 
+static void testAsIndentedString()
+{
+  GDValue v(GDVSequence{1,2});
+  GDValueWriteOptions options;
+  options.m_targetLineWidth = 1;
+
+  // No final newline.
+  EXPECT_EQ(v.asIndentedString(options), "[\n  1\n  2\n]");
+
+  // In contrast:
+  EXPECT_EQ(v.asLinesString(options), "[\n  1\n  2\n]\n");
+}
+
+
 // Called from unit-tests.cc.
 void test_gdvalue()
 {
@@ -1777,6 +1791,7 @@ void test_gdvalue()
     testWriteReadFile();
     testReadNextValue();
     testGDValueWriter();
+    testAsIndentedString();
 
     // Some interesting values for the particular data used.
     testPrettyPrint(0);

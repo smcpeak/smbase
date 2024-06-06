@@ -428,6 +428,11 @@ public:      // methods
   std::string asString(
     GDValueWriteOptions options = GDValueWriteOptions()) const;
 
+  // Same as `asString` but enable indendation in `options`.  This will
+  // not print a final newline.
+  std::string asIndentedString(
+    GDValueWriteOptions options = GDValueWriteOptions()) const;
+
   // Enable indentation in the write options, then write to 'os', then
   // write a final newline.
   void writeLines(std::ostream &os,

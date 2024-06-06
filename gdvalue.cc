@@ -571,6 +571,13 @@ std::string GDValue::asString(GDValueWriteOptions options) const
 }
 
 
+std::string GDValue::asIndentedString(GDValueWriteOptions options) const
+{
+  options.m_enableIndentation = true;
+  return asString(options);
+}
+
+
 void GDValue::writeLines(std::ostream &os,
                          GDValueWriteOptions options) const
 {
