@@ -71,7 +71,7 @@ public:      // methods
   GDVTuple(size_type count, GDValue const &value);
 
   // Tuple of `count` copies of a default-constructed GDValue.
-  GDVTuple(size_type count);
+  explicit GDVTuple(size_type count);
 
   // The problem with the iterator constructor template is that would
   // require a definition in this file, which I do not want.
