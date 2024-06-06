@@ -27,7 +27,8 @@ OPEN_NAMESPACE(gdv)
 INIT_TRACE("gdvalue-writer");
 
 
-// True if 't' is a GDVPair whose first element is a container.
+// True if 't' is a GDVPair whose first element is an untagged
+// container.
 //
 // In the general case, which is used when `T` is not a `GDVMapEntry`,
 // no.
@@ -42,7 +43,8 @@ static bool isPairWithContainerAsFirstElement(T const & /*t*/)
 template <>
 bool isPairWithContainerAsFirstElement(GDVMapEntry const &entry)
 {
-  return entry.first.isContainer();
+  return entry.first.isContainer() &&
+         !entry.first.isTaggedContainer();
 }
 
 

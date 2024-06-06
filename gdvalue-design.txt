@@ -523,6 +523,11 @@ Tagged container: Tag[...] or Tag(...) or Tag{{...}} or Tag{...}
   For a tagged map, like an untagged map, it is prohibited for the
   character immediately following '{' to be '{' or '[' or '('.
 
+  Note: It *is* allowed for a *tagged* container to be the first key
+  without adding an extra space, for example:
+
+    {A(1):one}
+
 For all values, if their last character is not the last character in the
 serialization (e.g., file), then the following character must be one of:
 

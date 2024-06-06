@@ -716,6 +716,24 @@ static void testMap()
   };
   EXPECT_EQ(v2.asString(), "{ {1:2}:4 }");
   testSerializeRoundtrip(v2);
+
+  v2 = GDVMap{
+    { GDVTaggedSequence(GDVSymbol("A"), {1}), GDVSymbol("one") }
+  };
+  EXPECT_EQ(v2.asString(), "{A[1]:one}");
+  testSerializeRoundtrip(v2);
+
+  v2 = GDVMap{
+    { GDVTaggedTuple(GDVSymbol("A"), {1}), GDVSymbol("one") }
+  };
+  EXPECT_EQ(v2.asString(), "{A(1):one}");
+  testSerializeRoundtrip(v2);
+
+  v2 = GDVMap{
+    { GDVTuple{1}, GDVSymbol("one") }
+  };
+  EXPECT_EQ(v2.asString(), "{ (1):one }");
+  testSerializeRoundtrip(v2);
 }
 
 
