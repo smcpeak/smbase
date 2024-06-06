@@ -30,13 +30,15 @@
 #include <map>                         // std::map
 #include <set>                         // std::set
 #include <string>                      // std::string
-#include <vector>                      // std::vector
+#include <type_traits>                 // std::{enable_if, is_convertible, ...}
 #include <utility>                     // std::pair
+#include <vector>                      // std::vector
 
 
 OPEN_NAMESPACE(gdv)
 
 
+// ----------------------- GDVXXX Support Types ------------------------
 // Count of elements.
 using GDVSize = std::size_t;
 
@@ -70,6 +72,7 @@ using GDVMap = std::map<GDValue, GDValue>;
 using GDVMapEntry = std::pair<GDValue const, GDValue>;
 
 
+// ------------------------ GDVTaggedContainer -------------------------
 // A pair of a symbol tag and a container.
 //
 // The CONTAINER is one of GDVSequence, GDVTuple, GDVSet, or GDVMap.
@@ -127,6 +130,7 @@ using GDVTaggedMap      = GDVTaggedContainer<GDVMap>;
   macro(MAP,      Map,      map     )
 
 
+// --------------------------- GDValueKind -----------------------------
 /* Possible kinds of GDValues.
 
    The order of the enumerators is also the order into which the kinds
@@ -193,6 +197,7 @@ enum GDValueKind : unsigned char {
 char const *toString(GDValueKind gdvk);
 
 
+// ----------------------------- GDValue -------------------------------
 /* A General Data Value is a disjoint union of several different types
    of data, enumerated as 'GDValueKind'.
 
@@ -829,6 +834,114 @@ DEFINE_GDV_KIND_ITERABLE(GDVMap, map)
 FOR_EACH_GDV_CONTAINER(DEFER_INSTANTIATE)
 
 #undef DEFER_INSTANTIATE
+
+
+// ----------------------------- toGDValue -----------------------------
+/* The purpose of `toGDValue` is to provide something that can be
+   overloaded to convert something to `GDValue` when it cannot be
+   converted implicitly.  For user-written classes, it's usually best to
+   implement `operator GDValue()`, but for classes outside the user's
+   control, `toGDValue` can substitute.
+
+   As an alternative to `operator GDValue()`, one can implement the
+   `asGDValue()` method, which `toGDValue()` can also call.
+*/
+
+// `has_asGDValue_method<T>::value` is true iff `T` has an `asGDValue`
+// member.
+//
+// False case:
+//
+template <typename, typename = void>
+struct has_asGDValue_method : std::false_type {};
+//
+// True case:
+//
+template <typename T>
+struct has_asGDValue_method<T, std::void_t<decltype(&T::asGDValue)> >
+  : std::true_type {};
+
+
+// `toGDValue` for when `T` has an `asGDValue` method.
+template <typename T>
+typename std::enable_if<has_asGDValue_method<T>::value,
+                        GDValue>::type
+                     // ^^^^^^^ Return type of this function.
+toGDValue(T const &t)
+{
+  return t.asGDValue();
+}
+
+
+// `toGDValue` for when there is an implicit conversion, either because
+// there is a matching `GDValue` constructor or because `T` has an
+// `operator GDValue()`.
+template <typename T>
+typename std::enable_if<std::is_convertible<T, GDValue>::value,
+                        GDValue>::type
+                     // ^^^^^^^ Return type of this function.
+toGDValue(T const &t)
+{
+  return t;
+}
+
+
+// For `std::vector`.
+template <typename T, typename A>
+GDValue toGDValue(std::vector<T,A> const &v)
+{
+  GDValue ret(GDVK_SEQUENCE);
+
+  for (T const &t : v) {
+    ret.sequenceAppend(toGDValue(t));
+  }
+
+  return ret;
+}
+
+
+// For `std::pair`.
+template <typename T1, typename T2>
+GDValue toGDValue(std::pair<T1,T2> const &p)
+{
+  GDValue ret(GDVK_TUPLE);
+
+  ret.tupleAppend(toGDValue(p.first));
+  ret.tupleAppend(toGDValue(p.second));
+
+  return ret;
+}
+
+
+// TODO: Add a `toGDValue` to `std::tuple`.
+
+
+// For `std::set`.
+template <typename T, typename C, typename A>
+GDValue toGDValue(std::set<T,C,A> const &s)
+{
+  GDValue ret(GDVK_SET);
+
+  for (T const &t : s) {
+    ret.setInsert(toGDValue(t));
+  }
+
+  return ret;
+}
+
+
+// For `std::map`.
+template <typename K, typename V, typename C, typename A>
+GDValue toGDValue(std::map<K,V,C,A> const &m)
+{
+  GDValue ret(GDVK_MAP);
+
+  for (auto const &kv : m) {
+    ret.mapSetValueAt(toGDValue(kv.first), toGDValue(kv.second));
+  }
+
+  return ret;
+}
 
 
 CLOSE_NAMESPACE(gdv)

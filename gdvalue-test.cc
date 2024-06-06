@@ -33,6 +33,12 @@ using std::cout;
 // gcov-exception-lines-ignore
 
 
+OPEN_ANONYMOUS_NAMESPACE
+
+
+// TODO: Remove the unnecessary `static` keywords.
+
+
 // Check that 'ser' deserializes to 'expect'.
 static void checkParse(GDValue const &expect, std::string const &ser)
 {
@@ -1774,6 +1780,68 @@ static void testAsIndentedString()
 }
 
 
+struct Has_asGDValue {
+  GDValue asGDValue() const
+  {
+    return GDValue("Has_asGDValue::asGDValue()");
+  }
+};
+
+struct Has_operator_GDValue {
+  operator GDValue() const
+  {
+    return GDValue("Has_operator_GDValue::operator GDValue()");
+  }
+};
+
+
+// Another class with an `operator GDValue()` that I can put into maps
+// and has slightly interesting behavior.
+struct A {
+  int m_i;
+  static inline int s_count = 0;
+
+  A()
+    : m_i(++s_count)
+  {}
+
+  operator GDValue() const
+  {
+    return GDVTaggedTuple(GDVSymbol("A"), {m_i});
+  }
+
+  bool operator< (A const &obj) const
+  {
+    return m_i < obj.m_i;
+  }
+};
+
+
+void testToGDValue()
+{
+  EXPECT_EQ(toGDValue(Has_asGDValue()).asString(),
+            "\"Has_asGDValue::asGDValue()\"");
+  EXPECT_EQ(toGDValue(Has_operator_GDValue()).asString(),
+            "\"Has_operator_GDValue::operator GDValue()\"");
+  EXPECT_EQ(toGDValue(123).asString(),
+            "123");
+  EXPECT_EQ(toGDValue(GDVSymbol("abc")).asString(),
+            "abc");
+
+  EXPECT_EQ(toGDValue(std::set<A>{A(), A(), A()}).asString(),
+            "{{A(1) A(2) A(3)}}");
+  EXPECT_EQ(toGDValue(std::vector<A>{A(), A(), A()}).asString(),
+            "[A(4) A(5) A(6)]");
+  EXPECT_EQ(toGDValue(std::map<A,int>{{A(),17}, {A(),18}}).asString(),
+            "{A(7):17 A(8):18}");
+  EXPECT_EQ(toGDValue(std::make_pair(std::string("hi"), 9)).asString(),
+            "(\"hi\" 9)");
+}
+
+
+CLOSE_ANONYMOUS_NAMESPACE
+
+
 // Called from unit-tests.cc.
 void test_gdvalue()
 {
@@ -1810,6 +1878,7 @@ void test_gdvalue()
     testReadNextValue();
     testGDValueWriter();
     testAsIndentedString();
+    testToGDValue();
 
     // Some interesting values for the particular data used.
     testPrettyPrint(0);
