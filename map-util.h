@@ -7,6 +7,7 @@
 #define SMBASE_MAP_UTIL_H
 
 // smbase
+#include "sm-macros.h"                 // DEPRECATED
 #include "xassert.h"                   // xassert
 
 // libc++
@@ -59,10 +60,8 @@ void mapInsertAllKeys(DestSet &dest, SrcMap const &src)
 // ------------------------------ Lookup -------------------------------
 // Look up 'k' in 'm'.  If found, return its value.  Otherwise return
 // 'V(0)', which for a pointer type is NULL.
-//
-// TODO: Rename this to align with `mapFindOpt`.
 template <class K, class V>
-V atOrNull(std::map<K,V> const &m, K const &k)
+V mapFindOrNull(std::map<K,V> const &m, K const &k)
 {
   auto it = m.find(k);
   if (it != m.end()) {
@@ -71,6 +70,17 @@ V atOrNull(std::map<K,V> const &m, K const &k)
   else {
     return V(0);
   }
+}
+
+
+template <class K, class V>
+V atOrNull(std::map<K,V> const &m, K const &k)
+  DEPRECATED("Use `mapFindOrNull` instead.");
+
+template <class K, class V>
+V atOrNull(std::map<K,V> const &m, K const &k)
+{
+  return mapFindOrNull(m, k);
 }
 
 
@@ -120,6 +130,24 @@ void mapInsertUniqueMove(std::map<K,V> &map, K const &k, V &&v)
 {
   auto it = map.insert(std::make_pair(k, std::move(v)));
   xassert(it.second);
+}
+
+
+// ----------------------------- Removal -------------------------------
+// Remove the mapping for `k` if one exists.  Return true if it existed.
+template <class K, class V>
+bool mapRemove(std::map<K,V> &map, K const &k)
+{
+  return map.erase(k) > 0;
+}
+
+
+// Remove the mapping for `k`, which must exist
+template <class K, class V>
+void mapRemoveExisting(std::map<K,V> &map, K const &k)
+{
+  bool erased = mapRemove(map, k);
+  xassert(erased);
 }
 
 
