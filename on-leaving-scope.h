@@ -1,6 +1,13 @@
 // on-leaving-scope.h
 // Perform some cleanup action when leaving a scope.
 
+// smcpeak 2022-05-13: I obtained this code from:
+//
+//   https://crascit.com/wp-content/uploads/2015/07/onleavingscope_update1.zip
+//
+// Everything below the blank line after this comment is the unmodified
+// contents of OnLeavingScope.h in that archive.
+
 /**
  * The contents of this file are based on the article posted at the
  * following location:
