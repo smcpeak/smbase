@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Get header descriptions and put them into index.html."""
+"""Get file descriptions and put them into index.html."""
 
 import argparse              # argparse
 import difflib               # difflib.unified_diff
@@ -98,29 +98,29 @@ copyrightRE = re.compile(r"copyright and terms of use")
 descriptionCommentRE = re.compile(r"(?:m4_dnl //|//|[/ ]\*) ?(.*)")
 
 
-def getHeaderDescriptionHTML(headerFname: str) -> list[str]:
-  """Extract the description from 'headerFname' as HTML lines."""
+def getFileDescriptionHTML(fileFname: str) -> list[str]:
+  """Extract the description from 'fileFname' as HTML lines."""
 
-  # Read the header.
-  headerLines = readLinesNoNL(headerFname)
+  # Read the file.
+  fileLines = readLinesNoNL(fileFname)
 
   # Skip the title line.
   lineNo = 1
 
   # Skip the copyright line if present.
-  if copyrightRE.search(headerLines[lineNo]):
+  if copyrightRE.search(fileLines[lineNo]):
     lineNo += 1
 
   # Description preamble.  The "AUTO" is meant as a reminder that the
   # text is automatically generated, so not to edit it.
   descriptionLinesHTML = [
-    f"  <!-- AUTO --><dt><a href=\"{headerFname}\">{headerFname}</a>",
+    f"  <!-- AUTO --><dt><a href=\"{fileFname}\">{fileFname}</a>",
     f"  <!-- AUTO --><dd>",
   ]
 
   # Get the contiguous comments after that.
   extractedLines = 0
-  while m := descriptionCommentRE.match(headerLines[lineNo]):
+  while m := descriptionCommentRE.match(fileLines[lineNo]):
     text = m.group(1)
     extractedLines += 1
 
@@ -142,42 +142,42 @@ def getHeaderDescriptionHTML(headerFname: str) -> list[str]:
     lineNo += 1
 
   if extractedLines == 0:
-    die(f"{headerFname}: Did not find any description lines.")
+    die(f"{fileFname}: Did not find any description lines.")
 
   return descriptionLinesHTML
 
 
-def checkMentionedHeaders(mentionedHeaders: list[str],
-                          specifiedHeaders: list[str]) -> None:
-  """Check that the set of `mentionedHeaders` matches what is in
-  `specifiedHeaders`."""
+def checkMentionedFiles(mentionedFiles: list[str],
+                        specifiedFiles: list[str]) -> None:
+  """Check that the set of `mentionedFiles` matches what is in
+  `specifiedFiles`."""
 
   # Number of issues found.
   numIssues = 0
 
   # Sort both lists.
-  mentionedHeaders = sorted(mentionedHeaders)
-  specifiedHeaders = sorted(specifiedHeaders)
+  mentionedFiles = sorted(mentionedFiles)
+  specifiedFiles = sorted(specifiedFiles)
 
   # Avoid having a special case at the end.
-  mentionedHeaders.append("sentinel")
-  specifiedHeaders.append("sentinel")
+  mentionedFiles.append("sentinel")
+  specifiedFiles.append("sentinel")
 
   # Simultaneously walk both lists.
   mIndex = 0
   sIndex = 0
-  while (mIndex < len(mentionedHeaders) and
-         sIndex < len(specifiedHeaders)):
-    mh = mentionedHeaders[mIndex]
-    sh = specifiedHeaders[sIndex]
+  while (mIndex < len(mentionedFiles) and
+         sIndex < len(specifiedFiles)):
+    mh = mentionedFiles[mIndex]
+    sh = specifiedFiles[sIndex]
 
     if mh < sh:
-      print(f"Mentioned header {mh} is not in current directory.")
+      print(f"Mentioned file {mh} is not in current directory.")
       mIndex += 1
       numIssues += 1
 
     elif mh > sh:
-      print(f"Specified header {sh} is not mentioned in index.html")
+      print(f"Specified file {sh} is not mentioned in index.html")
       numIssues += 1
       sIndex += 1
 
@@ -192,18 +192,18 @@ def checkMentionedHeaders(mentionedHeaders: list[str],
 
 
 # Match a line that is above a section to insert.
-beginHeaderRE = re.compile(r"<!-- begin header: (.*) -->")
+beginFileRE = re.compile(r"<!-- begin file desc: (.*) -->")
 
 # Line that is below an inserted section.
-endHeaderRE = re.compile(r"<!-- end header -->")
+endFileRE = re.compile(r"<!-- end file desc -->")
 
 # As a minor convenience, I insert this for a set of completely new
-# headers, and it turns into begin/end pairs.
-newSectionsRE = re.compile(r"<!-- new headers: (.*) -->")
+# files, and it turns into begin/end pairs.
+newSectionsRE = re.compile(r"<!-- new file descs: (.*) -->")
 
-# Line that mentions a header but ignores it.  This is for headers that
+# Line that mentions a file but ignores it.  This is for files that
 # should not be documented independently.
-ignoreHeaderRE = re.compile(r"<!-- ignored header: (.*) -->")
+ignoreFileRE = re.compile(r"<!-- ignored file desc: (.*) -->")
 
 
 def main() -> None:
@@ -235,14 +235,14 @@ def main() -> None:
   # Modified document.
   newLines: list[str] = []
 
-  # Set (as a list) of header files we've seen mentioned.
-  mentionedHeaders: list[str] = []
+  # Set (as a list) of files we've seen mentioned.
+  mentionedFiles: list[str] = []
 
   # True if we are scanning to the end of an insertion section.
   scanningForEnd = False
 
-  # Header we are working on.
-  headerFname = None
+  # File we are working on.
+  fileFname = None
 
   # Scan all of its lines.  When we find a begin/end, remove what is
   # currently between them and insert the found lines.
@@ -253,21 +253,21 @@ def main() -> None:
     try:
       # End of the scanning section?
       if scanningForEnd:
-        if endHeaderRE.search(oldLine):
+        if endFileRE.search(oldLine):
           # Reset scan status.
           scanningForEnd = False
-          headerFname = None
+          fileFname = None
 
       # Indicator to insert completely new sections?
       if m := newSectionsRE.search(oldLine):
-        headerFnames = m.group(1)
+        fileFnames = m.group(1)
 
-        for headerFname in headerFnames.split():
-          mentionedHeaders.append(headerFname)
+        for fileFname in fileFnames.split():
+          mentionedFiles.append(fileFname)
 
-          newLines.append(f"<!-- begin header: {headerFname} -->")
-          newLines += getHeaderDescriptionHTML(headerFname)
-          newLines.append(f"<!-- end header -->")
+          newLines.append(f"<!-- begin file desc: {fileFname} -->")
+          newLines += getFileDescriptionHTML(fileFname)
+          newLines.append(f"<!-- end file desc -->")
           newLines.append("")
 
         # Do not copy the new section directive.
@@ -278,37 +278,37 @@ def main() -> None:
         newLines.append(oldLine)
 
       # Start of a scanning section?
-      if m := beginHeaderRE.search(oldLine):
-        headerFname = m.group(1)
-        mentionedHeaders.append(headerFname)
+      if m := beginFileRE.search(oldLine):
+        fileFname = m.group(1)
+        mentionedFiles.append(fileFname)
 
         # Copy the extracted description.
-        newLines += getHeaderDescriptionHTML(headerFname)
+        newLines += getFileDescriptionHTML(fileFname)
 
         scanningForEnd = True
 
-      # Ignore header?
-      if m := ignoreHeaderRE.search(oldLine):
-        headerFname = m.group(1)
-        mentionedHeaders.append(headerFname)
+      # Ignore file?
+      if m := ignoreFileRE.search(oldLine):
+        fileFname = m.group(1)
+        mentionedFiles.append(fileFname)
 
     except BaseException as e:
       die(f"index.html:{oldLineNo}: {exceptionMessage(e)}")
 
   if scanningForEnd:
-    die(f"index.html: Did not find end of '{headerFname}'.")
+    die(f"index.html: Did not find end of '{fileFname}'.")
 
   # Compare what we found to what was specified.
-  specifiedHeaders = opts.files
+  specifiedFiles = opts.files
 
-  # Possibly ignore some of the specified headers.
+  # Possibly ignore some of the specified files.
   if opts.ignore is not None:
     ignoreRE = re.compile(opts.ignore)
-    specifiedHeaders = (
-      [h for h in specifiedHeaders if not ignoreRE.search(h)])
-    debugPrint(f"specifiedHeaders: {specifiedHeaders}")
+    specifiedFiles = (
+      [h for h in specifiedFiles if not ignoreRE.search(h)])
+    debugPrint(f"specifiedFiles: {specifiedFiles}")
 
-  checkMentionedHeaders(mentionedHeaders, specifiedHeaders)
+  checkMentionedFiles(mentionedFiles, specifiedFiles)
 
   if opts.check:
     if oldLines == newLines:
