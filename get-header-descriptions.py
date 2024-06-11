@@ -20,10 +20,10 @@ import traceback             # traceback.print_exc
 
 # Positive if debug is enabled, with higher values enabling more printing.
 debugLevel = 0
-if (os.getenv("DEBUG")):
-  debugLevel = int(os.getenv("DEBUG"))
+if debugEnvVal := os.getenv("DEBUG"):
+  debugLevel = int(debugEnvVal)
 
-def debugPrint(str):
+def debugPrint(str: str) -> None:
   """Debug printout when DEBUG >= 2."""
   if debugLevel >= 2:
     print(str)
@@ -35,11 +35,11 @@ class Error(Exception):
   """A condition to be treated as an error."""
   pass
 
-def die(message):
+def die(message: str) -> None:
   """Throw a fatal Error with message."""
   raise Error(message)
 
-def exceptionMessage(e):
+def exceptionMessage(e: BaseException) -> str:
   """Turn exception 'e' into a human-readable message."""
   t = type(e).__name__
   s = str(e)
@@ -48,7 +48,7 @@ def exceptionMessage(e):
   else:
     return f"{t}"
 
-def call_main():
+def call_main() -> None:
   """Call main() and catch exceptions."""
   try:
     main()
@@ -64,20 +64,20 @@ def call_main():
 # --------------- END: boilerplate --------------
 
 
-def readLinesNoNL(filename):
+def readLinesNoNL(filename: str) -> list[str]:
   """Get the lines in 'filename' without newlines."""
   with open(filename) as file:
     return [line.rstrip("\n") for line in file.readlines()]
 
 
-def writeLines(filename, lines):
+def writeLines(filename: str, lines: list[str]) -> None:
   """Write 'lines', each followed by a newline, to 'filename'."""
   with open(filename, "w") as file:
     for line in lines:
       print(line, file=file)
 
 
-def warn(msg):
+def warn(msg: str) -> None:
   print(f"warning: {msg}", file=sys.stderr)
 
 
@@ -98,8 +98,8 @@ copyrightRE = re.compile(r"copyright and terms of use")
 descriptionCommentRE = re.compile(r"(?:m4_dnl //|//|[/ ]\*) ?(.*)")
 
 
-def getHeaderDescriptionHTML(headerFname):
-  """Extract the description from 'headerFname' as HTML."""
+def getHeaderDescriptionHTML(headerFname: str) -> list[str]:
+  """Extract the description from 'headerFname' as HTML lines."""
 
   # Read the header.
   headerLines = readLinesNoNL(headerFname)
@@ -147,7 +147,7 @@ def getHeaderDescriptionHTML(headerFname):
   return descriptionLinesHTML
 
 
-def checkMentionedHeaders(mentionedHeaders):
+def checkMentionedHeaders(mentionedHeaders: list[str]) -> None:
   """Check that the set of mentioned headers matches what is in the
   current directory."""
 
@@ -213,7 +213,7 @@ newSectionsRE = re.compile(r"<!-- new headers: (.*) -->")
 ignoreHeaderRE = re.compile(r"<!-- ignored header: (.*) -->")
 
 
-def main():
+def main() -> None:
   # Parse command line.
   parser = argparse.ArgumentParser()
   parser.add_argument("--check", action="store_true",
@@ -221,13 +221,13 @@ def main():
   opts = parser.parse_args()
 
   # Read the document we will modify.
-  oldLines = readLinesNoNL("index.html")
+  oldLines: list[str] = readLinesNoNL("index.html")
 
   # Modified document.
-  newLines = []
+  newLines: list[str] = []
 
   # Set (as a list) of header files we've seen mentioned.
-  mentionedHeaders = []
+  mentionedHeaders: list[str] = []
 
   # True if we are scanning to the end of an insertion section.
   scanningForEnd = False

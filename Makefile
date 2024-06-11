@@ -685,6 +685,7 @@ out/%.mypy.ok: %
 
 .PHONY: check-mypy
 check-mypy: out/create-tuple-class.py.mypy.ok
+check-mypy: out/get-header-descriptions.py.mypy.ok
 
 ifeq ($(ENABLE_MYPY),1)
 check: check-mypy
