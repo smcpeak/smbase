@@ -737,8 +737,10 @@ compile_commands.json:
 
 
 # ---------------------------- index.html ------------------------------
-out/index.html.ok: index.html get-header-descriptions.py $(wildcard *.h)
-	$(PYTHON3) ./get-header-descriptions.py --check
+HEADERS := $(wildcard *.h)
+out/index.html.ok: index.html get-header-descriptions.py $(HEADERS)
+	$(PYTHON3) ./get-header-descriptions.py --check \
+	  --ignore='-fwd\.h$$' $(HEADERS)
 	touch $@
 
 check: out/index.html.ok

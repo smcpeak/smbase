@@ -147,55 +147,48 @@ def getHeaderDescriptionHTML(headerFname: str) -> list[str]:
   return descriptionLinesHTML
 
 
-def checkMentionedHeaders(mentionedHeaders: list[str]) -> None:
-  """Check that the set of mentioned headers matches what is in the
-  current directory."""
-
-  # Get what is in the current directory.
-  curDirHeaders = glob.glob("*.h")
+def checkMentionedHeaders(mentionedHeaders: list[str],
+                          specifiedHeaders: list[str]) -> None:
+  """Check that the set of `mentionedHeaders` matches what is in
+  `specifiedHeaders`."""
 
   # Number of issues found.
   numIssues = 0
 
-  # Regex for file names that generally should not be documented
-  # independently.
-  ignoredRE = re.compile(r"-fwd\.h")
-
   # Sort both lists.
   mentionedHeaders = sorted(mentionedHeaders)
-  curDirHeaders = sorted(curDirHeaders)
+  specifiedHeaders = sorted(specifiedHeaders)
 
   # Avoid having a special case at the end.
   mentionedHeaders.append("sentinel")
-  curDirHeaders.append("sentinel")
+  specifiedHeaders.append("sentinel")
 
   # Simultaneously walk both lists.
   mIndex = 0
-  cIndex = 0
+  sIndex = 0
   while (mIndex < len(mentionedHeaders) and
-         cIndex < len(curDirHeaders)):
+         sIndex < len(specifiedHeaders)):
     mh = mentionedHeaders[mIndex]
-    ch = curDirHeaders[cIndex]
+    sh = specifiedHeaders[sIndex]
 
-    if mh < ch:
+    if mh < sh:
       print(f"Mentioned header {mh} is not in current directory.")
       mIndex += 1
       numIssues += 1
 
-    elif mh > ch:
-      if not ignoredRE.search(ch):
-        print(f"Current directory contains {ch} but index.html does "+
-              "not mention it.")
-        numIssues += 1
-      cIndex += 1
+    elif mh > sh:
+      print(f"Specified header {sh} is not mentioned in index.html")
+      numIssues += 1
+      sIndex += 1
 
     else:
       mIndex += 1
-      cIndex += 1
+      sIndex += 1
 
   if numIssues > 0:
-    die(f"There were {numIssues} discrepancies between what was found "+
-        "in the current directory and what is mentioned in index.html.")
+    die(f"There were {numIssues} discrepancies between what was "+
+        "specified on the command line and what is mentioned in "+
+        "index.html.")
 
 
 # Match a line that is above a section to insert.
@@ -216,8 +209,24 @@ ignoreHeaderRE = re.compile(r"<!-- ignored header: (.*) -->")
 def main() -> None:
   # Parse command line.
   parser = argparse.ArgumentParser()
+
   parser.add_argument("--check", action="store_true",
     help="Check if the descriptions are up to date; do not change anything.")
+
+  # `argparse` is stupid when it comes to option arguments that start
+  # with a hyphen:
+  #
+  #   https://stackoverflow.com/questions/16174992/cant-get-argparse-to-read-quoted-string-with-dashes-in-it
+  #
+  # So with the given example, it is necessary to use `=` between the
+  # option and its argument.
+  #
+  parser.add_argument("--ignore",
+    help="Regex of specified file names to ignore.  Ex: '--ignore=-fwd\\.h$'")
+
+  parser.add_argument("files", nargs="+",
+    help="Files that should be mentioned in index.html.")
+
   opts = parser.parse_args()
 
   # Read the document we will modify.
@@ -289,7 +298,17 @@ def main() -> None:
   if scanningForEnd:
     die(f"index.html: Did not find end of '{headerFname}'.")
 
-  checkMentionedHeaders(mentionedHeaders)
+  # Compare what we found to what was specified.
+  specifiedHeaders = opts.files
+
+  # Possibly ignore some of the specified headers.
+  if opts.ignore is not None:
+    ignoreRE = re.compile(opts.ignore)
+    specifiedHeaders = (
+      [h for h in specifiedHeaders if not ignoreRE.search(h)])
+    debugPrint(f"specifiedHeaders: {specifiedHeaders}")
+
+  checkMentionedHeaders(mentionedHeaders, specifiedHeaders)
 
   if opts.check:
     if oldLines == newLines:
