@@ -97,6 +97,15 @@ copyrightRE = re.compile(r"copyright and terms of use")
 #
 descriptionCommentRE = re.compile(r"(?:m4_dnl //|//|[/ ]\*) ?(.*)")
 
+# Regex to match a comment like:
+#
+#   // F: struct inherit virtual struct
+#
+# that indicates a feature exercised by an input file.
+featureCommentRE = re.compile(r"\s*// F: (.*)")
+
+# If true, use `featureCommentRE`.
+enableFeatureComments = False
 
 def getFileDescriptionHTML(fileFname: str) -> list[str]:
   """Extract the description from 'fileFname' as HTML lines."""
@@ -143,6 +152,25 @@ def getFileDescriptionHTML(fileFname: str) -> list[str]:
 
   if extractedLines == 0:
     die(f"{fileFname}: Did not find any description lines.")
+
+  if enableFeatureComments:
+    # Search for special "F: " comments and gather their contents.
+    features: list[str] = []
+    while lineNo < len(fileLines):
+      if m := featureCommentRE.match(fileLines[lineNo]):
+        feature = m.group(1)
+        features.append(feature)
+
+      lineNo += 1
+
+    # If we found any features, emit them as a bulleted list after the
+    # description text.
+    if len(features) > 0:
+      descriptionLinesHTML.append(f"  <!-- AUTO -->  <ul>")
+      for feature in features:
+        featureHTML = html.escape(feature, quote=False)
+        descriptionLinesHTML.append(f"  <!-- AUTO -->  <li>{featureHTML}")
+      descriptionLinesHTML.append(f"  <!-- AUTO -->  </ul>")
 
   return descriptionLinesHTML
 
@@ -231,6 +259,9 @@ def main() -> None:
   parser.add_argument("--check", action="store_true",
     help="Check if the descriptions are up to date; do not change anything.")
 
+  parser.add_argument("--features", action="store_true",
+    help="Gather strings after \"// F: \" and add them after the description.")
+
   # `argparse` is stupid when it comes to option arguments that start
   # with a hyphen:
   #
@@ -246,6 +277,9 @@ def main() -> None:
     help="Files that should be mentioned in index.html.")
 
   opts = parser.parse_args()
+
+  global enableFeatureComments
+  enableFeatureComments = opts.features
 
   # Files that should be in index.html.
   specifiedFiles = opts.files
