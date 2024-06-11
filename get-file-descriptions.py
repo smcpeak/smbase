@@ -339,20 +339,22 @@ def main() -> None:
   # Compare what we found to what was specified.
   checkMentionedFiles(mentionedFiles, specifiedFiles)
 
+  if oldLines == newLines:
+    print("index.html is up to date.")
+    exit(0)
+
   if opts.check:
-    if oldLines == newLines:
-      print("index.html is up to date.")
-      exit(0)
-    else:
-      print("index.html needs to be regenerated.")
-      print(f"Run {sys.argv[0]} to update it.")
-      exit(2)
+    print("index.html needs to be regenerated.")
+    print(f"Run {sys.argv[0]} to update it.")
+    exit(2)
 
   # Make a backup of index.html.
   writeLines("index.html.bak", oldLines)
 
   # Write the new document.
   writeLines("index.html", newLines)
+
+  print("Updated index.html.")
 
 
 call_main()
