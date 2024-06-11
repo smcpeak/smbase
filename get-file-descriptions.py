@@ -147,6 +147,20 @@ def getFileDescriptionHTML(fileFname: str) -> list[str]:
   return descriptionLinesHTML
 
 
+def getFileDescriptionSectionHTML(fname: str) -> list[str]:
+  """Return lines of HTML that describe `fname`, including the
+  "begin file desc" and "end file desc" section boundaries."""
+
+  ret: list[str] = []
+
+  ret.append(f"<!-- begin file desc: {fname} -->")
+  ret += getFileDescriptionHTML(fname)
+  ret.append(f"<!-- end file desc -->")
+  ret.append("")
+
+  return ret
+
+
 def checkMentionedFiles(mentionedFiles: list[str],
                         specifiedFiles: list[str]) -> None:
   """Check that the set of `mentionedFiles` matches what is in
@@ -205,6 +219,10 @@ newSectionsRE = re.compile(r"<!-- new file descs: (.*) -->")
 # should not be documented independently.
 ignoreFileRE = re.compile(r"<!-- ignored file desc: (.*) -->")
 
+# This goes near the end of the file and marks where to automatically
+# insert descriptions of any files specified but not mentioned.
+autoAddFilesRE = re.compile(r"<!-- auto-add file descs -->")
+
 
 def main() -> None:
   # Parse command line.
@@ -228,6 +246,16 @@ def main() -> None:
     help="Files that should be mentioned in index.html.")
 
   opts = parser.parse_args()
+
+  # Files that should be in index.html.
+  specifiedFiles = opts.files
+
+  # Possibly ignore some of the specified files.
+  if opts.ignore is not None:
+    ignoreRE = re.compile(opts.ignore)
+    specifiedFiles = (
+      [h for h in specifiedFiles if not ignoreRE.search(h)])
+    debugPrint(f"specifiedFiles: {specifiedFiles}")
 
   # Read the document we will modify.
   oldLines: list[str] = readLinesNoNL("index.html")
@@ -264,14 +292,24 @@ def main() -> None:
 
         for fileFname in fileFnames.split():
           mentionedFiles.append(fileFname)
-
-          newLines.append(f"<!-- begin file desc: {fileFname} -->")
-          newLines += getFileDescriptionHTML(fileFname)
-          newLines.append(f"<!-- end file desc -->")
-          newLines.append("")
+          newLines += getFileDescriptionSectionHTML(fileFname)
 
         # Do not copy the new section directive.
         continue
+
+      # Indicator to insert anything not mentioned?
+      if m := autoAddFilesRE.search(oldLine):
+        mentionedFilesSet = dict.fromkeys(mentionedFiles, True)
+        for fname in specifiedFiles:
+          if fname not in mentionedFilesSet:
+            # Do not complain about this file at the end even though it
+            # was not actually explicitly mentioned.
+            mentionedFiles.append(fname)
+
+            newLines += getFileDescriptionSectionHTML(fname)
+
+        # Here, we *do* continue so that the directive will be copied to
+        # the output and hence used the next time we have extra files.
 
       # Copy lines from old to new.
       if not scanningForEnd:
@@ -299,15 +337,6 @@ def main() -> None:
     die(f"index.html: Did not find end of '{fileFname}'.")
 
   # Compare what we found to what was specified.
-  specifiedFiles = opts.files
-
-  # Possibly ignore some of the specified files.
-  if opts.ignore is not None:
-    ignoreRE = re.compile(opts.ignore)
-    specifiedFiles = (
-      [h for h in specifiedFiles if not ignoreRE.search(h)])
-    debugPrint(f"specifiedFiles: {specifiedFiles}")
-
   checkMentionedFiles(mentionedFiles, specifiedFiles)
 
   if opts.check:
