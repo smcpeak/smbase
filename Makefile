@@ -740,7 +740,7 @@ compile_commands.json:
 HEADERS := $(wildcard *.h)
 out/index.html.ok: index.html get-file-descriptions.py $(HEADERS)
 	$(PYTHON3) ./get-file-descriptions.py --check \
-	  --ignore='-fwd\.h$$' $(HEADERS)
+	  --ignore='-fwd\.h$$' *.h
 	touch $@
 
 check: out/index.html.ok
