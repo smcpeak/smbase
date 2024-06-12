@@ -214,12 +214,12 @@ def checkMentionedFiles(mentionedFiles: list[str],
     sh = specifiedFiles[sIndex]
 
     if mh < sh:
-      print(f"Mentioned file {mh} is not in current directory.")
+      print(f"Mentioned file {mh} is not among those specified.")
       mIndex += 1
       numIssues += 1
 
     elif mh > sh:
-      print(f"Specified file {sh} is not mentioned in index.html")
+      print(f"Specified file {sh} is not mentioned in index.html.")
       numIssues += 1
       sIndex += 1
 
