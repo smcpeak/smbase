@@ -574,6 +574,29 @@ static void testReplaceAllRegex()
 }
 
 
+static void testStringVectorFromPointerArray()
+{
+  EXPECT_EQ(stringVectorFromPointerArray(0, nullptr),
+            std::vector<std::string>{});
+
+  {
+    char const *argv[] = {"a"};
+    EXPECT_EQ(stringVectorFromPointerArray(0, argv),
+              std::vector<std::string>{});
+    EXPECT_EQ(stringVectorFromPointerArray(TABLESIZE(argv), argv),
+              std::vector<std::string>{"a"});
+  }
+
+  {
+    char const *argv[] = {"a", "b", "c"};
+    EXPECT_EQ(stringVectorFromPointerArray(0, argv),
+              std::vector<std::string>{});
+    EXPECT_EQ(stringVectorFromPointerArray(TABLESIZE(argv), argv),
+              (std::vector<std::string>{"a", "b", "c"}));
+  }
+}
+
+
 void test_string_util()
 {
   testSplitNonEmpty();
@@ -600,6 +623,7 @@ void test_string_util()
   testEncodeWithEscapes();
   testIndexOfSubstring();
   testReplaceAllRegex();
+  testStringVectorFromPointerArray();
 }
 
 

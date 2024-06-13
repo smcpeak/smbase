@@ -8,7 +8,7 @@
 #include "strcmp-compare.h"            // StrcmpCompare
 #include "strutil.h"                   // stringf
 #include "vector-util.h"               // accumulateWith
-#include "xassert.h"                   // xassert, xassertdb
+#include "xassert.h"                   // xassert, xassertdb, xassertPrecondition
 
 #include <algorithm>                   // std::binary_search
 #include <cctype>                      // std::isspace
@@ -172,6 +172,22 @@ std::vector<std::string> suffixAll(std::vector<std::string> const &vec,
   for (auto const &s : vec) {
     ret.push_back(s + suffix);
   }
+  return ret;
+}
+
+
+std::vector<std::string> stringVectorFromPointerArray(
+  int count, char const * const * NULLABLE array)
+{
+  xassertPrecondition(count==0 || array!=nullptr);
+
+  std::vector<std::string> ret;
+
+  for (int i=0; i < count; ++i) {
+    xassertPrecondition(array[i]);
+    ret.push_back(std::string(array[i]));
+  }
+
   return ret;
 }
 

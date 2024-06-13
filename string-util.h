@@ -65,6 +65,11 @@ std::vector<std::string> prefixAll(std::vector<std::string> const &vec,
 std::vector<std::string> suffixAll(std::vector<std::string> const &vec,
                                    std::string const &suffix);
 
+// Put all `count` of the elements of `array` into a vector, including
+// `array[0]`.  `array` can be `nullptr` only if `count==0`.
+std::vector<std::string> stringVectorFromPointerArray(
+  int count, char const * const * NULLABLE array);
+
 // Write 'vec' to 'os' like: ["first", "second", "third"].  The elements
 // are quoted using the 'insertDoubleQuoted' function.
 std::ostream& operator<< (std::ostream &os,
