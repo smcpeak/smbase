@@ -285,6 +285,7 @@ SRCS += reader.cc
 SRCS += refct-serf.cc
 SRCS += run-process.cc
 SRCS += sm-compare.cc
+SRCS += sm-env.cc
 SRCS += sm-file-util.cc
 SRCS += sm-integer.cc
 SRCS += sm-rc-obj.cc
