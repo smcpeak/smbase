@@ -103,10 +103,21 @@ void T::insertOstream(ostream &os) const
 #endif // 0
 
 
-// Get the number of entries in the array `tbl`.
-//
-// This has a cast to `int` because I was historically using `int`
-// almost exclusively.  TODO: I should remove that cast.
+/* Get the number of entries in the array `tbl`.
+
+   This has a cast to `int` because:
+
+   * The value is always small enough to fit, as it is simply a count of
+     the number of entries in an initializer literally present in the
+     source code.
+
+   * I often use signed integers as indices so I can use negative values
+     either as "invalid" values or to allow counting backwards and using
+     a test like `i >= 0` for loop termination.  If the size is unsigned
+     then that at a minimum causes compiler warnings, and could lead to
+     incorrect computation for something like `i < TABLESIZE(...)` if
+     `i` is negative.
+*/
 #define TABLESIZE(tbl) ((int)(sizeof(tbl)/sizeof((tbl)[0])))
 
 
