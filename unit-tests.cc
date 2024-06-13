@@ -140,6 +140,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(svdict);
   RUN_TEST(syserr);
   RUN_TEST(taillist);
+  RUN_TEST(temporary_file);
   RUN_TEST(trdelete);
   RUN_TEST(tree_print);
   RUN_TEST(utf8);
