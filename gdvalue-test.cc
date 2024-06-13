@@ -9,6 +9,7 @@
 #include "counting-ostream.h"          // nullOStream
 #include "gdvsymbol.h"                 // gdv::GDVSymbol
 #include "reader.h"                    // smbase::ReaderException
+#include "save-restore.h"              // SAVE_RESTORE
 #include "sm-file-util.h"              // SMFileUtil
 #include "sm-test.h"                   // EXPECT_EQ, EXPECT_MATCHES_REGEX, VPVAL, DIAG, verbose, tout
 #include "strutil.h"                   // hasSubstring
@@ -1840,6 +1841,18 @@ void testToGDValue()
 }
 
 
+void testDefaultWriteOptions()
+{
+  GDValue v(GDVSequence{1,2,3});
+  EXPECT_EQ(v.asString(), "[1 2 3]");
+
+  SAVE_RESTORE(GDValue::s_defaultWriteOptions);
+  GDValue::s_defaultWriteOptions.m_targetLineWidth = 4;
+  GDValue::s_defaultWriteOptions.m_enableIndentation = true;
+  EXPECT_EQ(v.asString(), "[\n  1\n  2\n  3\n]");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -1880,6 +1893,7 @@ void test_gdvalue()
     testGDValueWriter();
     testAsIndentedString();
     testToGDValue();
+    testDefaultWriteOptions();
 
     // Some interesting values for the particular data used.
     testPrettyPrint(0);

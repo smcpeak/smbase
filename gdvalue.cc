@@ -202,6 +202,10 @@ FOR_EACH_GDV_CONTAINER(DEFINE_CTOR_COUNTS)
 
 #undef DEFINE_CTOR_COUNTS
 
+
+GDValueWriteOptions GDValue::s_defaultWriteOptions;
+
+
 // ---------------------- GDValue private helpers ----------------------
 void GDValue::resetSelfAndSwapWith(GDValue &obj) noexcept
 {

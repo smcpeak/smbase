@@ -270,6 +270,10 @@ public:      // class data
 
   #undef DECLARE_CTOR_COUNTS
 
+  // Default write options.  This affects `operator<<` among other
+  // things.  The initial value is simply the default-constructed value.
+  static GDValueWriteOptions s_defaultWriteOptions;
+
 private:     // instance data
   // Tag indicating which kind of value is represented, and for
   // integers, whether we are storing a large or small value.
@@ -426,33 +430,33 @@ public:      // methods
   // Write as text to 'os'.  By default this does not use any
   // indentation.
   void write(std::ostream &os,
-             GDValueWriteOptions options = GDValueWriteOptions()) const;
+             GDValueWriteOptions options = s_defaultWriteOptions) const;
 
   friend std::ostream &operator<<(std::ostream &os, GDValue const &v)
     { v.write(os); return os; }
 
   // Use 'write' to create a string.
   std::string asString(
-    GDValueWriteOptions options = GDValueWriteOptions()) const;
+    GDValueWriteOptions options = s_defaultWriteOptions) const;
 
   // Same as `asString` but enable indendation in `options`.  This will
   // not print a final newline.
   std::string asIndentedString(
-    GDValueWriteOptions options = GDValueWriteOptions()) const;
+    GDValueWriteOptions options = s_defaultWriteOptions) const;
 
   // Enable indentation in the write options, then write to 'os', then
   // write a final newline.
   void writeLines(std::ostream &os,
-                  GDValueWriteOptions options = GDValueWriteOptions()) const;
+                  GDValueWriteOptions options = s_defaultWriteOptions) const;
 
   // Capture what 'writeLines' would write as a string.
   std::string asLinesString(
-    GDValueWriteOptions options = GDValueWriteOptions()) const;
+    GDValueWriteOptions options = s_defaultWriteOptions) const;
 
   // Write the value to 'fileName', terminated by a final newline.
   // Throw an exception if the file cannot be written.
   void writeToFile(std::string const &fileName,
-                   GDValueWriteOptions options = GDValueWriteOptions()) const;
+                   GDValueWriteOptions options = s_defaultWriteOptions) const;
 
 
   // ---- Read as text ----
