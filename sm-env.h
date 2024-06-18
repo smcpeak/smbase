@@ -13,6 +13,9 @@ OPEN_NAMESPACE(smbase)
 // True if `envvar` is set to a value that `atoi` regards as non-zero.
 bool envAsBool(char const *envvar);
 
+// Return the value of `envvar`, or an empty string if it is not set.
+char const *envOrEmpty(char const *envvar);
+
 
 CLOSE_NAMESPACE(smbase)
 

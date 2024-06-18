@@ -22,6 +22,17 @@ bool envAsBool(char const *envvar)
 }
 
 
+char const *envOrEmpty(char const *envvar)
+{
+  if (char const *value = std::getenv(envvar)) {
+    return value;
+  }
+  else {
+    return "";
+  }
+}
+
+
 CLOSE_NAMESPACE(smbase)
 
 

@@ -120,6 +120,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(run_process);
   RUN_TEST(sm_ap_int);
   RUN_TEST(sm_ap_uint);
+  RUN_TEST(sm_env);
   RUN_TEST(sm_file_util);
   RUN_TEST(sm_integer);
   RUN_TEST(sm_is_equal);
