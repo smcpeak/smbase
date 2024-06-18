@@ -730,6 +730,15 @@ public:      // methods
 
   void mapClear();
 
+  // Operations that use symbols, named using `char*`, as keys.  These
+  // are provided for syntactic convenience.
+  bool mapContainsSym(char const *symName);
+  GDValue const &mapGetSym(char const *symName) const;
+  GDValue       &mapGetSym(char const *symName)      ;
+  void mapSetSym(char const *symName, GDValue const &value);
+  void mapSetSym(char const *symName, GDValue      &&value);
+  bool mapRemoveSym(char const *symName);
+
 
   // ---- TaggedContainer ----
   // These methods require `isTaggedContainer()`.

@@ -1272,6 +1272,42 @@ void GDValue::mapClear()
 }
 
 
+bool GDValue::mapContainsSym(char const *symName)
+{
+  return mapContains(GDVSymbol(symName));
+}
+
+
+GDValue const &GDValue::mapGetSym(char const *symName) const
+{
+  return mapGetValueAt(GDVSymbol(symName));
+}
+
+
+GDValue &GDValue::mapGetSym(char const *symName)
+{
+  return mapGetValueAt(GDVSymbol(symName));
+}
+
+
+void GDValue::mapSetSym(char const *symName, GDValue const &value)
+{
+  mapSetValueAt(GDVSymbol(symName), value);
+}
+
+
+void GDValue::mapSetSym(char const *symName, GDValue &&value)
+{
+  mapSetValueAt(GDVSymbol(symName), std::move(value));
+}
+
+
+bool GDValue::mapRemoveSym(char const *symName)
+{
+  return mapRemoveKey(GDVSymbol(symName));
+}
+
+
 // -------------------------- TaggedContainer --------------------------
 void GDValue::taggedContainerSetTag(GDVSymbol tag)
 {

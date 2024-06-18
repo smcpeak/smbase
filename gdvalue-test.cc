@@ -1853,6 +1853,32 @@ void testDefaultWriteOptions()
 }
 
 
+// Test the operations on maps dedicated to symbol keys.
+void testMapSymbolOps()
+{
+  GDValue m(GDVK_MAP);
+
+  xassert(!m.mapContainsSym("x"));
+
+  m.mapSetSym("x", 1);
+  xassert(m.mapContainsSym("x"));
+  EXPECT_EQ(m.mapGetSym("x"), GDValue(1));
+
+  {
+    GDValue const &cm = m;
+    EXPECT_EQ(cm.mapGetSym("x"), GDValue(1));
+  }
+
+  GDValue two(2);
+  m.mapSetSym("x", two);
+  EXPECT_EQ(m.mapGetSym("x"), GDValue(2));
+
+  xassert(!m.mapRemoveSym("y"));
+  xassert(m.mapRemoveSym("x"));
+  xassert(!m.mapContainsSym("x"));
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -1894,6 +1920,7 @@ void test_gdvalue()
     testAsIndentedString();
     testToGDValue();
     testDefaultWriteOptions();
+    testMapSymbolOps();
 
     // Some interesting values for the particular data used.
     testPrettyPrint(0);
