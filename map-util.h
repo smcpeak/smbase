@@ -234,28 +234,20 @@ void mapWriteAsArray(
 }
 
 
-// This has to be put into 'std', otherwise it is not found by ADL in
-// certain situations, such as when using my 'stringb' macro.
-//
-// TODO: I think this is the wrong solution.  I ran into this problem
-// elsewhere and found a better one.  Maybe it just needed a fix to
-// `stringb` itself?
-namespace std {
-  template <class K, class V>
-  std::ostream& operator<< (std::ostream &os, std::map<K,V> const &m)
-  {
-    mapWrite(
-      os,
-      m,
-      [](std::ostream &os, K const &k) -> void {
-        os << k;
-      },
-      [](std::ostream &os, V const &v) -> void {
-        os << v;
-      });
+template <class K, class V>
+std::ostream& operator<< (std::ostream &os, std::map<K,V> const &m)
+{
+  mapWrite(
+    os,
+    m,
+    [](std::ostream &os, K const &k) -> void {
+      os << k;
+    },
+    [](std::ostream &os, V const &v) -> void {
+      os << v;
+    });
 
-    return os;
-  }
+  return os;
 }
 
 

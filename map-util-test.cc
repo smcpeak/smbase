@@ -4,11 +4,17 @@
 #include "map-util.h"                  // module under test
 
 #include "exc.h"                       // smbase::XBase
+#include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
+#include "sm-test.h"                   // EXPECT_EQ
+#include "stringb.h"                   // stringb
 
 using namespace smbase;
 
 
-static void testInsertMapUnique()
+OPEN_ANONYMOUS_NAMESPACE
+
+
+void testInsertMapUnique()
 {
   std::map<int,int> m;
   mapInsertUnique(m, 1,1);
@@ -31,7 +37,7 @@ static void testInsertMapUnique()
 }
 
 
-static void testMapFindOrNull()
+void testMapFindOrNull()
 {
   std::map<int, char const *> m;
 
@@ -57,10 +63,27 @@ static void testMapFindOrNull()
 }
 
 
+void testOstreamInsert()
+{
+  std::map<int, char const *> m;
+  EXPECT_EQ(stringb(m), "{}");
+
+  m.insert({1, "one"});
+  EXPECT_EQ(stringb(m), "{ 1: one }");
+
+  m.insert({2, "two"});
+  EXPECT_EQ(stringb(m), "{ 1: one, 2: two }");
+}
+
+
+CLOSE_ANONYMOUS_NAMESPACE
+
+
 void test_map_util()
 {
   testInsertMapUnique();
   testMapFindOrNull();
+  testOstreamInsert();
 }
 
 
