@@ -1,5 +1,8 @@
 // vector-util.h
-// Utilities for std::vector.
+// Utilities for `std::vector`.
+
+// TODO: Rename the functions in this module to have a consistent
+// naming scheme.
 
 #ifndef SMBASE_VECTOR_UTIL_H
 #define SMBASE_VECTOR_UTIL_H
@@ -11,6 +14,7 @@
 
 #include <algorithm>                   // std::remove
 #include <iostream>                    // std::ostream
+#include <optional>                    // std::optional
 #include <set>                         // std::set
 #include <sstream>                     // std::ostringstream
 #include <vector>                      // std::vector
@@ -215,6 +219,37 @@ std::vector<T> vectorReverseOf(std::vector<T> const &vec)
     ret.push_back(*it);
   }
   return ret;
+}
+
+
+// Number of elements in common at the start of 'a' and 'b'.
+template <class T>
+size_t commonPrefixLength(std::vector<T> const &a,
+                          std::vector<T> const &b)
+{
+  size_t i = 0;
+  for (; i < a.size() && i < b.size(); ++i) {
+    if (!( a[i] == b[i] )) {
+      break;
+    }
+  }
+  return i;
+}
+
+
+// Return the first index of 'vec' where the element equals 't', or
+// an empty value.
+template <class T>
+std::optional<size_t> vectorFirstIndexOf(std::vector<T> const &vec,
+                                         T const &t)
+{
+  for (size_t i=0; i < vec.size(); ++i) {
+    if (vec[i] == t) {
+      return i;
+    }
+  }
+
+  return {};
 }
 
 

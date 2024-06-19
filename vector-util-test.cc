@@ -3,10 +3,12 @@
 
 #include "vector-util.h"               // module under test
 
+#include "optional-util.h"             // operator<<(std::optional)
 #include "sm-test.h"                   // EXPECT_EQ
 #include "string-util.h"               // doubleQuote
 
 #include <string>                      // std::string
+#include <optional>                    // std::nullopt
 
 using std::string;
 
@@ -79,12 +81,46 @@ static void testConvertElements()
 }
 
 
+static void testCommonPrefixLength()
+{
+  std::vector<int> v0{};
+  std::vector<int> v1{1};
+  std::vector<int> v12{1,2};
+  std::vector<int> v2{2};
+
+  EXPECT_EQ(commonPrefixLength(v0, v0), 0);
+  EXPECT_EQ(commonPrefixLength(v0, v1), 0);
+  EXPECT_EQ(commonPrefixLength(v1, v1), 1);
+  EXPECT_EQ(commonPrefixLength(v1, v12), 1);
+  EXPECT_EQ(commonPrefixLength(v12, v12), 2);
+  EXPECT_EQ(commonPrefixLength(v1, v2), 0);
+}
+
+
+static void testFirstIndexOf()
+{
+  std::vector<int> v0{};
+  std::vector<int> v1{1};
+  std::vector<int> v12{1,2};
+  std::vector<int> v2{2};
+
+  EXPECT_EQ(vectorFirstIndexOf(v0, 0), std::nullopt);
+  EXPECT_EQ(vectorFirstIndexOf(v1, 0), std::nullopt);
+  EXPECT_EQ(vectorFirstIndexOf(v1, 1), std::optional(0));
+  EXPECT_EQ(vectorFirstIndexOf(v12, 1), std::optional(0));
+  EXPECT_EQ(vectorFirstIndexOf(v12, 2), std::optional(1));
+  EXPECT_EQ(vectorFirstIndexOf(v12, 3), std::nullopt);
+}
+
+
 void test_vector_util()
 {
   testAccumulateWith();
   testVecErase();
   testMapElements();
   testConvertElements();
+  testCommonPrefixLength();
+  testFirstIndexOf();
 }
 
 
