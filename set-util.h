@@ -4,13 +4,14 @@
 #ifndef SMBASE_SET_UTIL_H
 #define SMBASE_SET_UTIL_H
 
+#include "set-util-iface.h"            // interface for this module
+
 #include "container-util.h"            // CONTAINER_FOREACH
 
 #include <ostream>                     // std::ostream
 #include <set>                         // std::set
 
 
-// True if every element in 'subset' is also in 'superset'.
 template <class T>
 bool isSubsetOf(std::set<T> const &subset, std::set<T> const &superset)
 {
@@ -25,8 +26,6 @@ bool isSubsetOf(std::set<T> const &subset, std::set<T> const &superset)
 }
 
 
-// Call 'func' on every element in 'input' and return the set of all of
-// the results.
 template <typename OELT, typename IELT, typename FUNC>
 std::set<OELT> setMapElements(std::set<IELT> const &input,
                               FUNC const &func)

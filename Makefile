@@ -384,6 +384,7 @@ UNIT_TEST_OBJS += rack-allocator-test.o
 UNIT_TEST_OBJS += reader-test.o
 UNIT_TEST_OBJS += refct-serf-test.o
 UNIT_TEST_OBJS += run-process-test.o
+UNIT_TEST_OBJS += set-util-test.o
 UNIT_TEST_OBJS += sm-ap-int-test.o
 UNIT_TEST_OBJS += sm-ap-uint-test.o
 UNIT_TEST_OBJS += sm-env-test.o
