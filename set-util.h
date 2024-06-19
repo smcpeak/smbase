@@ -1,7 +1,5 @@
 // set-util.h
-// Utilities related to std::set.
-
-// This is a candidate to eventually move into smbase.
+// Utilities related to `std::set`.
 
 #ifndef SMBASE_SET_UTIL_H
 #define SMBASE_SET_UTIL_H
