@@ -6,10 +6,36 @@
 
 #include "set-util-iface.h"            // interface for this module
 
-#include "container-util.h"            // CONTAINER_FOREACH
+#include "container-util.h"            // smbase::contains
+#include "xassert.h"                   // xassert
 
 #include <ostream>                     // std::ostream
 #include <set>                         // std::set
+
+
+template <class T>
+bool setInsert(std::set<T> &s, T const &t)
+{
+  auto res = s.insert(t);
+  return res.second;
+}
+
+
+template <class T>
+void setInsertUnique(std::set<T> &s, T const &t)
+{
+  bool inserted = setInsert(s, t);
+  xassert(inserted);
+}
+
+
+template <class T>
+void setInsertAll(std::set<T> &dest, std::set<T> const &src)
+{
+  for (auto const &v : src) {
+    dest.insert(v);
+  }
+}
 
 
 template <class T>
@@ -22,6 +48,22 @@ bool isSubsetOf(std::set<T> const &subset, std::set<T> const &superset)
       return false;
     }
   }
+  return true;
+}
+
+
+template <class T>
+bool isSubsetOf_getExtra(T &extra /*OUT*/,
+                         std::set<T> const &smaller,
+                         std::set<T> const &larger)
+{
+  for (T const &element : smaller) {
+    if (!smbase::contains(larger, element)) {
+      extra = element;
+      return false;
+    }
+  }
+
   return true;
 }
 
@@ -41,21 +83,70 @@ std::set<OELT> setMapElements(std::set<IELT> const &input,
 
 
 template <class T>
-std::ostream& operator<< (std::ostream &os, std::set<T> const &s)
+std::vector<T> setToVector(std::set<T> const &s)
+{
+  std::vector<T> ret;
+  for (T const &elt : s) {
+    ret.push_back(elt);
+  }
+  return ret;
+}
+
+
+template <class T, class PRINT_ELEMENT>
+void setWrite(
+  std::ostream &os,
+  std::set<T> const &s,
+  PRINT_ELEMENT const &printElement)
 {
   os << '{';
 
-  bool first = true;
-  CONTAINER_FOREACH(s, it) {
-    if (!first) {
+  int ct = 0;
+  for (auto const &e : s) {
+    if (ct > 0) {
       os << ", ";
     }
-    first = false;
-    os << *it;
+    printElement(os, e);
+    ++ct;
   }
 
   os << '}';
+}
+
+
+template <class T>
+std::ostream& operator<< (std::ostream &os, std::set<T> const &s)
+{
+  setWrite(os, s,
+    [](std::ostream &os, T const &t) -> void {
+      os << t;
+    });
   return os;
+}
+
+
+template <class T, class PRINT_ELEMENT>
+SetWriter<T,PRINT_ELEMENT>::SetWriter(
+  std::set<T> const &s,
+  PRINT_ELEMENT const &pe)
+  : m_set(s),
+    m_printElement(pe)
+{}
+
+
+template <class T, class PRINT_ELEMENT>
+void SetWriter<T,PRINT_ELEMENT>::write(std::ostream &os) const
+{
+  setWrite(os, m_set, m_printElement);
+}
+
+
+template <class T, class PRINT_ELEMENT>
+SetWriter<T,PRINT_ELEMENT> setWriter(
+  std::set<T> const &s,
+  PRINT_ELEMENT const &pe)
+{
+  return SetWriter<T,PRINT_ELEMENT>(s, pe);
 }
 
 
