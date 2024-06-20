@@ -11,6 +11,7 @@
 
 #include <cstring>                     // std::memcpy
 #include <iostream>                    // std::ostream
+#include <string_view>                 // std::string_view
 
 
 OPEN_NAMESPACE(smbase)

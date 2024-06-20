@@ -13,11 +13,11 @@
 #include "hashtbl.h"                   // HashTable
 #include "rack-allocator.h"            // smbase::RackAllocator
 #include "sm-macros.h"                 // OPEN_NAMESPACE, NO_OBJECT_COPIES
+#include "std-string-view-fwd.h"       // std::string_view [n]
 
 #include <cstddef>                     // std::ptrdiff_t
 #include <cstdint>                     // std::int32_t
-#include <iosfwd>                      // std::ostream
-#include <string_view>                 // std::string_view
+#include <iosfwd>                      // std::ostream [n]
 #include <vector>                      // std::vector
 
 
