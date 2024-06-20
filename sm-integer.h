@@ -11,11 +11,11 @@
 
 #include "compare-util.h"              // DEFINE_FRIEND_RELATIONAL_OPERATORS
 #include "sm-macros.h"                 // OPEN_NAMESPACE
+#include "std-optional-fwd.h"          // std::optional [n]
+#include "std-string-fwd.h"            // std::string [n]
+#include "std-string-view-fwd.h"       // std::string_view [n]
 
 #include <iosfwd>                      // std::ostream [n]
-#include <string>                      // std::string [n]
-#include <string_view>                 // std::string_view [n]
-#include <optional>                    // std::optional [n]
 
 
 OPEN_NAMESPACE(smbase)

@@ -10,6 +10,9 @@
 
 #include <cstdint>                     // std::uint32_t
 #include <new>                         // placement `new`
+#include <optional>                    // std::optional
+#include <string>                      // std::string
+#include <string_view>                 // std::string_view
 #include <utility>                     // std::move
 
 
