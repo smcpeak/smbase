@@ -9,6 +9,7 @@
 #include "string-util.h"               // singleQuoteChar
 
 #include <sstream>                     // std::{istringstream, ostringstream}
+#include <string>                      // std::string
 
 
 OPEN_NAMESPACE(smbase)

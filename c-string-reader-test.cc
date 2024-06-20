@@ -7,6 +7,8 @@
 #include "sm-test.h"                   // EXPECT_EQ, tprintf
 #include "reader.h"                    // smbase::ReaderException
 
+#include <string>                      // std::string
+
 using namespace smbase;
 
 

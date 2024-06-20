@@ -7,9 +7,9 @@
 #include "sm-macros.h"                 // OPEN_NAMESPACE, ENUM_BITWISE_OPS
 
 #include "reader.h"                    // smbase::Reader
+#include "std-string-fwd.h"            // std::string [n]
 
 #include <iosfwd>                      // std::{istream [n], ostream [n]}
-#include <string>                      // std::string [n]
 
 
 OPEN_NAMESPACE(smbase)
