@@ -7,7 +7,7 @@
 #define SMBASE_STD_VECTOR_FWD_H
 
 #include "detect-libcpp.h"             // SMBASE_LIBCPP_IS_XXX
-#include "std-memory-fwd.h"            // std::allocator
+#include "std-memory-fwd.h"            // std::allocator [n]
 
 
 // -------------------------------- GNU --------------------------------
