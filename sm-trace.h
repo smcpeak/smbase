@@ -12,9 +12,9 @@
 
 #include "sm-macros.h"                 // NO_OBJECT_COPIES
 #include "sm-pp-util.h"                // SM_PP_CAT
+#include "std-string-fwd.h"            // std::string [n]
 
 #include <iostream>                    // std::clog, std::endl
-#include <string>                      // std::string
 
 
 /* Return the active tracing level for the specified scope string.

@@ -8,6 +8,7 @@
 // libc++
 #include <cstdlib>                     // std::getenv, std::atoi
 #include <regex>                       // std::regex
+#include <string>                      // std::string
 
 using std::cout;
 using std::cerr;
