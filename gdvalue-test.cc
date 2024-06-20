@@ -22,6 +22,7 @@
 #include <cstdint>                     // INT64_C
 #include <cstdlib>                     // std::{atoi, exit}
 #include <iostream>                    // std::cout
+#include <string>                      // std::string
 
 using namespace smbase;
 using namespace gdv;

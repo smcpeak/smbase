@@ -16,6 +16,7 @@
 // libc++
 #include <cstring>                     // std::strcmp
 #include <iostream>                    // std::ostream
+#include <string>                      // std::string
 #include <utility>                     // std::swap
 
 using namespace smbase;

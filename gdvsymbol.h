@@ -8,13 +8,13 @@
 
 // this dir
 #include "compare-util.h"              // DEFINE_FRIEND_NON_EQUALITY_RELATIONAL_OPERATORS
-#include "sm-macros.h"                 // OPEN_NAMESPACE, DMEMB, CMEMB
 #include "indexed-string-table.h"      // smbase::IndexedStringTable::Index
+#include "sm-macros.h"                 // OPEN_NAMESPACE, DMEMB, CMEMB
+#include "std-string-fwd.h"            // std::string [n]
 
 // libc++
 #include <cstddef>                     // std::size_t
 #include <iosfwd>                      // std::ostream [n]
-#include <string>                      // std::string [n]
 #include <string_view>                 // std::string_view [n]
 
 
