@@ -23,6 +23,9 @@
 // not sure what the pattern is; this is driven by what GNU libc++ does
 // at the moment.  Also, Philip's stdfwd.hh seems to use this
 // inconsistently so I might be misunderstanding something.
+//
+// TODO: Figure out what this really means and give it a better name
+// and description.
 #define SMBASE_LIBCPP_BEGIN_NAMESPACE_VERSION /*nothing*/
 #define SMBASE_LIBCPP_END_NAMESPACE_VERSION /*nothing*/
 
