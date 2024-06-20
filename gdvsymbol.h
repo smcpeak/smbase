@@ -11,11 +11,11 @@
 #include "indexed-string-table.h"      // smbase::IndexedStringTable::Index
 #include "sm-macros.h"                 // OPEN_NAMESPACE, DMEMB, CMEMB
 #include "std-string-fwd.h"            // std::string [n]
+#include "std-string-view-fwd.h"       // std::string_view [n]
 
 // libc++
 #include <cstddef>                     // std::size_t
 #include <iosfwd>                      // std::ostream [n]
-#include <string_view>                 // std::string_view [n]
 
 
 OPEN_NAMESPACE(gdv)
