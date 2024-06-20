@@ -13,6 +13,11 @@
 #include <optional>                    // std::optional
 #include <string>                      // std::string
 
+// Although this file could be made to only require a forward
+// declaration of `std::optional`, `file-line-col.h` requires a full
+// definition since it carries one as a data field, so there would be no
+// benefit.
+
 
 OPEN_NAMESPACE(smbase)
 
