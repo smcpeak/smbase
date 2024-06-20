@@ -103,7 +103,8 @@
 
 
 // ------------------------------- MSVC --------------------------------
-#elif defined(_MSC_VER)
+// This is not implemented.
+#elif 0 && defined(_MSC_VER)
 
   #define SMBASE_LIBCPP_IS_KNOWN
   #define SMBASE_LIBCPP_IS_MSVC
