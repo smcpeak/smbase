@@ -3,6 +3,7 @@
 
 #include "string-util.h"               // this module
 
+#include "breaker.h"                   // breaker
 #include "exc.h"                       // smbase::xmessage
 #include "overflow.h"                  // safeToInt
 #include "strcmp-compare.h"            // StrcmpCompare
@@ -520,8 +521,17 @@ std::string stringTolower(std::string const &src)
 // ----------------------- Regular expressions -------------------------
 bool matchesRegex(std::string const &str, std::string const &regex)
 {
-  std::regex re(regex);
-  return std::regex_search(str, re);
+  try {
+    std::regex re(regex);
+    return std::regex_search(str, re);
+  }
+  catch (...) {
+    // Give myself an easy place to put a breakpoint.
+    //
+    // TODO: Create a dedicated exception type for this.
+    breaker();
+    throw;
+  }
 }
 
 

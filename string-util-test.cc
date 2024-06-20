@@ -324,6 +324,20 @@ static void testOneMatchesRegex(
 static void testMatchesRegex()
 {
   testOneMatchesRegex("hello", "el", true);
+
+  // In the regex, if ']' is not escaped, then Clang libc++ throws an
+  // exception with the cryptic text: "The parser did not consume the
+  // entire regular expression.".  GNU libc++ does not require that to
+  // be escaped.
+  testOneMatchesRegex(
+    "Unexpected end of file while looking for ']' at end of sequence.",
+    "end of file.*looking for '\\]' at end of sequence",
+    true);
+
+  testOneMatchesRegex(
+    "Unexpected end of file while looking for 'x' at end of sequence.",
+    "end of file.*looking for '\\]' at end of sequence",
+    false);
 }
 
 
