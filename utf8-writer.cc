@@ -5,7 +5,10 @@
 
 #include "utf8-writer.h"               // this module
 
+#include <iostream>                    // std::ostream [h]
 #include <sstream>                     // std::ostringstream
+#include <string>                      // std::string
+#include <vector>                      // std::vector
 
 
 OPEN_NAMESPACE(smbase)
