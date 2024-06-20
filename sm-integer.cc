@@ -5,6 +5,7 @@
 
 #include "sm-integer.h"                // this module
 
+#include "compare-util.h"              // compare
 #include "sm-ap-int.h"                 // APInteger
 #include "sm-macros.h"                 // OPEN_NAMESPACE, STATICDEF
 
