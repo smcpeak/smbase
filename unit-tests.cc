@@ -8,11 +8,13 @@
 
 #include "exc.h"                       // xfatal
 #include "nonport.h"                   // getMilliseconds
-#include "sm-test.h"                   // ARGS_TEST_MAIN
 #include "str.h"                       // streq
 
 #include <cstdlib>                     // std::getenv
+#include <exception>                   // std::exception
+#include <iomanip>                     // std::setw
 #include <iostream>                    // std::{cout, cerr}
+#include <typeinfo>                    // typeid.name
 
 #include <stdio.h>                     // fflush, stdout, stderr
 
@@ -170,6 +172,26 @@ static void entry(int argc, char **argv)
 }
 
 
-ARGS_TEST_MAIN
+int main(int argc, char *argv[])
+{
+  g_abortUponDevWarning = true;
+  try {
+    entry(argc, argv);
+    return 0;
+  }
+  catch (XBase &x) {
+    cerr << x.what() << endl;
+    return 2;
+  }
+  catch (std::exception &x) {
+    // Some of the std exceptions are not very self-explanatory without
+    // also seeing the exception type.  This is ugly because `name()`
+    // returns a mangled name, so I'd like to avoid ever allowing such
+    // exceptions to propagate.
+    cerr << typeid(x).name() << ": " << x.what() << endl;
+    return 2;
+  }
+}
+
 
 // EOF
