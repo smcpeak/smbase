@@ -4,14 +4,14 @@
 #ifndef SMBASE_OPTIONAL_UTIL_H
 #define SMBASE_OPTIONAL_UTIL_H
 
+#include "optional-util-iface.h"       // interface for this module
+
 #include <iostream>                    // std::ostream
 #include <optional>                    // std::optional
 #include <string>                      // std::string
 #include <sstream>                     // std::ostringstream
 
 
-// Convert 'o' to a string using its insert operator, or 'ifNone' if 'o'
-// does not contain a value.
 template <class T>
 std::string optionalToString(std::optional<T> const &o, char const *ifNone)
 {
