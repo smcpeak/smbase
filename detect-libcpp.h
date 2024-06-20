@@ -45,6 +45,16 @@
   #define SMBASE_LIBCPP_IS_KNOWN
   #define SMBASE_LIBCPP_IS_CLANG
 
+  // __config: #define _LIBCPP_BEGIN_NAMESPACE_STD namespace std { inline namespace _LIBCPP_ABI_NAMESPACE {
+  #undef SMBASE_LIBCPP_BEGIN_NAMESPACE_STD
+  #define SMBASE_LIBCPP_BEGIN_NAMESPACE_STD \
+    _LIBCPP_BEGIN_NAMESPACE_STD
+
+  // __config: #define _LIBCPP_END_NAMESPACE_STD }}
+  #undef SMBASE_LIBCPP_END_NAMESPACE_STD
+  #define SMBASE_LIBCPP_END_NAMESPACE_STD \
+    _LIBCPP_END_NAMESPACE_STD
+
 
 // -------------------------------- GNU --------------------------------
 #elif defined(__GLIBCXX__)
