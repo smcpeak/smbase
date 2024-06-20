@@ -1302,8 +1302,8 @@ void testSyntaxErrors()
   // readNextSequence
   {
     // readCharOrErr(']', "looking for ']' at end of sequence");
-    testMultiErrorRegex("[", {-1, '}'}, 1, 2, "looking for ']' at end of sequence");
-    testMultiErrorRegex("[1 ", {-1, '}'}, 1, 4, "looking for ']' at end of sequence");
+    testMultiErrorRegex("[", {-1, '}'}, 1, 2, "looking for '\\]' at end of sequence");
+    testMultiErrorRegex("[1 ", {-1, '}'}, 1, 4, "looking for '\\]' at end of sequence");
   }
 
   // readNextTuple
@@ -1316,37 +1316,37 @@ void testSyntaxErrors()
   // readNextSet
   {
     // readCharOrErr('}', "looking for \"}}\" at end of set");
-    testMultiErrorRegex("{{", {-1, ']'}, 1, 3, "looking for \"}}\" at end of set");
-    testMultiErrorRegex("{{1", {-1, ']'}, 1, 4, "looking for \"}}\" at end of set");
-    testMultiErrorRegex("{{1 2", {-1, ']'}, 1, 6, "looking for \"}}\" at end of set");
+    testMultiErrorRegex("{{", {-1, ']'}, 1, 3, "looking for \"\\}\\}\" at end of set");
+    testMultiErrorRegex("{{1", {-1, ']'}, 1, 4, "looking for \"\\}\\}\" at end of set");
+    testMultiErrorRegex("{{1 2", {-1, ']'}, 1, 6, "looking for \"\\}\\}\" at end of set");
 
     // readCharOrErr('}', "looking for '}' immediately after '}' at end of set");
-    testMultiErrorRegex("{{}", {-1, ']'}, 1, 4, "looking for '}' immediately after '}'");
-    testOneErrorRegex("{{} }", 1, 4, "' '.*looking for '}' immediately after '}'");
+    testMultiErrorRegex("{{}", {-1, ']'}, 1, 4, "looking for '\\}' immediately after '\\}'");
+    testOneErrorRegex("{{} }", 1, 4, "' '.*looking for '\\}' immediately after '\\}'");
   }
 
   // readNextMap
   {
     // readCharOrErr('}', "looking for '}' at end of map");
     testOneErrorRegex("{", 1, 2, "after '\\{'");
-    testOneErrorRegex("{]", 1, 2, "']'.*looking for '}'");
+    testOneErrorRegex("{]", 1, 2, "'\\]'.*looking for '\\}'");
     testMultiErrorRegex("{ ", {-1, ']'}, 1, 3, "looking for '\\}' at end of map");
     testMultiErrorRegex("{1:2", {-1, ']'}, 1, 5, "looking for '\\}' at end of map");
 
     // processCharOrErr(colon, ':', "looking for ':' in map entry");
     testOneErrorRegex("{1", 1, 3, "end of file.*looking for ':'");
-    testOneErrorRegex("{1}", 1, 3, "'}'.*looking for ':'");
-    testOneErrorRegex("{1]", 1, 3, "']'.*looking for ':'");
+    testOneErrorRegex("{1}", 1, 3, "'\\}'.*looking for ':'");
+    testOneErrorRegex("{1]", 1, 3, "'\\]'.*looking for ':'");
     testOneErrorRegex("{1-", 1, 3, "'-' after a value");
     testOneErrorRegex("{1 2", 1, 4, "'2'.*looking for ':'");
 
     // unexpectedCharErr(readChar(), "looking for value after ':' in map entry");
     testOneErrorRegex("{1:", 1, 4, "end of file.*after ':'");
     testOneErrorRegex("{1 : ", 1, 6, "end of file.*after ':'");
-    testOneErrorRegex("{1:]", 1, 4, "']'.*after ':'");
-    testOneErrorRegex("{1:}", 1, 4, "'}'.*after ':'");
+    testOneErrorRegex("{1:]", 1, 4, "'\\]'.*after ':'");
+    testOneErrorRegex("{1:}", 1, 4, "'\\}'.*after ':'");
     testOneErrorRegex("{1::", 1, 4, "':'.*start of a value");
-    testOneErrorRegex("{1: }", 1, 5, "'}'.*after ':'");
+    testOneErrorRegex("{1: }", 1, 5, "'\\}'.*after ':'");
 
     // locErr(loc, stringb("Duplicate map key: " << keyAsString));
     testOneErrorSubstr("{1:2 1:2}", 1, 6, "Duplicate map key: 1");
@@ -1414,8 +1414,8 @@ void testSyntaxErrors()
 
     // unexpectedCharErr(c,
     //   R"(looking for hex digit or '}' after "\u{")");
-    testMultiErrorRegex("\"\\u{A", {-1, 'x'}, 1, 6, "looking for hex digit or '}'");
-    testMultiErrorRegex("\"\\u{A3", {-1, 'x'}, 1, 7, "looking for hex digit or '}'");
+    testMultiErrorRegex("\"\\u{A", {-1, 'x'}, 1, 6, "looking for hex digit or '\\}'");
+    testMultiErrorRegex("\"\\u{A3", {-1, 'x'}, 1, 7, "looking for hex digit or '\\}'");
 
     // err(R"(value is larger than 0x10FFFF in "\u{N+}" escape sequence)");
     testOneErrorSubstr("\"\\u{110000", 1, 10, "value is larger");
