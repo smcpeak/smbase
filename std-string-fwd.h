@@ -6,23 +6,23 @@
 #ifndef SMBASE_STD_STRING_FWD_H
 #define SMBASE_STD_STRING_FWD_H
 
-#include "detect-libcpp.h"             // SMBASE_LIBCPP_IS_XXX
+#include "detect-libcpp.h"             // SMBASE_LIBCPP_IS_KNOWN, etc.
 #include "std-memory-fwd.h"            // std::allocator [n]
 
 
-// -------------------------------- GNU --------------------------------
-#if defined(SMBASE_LIBCPP_IS_GNU)
+// ------------------------------- Known -------------------------------
+#if defined(SMBASE_LIBCPP_IS_KNOWN)
 
-namespace std _GLIBCXX_VISIBILITY(default)
-{
-  inline namespace __cxx11 __attribute__((__abi_tag__("cxx11"))) {}
+SMBASE_LIBCPP_BEGIN_NAMESPACE_STD
 
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
+  SMBASE_LIBCPP_DECLARE_STRING_NAMESPACE
+
+  SMBASE_LIBCPP_BEGIN_NAMESPACE_VERSION
 
     template <class CharT>
     struct char_traits;
 
-    _GLIBCXX_BEGIN_NAMESPACE_CXX11_INLINE
+    SMBASE_LIBCPP_BEGIN_STRING_NAMES
 
       template <class _Elem, class _Traits, class _Alloc>
       class basic_string;
@@ -32,10 +32,11 @@ namespace std _GLIBCXX_VISIBILITY(default)
       using u16string = basic_string<char16_t, char_traits<char16_t>, allocator<char16_t>>;
       using u32string = basic_string<char32_t, char_traits<char32_t>, allocator<char32_t>>;
 
-    _GLIBCXX_END_NAMESPACE_CXX11
+    SMBASE_LIBCPP_END_STRING_NAMES
 
-  _GLIBCXX_END_NAMESPACE_VERSION
-}
+  SMBASE_LIBCPP_END_NAMESPACE_VERSION
+
+SMBASE_LIBCPP_END_NAMESPACE_STD
 
 
 // ----------------------------- Fallback ------------------------------

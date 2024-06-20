@@ -6,18 +6,16 @@
 #ifndef SMBASE_STD_STRING_VIEW_FWD_H
 #define SMBASE_STD_STRING_VIEW_FWD_H
 
-#include "detect-libcpp.h"             // SMBASE_LIBCPP_IS_XXX
+#include "detect-libcpp.h"             // SMBASE_LIBCPP_IS_KNOWN, etc.
 #include "std-string-fwd.h"            // std::char_traits [n]
 
 
-// -------------------------------- GNU --------------------------------
-#if defined(SMBASE_LIBCPP_IS_GNU)
+// ------------------------------- Known -------------------------------
+#if defined(SMBASE_LIBCPP_IS_KNOWN)
 
-namespace std _GLIBCXX_VISIBILITY(default)
-{
-  inline namespace __cxx11 __attribute__((__abi_tag__("cxx11"))) {}
+SMBASE_LIBCPP_BEGIN_NAMESPACE_STD
 
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
+  SMBASE_LIBCPP_BEGIN_NAMESPACE_VERSION
 
     template <typename _CharT, typename _Traits>
     class basic_string_view;
@@ -27,8 +25,9 @@ namespace std _GLIBCXX_VISIBILITY(default)
     using u16string_view = basic_string_view<char16_t, std::char_traits<char16_t>>;
     using u32string_view = basic_string_view<char32_t, std::char_traits<char32_t>>;
 
-  _GLIBCXX_END_NAMESPACE_VERSION
-}
+  SMBASE_LIBCPP_END_NAMESPACE_VERSION
+
+SMBASE_LIBCPP_END_NAMESPACE_STD
 
 
 // ----------------------------- Fallback ------------------------------

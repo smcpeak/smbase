@@ -6,28 +6,23 @@
 #ifndef SMBASE_STD_VECTOR_FWD_H
 #define SMBASE_STD_VECTOR_FWD_H
 
-#include "detect-libcpp.h"             // SMBASE_LIBCPP_IS_XXX
+#include "detect-libcpp.h"             // SMBASE_LIBCPP_IS_KNOWN, etc.
 #include "std-memory-fwd.h"            // std::allocator [n]
 
 
-// -------------------------------- GNU --------------------------------
-#if defined(SMBASE_LIBCPP_IS_GNU)
+// ------------------------------- Known -------------------------------
+#if defined(SMBASE_LIBCPP_IS_KNOWN)
 
-namespace std _GLIBCXX_VISIBILITY(default)
-{
-  inline namespace __cxx11 __attribute__((__abi_tag__("cxx11"))) {}
+SMBASE_LIBCPP_BEGIN_NAMESPACE_STD
 
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
+  SMBASE_LIBCPP_BEGIN_CONTAINER_NAMES
 
-    _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
+    template <typename _Tp, typename _Alloc>
+    class vector;
 
-      template <typename _Tp, typename _Alloc>
-      class vector;
+  SMBASE_LIBCPP_END_CONTAINER_NAMES
 
-    _GLIBCXX_END_NAMESPACE_CONTAINER
-
-  _GLIBCXX_END_NAMESPACE_VERSION
-}
+SMBASE_LIBCPP_END_NAMESPACE_STD
 
 
 // ----------------------------- Fallback ------------------------------

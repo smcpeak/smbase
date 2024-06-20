@@ -6,13 +6,14 @@
 #ifndef SMBASE_STD_MEMORY_FWD_H
 #define SMBASE_STD_MEMORY_FWD_H
 
-#include "detect-libcpp.h"             // SMBASE_LIBCPP_IS_XXX
+#include "detect-libcpp.h"             // SMBASE_LIBCPP_IS_KNOWN, etc.
 
 
-// -------------------------------- GNU --------------------------------
-#if defined(SMBASE_LIBCPP_IS_GNU)
+// ------------------------------- Known -------------------------------
+#if defined(SMBASE_LIBCPP_IS_KNOWN)
 
-namespace std _GLIBCXX_VISIBILITY(default) {
+SMBASE_LIBCPP_BEGIN_NAMESPACE_STD
+
   template <class _Tp>
   class allocator;
 
@@ -27,7 +28,8 @@ namespace std _GLIBCXX_VISIBILITY(default) {
 
   template <typename _Tp>
   class weak_ptr;
-}
+
+SMBASE_LIBCPP_END_NAMESPACE_STD
 
 
 // ----------------------------- Fallback ------------------------------
