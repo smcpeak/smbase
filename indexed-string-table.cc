@@ -6,12 +6,14 @@
 #include "compare-util.h"              // compare
 #include "overflow.h"                  // convertNumber
 #include "sm-macros.h"                 // OPEN_NAMESPACE
+#include "sm-unique-ptr.h"             // smbase::UniquePtr
 #include "string-hash.h"               // smbase::stringHash
 #include "xassert.h"                   // xassertPrecondition
 
 #include <cstring>                     // std::memcpy
 #include <iostream>                    // std::ostream
 #include <string_view>                 // std::string_view
+#include <vector>                      // std::vector
 
 
 OPEN_NAMESPACE(smbase)
@@ -69,13 +71,13 @@ IndexedStringTable::IndexedStringTable()
     m_stringToIndex(&getKeyFromSS,
                     &hashSS,
                     &equalKeys),
-    m_indexToString()
+    m_indexToString(new std::vector<StoredString*>)
 {}
 
 
 IndexedStringTable::Index IndexedStringTable::size() const
 {
-  return static_cast<Index>(m_indexToString.size());
+  return static_cast<Index>(m_indexToString->size());
 }
 
 
@@ -105,7 +107,7 @@ IndexedStringTable::Index IndexedStringTable::add(std::string_view str)
 
   // Insert it into the tables.
   m_stringToIndex.add(newSS, newSS);
-  m_indexToString.push_back(newSS);
+  m_indexToString->push_back(newSS);
 
   return newSS->m_index;
 }
@@ -115,7 +117,7 @@ std::string_view IndexedStringTable::get(Index index) const
 {
   xassertPrecondition(validIndex(index));
 
-  return m_indexToString.at(index)->getStringView();
+  return m_indexToString->at(index)->getStringView();
 }
 
 
@@ -131,7 +133,7 @@ int IndexedStringTable::compareIndexedStrings(Index a, Index b) const
 
 void IndexedStringTable::clear()
 {
-  m_indexToString.clear();
+  m_indexToString->clear();
   m_stringToIndex.clear();
   m_allocator.clear();
 }
@@ -150,7 +152,7 @@ void IndexedStringTable::selfCheck() const
   m_stringToIndex.selfCheck();
 
   Index i = 0;
-  for (StoredString *ss : m_indexToString) {
+  for (StoredString *ss : *m_indexToString) {
     xassertInvariant(ss->m_index == i);
     xassertInvariant(m_stringToIndex.get(ss) == ss);
 

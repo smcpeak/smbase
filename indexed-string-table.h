@@ -13,12 +13,13 @@
 #include "hashtbl.h"                   // HashTable
 #include "rack-allocator.h"            // smbase::RackAllocator
 #include "sm-macros.h"                 // OPEN_NAMESPACE, NO_OBJECT_COPIES
+#include "sm-unique-ptr-iface.h"       // smbase::UniquePtr
 #include "std-string-view-fwd.h"       // std::string_view [n]
+#include "std-vector-fwd.h"            // stdfwd::vector [n]
 
 #include <cstddef>                     // std::ptrdiff_t
 #include <cstdint>                     // std::int32_t
 #include <iosfwd>                      // std::ostream [n]
-#include <vector>                      // std::vector
 
 
 OPEN_NAMESPACE(smbase)
@@ -79,7 +80,7 @@ private:     // data
   HashTable m_stringToIndex;
 
   // Map from assigned index to the corresponding string.
-  std::vector<StoredString*> m_indexToString;
+  UniquePtr<stdfwd::vector<StoredString*> > m_indexToString;
 
 private:     // methods
   // These are the functions we provide to `m_stringToIndex` to
