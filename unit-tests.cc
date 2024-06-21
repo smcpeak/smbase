@@ -131,6 +131,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(sm_pp_util);
   RUN_TEST(sm_rc_ptr);
   RUN_TEST(sm_trace);
+  RUN_TEST(sm_unique_ptr);
   RUN_TEST(smregexp);
   RUN_TEST(sobjlist);
   RUN_TEST(srcloc);

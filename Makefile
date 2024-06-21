@@ -394,6 +394,7 @@ UNIT_TEST_OBJS += sm-is-equal-test.o
 UNIT_TEST_OBJS += sm-pp-util-test.o
 UNIT_TEST_OBJS += sm-rc-ptr-test.o
 UNIT_TEST_OBJS += sm-trace-test.o
+UNIT_TEST_OBJS += sm-unique-ptr-test.o
 UNIT_TEST_OBJS += smregexp-test.o
 UNIT_TEST_OBJS += sobjlist-test.o
 UNIT_TEST_OBJS += srcloc-test.o
