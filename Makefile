@@ -398,6 +398,7 @@ UNIT_TEST_OBJS += sm-unique-ptr-test.o
 UNIT_TEST_OBJS += smregexp-test.o
 UNIT_TEST_OBJS += sobjlist-test.o
 UNIT_TEST_OBJS += srcloc-test.o
+UNIT_TEST_OBJS += std-map-fwd-test.o
 UNIT_TEST_OBJS += std-optional-fwd-test.o
 UNIT_TEST_OBJS += std-string-fwd-test.o
 UNIT_TEST_OBJS += std-string-view-fwd-test.o

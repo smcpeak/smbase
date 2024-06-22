@@ -135,6 +135,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(smregexp);
   RUN_TEST(sobjlist);
   RUN_TEST(srcloc);
+  RUN_TEST(std_map_fwd);
   RUN_TEST(std_optional_fwd);
   RUN_TEST(std_string_fwd);
   RUN_TEST(std_string_view_fwd);
