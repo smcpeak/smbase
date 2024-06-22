@@ -6,6 +6,11 @@
 // instead of using the definitions contained in this file.  That is,
 // this file provides a subset of <utility>.
 
+// This is an old file that should no longer be used.  There is one use
+// in elsa/template.cc that I need to fix, then I can remove this file
+// entirely.
+#error "Do not use this file.  Use <utility> instead."
+
 #ifndef PAIR_H
 #define PAIR_H
 
