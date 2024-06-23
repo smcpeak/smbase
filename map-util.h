@@ -3,6 +3,8 @@
 
 // This file is in the public domain.
 
+// TODO: All function names should start with "map".
+
 #ifndef SMBASE_MAP_UTIL_H
 #define SMBASE_MAP_UTIL_H
 

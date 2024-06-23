@@ -175,6 +175,8 @@ public:	       // funcs
 // exist on std::string.
 
 // Equivalent of OldSmbaseString::xfer(Flatten&) for std::string.
+//
+// TODO: Move this to flatten.h.
 void stringXfer(std::string &str, Flatten &flat);
 
 // Equivalent of OldSmbaseString::equals() for std::string.
