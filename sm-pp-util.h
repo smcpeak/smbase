@@ -10,6 +10,7 @@
 #define SM_PP_UTIL_H
 
 
+// ----------------------------- SM_PP_CAT -----------------------------
 // Concatenate the expansions of 'a' and 'b'.
 #define SM_PP_CAT(a,b) SM_PP_PRIVATE_PRIMITIVE_CAT(a, b)
 
@@ -21,6 +22,7 @@
 #define SM_PP_PRIVATE_SECOND(a, b, ...) b
 
 
+// ----------------------------- SM_PP_NOT -----------------------------
 // Expands to 1 if its argument is 'SM_PP_PRIVATE_PROBE()', and 0 if the
 // argument is some other single argument.
 #define SM_PP_PRIVATE_IS_PROBE(...) SM_PP_PRIVATE_SECOND(__VA_ARGS__, 0)
@@ -48,10 +50,12 @@
 #define SM_PP_PRIVATE_NOT_PROBE_0 SM_PP_PRIVATE_PROBE()
 
 
+// ---------------------------- SM_PP_BOOL -----------------------------
 // Expand to 0 if the argument is 0, and 1 for anything else.
 #define SM_PP_BOOL(x) SM_PP_NOT(SM_PP_NOT(x))
 
 
+// --------------------------- SM_PP_IF_ELSE ---------------------------
 // This is meant to be used like this:
 //
 //   SM_PP_IF_ELSE(cond)(thenCase)(elseCase)
@@ -69,6 +73,7 @@
 #define SM_PP_PRIVATE_IF_PREFIX_0_ELSE(...) __VA_ARGS__
 
 
+// ---------------------------- SM_PP_EVAL -----------------------------
 // Evaluate something many times in order to enable a form of recursive
 // expansion.  The numbers are a little misleading because there is an
 // extra evaluation pass after substitution, so really SM_PP_EVAL2
@@ -84,6 +89,7 @@
 #define SM_PP_EVAL1(...) __VA_ARGS__
 
 
+// ----------------------------- SM_PP_MAP -----------------------------
 // Expands to nothing.  This is used to separate a macro name from its
 // arguments for one step of evaluation.
 #define SM_PP_PRIVATE_EMPTY()
@@ -103,23 +109,36 @@
 #define SM_PP_PRIVATE_FIRST(a, ...) a
 
 
+// Expand to 1 if passed a non-empty argument list, 0 otherwise:
+//
+//   SM_PP_PRIVATE_NONEMPTY_ARGS()     -> 0
+//   SM_PP_PRIVATE_NONEMPTY_ARGS(a)    -> 1
+//   SM_PP_PRIVATE_NONEMPTY_ARGS(a, b) -> 1
+//
+#define SM_PP_PRIVATE_NONEMPTY_ARGS(...) SM_PP_NOT(__VA_OPT__(0))
+
+
 // Expand to 1 if the first argument is empty.
 //
 // This works by first throwing away all but the first argument, then
-// juxtaposing 'SM_PP_PRIVATE_END_OF_ARGUMENTS' with that first argument
+// juxtaposing 'SM_PP_PRIVATE_NONEMPTY_ARGS' with that first argument
 // and following parens.  If the first argument is empty, we expand
-// 'SM_PP_PRIVATE_END_OF_ARGUMENTS()' to 0, and 'SM_PP_NOT' turns it
-// into 1.  Otherwise, the first argument and macro parens can expand or
-// not, but something will still be there, so 'SM_PP_NOT' turns it into
-// 0.
+// 'SM_PP_PRIVATE_NONEMPTY_ARGS()' to 0, and 'SM_PP_NOT' turns it into
+// 1.  Otherwise, the first argument and macro parens can expand or not,
+// but something will still be there, so 'SM_PP_NOT' turns it into 0.
+//
+// One requirement that adds a little complexity here is that
+// __VA_ARGS__ could expand to a sequence of paren-enclosed values.
+// Thus, it is important that `SM_PP_PRIVATE_NONEMPTY_ARGS` be invokable
+// with an arbitrary number of arguments (since the first of those
+// paren-enclosed values will be treated as a macro argument list) and
+// only expand to 0 if the argument is "()".
 //
 // However, if the first argument ends with the name of a function-like
 // macro that takes a non-zero number of arguments, this will cause an
 // error...
 #define SM_PP_PRIVATE_FIRST_IS_EMPTY(...) \
-  SM_PP_NOT(SM_PP_PRIVATE_FIRST(SM_PP_PRIVATE_END_OF_ARGUMENTS __VA_ARGS__)())
-
-#define SM_PP_PRIVATE_END_OF_ARGUMENTS() 0
+  SM_PP_NOT(SM_PP_PRIVATE_FIRST(SM_PP_PRIVATE_NONEMPTY_ARGS __VA_ARGS__)())
 
 
 // The core of the map routine that applies 'macro' to all of its
@@ -136,11 +155,64 @@
 
 // Apply 'macro' to all of the arguments:
 //
-//   SM_PP_MAP(foo, 1, 2, 3) -> foo(1) foo(2) foo(3)
+//   SM_PP_MAP(foo, 1, 2, 3)        -> foo(1) foo(2) foo(3)
+//   SM_PP_MAP(foo, (1, 2), (3, 4)) -> foo((1, 2)) foo((3, 4))
 //
 #define SM_PP_MAP(macro, ...) SM_PP_EVAL(SM_PP_PRIVATE_MAP_IMPL(macro, __VA_ARGS__))
 
 
+// ------------------------- SM_PP_MAP_APPLY ---------------------------
+#define SM_PP_PRIVATE_MAP_APPLY_IMPL(macro, first, ...)                                       \
+  SM_PP_IF_ELSE(SM_PP_PRIVATE_FIRST_IS_EMPTY(first))                                          \
+    ()                                                                                        \
+    (macro first  SM_PP_PRIVATE_DEFER2(SM_PP_PRIVATE_MAP_APPLY_HELPER)()(macro, __VA_ARGS__))
+//        ^     ^ The lack of parens here is the difference.
+
+#define SM_PP_PRIVATE_MAP_APPLY_HELPER() SM_PP_PRIVATE_MAP_APPLY_IMPL
+
+// Like `SM_PP_MAP`, but without adding any parens to the arguments so
+// it can be used directly on tuple lists:
+//
+//   SM_PP_MAP_APPLY(foo, (1, 2), (3, 4)) -> foo(1, 2) foo(3, 4)
+//
+#define SM_PP_MAP_APPLY(macro, ...) SM_PP_EVAL(SM_PP_PRIVATE_MAP_APPLY_IMPL(macro, __VA_ARGS__))
+
+
+// ----------------------- SM_PP_MAP_APPLY_LIST ------------------------
+// Invoke 'macro' on each tuple element of parenthesized 'arglist':
+//
+//   SM_PP_MAP_APPLY_LIST(foo, ((1,2), (3,4))) -> foo(1,2) foo(3,4)
+//
+#define SM_PP_MAP_APPLY_LIST(macro, arglist) \
+  SM_PP_APPLY(SM_PP_MAP_APPLY, SM_PP_PREPEND(macro, arglist))
+
+
+// ---------------------- SM_PP_COMMA_MAP_APPLY ------------------------
+#define SM_PP_PRIVATE_COMMA_MAP_APPLY_IMPL(macro, first, ...)                            \
+  SM_PP_IF_ELSE(SM_PP_PRIVATE_FIRST_IS_EMPTY(first))                                     \
+    ()                                                                                   \
+    (macro first __VA_OPT__(,)                                                           \
+       SM_PP_PRIVATE_DEFER2(SM_PP_PRIVATE_COMMA_MAP_APPLY_HELPER)()(macro, __VA_ARGS__))
+
+#define SM_PP_PRIVATE_COMMA_MAP_APPLY_HELPER() SM_PP_PRIVATE_COMMA_MAP_APPLY_IMPL
+
+// Like `SM_PP_MAP_APPLY`, but inserting commas between elements:
+//
+//   SM_PP_COMMA_MAP_APPLY(foo, (1, 2), (3, 4)) -> foo(1, 2) , foo(3, 4)
+//
+#define SM_PP_COMMA_MAP_APPLY(macro, ...) SM_PP_EVAL(SM_PP_PRIVATE_COMMA_MAP_APPLY_IMPL(macro, __VA_ARGS__))
+
+
+// -------------------- SM_PP_COMMA_MAP_APPLY_LIST ---------------------
+// Like `SM_PP_MAP_APPLY_LIST`, but inserting commas between elements:
+//
+//   SM_PP_COMMA_MAP_APPLY_LIST(foo, ((1,2), (3,4))) -> foo(1,2) , foo(3,4)
+//
+#define SM_PP_COMMA_MAP_APPLY_LIST(macro, arglist) \
+  SM_PP_APPLY(SM_PP_COMMA_MAP_APPLY, SM_PP_PREPEND(macro, arglist))
+
+
+// ---------------------------- SM_PP_APPLY ----------------------------
 // Remove a layer of parentheses from the argument list:
 //
 //   SM_PP_EATPARENS(1,2,3) -> 1,2,3
@@ -159,6 +231,8 @@
 //
 #define SM_PP_APPLY(macro, arglist) macro arglist
 
+
+// -------------------------- SM_PP_MAP_LIST ---------------------------
 // Invoke 'macro' on each element of parenthesized 'arglist':
 //
 //   SM_PP_MAP_LIST(foo, (1,2,3)) -> foo(1) foo(2) foo(3)
@@ -167,6 +241,7 @@
   SM_PP_APPLY(SM_PP_MAP, SM_PP_PREPEND(macro, arglist))
 
 
+// ------------------------ SM_PP_MAP_WITH_ARG -------------------------
 // Like 'SM_PP_MAP', but also pass 'arg' as the first argument to every
 // invocation of 'macro'.
 #define SM_PP_PRIVATE_MAP_WITH_ARG_IMPL(macro, arg, first, ...)                          \
@@ -186,6 +261,7 @@
   SM_PP_EVAL(SM_PP_PRIVATE_MAP_WITH_ARG_IMPL(macro, arg, __VA_ARGS__))
 
 
+// --------------------- SM_PP_MAP_LIST_WITH_ARG -----------------------
 // Apply 'macro' to all elements of the parenthesized 'arglist', with an
 // initial 'arg':
 //

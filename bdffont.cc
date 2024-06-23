@@ -11,6 +11,8 @@
 
 #include <unistd.h>          // unlink
 
+using namespace smbase;
+
 
 // ---------------------- BDFFont::Property ------------------------
 BDFFont::Property::Property(rostring n, int i)
@@ -145,7 +147,7 @@ int BDFFont::glyphIndexLimit() const
 #define XFORMAT(stuff) xformat(stringb(stuff))
 
 // Expect 'expected' to appear next, and skip it.  Otherwise,
-// throw xFormat.
+// throw XFormat.
 static void expect(char const *&p, char const *expected)
 {
   char const *origP = p;
@@ -443,7 +445,7 @@ static void parseBoundingBox(char const *&p, BDFFont::GlyphMetrics &metrics)
 
 
 // Parse a single hex digit.
-static byte parseHexDigit(char const *&p)
+static unsigned char parseHexDigit(char const *&p)
 {
   if ('0' <= *p && *p <= '9') {
     return *(p++) - '0';
@@ -479,11 +481,11 @@ static void parseBitmap(char const *&p, Bit2d &bitmap)
 
     // Interpret pairs of hex bytes.
     for (int offset=0; offset < textLength; offset += 2) {
-      byte b1 = parseHexDigit(p);
-      byte b2 = parseHexDigit(p);
+      unsigned char b1 = parseHexDigit(p);
+      unsigned char b2 = parseHexDigit(p);
 
       // this has pixel 0 in the MSB
-      byte bits = (b1 << 4) | b2;
+      unsigned char bits = (b1 << 4) | b2;
 
       // Check that padding bits are 0.
       if (offset * 4 + 8 > bitmap.Size().x) {
@@ -584,7 +586,7 @@ static void parseGlyph(char const *&p, BDFFont::Glyph *glyph,
         XFORMAT("unknown glyph attribute \"" << keyword << "\"");
       }
     }
-    catch (xBase &x) {
+    catch (XBase &x) {
       x.prependContext(keyword);
       throw;
     }
@@ -631,7 +633,7 @@ static void parseChars(char const *&p, int numChars, BDFFont &font)
       BDFFont::Glyph const *g = font.glyphs.swapAt(index, glyph.xfr());
       xassert(g == NULL);
     }
-    catch (xBase &x) {
+    catch (XBase &x) {
       x.prependContext(stringb("glyph \"" << glyphName << "\""));
       throw;
     }
@@ -746,14 +748,14 @@ void parseBDFString(BDFFont &font, char const *bdfSourceData)
           XFORMAT("unknown font attribute \"" << keyword << "\"");
         }
       }
-      catch (xBase &x) {
+      catch (XBase &x) {
         x.prependContext(keyword);
         throw;
       }
     }
   }
 
-  catch (xBase &x) {
+  catch (XBase &x) {
     x.prependContext(getLineCol(bdfSourceData, p));
     throw;
   }
@@ -766,7 +768,7 @@ void parseBDFFile(BDFFont &font, char const *bdfFileName)
     string contents = readStringFromFile(bdfFileName);
     parseBDFString(font, contents.c_str());
   }
-  catch (xBase &x) {
+  catch (XBase &x) {
     x.prependContext(bdfFileName);
     throw;
   }
@@ -846,7 +848,7 @@ static void writeBitmap(stringBuilder &dest, Bit2d const &bitmap)
   for (int y=0; y < bitmap.Size().y; y++) {
     for (int x=0; x < bitmap.Size().x; x += 8) {
       // should come back with 0s in padding bits
-      byte bits = bitmap.get8(point(x,y));
+      unsigned char bits = bitmap.get8(point(x,y));
 
       // flip order
       bits = byteBitSwapLsbMsb(bits);
@@ -944,7 +946,7 @@ void writeBDFFile(char const *fname, BDFFont const &font)
     writeBDFString(buf, font);
     writeStringToFile(buf.str(), fname);
   }
-  catch (xBase &x) {
+  catch (XBase &x) {
     x.prependContext(stringb("writing font \"" << font.fontName <<
                              "\" to file " << fname));
     throw;
@@ -952,51 +954,4 @@ void writeBDFFile(char const *fname, BDFFont const &font)
 }
 
 
-// -------------------------- test code ---------------------------
-#ifdef TEST_BDFFONT
-
-#include "sm-test.h"         // USUAL_TEST_MAIN
-
-
-static void entry()
-{
-  cout << "bdffont tests" << endl;
-
-  // parse a file
-  //
-  // Amusingly, the actual sample input in the spec is missing a
-  // bitmap line for the "quoteright" character!  I have repaired it
-  // in my version of the input.
-  //
-  // I've made some other changes as well to test some syntax
-  // variations and another anomalies.
-  BDFFont font;
-  parseBDFFile(font, "fonts/sample1.bdf");
-
-  // write it out
-  writeBDFFile("tmp.bdf", font);
-
-  // The output should match sample1out.bdf, which is the same as sample1
-  // except that "j" comes after "quoteright" and METRICSSET is
-  // explicit.
-  if (readStringFromFile("fonts/sample1out.bdf") != readStringFromFile("tmp.bdf")) {
-    xfatal("fonts/sample1out.bdf and tmp.bdf differ!");
-  }
-
-  (void)unlink("tmp.bdf");
-
-  if (char const *otherTest = getenv("BDFFONT_OTHERTEST")) {
-    cout << "testing " << otherTest << endl;
-
-    BDFFont otherFont;
-    parseBDFFile(otherFont, otherTest);
-    writeBDFFile("tmp.bdf", otherFont);
-  }
-
-  cout << "bdffont ok\n";
-}
-
-USUAL_TEST_MAIN
-
-
-#endif // TEST_BDFFONT
+// EOF

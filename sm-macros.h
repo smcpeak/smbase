@@ -1,13 +1,8 @@
 // sm-macros.h            see license.txt for copyright and terms of use
-// grab-bag of useful macros, stashed here to avoid mucking up
-//   other modules with more focus; there's no clear rhyme or
-//   reason for why some stuff is here and some in typ.h
-// (no configuration stuff here!)
+// A bunch of useful macros.
 
 #ifndef SMBASE_SM_MACROS_H
 #define SMBASE_SM_MACROS_H
-
-#include "typ.h"        // bool
 
 
 // Concatenate tokens.  Unlike plain '##', this works for __LINE__.  It
@@ -34,14 +29,25 @@
     { return !operator<(obj); }
 
 
-// member copy in constructor initializer list
+// Member copy ("duplicate") in constructor initializer list.
 #define DMEMB(var) var(obj.var)
 
-// member copy in operator =
+// Member move in move constructor.  Caller must `#include <utility>`.
+#define MDMEMB(var) var(std::move(obj.var))
+
+// Member copy in copy assignment operator.
 #define CMEMB(var) (var = obj.var)
 
-// member comparison in operator ==
+// Member move in move assignment operator.
+#define MCMEMB(var) (var = std::move(obj.var))
+
+// Member comparison in operator ==.
 #define EMEMB(var) (var == obj.var)
+
+
+// Within a method that is writing the fields of an object, this will
+// write one such field
+#define WRITE_MEMBER(var) os << " " #var ":" << var /* user ; */
 
 
 // standard insert operator
@@ -97,6 +103,24 @@ void T::insertOstream(ostream &os) const
 #endif // 0
 
 
+/* Get the number of entries in the array `tbl`.
+
+   This has a cast to `int` because:
+
+   * The value is always small enough to fit, as it is simply a count of
+     the number of entries in an initializer literally present in the
+     source code.
+
+   * I often use signed integers as indices so I can use negative values
+     either as "invalid" values or to allow counting backwards and using
+     a test like `i >= 0` for loop termination.  If the size is unsigned
+     then that at a minimum causes compiler warnings, and could lead to
+     incorrect computation for something like `i < TABLESIZE(...)` if
+     `i` is negative.
+*/
+#define TABLESIZE(tbl) ((int)(sizeof(tbl)/sizeof((tbl)[0])))
+
+
 #if __cplusplus >= 201103L
   // I think the C++11 requirement of a message string is dumb, but I
   // do not want to require C++17 yet, so I use "".
@@ -126,9 +150,11 @@ void T::insertOstream(ostream &os) const
 
 
 // for silencing variable-not-used warnings
+#ifdef __cplusplus
 template <class T>
 inline void pretendUsedFn(T const &) {}
 #define PRETEND_USED(arg) pretendUsedFn(arg) /* user ; */
+#endif // __cplusplus
 
 
 // For use with a function call when the return value is ignored, and I
@@ -138,15 +164,31 @@ inline void pretendUsedFn(T const &) {}
 #define IGNORE_RESULT(expr) ((void)!(expr))
 
 
-// appended to function declarations to indicate they do not
-// return control to their caller; e.g.:
-//   void exit(int code) NORETURN;
-#ifdef __GNUC__
+#if defined(__GNUC__) || defined(__clang__)
+  // Appended function declarations (not definitions!) to indicate they
+  // do not return control to their caller; e.g.:
+  //
+  //   void exit(int code) NORETURN;
+  //
   #define NORETURN __attribute__((noreturn))
 
   // Declare that a variable may be unused, e.g.:
+  //
   //   int UNUSED some_var = 5;
+  //
   #define UNUSED __attribute__((unused))
+
+  // Declare that a function is deprecated, and provide a string to
+  // explain why or what to use instead:
+  //
+  //   void oldFunc() DEPRECATED("Use `newFunc` instead.")
+  //
+  // The GCC macro does not actually do anything with the reason string,
+  // but this provides a standard place to put it, and in the future
+  // perhaps there would be a way for the compiler to use it.
+  //
+  #define DEPRECATED(reasonString) __attribute__((deprecated))
+
 #else
   // just let the warnings roll if we can't suppress them
   #define NORETURN
@@ -234,39 +276,10 @@ inline void pretendUsedFn(T const &) {}
   numAllocd--;
 
 
-// ----------- automatic data value restorer -------------
-// used when a value is to be set to one thing now, but restored
-// to its original value on return (even when the return is by
-// an exception being thrown)
-template <class T>
-class Restorer {
-  T &variable;
-  T prevValue;
-
-public:
-  Restorer(T &var, T newValue)
-    : variable(var),
-      prevValue(var)
-  {
-    variable = newValue;
-  }
-
-  // this one does not set it to a new value, just remembers the current
-  Restorer(T &var)
-    : variable(var),
-      prevValue(var)
-  {}
-
-  ~Restorer()
-  {
-    variable = prevValue;
-  }
-};
-
-
-// Declare a restorer for 'variable', of 'type'.
-#define RESTORER(type, variable, value) \
-  Restorer< type > SMBASE_PP_CAT(restorer,__LINE__)((variable), (value)) /* user ; */
+// 2024-05-24: In the past, there was in this file a class called
+// `Restorer` and a macro called `RESTORER`.  These did not belong in
+// this file, so were removed.  The file `save-restore.h` has
+// `SetRestore` and `SET_RESTORE` that should be used instead.
 
 
 // declare a bunch of a set-like operators for enum types
@@ -318,12 +331,11 @@ public:
 #endif
 
 
-// put at the top of a class for which the default copy ctor
-// and operator= are not desired; then don't define these functions
-#define NO_OBJECT_COPIES(name)   \
-  private:                       \
-    name(name&);                 \
-    void operator=(name&) /*user ;*/
+// Place in a class definition to inhibit the auto-generated copy
+// operations.
+#define NO_OBJECT_COPIES(name)              \
+  name(name&) = delete;                     \
+  void operator=(name&) = delete /*user ;*/
 
 
 // In the past, I had "#define override virtual" here, intended as
@@ -331,12 +343,36 @@ public:
 // 'override' has made that unnecessary.
 
 
-// Open and close namespaces w/o interfering with indentation.
+/* Open and close namespaces without interfering with indentation (if
+   the editor does not treat `namespace` braces specially).  This also
+   makes it a little easier to find and (if needed) automatically
+   process these enclosures, especially for the closing brace.
+
+   There is nothing to enforce that `CLOSE_NAMESPACE` names the same
+   namespace as `OPEN_NAMESPACE`, but that would be a pretty easy check
+   to add to some ad-hoc tool at some point.
+
+   See smbase-namespace.txt for information about the `smbase` namespace
+   specfically.
+*/
 #define OPEN_NAMESPACE(name) namespace name {
 #define CLOSE_NAMESPACE(name) } /* name */
 
 #define OPEN_ANONYMOUS_NAMESPACE namespace {
 #define CLOSE_ANONYMOUS_NAMESPACE } /* anon */
+
+
+/* For `name` that is declared in the `smbase` namespace, export it into
+   the global namespace (assuming that is where the macro is invoked)
+   unless `SMBASE_NO_GLOBAL_ALIASES` suppresses that.  The idea is a
+   client could set that symbol to turn off the global aliases, which
+   are primarily meant for compatibility with older code.
+*/
+#ifdef SMBASE_NO_GLOBAL_ALIASES
+  #define SMBASE_GLOBAL_ALIAS(name) /*nothing*/
+#else
+  #define SMBASE_GLOBAL_ALIAS(name) using smbase::name;
+#endif
 
 
 // My recollection is there is a way to do what this macro does without
@@ -347,34 +383,43 @@ public:
 
 // Define a 'toString' method for an enumeration.  Use like this:
 //
-//   DEFINE_ENUMERATION_TO_STRING(
+//   DEFINE_ENUMERATION_TO_STRING_OR(
 //     DocumentProcessStatus,
 //     NUM_DOCUMENT_PROCESS_STATUSES,
 //     (
 //       "DPS_NONE",
 //       "DPS_RUNNING",
 //       "DPS_FINISHED"
-//     )
+//     ),
+//     "DPS_invalid"
 //   )
 //
-#define DEFINE_ENUMERATION_TO_STRING(Enumeration, NUM_VALUES, nameList) \
-  char const *toString(Enumeration value)                               \
-  {                                                                     \
-    RETURN_ENUMERATION_STRING(Enumeration, NUM_VALUES, nameList, value) \
+#define DEFINE_ENUMERATION_TO_STRING_OR(Enumeration, NUM_VALUES, nameList, unknown) \
+  char const *toString(Enumeration value)                                           \
+  {                                                                                 \
+    RETURN_ENUMERATION_STRING_OR(Enumeration, NUM_VALUES, nameList, value, unknown) \
   }
 
 // The core of the enum-to-string logic, exposed separately so I can use
 // it to define functions not called 'toString()'.
-#define RETURN_ENUMERATION_STRING(Enumeration, NUM_VALUES, nameList, value) \
-  static char const * const names[] =                                       \
-    { SMBASE_PP_UNWRAP_PARENS nameList };                                   \
-  ASSERT_TABLESIZE(names, (NUM_VALUES));                                    \
-  if ((unsigned)value < TABLESIZE(names)) {                                 \
-    return names[value];                                                    \
-  }                                                                         \
-  else {                                                                    \
-    return "unknown";                                                       \
+#define RETURN_ENUMERATION_STRING_OR(Enumeration, NUM_VALUES, nameList, value, unknown) \
+  static char const * const names[] =                                                   \
+    { SMBASE_PP_UNWRAP_PARENS nameList };                                               \
+  ASSERT_TABLESIZE(names, (NUM_VALUES));                                                \
+  if ((unsigned)value < TABLESIZE(names)) {                                             \
+    return names[value];                                                                \
+  }                                                                                     \
+  else {                                                                                \
+    return unknown;                                                                     \
   }
+
+// Compatibility.
+#define DEFINE_ENUMERATION_TO_STRING(Enumeration, NUM_VALUES, nameList) \
+  DEFINE_ENUMERATION_TO_STRING_OR(Enumeration, NUM_VALUES, nameList, "unknown")
+
+// Compatibility.
+#define RETURN_ENUMERATION_STRING(Enumeration, NUM_VALUES, nameList, value) \
+  RETURN_ENUMERATION_STRING_OR(Enumeration, NUM_VALUES, nameList, value, "unknown")
 
 
 // Given an array with known size, return a one-past-the-end pointer
@@ -393,6 +438,63 @@ public:
 // enforced automatically.
 //
 #define NULLABLE /**/
+
+
+// When defining a static class method outside the class body, I put
+// this where the `static` keyword ought to go but C++ does not allow
+// it.  This is another one I hope to eventually enforce.
+#define STATICDEF /*static*/
+
+
+/* Function attribute to indicate that it acts like `printf`.
+
+   `formatArgIndex` is the 1-based index of the argument that contains
+   the format string.  `firstCheckArgIndex` is the index of the first
+   argument to be checked for compatibility with the format string, with
+   all subsequent arguments also being checked.
+
+   This goes after the declarator in a prototype, for example:
+
+     std::string stringf(char const *format, ...)
+       SM_PRINTF_ANNOTATION(1, 2);
+*/
+#if defined(__GNUC__) || defined (__CLANG__)
+  #define SM_PRINTF_ANNOTATION(formatArgIndex, firstCheckArgIndex) \
+    __attribute__((format (printf, formatArgIndex, firstCheckArgIndex)))
+#else
+  #define SM_PRINTF_ANNOTATION(formatArgIndex, firstCheckArgIndex) \
+    /*nothing*/
+#endif
+
+
+// These provide a concise way to loop on an integer range.
+#define smbase_loopi(end) for(int i=0; i<(int)(end); i++)
+#define smbase_loopj(end) for(int j=0; j<(int)(end); j++)
+#define smbase_loopk(end) for(int k=0; k<(int)(end); k++)
+
+
+// `ENABLE_SELFCHECK` can be set to 0 (disable) or 1 (enable).  If not
+// explicitly set, it is set to 0 when `NDEBUG`.
+#ifndef ENABLE_SELFCHECK
+  #ifdef NDEBUG
+    #define ENABLE_SELFCHECK 0
+  #else
+    #define ENABLE_SELFCHECK 1
+  #endif
+#endif
+
+// The `SELFCHECK()` macro runs the `selfCheck()` method unless it is
+// disabled for speed reasons.
+#if ENABLE_SELFCHECK != 0
+  #define SELFCHECK() selfCheck()
+#else
+  #define SELFCHECK() ((void)0)
+#endif
+
+
+// Compatiblity macro originally created to deal with compilers that
+// did not have the `explicit` keyword.  Obsolete.
+#define EXPLICIT explicit
 
 
 #endif // SMBASE_SM_MACROS_H

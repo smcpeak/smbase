@@ -1,19 +1,40 @@
 // sm-test.h            see license.txt for copyright and terms of use
-// utilities for test code
-// Scott McPeak, 1999  This file is public domain.
+// Various utilities for use in unit tests, especially those invoked by
+// `unit-test.cc`.
 
 #ifndef SMBASE_SM_TEST_H
 #define SMBASE_SM_TEST_H
 
 #include "dev-warning.h"   // g_abortUponDevWarning
-#include "exc.h"           // xBase
-#include "nonport.h"       // getMilliseconds
+#include "dummy-printf.h"  // dummy_printf
+#include "exc.h"           // smbase::XBase
+#include "sm-is-equal.h"   // smbase::is_equal
 #include "sm-iostream.h"   // cout
-#include "str.h"           // stringb
+#include "sm-macros.h"     // SM_PRINTF_ANNOTATION
+#include "str.h"           // stringb, string
+#include "xassert.h"       // xassert
 
 #include <iomanip>         // std::hex, std::dec
+#include <iosfwd>          // std::ostream
 
 #include <stdio.h>         // printf
+
+
+// This is set, in a global initializer, to true if the "VERBOSE"
+// environment variable is set.  Tests can use it to control whether
+// they print extra diagnostics.
+//
+// This has type `int` so it can be used from C modules too.
+extern int verbose;
+
+
+// "Test output", which goes nowhere unless `verbose` is true.
+#define tout getTout()
+std::ostream &getTout();
+
+
+// "Test printf", which goes nowhere unless `verbose` is true.
+#define tprintf (verbose? printf : dummy_printf)
 
 
 // reports uncaught exceptions
@@ -29,7 +50,7 @@ int main()                                      \
     entry();                                    \
     return 0;                                   \
   }                                             \
-  catch (xBase &x) {                            \
+  catch (smbase::XBase &x) {                    \
     cout << x << endl;                          \
     return 4;                                   \
   }                                             \
@@ -44,7 +65,7 @@ int main(int argc, char *argv[])                \
     entry(argc, argv);                          \
     return 0;                                   \
   }                                             \
-  catch (xBase &x) {                            \
+  catch (smbase::XBase &x) {                    \
     cout << x << endl;                          \
     return 4;                                   \
   }                                             \
@@ -60,7 +81,7 @@ int main(int argc, char *argv[])                \
       entry();                                  \
       return 0;                                 \
     }                                           \
-    catch (xBase &x) {                          \
+    catch (smbase::XBase &x) {                  \
       cout << x << endl;                        \
       return 4;                                 \
     }                                           \
@@ -75,7 +96,7 @@ int main(int argc, char *argv[])                \
       entry(argc, argv);                        \
       return 0;                                 \
     }                                           \
-    catch (xBase &x) {                          \
+    catch (smbase::XBase &x) {                  \
       cout << x << endl;                        \
       return 4;                                 \
     }                                           \
@@ -93,30 +114,43 @@ int main(int argc, char *argv[])                \
 #define PVAL_HEX(val) \
   cout << #val << " = " << "0x" << std::hex << (val) << std::dec << endl
 
-
-// easy way to time a section of code
-class TimedSection {
-  char const *name;
-  long start;
-
-public:
-  TimedSection(char const *n) : name(n) {
-    start = getMilliseconds();
+// Print a value if `verbose`.
+#define VPVAL(stuff)                                        \
+  if (verbose) {                                            \
+    PVAL(stuff);                                            \
+  }                                                         \
+  else {                                                    \
+    /* Evaluate it to ensure no crash, but do not print. */ \
+    (void)stuff;                                            \
   }
-  ~TimedSection() {
-    cout << name << ": " << (getMilliseconds() - start) << " msecs\n";
+
+// PVAL with a specified output stream.
+#define PVALTO(os, val) (os) << #val ": " << (val) << std::endl /* user ; */
+
+// Conditionally write a line of diagnostic output.
+#define DIAG(stuff)                  \
+  if (verbose) {                     \
+    std::cout << stuff << std::endl; \
   }
-};
 
 
-template <class T>
-void expectEq(char const *label, T const &actual, T const &expect)
+// 2024-06-01: There was a class called `TimedSection` here but I
+// removed it because it did not belong in this file and was not being
+// used.
+
+
+// Throw an exception if `actual` does not equal `expect`.  This uses
+// `is_equal` to deal with the possibility that exactly one of the types
+// is a signed integral type.  According to that function, a negative
+// number is not equal to any non-negative number.
+template <typename TA, typename TE>
+void expectEq(char const *label, TA const &actual, TE const &expect)
 {
-  if (expect != actual) {
-    cout << "mismatched " << label << ':' << endl;
-    cout << "  actual: " << actual << endl;
-    cout << "  expect: " << expect << endl;
-    xfailure(stringb("mismatched " << label));
+  if (!smbase::is_equal(expect, actual)) {
+    smbase::xmessage(stringb(
+      label << ": values are not equal:\n"
+      "  actual: " << actual << "\n"
+      "  expect: " << expect));
   }
 }
 
@@ -124,11 +158,39 @@ void expectEq(char const *label, T const &actual, T const &expect)
   expectEq(#actual, actual, expect) /* user ; */
 
 
-// Special case for 'expect' being a string literal.
-inline void expectEq(char const *label, string const &actual, char const *expect)
-{
-  expectEq(label, actual, string(expect));
-}
+/* Variant for use when `actual` and `expect` are numbers.  This just
+   applies unary `+` to them before checking.  That causes them to be
+   promoted to at least `int` if they are integral, which ensures that
+   they will be printed as numbers even if one or both have a type based
+   on `char` (such as `uint8_t`).
+*/
+#define EXPECT_EQ_NUMBERS(actual, expect) \
+  expectEq(#actual, +(actual), +(expect)) /* user ; */
+
+
+// Overload for the `char*` case to ensure we compare string contents
+// rather than addresses.  Both arguments must be non-null.
+void expectEq(char const *label, char const *actual, char const *expect);
+
+
+// Check that 'hasSubstring(actual, expectSubstring)'.
+void expectHasSubstring(
+  char const *label,
+  string const &actual,
+  char const *expectSubstring);
+
+#define EXPECT_HAS_SUBSTRING(actual, expectSubstring) \
+  expectHasSubstring(#actual, actual, expectSubstring) /* user ; */
+
+
+// Check that 'matchesRegex(actual, expectRegex)'.
+void expectMatchesRegex(
+  char const *label,
+  string const &actual,
+  char const *expectRegex);
+
+#define EXPECT_MATCHES_REGEX(actual, expectRegex) \
+  expectMatchesRegex(#actual, actual, expectRegex) /* user ; */
 
 
 #endif // SMBASE_SM_TEST_H

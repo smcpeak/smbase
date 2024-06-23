@@ -1,5 +1,7 @@
 // hashline.h
-// module for maintaining and using #line info in source files
+// HashLineMap, a mechanism for keeping track of #line directives in C
+// source files.  Provides efficient queries with respect to a set of
+// such directives.
 
 // terminology:
 //   pp source: preprocessed source, i.e. whatever had the #line

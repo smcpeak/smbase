@@ -15,7 +15,7 @@ Bit2d::Bit2d(point const &aSize)
 {
   xassert(size.x > 0 && size.y > 0);
   stride = (size.x+7)/8;
-  data = new byte[datasize()];
+  data = new unsigned char[datasize()];
 }
 
 
@@ -31,7 +31,7 @@ Bit2d::Bit2d(Bit2d const &obj)
 {
   size = obj.size;
   stride = obj.stride;
-  data = new byte[datasize()];
+  data = new unsigned char[datasize()];
   owning = true;
   memcpy(data, obj.data, datasize());
 }
@@ -86,13 +86,13 @@ int Bit2d::get(point const &p) const
 void Bit2d::set(point const &p)
 {
   xassert(okpt(p));
-  *(byteptr(p)) |= (byte)  ( 1 << (p.x&7) ) ;
+  *(byteptr(p)) |= (unsigned char)  ( 1 << (p.x&7) ) ;
 }
 
 void Bit2d::reset(point const &p)
 {
   xassert(okpt(p));
-  *(byteptr(p)) &= (byte)(~( 1 << (p.x&7) ));
+  *(byteptr(p)) &= (unsigned char)(~( 1 << (p.x&7) ));
 }
 
 void Bit2d::setto(point const &p, int val)
@@ -103,20 +103,20 @@ void Bit2d::setto(point const &p, int val)
 
 int Bit2d::testAndSet(point const &p)
 {
-  byte *b = byteptr(p);
+  unsigned char *b = byteptr(p);
   int ret = (*b >> (p.x&7)) & 1;
-  *b |= (byte)( 1 << (p.x&7) );
+  *b |= (unsigned char)( 1 << (p.x&7) );
   return ret;
 }
 
 void Bit2d::toggle(point const &p)
 {
   xassert(okpt(p));
-  *(byteptr(p)) ^= (byte) ( 1 << (p.x&7) );
+  *(byteptr(p)) ^= (unsigned char) ( 1 << (p.x&7) );
 }
 
 
-void Bit2d::set8(point const &p, byte val)
+void Bit2d::set8(point const &p, unsigned char val)
 {
   xassert(okpt(p));
   xassert(p.x % 8 == 0);
@@ -125,19 +125,19 @@ void Bit2d::set8(point const &p, byte val)
 }
 
 
-byte Bit2d::get8(point const &p) const
+unsigned char Bit2d::get8(point const &p) const
 {
   xassert(okpt(p));
   xassert(p.x % 8 == 0);
 
-  byte ret = *(byteptrc(p));
+  unsigned char ret = *(byteptrc(p));
 
   // Zero any padding bits
   if (p.x + 8 > size.x) {
     int numPadBits = (p.x + 8) - size.x;
     xassert(0 < numPadBits && numPadBits < 8);
 
-    byte padMask = 0xFF << (8 - numPadBits);
+    unsigned char padMask = 0xFF << (8 - numPadBits);
     ret &= ~padMask;
   }
 
@@ -187,14 +187,14 @@ void Bit2d::print() const
 
   // column legend
   printf("%*s   ", rowLabelWidth, "");
-  loopi(size.x) {
+  smbase_loopi(size.x) {
     printf("%*d ", colLabelWidth, i);
   }
   printf("\n");
 
   for (int row=0; row<size.y; row++) {
     printf("%*d [ ", rowLabelWidth, row);
-    loopi(size.x) {
+    smbase_loopi(size.x) {
       printf("%*s ", colLabelWidth,
                      get(point(i, row))? "1" : ".");    // "." so easier to see patterns
     }
@@ -206,7 +206,7 @@ void Bit2d::print() const
 
 
 // hack
-Bit2d::Bit2d(byte * /*serf*/ d, point const &sz, int str)
+Bit2d::Bit2d(unsigned char * /*serf*/ d, point const &sz, int str)
   : data(d),
     owning(false),    // since it's a serf ptr
     size(sz),
@@ -214,10 +214,10 @@ Bit2d::Bit2d(byte * /*serf*/ d, point const &sz, int str)
 {}
 
 
-byte byteBitSwapLsbMsb(byte b)
+unsigned char byteBitSwapLsbMsb(unsigned char b)
 {
   // Map from [0,15] to the result of swapping the bit order.
-  static const byte swapMap[] = {
+  static const unsigned char swapMap[] = {
     // input   output   hex-output
     /* 0000    0000 */  0x0,
     /* 0001    1000 */  0x8,
@@ -239,8 +239,8 @@ byte byteBitSwapLsbMsb(byte b)
   ASSERT_TABLESIZE(swapMap, 16);
 
   // divide into two 4-bit nibbles
-  byte hi = b >> 4;
-  byte lo = b & 0xF;
+  unsigned char hi = b >> 4;
+  unsigned char lo = b & 0xF;
 
   // swap each nibble
   hi = swapMap[hi];
@@ -251,98 +251,4 @@ byte byteBitSwapLsbMsb(byte b)
 }
 
 
-// ------------------------ test code ------------------------
-#ifdef TEST_BIT2D
-
-#include "bflatten.h"     // BFlatten
-
-int main()
-{
-  Bit2d bits(point(17,3));
-  xassert(bits.okpt(point(16,2)) &&
-         !bits.okpt(point(17,3)) &&
-         !bits.okpt(point(2,16)));
-
-  bits.setall(0);
-  xassert(!bits.testAndSet(point(9,1)));
-  xassert(bits.testAndSet(point(9,1)));
-
-  xassert(!bits.testAndSet(point(2,0)));
-  xassert(bits.testAndSet(point(2,0)));
-
-  xassert(!bits.testAndSet(point(16,2)));
-  xassert(bits.testAndSet(point(16,2)));
-
-  bits.toggle(point(3,2));
-  xassert(bits.get(point(3,2)));
-
-  bits.print();
-
-  // test read/write
-  {
-    Bit2d *another = writeThenRead(bits);
-    xassert(*another == bits);
-    delete another;
-  }
-
-  // test set8 and get8
-  xassert(bits.get8(point(8,0)) == 0);
-  xassert(bits.get8(point(0,0)) == 0x04);  // 00000100
-  xassert(bits.get8(point(0,2)) == 0x08);  // 00001000, bit 3 from right is set
-
-  xassert(bits.get8(point(16,0)) == 0);
-  bits.setall(1);
-  xassert(bits.get8(point(16,0)) == 0x01); // 00000001, pad bits cleared
-
-  bits.set8(point(16,0), 0xFE);            // all high bits ignored; LSB is 0
-  xassert(bits.get8(point(16,0)) == 0x00);
-
-                                           // 76543210
-  bits.set8(point(0,0), 0x6C);             // 01101100
-  xassert(bits.get(point(0,0)) == 0);
-  xassert(bits.get(point(1,0)) == 0);
-  xassert(bits.get(point(2,0)) == 1);
-  xassert(bits.get(point(3,0)) == 1);
-  xassert(bits.get(point(4,0)) == 0);
-  xassert(bits.get(point(5,0)) == 1);
-  xassert(bits.get(point(6,0)) == 1);
-  xassert(bits.get(point(7,0)) == 0);
-
-  for (int w=1; w <= 8; w++) {
-    Bit2d bits(point(w,1));
-
-    bits.set8(point(0,0), 0);
-    xassert(bits.get8(point(0,0)) == 0);
-
-    bits.set8(point(0,0), 0xFF);
-    xassert(bits.get8(point(0,0)) == ((1 << w) - 1));
-  }
-
-  // test byteBitSwapLsbMsb (exhaustively)
-  for (int i=0; i < 256; i++) {
-    byte input = i;
-
-    // naively bit swap it
-    byte output = 0;
-    for (int bit = 0; bit < 8; bit++) {
-      if (input & (1 << bit)) {
-        output |= (1 << (7 - bit));
-      }
-    }
-
-    // compare to the faster function
-    byte actual = byteBitSwapLsbMsb(input);
-    xassert(actual == output);
-  }
-
-  // one concrete vector to make sure the above test is not
-  // totally borked
-  xassert(byteBitSwapLsbMsb(0xC7) == 0xE3);
-
-  printf("bit2d works\n");
-
-  return 0;
-}
-
-#endif // TEST_BIT2D
-
+// EOF

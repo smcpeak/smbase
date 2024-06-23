@@ -1,8 +1,8 @@
 // mysig.h            see license.txt for copyright and terms of use
-// some simple Unix signal-handling stuff
+// Some signal-related utilities.
 
-#ifndef MYSIG_H
-#define MYSIG_H
+#ifndef SMBASE_MYSIG_H
+#define SMBASE_MYSIG_H
 
 #include <signal.h>     // signal stuff
 #include <setjmp.h>     // jmp_buf
@@ -10,6 +10,12 @@
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
+
+
+// Returns true if this 'mysig' module is working.  Otherwise, we are
+// running on a platform where it does not work.
+int mysigModuleWorks();
+
 
 // type of a signal handler function; generally, there are
 // three options for a signal handler:
@@ -47,4 +53,4 @@ void printSegfaultAddrs();
 }
 #endif // __cplusplus
 
-#endif // MYSIG_H
+#endif // SMBASE_MYSIG_H

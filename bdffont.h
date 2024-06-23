@@ -1,6 +1,6 @@
 // bdffont.h
-// parse and represent BDF fonts in memory
-//
+// Parse and represent BDF fonts in memory.
+
 // spec:
 // http://partners.adobe.com/public/developer/en/font/5005.BDF_Spec.pdf
 //
@@ -268,11 +268,11 @@ public:      // funcs
 
 
 // Parse an in-memory string containing the BDF file format.  Throws
-// xFormat if it encounters a format violation.
+// XFormat if it encounters a format violation.
 void parseBDFString(BDFFont &destFont, char const *bdfSourceData);
 
-// Parse an on-disk file in BDF file format.  Throws xSysError if the
-// file cannot be read, and xFormat if there is a format violation.
+// Parse an on-disk file in BDF file format.  Throws XSysError if the
+// file cannot be read, and XFormat if there is a format violation.
 void parseBDFFile(BDFFont &destFont, char const *bdfFileName);
 
 

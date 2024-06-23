@@ -1,8 +1,6 @@
 // trdelete.h            see license.txt for copyright and terms of use
-// objects which trash their contents upon deletion
-// I would love to have implemented this as a base class and simply derive
-//   things from it, but a poor implementation choice by Borland makes this
-//   too costly in terms of performance
+// An 'operator delete' which overwrites the deallocated memory with
+// 0xAA before deallocating it.
 
 #ifdef _MSC_VER
   // this module doesn't work under msvc, I don't care to figure out why

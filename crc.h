@@ -1,10 +1,14 @@
 // crc.h            see license.txt for copyright and terms of use
-// simple crc function
+// 32-bit cyclic redundancy check.
 
-#ifndef __CRC_H
-#define __CRC_H
+#ifndef SMBASE_CRC_H
+#define SMBASE_CRC_H
 
-unsigned long crc32(unsigned char const *data, int length);
+#include <stdint.h>                    // uint32_t
 
-#endif // __CRC_H
+// Return the CRC32, as defined in this module, of the 'length' bytes
+// pointed to by 'data'.
+uint32_t crc32(unsigned char const *data, int length);
+
+#endif // SMBASE_CRC_H
 

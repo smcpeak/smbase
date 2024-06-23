@@ -1,5 +1,5 @@
 // objstack.h            see license.txt for copyright and terms of use
-// stack of objects, owned by the stack
+// ObjStack, a stack of owned objects.  Built with a linked list.
 
 #ifndef OBJSTACK_H
 #define OBJSTACK_H

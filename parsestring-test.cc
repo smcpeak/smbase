@@ -51,7 +51,7 @@ static void testFailParse1()
     EXPECT_EQ(x.m_str, "(12!34)");
     EXPECT_EQ(x.m_offset, 3);
     EXPECT_EQ(x.m_conflict, "found '!', expected ','");
-    EXPECT_EQ(x.cond(),
+    EXPECT_EQ(x.getMessage(),
       "at location 3 in \"(12!34)\": found '!', expected ','");
   }
 }
@@ -80,8 +80,6 @@ void test_parsestring()
   testParse1();
   testFailParse1();
   testParsingCText();
-
-  cout << "test_parsestring PASSED" << endl;
 }
 
 

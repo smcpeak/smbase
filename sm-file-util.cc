@@ -7,10 +7,11 @@
 #include "array.h"                     // Array
 #include "autofile.h"                  // AutoFILE
 #include "codepoint.h"                 // isLetter
+#include "compare-util.h"              // compare
 #include "sm-windows.h"                // PLATFORM_IS_WINDOWS
+#include "string-util.h"               // endsWith, doubleQuote
 #include "strtokp.h"                   // StrtokParse
-#include "strutil.h"                   // suffixEquals
-#include "syserr.h"                    // xsyserror
+#include "syserr.h"                    // smbase::xsyserror
 
 // libc++
 #include <algorithm>                   // std::max
@@ -49,6 +50,8 @@
 #  include <stdlib.h>                  // getcwd
 #  include <unistd.h>                  // pathconf
 #endif
+
+using namespace smbase;
 
 
 static char const * const s_fileKindNames[] = {
@@ -314,14 +317,14 @@ bool SMFileName::endsWithPathSeparator() const
 }
 
 
-/*static*/ bool SMFileName::isWindowsSyntax(Syntax syntax)
+STATICDEF bool SMFileName::isWindowsSyntax(Syntax syntax)
 {
   return syntax == S_WINDOWS ||
          (PLATFORM_IS_WINDOWS && syntax == S_NATIVE);
 }
 
 
-/*static*/ bool SMFileName::isPathSeparator(unsigned char c, Syntax syntax)
+STATICDEF bool SMFileName::isPathSeparator(unsigned char c, Syntax syntax)
 {
   return c == '/' || (isWindowsSyntax(syntax) && c == '\\');
 }
@@ -359,19 +362,29 @@ SMFileUtil::DirEntryInfo::operator= (SMFileUtil::DirEntryInfo const &obj)
 }
 
 
-int SMFileUtil::DirEntryInfo::compareTo(DirEntryInfo const &obj) const
+int SMFileUtil::DirEntryInfo::compareTo(DirEntryInfo const &b) const
 {
-  int res = m_name.compareTo(obj.m_name);
-  if (res) { return res; }
+  DirEntryInfo const &a = *this;
+  using ::compare;
 
-  return (int)m_kind - (int)obj.m_kind;
+  RET_IF_COMPARE_MEMBERS(m_name);
+  return COMPARE_MEMBERS(m_kind);
 }
 
 
-/*static*/ int SMFileUtil::DirEntryInfo::compare(
+STATICDEF int SMFileUtil::DirEntryInfo::compare(
   DirEntryInfo const *a, DirEntryInfo const *b)
 {
   return a->compareTo(*b);
+}
+
+
+string SMFileUtil::DirEntryInfo::asString() const
+{
+  return stringb(
+    "{name:" << doubleQuote(m_name) <<
+    " kind:" << m_kind <<
+    "}");
 }
 
 
@@ -516,7 +529,7 @@ string SMFileUtil::stripTrailingDirectorySeparator(string const &dir)
 
   if (isDirectorySeparator(dir[len-1])) {
     // Strip final separator.
-    return dir.substring(0, len-1);
+    return dir.substr(0, len-1);
   }
 
   return dir;
@@ -572,7 +585,7 @@ string SMFileUtil::getAbsolutePath(string const &path)
       // We have a path that is absolute except it is missing the
       // drive letter or UNC share.  Get that from 'cwd'.
       if (cwd[1] == ':') {
-        return cwd.substring(0, 2) + path;
+        return cwd.substr(0, 2) + path;
       }
 
       if (isDirectorySeparator(cwd[0]) && isDirectorySeparator(cwd[1])) {
@@ -581,7 +594,7 @@ string SMFileUtil::getAbsolutePath(string const &path)
         if (tok.tokc() >= 2) {
           stringBuilder sb;
           sb << "//" << tok.tokv(0) << '/' << tok.tokv(1) << path;
-          return sb;
+          return sb.str();
         }
       }
 
@@ -636,7 +649,7 @@ SMFileUtil::FileKind SMFileUtil::getFileKind(string const &path)
     return FK_DIRECTORY;
   }
   else if (S_ISREG(st.st_mode)) {
-    if (suffixEquals(path, "/")) {
+    if (endsWith(path, "/")) {
       // On Linux, if you 'stat' a name with a trailing slash but it is
       // a regular file, 'stat' returns ENOTDIR, which I map to FK_NONE
       // above.  But on Windows, the same thing yields a 0 return and
@@ -897,12 +910,12 @@ bool SMFileUtil::isReadOnly(string const &path) NOEXCEPT
 
 
 string SMFileUtil::joinFilename(string const &prefix,
-                                string const &suffix)
+                                         string const &suffix)
 {
-  if (prefix.isempty()) {
+  if (prefix.empty()) {
     return suffix;
   }
-  if (suffix.isempty()) {
+  if (suffix.empty()) {
     return prefix;
   }
 
@@ -915,7 +928,7 @@ string SMFileUtil::joinFilename(string const &prefix,
   if (this->isDirectorySeparator(suffix[0]) &&
       this->isDirectorySeparator(prefix[prefix.length()-1])) {
     // Remove a separator.
-    return stringb(prefix.substring(0, prefix.length()-1) << suffix);
+    return stringb(prefix.substr(0, prefix.length()-1) << suffix);
   }
 
   return stringb(prefix << suffix);
@@ -923,7 +936,7 @@ string SMFileUtil::joinFilename(string const &prefix,
 
 
 string SMFileUtil::joinIfRelativeFilename(string const &prefix,
-                                          string const &suffix)
+                                                   string const &suffix)
 {
   if (isAbsolutePath(suffix)) {
     return suffix;
@@ -970,6 +983,28 @@ void SMFileUtil::writeFile(string const &fname,
     // fwrite only returns a short count if there is an error.
     xsyserror("write", fname);
   }
+}
+
+
+string SMFileUtil::readFileAsString(string const &fname)
+{
+  std::vector<unsigned char> vec = readFile(fname);
+  return std::string(reinterpret_cast<char const *>(vec.data()),
+                     vec.size());
+}
+
+
+void SMFileUtil::writeFileAsString(string const &fname,
+                                   string const &contents)
+{
+  std::vector<unsigned char> vec;
+  unsigned char const *start =
+    reinterpret_cast<unsigned char const *>(contents.data());
+  vec.insert(vec.begin(),
+             start,
+             start + contents.size());
+
+  writeFile(fname, vec);
 }
 
 
@@ -1128,7 +1163,7 @@ void SMFileUtil::getSortedDirectoryEntries(
 void SMFileUtil::splitPath(string /*OUT*/ &dir, string /*OUT*/ &base,
                            string const &inputPath)
 {
-  if (inputPath.isempty()) {
+  if (inputPath.empty()) {
     dir = "";
     base = "";
     return;
@@ -1141,8 +1176,8 @@ void SMFileUtil::splitPath(string /*OUT*/ &dir, string /*OUT*/ &base,
     s--;
   }
 
-  dir = inputPath.substring(0, s);
-  base = inputPath.substring(s, inputPath.length() - s);
+  dir = inputPath.substr(0, s);
+  base = inputPath.substr(s, inputPath.length() - s);
 }
 
 
@@ -1215,7 +1250,7 @@ void SMFileUtil::atomicallyRenameFile(string const &oldPath,
   // another process to get a transient permission error when querying
   // 'newPath' at just the wrong moment.)
   if (directoryExists(oldPath)) {
-    xfatal(stringb("atomicallyRenameFile: " << quoted(oldPath) <<
+    xfatal(stringb("atomicallyRenameFile: " << doubleQuote(oldPath) <<
                    " is a directory but this can only be used"
                    " with files"));
   }

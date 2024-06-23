@@ -1,0 +1,12 @@
+---- stdout ----
+RandomThings[
+  Person{
+    address: Address{num:101 street:"Main St" unit:"Apt 12"}
+    name: "Sam"
+  }
+  Place{city:"NY" name:"Central Park" state:"NY"}
+  Animal{genus:"Ursus" name:"Brown Bear" species:"Somethingus"}
+]
+---- stderr ----
+---- exit status ----
+Exit 0

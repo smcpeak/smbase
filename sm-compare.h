@@ -1,8 +1,11 @@
 // sm-compare.h
-// StrongOrdering enum.
+// StrongOrdering enum, similar to standard `<compare>`, but without
+// requiring C++20.
+//
+// This is the same idea as `compare-util.h`, except with an enum class
+// as the result instead of `int`.  I'm not sure which I want to commit
+// to, but at the moment I'm leaning toward plain `int`.
 
-// This header has some features that are intended to work similiarly to
-// those in <compare>, but without requiring C++20.
 
 #ifndef SMBASE_SM_COMPARE_H
 #define SMBASE_SM_COMPARE_H

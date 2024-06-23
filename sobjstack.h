@@ -1,5 +1,5 @@
 // sobjstack.h            see license.txt for copyright and terms of use
-// stack of objects, *not* owned by the stack
+// SObjStack, a stack of non-owned objects.  Built with a linked list.
 
 #ifndef SOBJSTACK_H
 #define SOBJSTACK_H

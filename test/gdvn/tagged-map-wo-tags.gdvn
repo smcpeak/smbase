@@ -1,0 +1,33 @@
+// tagged-map-wo-tags.gdvn
+// What tagged-map.gdvn would look like without tags.
+
+// It's not terrible, but it's not as nice, as there are significantly
+// more delimiters cluttering the view.
+
+[
+  (Person {
+    name: "Sam"
+    dob: (Date 1980 01 31)
+    address: (Address {
+      num: 101
+      street: "Main St"
+      unit: "Apt 12"
+    })
+  })
+  (Place {
+    name: "Central Park"
+    city: "NY"
+    state: "NY"
+    // TODO: Need floats.
+    //lattitude: 40.123
+    //longitude: 75.3
+  })
+  (Animal {
+    name: "Brown Bear"
+    genus: "Ursus"
+    species: "Somethingus"
+  })
+]
+
+
+// EOF

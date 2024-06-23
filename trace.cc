@@ -55,7 +55,7 @@ void traceRemoveSys(char const *sysName)
   init();
 
   MUTATE_EACH_OBJLIST(string, tracers, mut) {
-    if (mut.data()->compareTo(sysName) == 0) {
+    if (*(mut.data()) == sysName) {
       mut.deleteIt();
       return;
     }
@@ -69,7 +69,7 @@ bool tracingSys(char const *sysName)
   init();
 
   FOREACH_OBJLIST(string, tracers, iter) {
-    if (iter.data()->compareTo(sysName) == 0) {
+    if (*(iter.data()) == sysName) {
       return true;
     }
   }
@@ -134,7 +134,7 @@ ostream &traceProgress(int level)
 void traceAddMultiSys(char const *systemNames)
 {
   StrtokParse tok(systemNames, ",");
-  loopi(tok) {
+  smbase_loopi(tok) {
     if (tok[i][0] == '-') {
       // treat a leading '-' as a signal to *remove*
       // a tracing flag, e.g. from some defaults specified

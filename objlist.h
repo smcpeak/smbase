@@ -1,5 +1,5 @@
 // objlist.h
-// owner list of arbitrary dynamically-allocated objects
+// Owner list of arbitrary dynamically-allocated objects.
 // NOTE: automatically generated from xobjlist.h -- do not edit directly
 
 // Author: Scott McPeak, 2000

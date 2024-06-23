@@ -1,11 +1,8 @@
 // strobjdict.h            see license.txt for copyright and terms of use
-// dictionary of objects, indexed by string (case-sensitive)
-// (c) Scott McPeak, 2000
-// NOTE: automatically generated from xstrobjdict.h -- do not edit directly
+// StringObjDict, a case-sensitive map from strings to object pointers.
+// The dictionary owns the referred-to objects.
 
-// quarl 2006-06-08
-//    created xstrobjdict.h to generate strobjdict.h, strsobjdict.h, and new
-//    file strintdict.h
+// NOTE: automatically generated from xstrobjdict.h -- do not edit directly
 
 #ifndef STROBJDICT_H
 #define STROBJDICT_H
@@ -37,7 +34,7 @@ public:     // types
     bool isDone() const { return iter.isDone(); }
     Iter& next() { iter.next(); return *this; }
 
-    string const &key() const { return iter.key(); }
+    string key() const { return iter.key(); }
     T const * &value() const { return (T const * &)iter.value(); }
 
     int private_getCurrent() const { return iter.private_getCurrent(); }
@@ -74,6 +71,9 @@ public:     // types
       // delegate to the other Iter class
       for(IterC iter(map); !iter.isDone(); iter.next()) {
 //          xassert(i<numEntries);
+        xfailure("is this called?");
+
+        // BUG: This is obviously wrong.  WTH?
         sortedKeys[i++] = iter.key().c_str();
       }
       xassert(numEntries == i);

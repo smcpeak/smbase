@@ -1,14 +1,12 @@
 // arraymap.h            see license.txt for copyright and terms of use
-// template class to maintain an array-based map from
-// integers to object pointers; the map owns all of
-// the objects referred-to
+// ArrayMap, a map from integers to owner object pointers. Obsolete.
 
 // as far as I know, nothing currently uses this file, but
 // I believe it *has* been tested (whatever once used it now
 // uses something else)
 
-#ifndef ARRAYMAP_H
-#define ARRAYMAP_H
+#ifndef SMBASE_ARRAYMAP_H
+#define SMBASE_ARRAYMAP_H
 
 #include "xassert.h"     // xassert
 
@@ -123,4 +121,4 @@ T const *ArrayMap<T>::lookupC(int id) const
        var##id++)
 
 
-#endif // ARRAYMAP_H
+#endif // SMBASE_ARRAYMAP_H

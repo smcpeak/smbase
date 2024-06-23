@@ -18,6 +18,8 @@
   #define _O_BINARY 0
 #endif
 
+using namespace smbase;
+
 
 void setFileDescriptorToBinary(int fd)
 {

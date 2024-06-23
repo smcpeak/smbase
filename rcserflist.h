@@ -1,5 +1,5 @@
 // rcserflist.h
-// RCSerfList class.
+// Array-backed sequence of reference-counted pointers.
 
 #ifndef RCSERFLIST_H
 #define RCSERFLIST_H

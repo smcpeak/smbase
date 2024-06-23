@@ -1,12 +1,14 @@
 m4_dnl // xstrobjdict.h            see license.txt for copyright and terms of use
-m4_dnl // template file to be processed with m4 to generate one
-m4_dnl // of the wrappers around StringVoidDict
+m4_dnl // Template file to be processed with m4 to generate one
+m4_dnl // of the wrappers around StringVoidDict.
 m4_dnl
 m4_changequote([, ])m4_dnl      // for this section
 m4_changecom[]m4_dnl            // no m4 "comments"
 m4_ifelse(m4_output, strsobjdict.h, [m4_dnl
 // strsobjdict.h            see license.txt for copyright and terms of use
-// dictionary of *serf* pointers to objects, indexed by string (case-sensitive)
+// StringSObjDict, a case-sensitive map from strings to object pointers.
+// The dictionary does *not* own the referred-to objects.
+
 m4_define(makeName, S[$1])m4_dnl
 m4_define(outputCond, [$1])m4_dnl       // select 1st arg
 m4_define(SPC, [])m4_dnl
@@ -18,8 +20,9 @@ m4_define(outputCondTemplate, [$1])m4_dnl        // 1st arg: is template
 ], [m4_dnl
 m4_ifelse(m4_output, strintdict.h, [m4_dnl
 // strintdict.h            see license.txt for copyright and terms of use
-// dictionary of intptr_t (integers that fit into void*), indexed by string
-// (case-sensitive)
+// Dictionary of intptr_t (integers that fit into void*), indexed by string
+// (case-sensitive).
+
 m4_define(makeName, S[$1])m4_dnl
 m4_define(outputCond, [$1])m4_dnl       // select 1st arg
 m4_define(SPC, [ ])m4_dnl
@@ -30,7 +33,9 @@ m4_define(TCPTR, [intptr_t])m4_dnl
 m4_define(outputCondTemplate, [$2])m4_dnl        // 2nd arg: is NOT template
 ], [m4_dnl
 // strobjdict.h            see license.txt for copyright and terms of use
-// dictionary of objects, indexed by string (case-sensitive)
+// StringObjDict, a case-sensitive map from strings to object pointers.
+// The dictionary owns the referred-to objects.
+
 m4_define(makeName, [$1])m4_dnl
 m4_define(outputCond, [$2])m4_dnl       // select 2nd arg
 m4_define(SPC, [ ])m4_dnl               // for balancing lined-up comments
@@ -45,12 +50,7 @@ m4_dnl m4_define(XSTROBJDICT_type, XSTROBJDICT[]_type)m4_dnl
 m4_define(XSTROBJDICT_type, outputCondTemplate(XSTROBJDICT<T>, XSTROBJDICT))m4_dnl
 m4_changequote(, )m4_dnl              // so quotes are not quoted..
 m4_changequote([[[, ]]])m4_dnl        // reduce likelihood of confusion
-// (c) Scott McPeak, 2000
 // NOTE: automatically generated from xstrobjdict.h -- do not edit directly
-
-// quarl 2006-06-08
-//    created xstrobjdict.h to generate strobjdict.h, strsobjdict.h, and new
-//    file strintdict.h
 
 #ifndef includeLatch
 #define includeLatch
@@ -95,7 +95,7 @@ outputCond([[[m4_dnl
     bool isDone() const { return iter.isDone(); }
     Iter& next() { iter.next(); return *this; }
 
-    string const &key() const { return iter.key(); }
+    string key() const { return iter.key(); }
     TPTR &value() const { return (TPTR &)iter.value(); }
 
     int private_getCurrent() const { return iter.private_getCurrent(); }
@@ -114,7 +114,7 @@ outputCond([[[m4_dnl
     bool isDone() const { return iter.isDone(); }
     IterC& next() { iter.next(); return *this; }
 
-    string const &key() const { return iter.key(); }
+    string key() const { return iter.key(); }
     TPTR value() const { return (TPTR)iter.value(); }
 
     int private_getCurrent() const { return iter.private_getCurrent(); }
@@ -134,7 +134,7 @@ outputCond([[[m4_dnl
     bool isDone() const { return iter.isDone(); }
     Iter& next() { iter.next(); return *this; }
 
-    string const &key() const { return iter.key(); }
+    string key() const { return iter.key(); }
     TCPTR &value() const { return (TCPTR &)iter.value(); }
 
     int private_getCurrent() const { return iter.private_getCurrent(); }
@@ -172,6 +172,9 @@ outputCond([[[m4_dnl
       // delegate to the other Iter class
       for(IterC iter(map); !iter.isDone(); iter.next()) {
 //          xassert(i<numEntries);
+        xfailure("is this called?");
+
+        // BUG: This is obviously wrong.  WTH?
         sortedKeys[i++] = iter.key().c_str();
       }
       xassert(numEntries == i);
@@ -282,7 +285,16 @@ outputCond([[[m4_dnl
   // --------- iters -------------
 outputCond([[[m4_dnl
   void foreach(ForeachFn func, void *extra=NULL) const
-    { dict.foreach((StringVoidDict::ForeachFn)func, extra); }
+  {
+    // GCC -Wextra complains about this cast because the 'void*'
+    // parameter in the destination type does not match the 'intptr_t'
+    // parameter in the source type.  It's probably right that this is
+    // technically undefined behavior, but fixing that is a significant
+    // retrofit to old code that works in practice on every
+    // implementation I'm aware of, so for now I'm choosing not to fix
+    // it.  Instead, I use -Wno-cast-function-type.
+    dict.foreach((StringVoidDict::ForeachFn)func, extra);
+  }
 ]]],[[[m4_dnl
   void foreachC(ForeachCFn func, void *extra=NULL) const
     { dict.foreach((StringVoidDict::ForeachFn)func, extra); }

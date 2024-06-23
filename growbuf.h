@@ -1,8 +1,8 @@
 // growbuf.h            see license.txt for copyright and terms of use
-// buffer that grows as needed by doubling in size
+// Extension of DataBlock that provides an append() function.
 
-#ifndef __GROWBUF_H
-#define __GROWBUF_H
+#ifndef SMBASE_GROWBUF_H
+#define SMBASE_GROWBUF_H
 
 #include "datablok.h"       // DataBlock
 
@@ -19,4 +19,4 @@ public:
     { append((unsigned char const*)str, len); }
 };
 
-#endif // __GROWBUF_H
+#endif // SMBASE_GROWBUF_H

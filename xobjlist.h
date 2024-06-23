@@ -1,18 +1,18 @@
 m4_dnl // xobjlist.h            see license.txt for copyright and terms of use
-m4_dnl // template file to be processed with m4 to generate one
-m4_dnl // of the wrappers around VoidList
+m4_dnl // Template file to be processed with m4 to generate one
+m4_dnl // of the wrappers around VoidList.
 m4_dnl
 m4_changequote([, ])m4_dnl      // for this section
 m4_changecom[]m4_dnl            // no m4 "comments"
 m4_ifelse(m4_output, sobjlist.h, [m4_dnl
 // sobjlist.h
-// serf list of arbitrary objects
+// Serf (non-owning) list of arbitrary objects.
 m4_define(makeName, S[$1])m4_dnl
 m4_define(outputCond, [$1])m4_dnl       // select 1st arg
 m4_define(SPC, [])m4_dnl
 ], [m4_dnl
 // objlist.h
-// owner list of arbitrary dynamically-allocated objects
+// Owner list of arbitrary dynamically-allocated objects.
 m4_define(makeName, [$1])m4_dnl
 m4_define(outputCond, [$2])m4_dnl       // select 2nd arg
 m4_define(SPC, [ ])m4_dnl               // for balancing lined-up comments

@@ -1,11 +1,14 @@
 // ofstreamts.cc
+// Code for `ofstreamts` module.
 
 // quarl 2006-05-25 initial version, factored from 2006-05-16 astgen.cc
 
 #include "ofstreamts.h"                // this module
 
-#include "exc.h"                       // xfatal
+#include "exc.h"                       // smbase::xfatal
 #include "sm-file-util.h"              // SMFileUtil
+
+using namespace smbase;
 
 
 size_t getFileSize(istream &i)
@@ -30,7 +33,7 @@ bool filesIdentical(const char *f1, const char *f2)
 
   ifstream i2(f2);
   if (!i2) {
-    xfatal(stringc << "I thought I just wrote " << f2 << ", but it doesn't exist");
+    xfatal(stringb("I thought I just wrote " << f2 << ", but it doesn't exist"));
     return false;
   }
 

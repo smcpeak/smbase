@@ -1,5 +1,6 @@
 // arrayqueue.h
-// queue, implemented with an array
+// ArrayQueue, a template class implementing a queue with an array.
+// Supports O(1) enqueue and dequeue.
 
 #ifndef ARRAYQUEUE_H
 #define ARRAYQUEUE_H

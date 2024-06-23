@@ -1,8 +1,8 @@
 // thashtbl.h            see license.txt for copyright and terms of use
-// type-safe version of HashTable
+// Template class built on top of HashTable.  Maps KEY* to VALUE*.
 
-#ifndef THASHTBL_H
-#define THASHTBL_H
+#ifndef SMBASE_THASHTBL_H
+#define SMBASE_THASHTBL_H
 
 #include "hashtbl.h"     // HashTable, HashTableIter
 
@@ -92,4 +92,4 @@ public:       // funcs
 };
 
 
-#endif // THASHTBL_H
+#endif // SMBASE_THASHTBL_H

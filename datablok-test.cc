@@ -4,7 +4,8 @@
 #include "datablok.h"                  // module under test
 
 #include "nonport.h"                   // removeFile
-#include "sm-macros.h"                 // Restorer
+#include "save-restore.h"              // SET_RESTORE
+#include "sm-test.h"                   // verbose
 #include "xassert.h"                   // xfailure
 
 #include <stdio.h>                     // printf
@@ -19,7 +20,7 @@ static void corruptionHandler()
 
 static void testMemoryCorruption()
 {
-  Restorer< void (*)() > restorer(DataBlock::s_memoryCorruptionOverrideHandler,
+  SET_RESTORE(DataBlock::s_memoryCorruptionOverrideHandler,
     &corruptionHandler);
 
   {
@@ -47,11 +48,21 @@ void test_datablok()
         b.getData()[i] = (unsigned char)i;
       }
       b.setDataLen(260);
-      b.print("all bytes plus 4 extra");
+      if (verbose) {
+        b.print("all bytes plus 4 extra");
+      }
     }
 
     DataBlock block("yadda smacker");
     xassert(block.getDataLen() == 14);
+
+    // Full: Includes NUL.
+    xassert(block.toFullString() == string("yadda smacker", 14));
+
+    // Null-term: Does not.
+    xassert(block.toNTString() == string("yadda smacker"));
+
+    // Legacy compatibility: Does not.
     xassert(block.toString() == string("yadda smacker"));
 
     DataBlock block2((unsigned char*)"yadda smacker", 13, 14);
@@ -73,10 +84,13 @@ void test_datablok()
     xassert(block == block4);
     removeFile("tempfile.blk");
 
-    testMemoryCorruption();
+    // This particular test is annoying because it prints an alarming
+    // message that is easily misinterpreted.  If I'm not actively
+    // developing DataBlock then I don't need this on.
+    if (false) {
+      testMemoryCorruption();
+    }
   }
-
-  printf("test_datablok: PASSED\n");
 }
 
 

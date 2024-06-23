@@ -1,4 +1,6 @@
 // ptrmap.h            see license.txt for copyright and terms of use
+// PtrMap, a non-owning template class built on top of VoidPtrMap.
+
 // map from KEY* to VALUE* for arbitrary types KEY and VALUE
 // (neither are owned by the table)
 
@@ -10,7 +12,8 @@
 #define PTRMAP_H
 
 #include "vptrmap.h"       // VoidPtrMap
-#include "typ.h"           // NULL
+
+#include <stddef.h>        // NULL
 
 
 template <class KEY, class VALUE>

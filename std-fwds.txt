@@ -1,0 +1,130 @@
+std-fwds.txt
+Explanation of the std-*-fwd.h headers
+
+
+Overview
+========
+
+The std-*-fwd.h headers, plus detect-libcpp.h, provide forward
+declarations for standard headers for improved compile times.
+
+
+Usage
+=====
+
+Where a forward declaration will suffice, instead of:
+
+  #include <string>
+  std::string something();
+
+write:
+
+  #include "smbase/std-string-fwd.h"
+  stdfwd::string something();
+
+Then in the implementation file:
+
+  #include <string>
+  std::string something() {...}
+
+The `stdfwd::`-prefixed name is an alias for the `std::`-prefixed name,
+so these will be compatible.
+
+
+The `stdfwd` namespace
+======================
+
+It is unfortunate that a different namespace than `std` is used, but
+there is no alternative for things like `std::vector` since the default
+argument can only be provided once.
+
+In practice, types that do not take template arguments, such as
+`stdfwd::string`, can be written `std::string`.  Additionally, those
+that only take one argument, like `char_traits`, are also safe.   Using
+`stdfwd` in such cases can be seen as proactive in case a libc++ shows
+up that requires it, but that seems unlikely.
+
+
+Implementation notes
+====================
+
+The basic idea is to detect which libc++ is in use, then provide
+declarations that are compatible with it.  Obviously, this is not
+portable, conforming C++.
+
+If the libc++ cannot be detected then std-XXX-fwd.h falls back to
+including <XXX>, so it should be no worse than using the standard header
+directly.  By default a warning is issued, but that can be suppressed by
+defining `SMBASE_SUPPRESS_UNKNOWN_LIBCPP_WARNING` on the command line.
+
+
+License
+=======
+
+The smbase headers are derived from `stdfwd.hh` created by Philip
+Tretter and published at:
+
+  https://github.com/Philip-Trettner/cpp-std-fwd
+
+The license for that repo is:
+
+  MIT License
+
+  Copyright (c) 2019 Philip Trettner
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+
+My contributions are thus similarly licensed:
+
+  MIT License
+
+  Copyright (c) 2024 Scott McPeak
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+
+
+Changes
+=======
+
+Relative to Philip's work:
+
+* These headers have a fallback mechanism if libc++ is not detected.
+
+* These headers are subdivided by standard header, rather than all
+  rolled into one, to make the fallback no worse than using a standard
+  header directly.
+
+
+EOF

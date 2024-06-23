@@ -1,5 +1,5 @@
 // array.h            see license.txt for copyright and terms of use
-// some array classes
+// Several array-like template classes, including growable arrays.
 
 // These classes predate the wide availability of the C++ standard
 // library.  Except for ArrayStackEmbed, none of these should be used in
@@ -15,13 +15,13 @@
 #include "xassert.h"                   // xassert
 
 // libc++
+#include <algorithm>                   // std::sort
 #include <iterator>                    // std::random_access_iterator_tag
 #include <utility>                     // std::swap
 #include <vector>                      // std::vector
 
 // libc
 #include <stddef.h>                    // size_t, ptrdiff_t
-#include <stdlib.h>                    // qsort
 
 
 // -------------------- Array ----------------------
@@ -354,8 +354,16 @@ public:      // funcs
   }
 
   void sort(int (*compare)(T const *t1, T const *t2)) {
-    qsort(GrowArray<T>::getArrayNC(), len, sizeof(T),
-          (int (*)(void const*, void const*))compare );
+    T *start = GrowArray<T>::getArrayNC();
+    std::sort(start, start+len,
+              [=](T const &a, T const &b) {
+                return compare(&a, &b) < 0;
+              });
+
+    // This is unsafe since 'T' might not be bitwise copyable!  This
+    // specifically is an issue when it is or contains std::string.
+    //qsort(GrowArray<T>::getArrayNC(), len, sizeof(T),
+    //      (int (*)(void const*, void const*))compare );
   }
 
   // Move the item at 'oldIndex' so it occupies 'newIndex' instead,

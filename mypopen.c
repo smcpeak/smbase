@@ -3,14 +3,18 @@
 // this module's implementation is in C, and not dependent on anything
 // else in smbase, so it can be extracted and used independently
 
-#include "mypopen.h"    // this module
+#include "mypopen.h"         // this module
 
-#include <stdlib.h>     // exit, perror
-#include <stdio.h>      // printf
-#include <unistd.h>     // pipe, read, etc.
-#include <string.h>     // strlen
-#include <sys/types.h>  // pid_t
-#include <sys/wait.h>   // wait
+#include <stdlib.h>          // exit, perror
+#include <stdio.h>           // printf
+#include <string.h>          // strlen
+
+// POSIX
+#include <unistd.h>          // pipe, read, etc.
+#ifndef __WIN32__
+  #include <sys/types.h>     // pid_t
+  #include <sys/wait.h>      // wait
+#endif
 
 #define STDIN 0
 #define STDOUT 1
@@ -19,6 +23,23 @@
 #ifndef max
   #define max(a,b) ((a)>(b)?(a):(b))
 #endif
+
+
+// The entire module only works on non-Windows.
+#ifndef __WIN32__
+
+
+int mypopenModuleWorks()
+{
+  return 1;
+}
+
+
+int mypopenWait(int *status)
+{
+  return wait(status);
+}
+
 
 // -------------------- helpers ----------------------
 static void die(char const *fn)
@@ -161,128 +182,48 @@ int popen_pipes(int *parentWritesChild, int *parentReadsChild,
 }
 
 
-// ------------------ test code ----------------------
-#ifdef TEST_MYPOPEN
+#else // __WIN32__
 
-int main()
+int mypopenModuleWorks()
 {
-  char buf[80];
-  int stat;
-
-  // try cat
-  {
-    int in, out;
-    char const *argv[] = { "cat", NULL };
-    int pid = popen_execvp(&in, &out, NULL, argv[0], argv);
-    printf("child pid is %d\n", pid);
-
-    if (write(in, "foo\n", 4) != 4) {
-      die("write");
-    }
-    if (read(out, buf, 4) != 4) {
-      die("read");
-    }
-
-    if (0==memcmp(buf, "foo\n", 4)) {
-      printf("cat worked for foo\n");
-    }
-    else {
-      printf("cat FAILED\n");
-      return 2;
-    }
-
-    if (write(in, "bar\n", 4) != 4) {
-      die("write");
-    }
-    if (read(out, buf, 4) != 4) {
-      die("read");
-    }
-
-    if (0==memcmp(buf, "bar\n", 4)) {
-      printf("cat worked for bar\n");
-    }
-    else {
-      printf("cat FAILED\n");
-      return 2;
-    }
-
-    close(in);
-    close(out);
-
-    printf("waiting for cat to exit..\n");
-    if (wait(&stat) < 1) {
-      perror("wait");
-    }
-    else {
-      printf("cat exited with status %d\n", stat);
-    }
-  }
-
-  // try something which fails
-  {
-    int in, out, err;
-    int len;
-    char const *argv[] = { "does_not_exist", NULL };
-    int pid = popen_execvp(&in, &out, &err, argv[0], argv);
-    printf("child pid is %d\n", pid);
-
-    printf("waiting for error message...\n");
-    len = read(err, buf, 78);
-    if (len < 0) {
-      die("read");
-    }
-    if (buf[len-1] != '\n') {
-      buf[len++] = '\n';
-    }
-    buf[len] = 0;
-    printf("error string: %s", buf);   // should include newline from perror
-
-    close(in);
-    close(out);
-    close(err);
-
-    printf("waiting for child to exit..\n");
-    if (wait(&stat) < 1) {
-      perror("wait");
-    }
-    else {
-      printf("child exited with status %d\n", stat);
-    }
-  }
-
-  // also fails, but with stdout and stderr going to same pipe
-  {
-    int in, out;
-    int len;
-    char const *argv[] = { "does_not_exist", NULL };
-    int pid = popen_execvp(&in, &out, &out, argv[0], argv);
-    printf("out==err: child pid is %d\n", pid);
-
-    printf("waiting for error message...\n");
-    len = read(out, buf, 78);
-    if (len < 0) {
-      die("read");
-    }
-    if (buf[len-1] != '\n') {
-      buf[len++] = '\n';
-    }
-    buf[len] = 0;
-    printf("error string: %s", buf);   // should include newline from perror
-
-    close(in);
-    close(out);
-
-    printf("waiting for child to exit..\n");
-    if (wait(&stat) < 1) {
-      perror("wait");
-    }
-    else {
-      printf("child exited with status %d\n", stat);
-    }
-  }
-
-  printf("mypopen worked!\n");
   return 0;
 }
 
-#endif // TEST_POPEN
+
+static int unsupported()
+{
+  errno = ENOSYS;
+  return -1;
+}
+
+
+int mypopenWait(int *status)
+{
+  return unsupported();
+}
+
+
+void makePipe(int *readEnd, int *writeEnd)
+{}
+
+
+int popen_pipes(int *parentWritesChild, int *parentReadsChild,
+                int *childStderr,
+                execFunction func, void *extraArgs)
+{
+  return unsupported();
+}
+
+
+int popen_execvp(int *parentWritesChild, int *parentReadsChild,
+                 int *childStderr,
+                 char const *file, char const * const *argv)
+{
+  return unsupported();
+}
+
+
+#endif
+
+
+// EOF

@@ -5,21 +5,24 @@
 
 #include "codepoint.h"                 // isASCIIDigit
 #include "overflow.h"                  // multiplyWithOverflowCheck
-#include "strutil.h"                   // quoteCharacter
+#include "string-util.h"               // doubleQuote, singleQuoteChar
+#include "xassert.h"                   // xassert
+
+using namespace smbase;
 
 
 // ------------------------- XParseString ---------------------------
 static string formatCondition(string const &str, int offset,
   string const &conflict)
 {
-  return stringb("at location " << offset << " in " << quoted(str) <<
+  return stringb("at location " << offset << " in " << doubleQuote(str) <<
                  ": " << conflict);
 }
 
 
 XParseString::XParseString(string const &str, int offset,
                            string const &conflict)
-  : xFormat(formatCondition(str, offset, conflict)),
+  : XFormat(formatCondition(str, offset, conflict)),
     m_str(str),
     m_offset(offset),
     m_conflict(conflict)
@@ -27,7 +30,7 @@ XParseString::XParseString(string const &str, int offset,
 
 
 XParseString::XParseString(XParseString const &obj)
-  : xFormat(obj),
+  : XFormat(obj),
     DMEMB(m_str),
     DMEMB(m_offset),
     DMEMB(m_conflict)
@@ -66,7 +69,7 @@ int ParseString::cur() const
 
 string ParseString::quoteCur() const
 {
-  return quoteCharacter(cur());
+  return singleQuoteChar(cur());
 }
 
 
@@ -91,11 +94,11 @@ void ParseString::skipWS()
 void ParseString::parseChar(int c)
 {
   if (eos()) {
-    THROWERR("found end of string, expected " << quoteCharacter(c));
+    THROWERR("found end of string, expected " << singleQuoteChar(c));
   }
   if (cur() != c) {
     THROWERR("found " << quoteCur() <<
-             ", expected " << quoteCharacter(c));
+             ", expected " << singleQuoteChar(c));
   }
   adv();
 }

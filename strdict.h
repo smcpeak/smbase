@@ -1,16 +1,16 @@
 // strdict.h            see license.txt for copyright and terms of use
-// string dictionary
-// (c) Scott McPeak, 2000
+// StringDict, a case-sensitive map from strings to strings.
+// Currently, this is implemented with a linked list and consequently
+// not efficient.  But it will work when efficiency does not matter,
+// and could be reimplemented (preserving the interface) with something
+// better.
 
-// entire module is case sensitive
-
-#ifndef __STRDICT_H
-#define __STRDICT_H
+#ifndef SMBASE_STRDICT_H
+#define SMBASE_STRDICT_H
 
 #include "sm-iostream.h"// ostream
 #include "sm-macros.h"  // DMEMB
 #include "str.h"        // string
-#include "typ.h"        // MUTABLE
 #include "xassert.h"    // xassert
 
 class StringDict {
@@ -145,4 +145,4 @@ public:
   string toString() const;
 };
 
-#endif // __STRDICT_H
+#endif // SMBASE_STRDICT_H

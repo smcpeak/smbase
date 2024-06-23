@@ -130,7 +130,7 @@ public:      // funcs
   void fromCurrentTime(DateTimeProvider *provider = NULL);
 
   // Validate that the fields conform to their documented ranges.  If
-  // one does not, throw xFormat.
+  // one does not, throw XFormat.
   //
   // See the implementation for comments on the rationale for the
   // chosen ranges.

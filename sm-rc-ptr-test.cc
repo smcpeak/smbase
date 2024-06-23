@@ -3,9 +3,13 @@
 
 #include "sm-rc-ptr.h"                 // module under test
 
+#include "sm-test.h"                   // DIAG, verbose
 #include "xassert.h"                   // xassert
 
 #include <iostream>                    // std::cout, etc.
+
+
+OPEN_ANONYMOUS_NAMESPACE
 
 
 class Foo : public RefCountObject {
@@ -16,35 +20,35 @@ public:      // methods
   Foo()
     : x(0)
   {
-    std::cout << "  called Foo::Foo(): " << (void*)this << "\n";
+    DIAG("  called Foo::Foo(): " << (void*)this);
   }
 
   Foo(int xx)
     : x(xx)
   {
-    std::cout << "  called Foo::Foo(int=" << xx << "): " << (void*)this << "\n";
+    DIAG("  called Foo::Foo(int=" << xx << "): " << (void*)this);
   }
 
   Foo(Foo const &obj)
     : RefCountObject(),
       x(obj.x)
   {
-    std::cout << "  called Foo::Foo(Foo const &): " << (void*)this << "\n";
+    DIAG("  called Foo::Foo(Foo const &): " << (void*)this);
   }
 
   ~Foo()
   {
-    std::cout << "  called Foo::~Foo(): " << (void*)this << "\n";
+    DIAG("  called Foo::~Foo(): " << (void*)this);
   }
 };
 
 
 // Like a header for a section.
-#define FUNCTION_HEADER() std::cout << __func__ << ":\n" /* user ; */
+#define FUNCTION_HEADER() DIAG(__func__ << ":")
 
 
 // One entry in a section.
-#define IN_FUNCTION() std::cout << "  in " << __func__ << "\n" /* user ; */
+#define IN_FUNCTION() DIAG("  in " << __func__)
 
 
 static void testAssignNew()
@@ -125,24 +129,24 @@ public:      // methods
   HasRCPtr()
     : m_ptr(new Foo)
   {
-    std::cout << "  called HasRCPtr::HasRCPtr()\n";
+    DIAG("  called HasRCPtr::HasRCPtr()");
   }
 
   HasRCPtr(HasRCPtr const &obj)
     : m_ptr(obj.m_ptr)
   {
-    std::cout << "  called HasRCPtr::HasRCPtr(HasRCPtr const &)\n";
+    DIAG("  called HasRCPtr::HasRCPtr(HasRCPtr const &)");
   }
 
   HasRCPtr(HasRCPtr &&obj)
     : m_ptr(obj.m_ptr)
   {
-    std::cout << "  called HasRCPtr::HasRCPtr(HasRCPtr &&)\n";
+    DIAG("  called HasRCPtr::HasRCPtr(HasRCPtr &&)");
   }
 
   ~HasRCPtr()
   {
-    std::cout << "  called HasRCPtr::~HasRCPtr()\n";
+    DIAG("  called HasRCPtr::~HasRCPtr()");
   }
 };
 
@@ -270,7 +274,10 @@ static void testImplicitUpcast()
 }
 
 
+CLOSE_ANONYMOUS_NAMESPACE
 
+
+// Called from unit-tests.cc.
 void test_sm_rc_ptr()
 {
   testAssignNew();

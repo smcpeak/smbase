@@ -1,6 +1,11 @@
 // boxprint.h
-// another pretty-printing module, this one based on the box model
-// described at http://caml.inria.fr/FAQ/format-eng.html
+// BoxPrint functions as an output stream (sort of like cout) with
+// operations to indicate structure within the emitted text, so that it
+// can break lines intelligently.  It's used as part of a source-code
+// pretty-printer.
+
+// It is partly based the box model described at
+// http://caml.inria.fr/FAQ/format-eng.html
 
 #ifndef BOXPRINT_H
 #define BOXPRINT_H
@@ -51,7 +56,7 @@ public:
   // take the string out of the rendering engine, replacing it
   // with the empty string
   string takeString() {
-    string ret(sb);
+    string ret(sb.str());
     reset();
     return ret;
   }

@@ -3,17 +3,29 @@
 
 #include "mysig.h"      // this module
 
+// libc
 #include <string.h>     // strsignal
 #include <stdlib.h>     // exit
-#include <unistd.h>     // sleep
 #include <stdio.h>      // printf
+
+// POSIX
+#include <unistd.h>     // sleep
 
 // needed on Solaris; is __sun__ a good way to detect that?
 #ifdef __sun__
   #include <siginfo.h>
 #endif
 
-#ifndef __CYGWIN__      // everything here is for *not* cygwin
+
+// Everything here is for platforms other than Windows.
+#if !(defined(__WIN32__))
+
+
+int mysigModuleWorks()
+{
+  return 1;
+}
+
 
 void setHandler(int signum, SignalHandler handler)
 {
@@ -64,7 +76,7 @@ jmp_buf sane_state;
 void jmpHandler(int signum)
 {
   //fprintf(stderr, "jmpHandler: I caught signal %d\n", signum);
-  psignal(signum, "jmpHandler: caught signal");
+  //psignal(signum, "jmpHandler: caught signal");
 
   // reset the signal handler to its default handler
   setHandler(signum, SIG_DFL);
@@ -140,77 +152,21 @@ void printSegfaultAddrs()
 }
 
 
-// ------------------ test code ------------------
-#ifdef TEST_MYSIG
+#else   // Windows -- just stubs so it compiles
 
-static void infiniteRecursion()
+int mysigModuleWorks()
 {
-  char buf[1024];
-  buf[0] = 4;
-  buf[1] = buf[0];     // silence an icc warning
-  buf[1023] = 6;
-  infiniteRecursion();
+  return 0;
 }
 
-int main(int argc, char **argv)
-{
-  if (argc >= 2) {
-    // segfault at a given addr
-    printSegfaultAddrs();
-
-    if (0==strcmp(argv[1], "inf")) {
-      // die by stack overflow.. interesting, I can't catch it..
-      printf("going into infinite recursion...\n");
-      infiniteRecursion();
-    }
-
-    long addr = strtoul(argv[1], NULL /*endp*/, 0 /*radix*/);
-    printf("about to access 0x%lX ...\n", addr);
-    *((int*)addr) = 0;
-    return 0;     // won't be reached for most values of 'addr'
-  }
-
-  if (setjmp(sane_state) == 0) {   // normal flow
-    setHandler(SIGINT, printHandler);
-    setHandler(SIGTERM, printHandler);
-    setHandler(SIGUSR1, jmpHandler);
-    setHandler(SIGSEGV, jmpHandler);
-    setHandler(SIGBUS, jmpHandler);   // osx gives SIBGUS instead of SIGSEGV
-
-    //printf("I'm pid %d waiting to be killed...\n", getpid());
-    //sleep(10);
-    printf("about to deliberately cause a segfault ...\n");
-    printf("(Note: 'gcc -fsanitize=undefined' will report a "
-           "\"runtime error\" here too, which can be ignored.)\n");
-    *((int*)0) = 0;    // segfault!
-
-    printf("didn't segfault??\n");
-    return 2;
-  }
-
-  else {         // from longjmp
-    printf("came back from a longjmp!\n");
-    printf("\nmysig works\n");
-    return 0;
-  }
-}
-
-#endif // TEST_MYSIG
-
-
-#else   // cygwin -- just stubs so it compiles
 void setHandler(int, SignalHandler) {}
 void printHandler(int) {}
 jmp_buf sane_state;
 void jmpHandler(int) {}
 void printSegfaultAddrs() {}
 
-#ifdef TEST_MYSIG
-int main()
-{
-  printf("mysig on cygwin: nop\n");
-  return 0;
-}
-#endif // TEST_MYSIG
 
-#endif     // cygwin
+#endif  // Windows
+
+
+// EOF

@@ -1,7 +1,7 @@
 // flatten.h            see license.txt for copyright and terms of use
-// interface to automate process of flattening structures made of objects with
-//   arbitrary types, and possibly circular references
-// this is a trimmed-down version of the one in 'proot'
+// Generic interface for serializing in-memory data structures to files.
+// Similar to Java's Serializable, but independently conceived, and has
+// superior version control facilities.
 
 // Has a number of similarities with boost::serialize,
 //   http://www.boost.org/libs/serialization/doc/index.html
@@ -63,9 +63,12 @@ public:      // funcs
   virtual void xfer_int32_t(int32_t &i);
   virtual void xfer_uint32_t(uint32_t &i);
 
-  // read or write a null-terminated character buffer, allocated with
-  // new; this works if 'str' is NULL (in other words, a NULL string
-  // is distinguished from an empty string, and both are legal)
+  // Read or write a null-terminated character buffer, allocated with
+  // `new[]`.  This works if 'str' is NULL (in other words, a NULL
+  // string is distinguished from an empty string, and both are legal).
+  //
+  // Note: In read mode, the caller is responsible for freeing the
+  // memory with `delete[]`!.
   virtual void xferCharString(char *&str);
 
   // xfer a buffer allocated with 'new', of a given length; the buffer

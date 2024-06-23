@@ -3,12 +3,15 @@
 
 #include "gcc-options.h"               // module under test
 
+#include "exc.h"                       // smbase::XBase
 #include "sm-test.h"                   // EXPECT_EQ
-#include "string-utils.h"              // toString(std::vector)
-#include "vector-utils.h"              // accumulateWith[Map]
+#include "string-util.h"               // toString(std::vector)
+#include "vector-util.h"               // accumulateWith[Map]
 #include "xassert.h"                   // xassert
 
 #include <iostream>                    // std::cout
+
+using namespace smbase;
 
 
 #define OM(name) GCCOptions::OM_##name
@@ -830,9 +833,9 @@ static void testGetDefaultDependencyTarget()
         EXPECT_EQ(actual, std::string(t.m_expect));
       }
     }
-    catch (xBase &x) {
+    catch (XBase &x) {
       x.prependContext(stringb(__func__ << ": " << toString(t.m_input)));
-      throw x;
+      throw;
     }
   }
 }
@@ -885,9 +888,9 @@ static void testNumSourceFiles()
       int actual = opts.numSourceFiles();
       EXPECT_EQ(actual, t.m_expect);
     }
-    catch (xBase &x) {
+    catch (XBase &x) {
       x.prependContext(stringb(__func__ << ": " << toString(t.m_input)));
-      throw x;
+      throw;
     }
   }
 }

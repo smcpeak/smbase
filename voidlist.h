@@ -1,13 +1,12 @@
 // voidlist.h            see license.txt for copyright and terms of use
-// list of void*
+// List of void*.  This is used by ObjList and SObjList.
 
 // Author: Scott McPeak, 2000
 
-#ifndef __VOIDLIST_H
-#define __VOIDLIST_H
+#ifndef SMBASE_VOIDLIST_H
+#define SMBASE_VOIDLIST_H
 
 #include "xassert.h"     // xassert
-#include "typ.h"         // bool
 #include "trdelete.h"    // TRASHINGDELETE
 
 // -------------------------- non-typesafe core -----------------------------
@@ -227,4 +226,4 @@ public:
 };
 
 
-#endif // __VOIDLIST_H
+#endif // SMBASE_VOIDLIST_H

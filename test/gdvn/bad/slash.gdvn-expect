@@ -1,0 +1,5 @@
+---- stdout ----
+---- stderr ----
+test/gdvn/bad/slash.gdvn:1:2: Unexpected end of file while looking for character after '/'.
+---- exit status ----
+Exit 2

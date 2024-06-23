@@ -6,8 +6,11 @@
 #include "overflow.h"     // convertNumber
 #include "sm-stdint.h"    // intptr_t
 #include "syserr.h"       // xsyserror
+#include "xassert.h"      // xassert
 
 #include <fstream>        // std::fstream, etc.
+
+using namespace smbase;
 
 
 // ----------------------- OwnerTableFlatten ---------------------------
@@ -23,12 +26,12 @@ OwnerTableFlatten::~OwnerTableFlatten()
 {}
 
 
-/*static*/ void const* OwnerTableFlatten::getOwnerPtrKeyFn(OwnerMapping *data)
+STATICDEF void const* OwnerTableFlatten::getOwnerPtrKeyFn(OwnerMapping *data)
 {
   return data->ownerPtr;
 }
 
-/*static*/ void const* OwnerTableFlatten::getIntNameKeyFn(OwnerMapping *data)
+STATICDEF void const* OwnerTableFlatten::getIntNameKeyFn(OwnerMapping *data)
 {
   return (void const*)(intptr_t)(data->intName);
 }
@@ -181,7 +184,7 @@ void StreamFlatten::xferSimple(void *var, size_t len)
 
 // ---------------------------- BFlatten -------------------------------
 // Attempt to open an ifstream or ofstream for 'fname', throwing
-// xSysError if the attempt fails.
+// XSysError if the attempt fails.
 template <class T>
 T *tryOpen(char const *fname)
 {

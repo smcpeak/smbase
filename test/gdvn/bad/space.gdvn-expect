@@ -1,0 +1,5 @@
+---- stdout ----
+---- stderr ----
+test/gdvn/bad/space.gdvn:1:2: Unexpected end of file while looking for the start of a value.
+---- exit status ----
+Exit 2

@@ -1,6 +1,6 @@
 // trace.h            see license.txt for copyright and terms of use
-// module for diagnostic tracing
-// see trace.html
+// Module for recording and querying a set of debug tracing flags.
+// It is documented in trace.html.
 
 #ifndef TRACE_H
 #define TRACE_H

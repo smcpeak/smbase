@@ -1,0 +1,408 @@
+---- stdout ----
+---- gdvalue ----
+null: null
+dTrue = true
+dFalse = false
+dSym1 = sym1
+d0 = 0
+dStr1 = "str1"
+string begin/end const iteration:
+s
+t
+r
+1
+string iterable const iteration:
+s
+t
+r
+1
+string begin/end non-const iteration:
+t
+u
+s
+2
+again: "tus2"
+string iterable non-const iteration:
+s
+t
+r
+1
+empty seq: []
+three-element seq: [1 "b" 3]
+v1 = [-1 [1 "b" 3] null null 5]
+empty set: {{}}
+{{10 "x" [2 3 4]}}
+empty map: {}
+{"one":1}
+{2:3 "a":1 [10 11]:ten_eleven}
+x = open (for writing): "out/gvdn/dir-does-not-exist/123.gdvn": File not found
+x = open (for reading): "out/gvdn/file-does-not-exist.gdvn": File not found
+pretty print target width: 0
+[
+  1
+  2
+  3
+]
+{
+  a:
+    [
+      1
+      2
+      3
+    ]
+  [
+    1
+    2
+    3
+  ]:
+    [
+      1
+      2
+      3
+    ]
+}
+[
+  1
+  "hello"
+  [
+    2
+    3
+    4
+  ]
+  {{
+    10
+    "x"
+    [
+      2
+      3
+      4
+    ]
+  }}
+]
+{
+  8:
+    9
+  10:
+    11
+  12:
+    13
+  14:
+    15
+}
+{
+  counting:
+    {{
+      "drei"
+      "eins"
+      "zwei"
+    }}
+  v:
+    [
+      1
+      "hello"
+      [
+        2
+        3
+        4
+      ]
+      {{
+        10
+        "x"
+        [
+          2
+          3
+          4
+        ]
+      }}
+    ]
+  "four":
+    4
+  "x":
+    {
+      8:
+        9
+      10:
+        11
+      12:
+        13
+      14:
+        15
+    }
+  {
+    8:
+      9
+    10:
+      11
+    12:
+      13
+    14:
+      15
+  }:
+    {
+      8:
+        9
+      10:
+        11
+      12:
+        13
+      14:
+        15
+    }
+}
+{
+  {
+    1:
+      2
+  }:
+    {{
+      "drei"
+      "eins"
+      "zwei"
+    }}
+}
+{
+  1:
+    "long-ish value"
+  2:
+    3
+}
+[
+  tagName__{
+    1:
+      2
+    3:
+      4
+  }
+  5
+]
+outer{
+  "x":
+    inner12345678{
+      1:
+        2
+      3:
+        4
+    }
+}
+pretty print target width: 19
+|-----------------|
+[1 2 3]
+{
+  a: [1 2 3]
+  [1 2 3]: [1 2 3]
+}
+[
+  1
+  "hello"
+  [2 3 4]
+  {{
+    10
+    "x"
+    [2 3 4]
+  }}
+]
+{
+  8: 9
+  10: 11
+  12: 13
+  14: 15
+}
+{
+  counting: {{
+    "drei"
+    "eins"
+    "zwei"
+  }}
+  v: [
+    1
+    "hello"
+    [2 3 4]
+    {{
+      10
+      "x"
+      [2 3 4]
+    }}
+  ]
+  "four": 4
+  "x": {
+    8: 9
+    10: 11
+    12: 13
+    14: 15
+  }
+  {
+    8: 9
+    10: 11
+    12: 13
+    14: 15
+  }:
+    {
+      8: 9
+      10: 11
+      12: 13
+      14: 15
+    }
+}
+{
+  {1:2}: {{
+    "drei"
+    "eins"
+    "zwei"
+  }}
+}
+{
+  1:
+    "long-ish value"
+  2: 3
+}
+[
+  tagName__{
+    1: 2
+    3: 4
+  }
+  5
+]
+outer{
+  "x":
+    inner12345678{
+      1: 2
+      3: 4
+    }
+}
+|-----------------|
+pretty print target width: 20
+|------------------|
+[1 2 3]
+{
+  a: [1 2 3]
+  [1 2 3]: [1 2 3]
+}
+[
+  1
+  "hello"
+  [2 3 4]
+  {{10 "x" [2 3 4]}}
+]
+{
+  8: 9
+  10: 11
+  12: 13
+  14: 15
+}
+{
+  counting: {{
+    "drei"
+    "eins"
+    "zwei"
+  }}
+  v: [
+    1
+    "hello"
+    [2 3 4]
+    {{
+      10
+      "x"
+      [2 3 4]
+    }}
+  ]
+  "four": 4
+  "x": {
+    8: 9
+    10: 11
+    12: 13
+    14: 15
+  }
+  {
+    8: 9
+    10: 11
+    12: 13
+    14: 15
+  }:
+    {
+      8: 9
+      10: 11
+      12: 13
+      14: 15
+    }
+}
+{
+  {1:2}: {{
+    "drei"
+    "eins"
+    "zwei"
+  }}
+}
+{
+  1:
+    "long-ish value"
+  2: 3
+}
+[
+  tagName__{1:2 3:4}
+  5
+]
+outer{
+  "x":
+    inner12345678{
+      1: 2
+      3: 4
+    }
+}
+|------------------|
+pretty print target width: 37
+|-----------------------------------|
+[1 2 3]
+{a:[1 2 3] [1 2 3]:[1 2 3]}
+[
+  1
+  "hello"
+  [2 3 4]
+  {{10 "x" [2 3 4]}}
+]
+{8:9 10:11 12:13 14:15}
+{
+  counting: {{"drei" "eins" "zwei"}}
+  v: [
+    1
+    "hello"
+    [2 3 4]
+    {{10 "x" [2 3 4]}}
+  ]
+  "four": 4
+  "x": {8:9 10:11 12:13 14:15}
+  {8:9 10:11 12:13 14:15}:
+    {8:9 10:11 12:13 14:15}
+}
+{ {1:2}:{{"drei" "eins" "zwei"}} }
+{1:"long-ish value" 2:3}
+[tagName__{1:2 3:4} 5]
+outer{"x":inner12345678{1:2 3:4}}
+|-----------------------------------|
+pretty print target width: 38
+|------------------------------------|
+[1 2 3]
+{a:[1 2 3] [1 2 3]:[1 2 3]}
+[1 "hello" [2 3 4] {{10 "x" [2 3 4]}}]
+{8:9 10:11 12:13 14:15}
+{
+  counting: {{"drei" "eins" "zwei"}}
+  v: [
+    1
+    "hello"
+    [2 3 4]
+    {{10 "x" [2 3 4]}}
+  ]
+  "four": 4
+  "x": {8:9 10:11 12:13 14:15}
+  {8:9 10:11 12:13 14:15}:
+    {8:9 10:11 12:13 14:15}
+}
+{ {1:2}:{{"drei" "eins" "zwei"}} }
+{1:"long-ish value" 2:3}
+[tagName__{1:2 3:4} 5]
+outer{"x":inner12345678{1:2 3:4}}
+|------------------------------------|
+tests for module gdvalue PASSED
+---- stderr ----
+---- exit status ----
+Exit 0

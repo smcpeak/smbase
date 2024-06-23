@@ -24,6 +24,8 @@ import sys                   # sys.argv, sys.stderr
 import time                  # time.sleep
 import traceback             # traceback.print_exc
 
+from typing import Any, Match, Pattern, TextIO
+
 
 # -------------- BEGIN: boilerplate -------------
 # These are things I add at the start of every Python program to
@@ -31,10 +33,10 @@ import traceback             # traceback.print_exc
 
 # Positive if debug is enabled, with higher values enabling more printing.
 debugLevel = 0
-if (os.getenv("DEBUG")):
-  debugLevel = int(os.getenv("DEBUG"))
+if debugEnvVal := os.getenv("DEBUG"):
+  debugLevel = int(debugEnvVal)
 
-def debugPrint(str):
+def debugPrint(str: str) -> None:
   """Debug printout when DEBUG >= 2."""
   if debugLevel >= 2:
     print(str)
@@ -46,11 +48,11 @@ class Error(Exception):
   """A condition to be treated as an error."""
   pass
 
-def die(message):
+def die(message: str) -> None:
   """Throw a fatal Error with message."""
   raise Error(message)
 
-def exceptionMessage(e):
+def exceptionMessage(e: BaseException) -> str:
   """Turn exception 'e' into a human-readable message."""
   t = type(e).__name__
   s = str(e)
@@ -59,7 +61,7 @@ def exceptionMessage(e):
   else:
     return f"{t}"
 
-def call_main():
+def call_main() -> None:
   """Call main() and catch exceptions."""
   try:
     main()
@@ -74,7 +76,7 @@ def call_main():
     sys.exit(2)
 # --------------- END: boilerplate --------------
 
-def splitLines(data):
+def splitLines(data: bytes) -> list[str]:
   """Decode byte list 'data' to text, split it at line boundaries
   (tolerating both LF and CRLF), and return the list of lines.  If the
   last line does not end with a newline, add another line indicating
@@ -87,7 +89,7 @@ def splitLines(data):
   return lines
 
 
-def writeLinesToFile(lines, fname):
+def writeLinesToFile(lines: list[str], fname: str) -> None:
   """Write 'lines', which has no newlines, to 'fname' with LF line endings."""
 
   with open(fname, "w", newline="\n") as f:
@@ -95,11 +97,10 @@ def writeLinesToFile(lines, fname):
       print(line, file=f)
 
 
-
 # List of compiled regexes.  If a line matches a regex, we discard it.
-compiledDropREs = []
+compiledDropREs: list[Pattern[str]] = []
 
-def lineIsDropped(line):
+def lineIsDropped(line: str) -> bool:
   """True if 'line' matches any drop regex."""
 
   for re in compiledDropREs:
@@ -117,7 +118,7 @@ hexDigitsRE = re.compile(r"0x[0-9a-fA-F][0-9a-fA-F]+")
 # not just a prefix.
 nonReplaceHexRE = re.compile(r"0x7F+$");
 
-def hexReplacer(m):
+def hexReplacer(m: Match[str]) -> str:
   """What to replace a match of 'hexDigitsRE' with."""
 
   if nonReplaceHexRE.match(m.group(0)):
@@ -134,7 +135,7 @@ use_hex_replacer = False
 # included in the normalized output.
 volatileRE = re.compile(r"VOLATILE")
 
-def normalizeOutput(line):
+def normalizeOutput(line: str) -> str:
   """Remove strings that vary from run to run so the result is suitable
   as expected test output."""
 
@@ -145,25 +146,25 @@ def normalizeOutput(line):
   return line
 
 
-def readLinesNoNL(file):
+def readLinesNoNL(file: TextIO) -> list[str]:
   """Like file.readlines(), but strip newlines."""
   return [line.rstrip("\n") for line in file.readlines()]
 
 
-def normalizeWSLine(line):
+def normalizeWSLine(line: str) -> str:
   """Trim whitespace from both ends of 'line', and replace all
   occurrences of consecutive whitespace elsewhere with a single
   space."""
   return re.sub(r'\s+', ' ', line).strip()
 
 
-def normalizeWSLines(lines):
+def normalizeWSLines(lines: list[str]) -> list[str]:
   """Given a list of lines, return a list where every element has had
   whitespace trimmed from both ends and normalized elsewhere."""
   return [normalizeWSLine(line) for line in lines]
 
 
-def main():
+def main() -> None:
   # Parse command line.
   parser = argparse.ArgumentParser()
   parser.add_argument("--actual",
@@ -208,7 +209,7 @@ def main():
       compiledDropREs.append(re.compile(s))
 
   # List of accumulated output lines.
-  actualLines = []
+  actualLines: list[str] = []
 
   # Run the program, possibly more than once.
   for extraArgumentLine in extraArgumentLines:
@@ -221,7 +222,7 @@ def main():
       actualLines += [f"======== {' '.join(command)} ========"]
 
     # Keyword arguments for 'subprocess.run'.
-    runArgs = {}
+    runArgs: dict[str, Any] = {}
 
     runArgs['stdout'] = subprocess.PIPE
     capture_stderr = not opts.no_stderr
@@ -251,7 +252,7 @@ def main():
       actualLines += [f"Exit {proc.returncode}"]
 
   # Normalize it.
-  actualLines = filter(lambda line: not lineIsDropped(line), actualLines)
+  actualLines = [line for line in actualLines if not lineIsDropped(line)]
   actualLines = [normalizeOutput(line) for line in actualLines]
 
   # Optionally save it.
@@ -276,7 +277,7 @@ def main():
       # Only check MAKEFLAGS if the user asked to prompt, since
       # otherwise there is a problem creating tests of this script
       # itself that will work when 'make' is run with '-j'.
-      if makeflags != None and "-j" in makeflags:
+      if makeflags is not None and "-j" in makeflags:
         print("Since MAKEFLAGS contains '-j', I will not prompt to update.")
         sys.exit(2)
 

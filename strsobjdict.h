@@ -1,11 +1,8 @@
 // strsobjdict.h            see license.txt for copyright and terms of use
-// dictionary of *serf* pointers to objects, indexed by string (case-sensitive)
-// (c) Scott McPeak, 2000
-// NOTE: automatically generated from xstrobjdict.h -- do not edit directly
+// StringSObjDict, a case-sensitive map from strings to object pointers.
+// The dictionary does *not* own the referred-to objects.
 
-// quarl 2006-06-08
-//    created xstrobjdict.h to generate strobjdict.h, strsobjdict.h, and new
-//    file strintdict.h
+// NOTE: automatically generated from xstrobjdict.h -- do not edit directly
 
 #ifndef STRSOBJLIST_H
 #define STRSOBJLIST_H
@@ -37,7 +34,7 @@ public:     // types
     bool isDone() const { return iter.isDone(); }
     Iter& next() { iter.next(); return *this; }
 
-    string const &key() const { return iter.key(); }
+    string key() const { return iter.key(); }
     T * &value() const { return (T * &)iter.value(); }
 
     int private_getCurrent() const { return iter.private_getCurrent(); }
@@ -56,7 +53,7 @@ public:     // types
     bool isDone() const { return iter.isDone(); }
     IterC& next() { iter.next(); return *this; }
 
-    string const &key() const { return iter.key(); }
+    string key() const { return iter.key(); }
     T * value() const { return (T *)iter.value(); }
 
     int private_getCurrent() const { return iter.private_getCurrent(); }
@@ -92,6 +89,9 @@ public:     // types
       // delegate to the other Iter class
       for(IterC iter(map); !iter.isDone(); iter.next()) {
 //          xassert(i<numEntries);
+        xfailure("is this called?");
+
+        // BUG: This is obviously wrong.  WTH?
         sortedKeys[i++] = iter.key().c_str();
       }
       xassert(numEntries == i);
@@ -174,7 +174,16 @@ public:
 
   // --------- iters -------------
   void foreach(ForeachFn func, void *extra=NULL) const
-    { dict.foreach((StringVoidDict::ForeachFn)func, extra); }
+  {
+    // GCC -Wextra complains about this cast because the 'void*'
+    // parameter in the destination type does not match the 'intptr_t'
+    // parameter in the source type.  It's probably right that this is
+    // technically undefined behavior, but fixing that is a significant
+    // retrofit to old code that works in practice on every
+    // implementation I'm aware of, so for now I'm choosing not to fix
+    // it.  Instead, I use -Wno-cast-function-type.
+    dict.foreach((StringVoidDict::ForeachFn)func, extra);
+  }
 
   // ------------ misc --------------
   // debugging

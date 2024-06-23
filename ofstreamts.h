@@ -1,12 +1,14 @@
 // ofstreamts.h
+// An ofstream which is timestamp-conscious.  It first writes to a
+// temporary file, and on success renames it to the target destination.
 
 // quarl 2006-05-25 initial version, factored from 2006-05-16 astgen.cc
 
 #ifndef OFSTREAMTS_H
 #define OFSTREAMTS_H
 
-#include "sm-fstream.h"
-#include "str.h"
+#include "sm-fstream.h"                // ofstream
+#include "str.h"                       // string
 
 // An ofstream which is timestamp-conscious.  It first writes to a temporary
 // file, and on success renames it to the target destination.  However, it

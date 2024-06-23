@@ -1,59 +1,36 @@
 // str.h            see license.txt for copyright and terms of use
-// a string class
-// the representation uses just one char*, so that a smart compiler
-//   can pass the entire object as a single word
-// Scott McPeak, 1995-2000  This file is public domain.
+// 2024-05-20: This is a compatibility header.  It declares 'string' as
+// an alias for 'std::string', and has some other stuff related to
+// legacy usage.  New code should avoid it.
 
-// 2005-03-01: See string.txt.  The plan is to evolve the class
-// towards compatibility with std::string, such that eventually
-// they will be interchangeable.  So far I have converted only
-// the most problematic constructs, those involving construction,
-// conversion, and internal pointers.
+#ifndef SMBASE_STR_H
+#define SMBASE_STR_H
 
-#ifndef STR_H
-#define STR_H
-
-#include "typ.h"         // bool
+#include "flatten-fwd.h" // Flatten
 #include "sm-iostream.h" // istream, ostream
-#include <stdarg.h>      // va_list
-#include <string.h>      // strcmp, etc.
+#include "stringb.h"     // stringb
+#include "stringf.h"     // stringf
 
-// I'm beginning the process of finally transitioning away from my
-// custom 'string' class.  But first I need some adapters, so I need
-// to see std::string here.
 #include <string>        // std::string
 
-class Flatten;           // flatten.h
-
-// certain unfortunate implementation decisions by some compilers
-// necessitate avoiding the name 'string'
-//
-// 9/19/04: I originally made this definition to work around a problem
-// with Borland C++ 4.5.  It causes a problem when using the new
-// standard library, since the name clashes with std::string.  A
-// simple solution is to remove the #definition and let namespaces do
-// their job.  Since Intel's headers are the only ones that provoke
-// the problem I'll confine it to that case for now.  Eventually I
-// will do the same for gcc.
-//
-// 2005-02-28: Let's try getting rid of this.
-//
-// 2005-03-15: There were some problems on Redhat due to flex-2.5.4a-29.
-//             I have solved them differently, but it is worth noting
-//             that re-enabling this #define also fixed the problem.
-#if 0   //!defined(__INTEL_COMPILER)
-  #define string mystring
-#endif
+#include <string.h>      // strcmp, etc.
 
 
 // ------------------------- string ---------------------
+// 2024-05-19: Let's throw the switch and commit to std::string.
+using std::string;
+
+
 // This is used when I want to call a function in smbase::string
 // that does not exist or has different semantics in std::string.
 // That way for now I can keep using the function, but it is
 // marked as incompatible.
 enum SmbaseStringFunc { SMBASE_STRING_FUNC };
 
-class string {
+// This class should only be used in the rare places I really need a
+// string with the old semantics.  The vast majority of code should use
+// 'string', which is now 'std::string'.
+class OldSmbaseString {
 public:
   typedef int size_type;
 protected:     // data
@@ -66,16 +43,16 @@ protected:     // funcs
   void kill();                         // dealloc if str != 0
 
 public:	       // funcs
-  string(string const &src) { dup(src.s); }
-  string(char const *src) { dup(src); }
-  string() { s=emptyString; }
-  ~string() { kill(); }
+  OldSmbaseString(OldSmbaseString const &src) { dup(src.s); }
+  OldSmbaseString(char const *src) { dup(src); }
+  OldSmbaseString() { s=emptyString; }
+  ~OldSmbaseString() { kill(); }
 
   // for this one, use ::substring instead
-  string(char const *src, int length, SmbaseStringFunc);
+  OldSmbaseString(char const *src, int length, SmbaseStringFunc);
 
   // actually, not sure what I was thinking, std::string has this
-  string(char const *src, int length);
+  OldSmbaseString(char const *src, int length);
 
   // for this one, there are two alternatives:
   //   - stringBuilder has nearly the same constructor interface
@@ -84,9 +61,10 @@ public:	       // funcs
   //     be used
   //   - Array<char> is very flexible, but remember to add 1 to
   //     the length passed to its constructor!
-  string(int length, SmbaseStringFunc) { s=emptyString; setlength(length); }
+  OldSmbaseString(int length, SmbaseStringFunc)
+    { s=emptyString; setlength(length); }
 
-  string(Flatten&);
+  OldSmbaseString(Flatten&);
   void xfer(Flatten &flat);
 
   // simple queries
@@ -102,7 +80,7 @@ public:	       // funcs
   char operator[] (int i) const { return s[i]; }
 
   // substring
-  string substring(int startIndex, int length) const;
+  OldSmbaseString substring(int startIndex, int length) const;
 
   // conversions
   #if 0    // removing these for more standard compliace
@@ -118,28 +96,28 @@ public:	       // funcs
   operator std::string () const { return std::string(c_str()); }
 
   // And vice-versa.
-  string(std::string const &s);
+  OldSmbaseString(std::string const &s);
 
   // assignment
-  string& operator=(string const &src)
+  OldSmbaseString& operator=(OldSmbaseString const &src)
     { if (&src != this) { kill(); dup(src.s); } return *this; }
-  string& operator=(char const *src)
+  OldSmbaseString& operator=(char const *src)
     { if (src != s) { kill(); dup(src); } return *this; }
 
   // allocate 'newlen' + 1 bytes (for null); initial contents is ""
-  string& setlength(int newlen);
+  OldSmbaseString& setlength(int newlen);
 
   // comparison; return value has same meaning as strcmp's return value:
   //   <0   if   *this < src
   //   0    if   *this == src
   //   >0   if   *this > src
-  int compareTo(string const &src) const;
+  int compareTo(OldSmbaseString const &src) const;
   int compareTo(char const *src) const;
   bool equals(char const *src) const { return compareTo(src) == 0; }
-  bool equals(string const &src) const { return compareTo(src) == 0; }
+  bool equals(OldSmbaseString const &src) const { return compareTo(src) == 0; }
 
-  #define MAKEOP(op)							       	 \
-    bool operator op (string const &src) const { return compareTo(src) op 0; }	 \
+  #define MAKEOP(op)                                                                    \
+    bool operator op (OldSmbaseString const &src) const { return compareTo(src) op 0; } \
     bool operator op (const char *src) const { return compareTo(src) op 0; }
     /* killed stuff with char* because compilers are too flaky; use compareTo */
     // 2008-12-13: Re-added char* since the removal of the impicit
@@ -159,13 +137,13 @@ public:	       // funcs
   // time for N concatenations, that in turn because this 'string' does
   // not separately track its allocated size.  For that, use
   // 'stringBuilder'.
-  string operator+ (string const &tail) const;
-  string& operator+= (string const &tail);
+  OldSmbaseString operator+ (OldSmbaseString const &tail) const;
+  OldSmbaseString& operator+= (OldSmbaseString const &tail);
 
   // input/output
-  friend istream& operator>> (istream &is, string &obj)
+  friend istream& operator>> (istream &is, OldSmbaseString &obj)
     { obj.readline(is); return is; }
-  friend ostream& operator<< (ostream &os, string const &obj)
+  friend ostream& operator<< (ostream &os, OldSmbaseString const &obj)
     { obj.write(os); return os; }
 
   // note: the read* functions are currently implemented in a fairly
@@ -191,6 +169,23 @@ public:	       // funcs
     // fail an assertion if there is a problem
 };
 
+
+// -------------------------- compatibility ----------------------------
+// These functions correspond to methods of OldSmbaseString that do not
+// exist on std::string.
+
+// Equivalent of OldSmbaseString::xfer(Flatten&) for std::string.
+void stringXfer(std::string &str, Flatten &flat);
+
+// Equivalent of OldSmbaseString::equals() for std::string.
+bool stringEquals(std::string const &a, char const *b);
+bool stringEquals(std::string const &a, std::string const &b);
+
+// Note: The equivalent of OldSmbaseString::substring is just
+// std::string::substr, so rather than create 'stringSubstring', I just
+// change call sites to use 'substr'.
+
+
 // ------------------------ rostring ----------------------
 // My plan is to use this in places I currently use 'char const *'.
 typedef string const &rostring;
@@ -211,7 +206,8 @@ inline size_t strlen(rostring s) { return s.length(); }
 // Overload strlen for unsigned char* to avoid annoying casts.
 inline size_t strlen(unsigned char const *s) { return strlen((char const*)s); }
 
-inline istream &getline(istream &in, string &line) { line.readline(in); return in; }
+// This appears to be unused.
+//inline istream &getline(istream &in, OldSmbaseString &line) { line.readline(in); return in; }
 
 int strcmp(rostring s1, rostring s2);
 int strcmp(rostring s1, char const *s2);
@@ -228,7 +224,8 @@ inline bool streq(char const *s1, char const *s2) {return strcmp(s1, s2) == 0;}
 
 char const *strstr(rostring haystack, char const *needle);
 
-// there is no wrapper for 'strchr'; use string::contains
+// There is no wrapper for 'strchr'; use the 'contains' function
+// declared in string-util.h.
 
 int atoi(rostring s);
 
@@ -240,8 +237,11 @@ inline string substring(rostring p, int n)
 
 
 // --------------------- stringBuilder --------------------
-// this class is specifically for appending lots of things
-class stringBuilder : public string {
+// This class is specifically for appending lots of things.
+//
+// It is one of the few classes that really needs 'OldSmbaseString' to
+// work.  New code should use 'std::ostringstream', not this class.
+class stringBuilder : public OldSmbaseString {
 protected:
   enum { EXTRA_SPACE = 30 };    // extra space allocated in some situations
   char *end;          // current end of the string (points to the NUL character)
@@ -255,23 +255,34 @@ public:
   explicit stringBuilder(int length=0);    // creates an empty string
   explicit stringBuilder(char const *str);
            stringBuilder(char const *str, int length);
-  explicit stringBuilder(string const &str) : string() { dup(str.c_str()); }
-  stringBuilder(stringBuilder const &obj) : string() { dup(obj.c_str()); }
+  explicit stringBuilder(OldSmbaseString const &str)
+    : OldSmbaseString() { dup(str.c_str()); }
+  stringBuilder(stringBuilder const &obj)
+    : OldSmbaseString() { dup(obj.c_str()); }
   ~stringBuilder() {}
 
   stringBuilder& operator= (char const *src);
-  stringBuilder& operator= (string const &s) { return operator= (s.c_str()); }
+  stringBuilder& operator= (OldSmbaseString const &s) { return operator= (s.c_str()); }
   stringBuilder& operator= (stringBuilder const &s) { return operator= (s.c_str()); }
 
   int length() const { return end-s; }
   bool isempty() const { return length()==0; }
 
-  // unlike 'string' above, I will allow stringBuilder to convert to
+  // This is a problem when I construct a string from a stringBuilder.
+  // That's not too common, but neither is using this (somewhat
+  // dangerous) method, so I'll try disabling it.
+#if 0
+  // unlike 'OldSmbaseString' above, I will allow stringBuilder to convert to
   // char const * so I can continue to use 'stringc' to build strings
   // for functions that accept char const *; this should not conflict
   // with std::string, since I am explicitly using a different class
   // (namely stringBuilder) when I use this functionality
   operator char const * () const { return c_str(); }
+#endif
+
+  // Allow implicit conversion to 'string' so perhaps I can keep
+  // 'stringc' working after all.
+  operator std::string () const { return str(); }
 
   stringBuilder& setlength(int newlen);    // change length, forget current data
 
@@ -326,9 +337,6 @@ public:
     stringBuilder& operator << (bool b) { return operator<<((long)b); }
   #endif // LACKS_BOOL
 
-  stringBuilder& operator << (std::string const &text)
-    { return operator+=(text.c_str()); }
-
   // useful in places where long << expressions make it hard to
   // know when arguments will be evaluated, but order does matter
   typedef stringBuilder& (*Manipulator)(stringBuilder &sb);
@@ -339,7 +347,7 @@ public:
   stringBuilder &myself() { return *this; }
 
   // compatibility with ostringstream
-  string str() const { return string(*this); }
+  std::string str() const;
 
   // stream readers
   friend istream& operator>> (istream &is, stringBuilder &sb)
@@ -364,6 +372,8 @@ public:
 
 
 // ---------------------- misc utils ------------------------
+// 'stringb' and 'stringbc' are now defined in stringb.h.
+#if 0
 // the real strength of this entire module: construct strings in-place
 // using the same syntax as C++ iostreams.  e.g.:
 //   puts(stringb("x=" << x << ", y=" << y));
@@ -371,10 +381,14 @@ public:
 
 // explicit c_str() is annoying
 #define stringbc(expr) (stringb(expr).c_str())
+#endif // 0
 
-// experimenting with dropping the () in favor of <<
-// (the "c" can be interpreted as "constructor", or maybe just
-// the successor to "b" above)
+// This macro allows strings to be constructed like:
+//
+//   stringc << 123 << " hi " << "there"
+//
+// but is not compatible with an ostringstream-based implementation so
+// 'stringb' should be preferred.
 #define stringc (stringBuilder().myself())
 
 
@@ -387,11 +401,4 @@ string toString(char const *str);
 string toString(float f);
 
 
-// printf-like construction of a string; often very convenient, since
-// you can use any of the formatting characters (like %X) that your
-// libc's sprintf knows about
-string stringf(char const *format, ...);
-string vstringf(char const *format, va_list args);
-
-
-#endif // STR_H
+#endif // SMBASE_STR_H

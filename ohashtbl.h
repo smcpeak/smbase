@@ -1,9 +1,10 @@
 // ohashtbl.h            see license.txt for copyright and terms of use
-// hash table that owns the values; uses void* keys
+// OwnerHashTable, a hash table that owns the values.  Maps void* to T*.
+
 // see hashtbl.h for more detail on the semantics of the member fns
 
-#ifndef OHASHTBL_H
-#define OHASHTBL_H
+#ifndef SMBASE_OHASHTBL_H
+#define SMBASE_OHASHTBL_H
 
 #include "hashtbl.h"       // HashTable
 
@@ -68,4 +69,4 @@ public:       // funcs
   T *data()                { return (T*)iter.data(); }
 };
 
-#endif // OHASHTBL_H
+#endif // SMBASE_OHASHTBL_H

@@ -4,7 +4,7 @@
 #include "bflatten.h"                  // module under test
 
 #include "flatutil.h"                  // xferEnum, xferVectorBytewise
-#include "sm-macros.h"                 // EMEMB
+#include "sm-macros.h"                 // EMEMB, OPEN_ANONYMOUS_NAMESPACE
 #include "sm-test.h"                   // USUAL_MAIN
 
 #include <sstream>                     // std::i/ostringstream
@@ -12,7 +12,7 @@
 #include <vector>                      // std::vector
 
 
-namespace { // anonymous namespace for test code
+OPEN_ANONYMOUS_NAMESPACE
 
 
 enum SomeEnum {
@@ -75,8 +75,8 @@ void SomeData::xfer(Flatten &flat)
 {
   flat.xferInt32(x);
   flat.noteOwner(&x);
-  s.xfer(flat);
-  s2.xfer(flat);
+  stringXfer(s, flat);
+  stringXfer(s2, flat);
   flat.xferSerf((void*&)px);
   flat.xferInt32(y);
   flat.noteOwner(&y);
@@ -121,7 +121,7 @@ void SomeData::checkEqual(SomeData const &obj) const
 }
 
 
-} // end anonymous namespace for test code
+CLOSE_ANONYMOUS_NAMESPACE
 
 
 // Called by unit-tests.cc.
@@ -169,8 +169,6 @@ void test_bflatten()
     d3.xfer(flat);
   }
   d3.checkEqual(d1);
-
-  printf("bflatten works\n");
 }
 
 

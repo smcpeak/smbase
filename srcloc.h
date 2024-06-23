@@ -1,5 +1,12 @@
 // srcloc.h            see license.txt for copyright and terms of use
-// source location information, efficiently represented as one word
+// This module maintains a one-word data type called SourceLoc.
+// SourceLoc is a location within some file, e.g. line/col or character
+// offset information.  SourceLoc also encodes *which* file it
+// refers to.  This type is very useful for language processors (like
+// compilers) because it efficiently encodes location formation.
+// Decoding this into human-readable form is slower than incrementally
+// updating it, but decoding is made somewhat efficient with some
+// appropriate index structures.
 
 // The fundamental assumption in this module is that source location
 // information is frequently created, stored and passed around, but
@@ -32,6 +39,8 @@
 #include "str.h"      // string
 #include "objlist.h"  // ObjList
 #include "array.h"    // ArrayStack, ObjArrayStack
+
+#include <iostream>   // std::ostream
 
 class HashLineMap;    // hashline.h
 
@@ -246,9 +255,9 @@ public:      // types
   // information stored, and incremental update is impossible
   class StaticLoc {
   public:
-    string name;      // file name
-    int offset;       // char offset
-    int line, col;    // line,col
+    string name;    // file name
+    int offset;              // char offset
+    int line, col;           // line,col
 
   public:
     StaticLoc(char const *n, int o, int L, int c)
@@ -441,7 +450,7 @@ string locToStr(SourceLoc sl);
 inline string toString(SourceLoc sl)
   { return locToStr(sl); }
 
-inline stringBuilder& operator<< (stringBuilder &sb, SourceLoc sl)
+inline std::ostream& operator<< (std::ostream &sb, SourceLoc sl)
   { return sb << toString(sl); }
 
 inline string toLCString(SourceLoc sl)

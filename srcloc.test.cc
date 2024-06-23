@@ -678,7 +678,7 @@ string SourceLocManager::getString(SourceLoc loc)
   int line, col;
   decodeLineCol(loc, name, line, col);
 
-  return stringc << name << ":" << line << ":" << col;
+  return stringb(name << ":" << line << ":" << col);
 }
 
 string SourceLocManager::getLCString(SourceLoc loc)
@@ -687,7 +687,7 @@ string SourceLocManager::getLCString(SourceLoc loc)
   int line, col;
   decodeLineCol(loc, name, line, col);
 
-  return stringc << line << ":" << col;
+  return stringb(line << ":" << col);
 }
 
 
@@ -848,7 +848,7 @@ EXPANDER
 // should this be exported?
 string locString(char const *fname, int line, int col)
 {
-  return stringc << fname << ":" << line << ":" << col;
+  return stringb(fname << ":" << line << ":" << col);
 }
 
 
@@ -950,7 +950,6 @@ void testHashMap()
 
 void entry(int argc, char ** /*argv*/)
 {
-  traceAddSys("progress");
   traceProgress() << "begin" << endl;
 
   if (argc >= 2) {

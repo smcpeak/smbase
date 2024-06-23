@@ -14,6 +14,8 @@
 #  include "windows.h"                 // GetTimeZoneInformation
 #endif // __MINGW32__
 
+using namespace smbase;
+
 
 // ------------------------ OSDateTimeProvider ----------------------
 class OSDateTimeProvider : public DateTimeProvider {

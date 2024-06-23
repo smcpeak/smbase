@@ -13,6 +13,8 @@ import subprocess            # subprocess.Popen
 import sys                   # sys.argv, sys.stderr
 import traceback             # traceback.print_exc
 
+from typing import cast, TextIO
+
 
 # -------------- BEGIN: boilerplate -------------
 # These are things I add at the start of every Python program to
@@ -20,10 +22,10 @@ import traceback             # traceback.print_exc
 
 # Positive if debug is enabled, with higher values enabling more printing.
 debugLevel = 0
-if (os.getenv("DEBUG")):
-  debugLevel = int(os.getenv("DEBUG"))
+if debugEnvVal := os.getenv("DEBUG"):
+  debugLevel = int(debugEnvVal)
 
-def debugPrint(str):
+def debugPrint(str: str) -> None:
   """Debug printout when DEBUG >= 2."""
   if debugLevel >= 2:
     print(str)
@@ -35,11 +37,11 @@ class Error(Exception):
   """A condition to be treated as an error."""
   pass
 
-def die(message):
+def die(message: str) -> None:
   """Throw a fatal Error with message."""
   raise Error(message)
 
-def exceptionMessage(e):
+def exceptionMessage(e: BaseException) -> str:
   """Turn exception 'e' into a human-readable message."""
   t = type(e).__name__
   s = str(e)
@@ -48,7 +50,7 @@ def exceptionMessage(e):
   else:
     return f"{t}"
 
-def call_main():
+def call_main() -> None:
   """Call main() and catch exceptions."""
   try:
     main()
@@ -72,27 +74,33 @@ def call_main():
 targetRE = re.compile(r"^([^:]+):\s+(.*)$")
 
 # Set of exclusions, as a map to True.
-exclusions = {}
+exclusions: dict[str, bool] = {}
 
 # Set of inclusions, as a map to True.  An "inclusion" is a file upon
 # which we will emit a dependency even if it is checked in.
-inclusions = {}
+inclusions: dict[str, bool] = {}
 
 # List of dependencies discovered, as "TARGET: DEP".
-dependencyLines = []
+dependencyLines: list[str] = []
 
-def main():
+def main() -> None:
   # Write only LF line endings to stdout, even on Windows.
   # https://stackoverflow.com/questions/34960955/print-lf-with-python-3-to-windows-stdout
   #
   # This is important because the output will be checked into the repo.
-  sys.stdout = open(sys.__stdout__.fileno(),
-                    mode=sys.__stdout__.mode,
-                    buffering=1,
-                    encoding=sys.__stdout__.encoding,
-                    errors=sys.__stdout__.errors,
-                    newline='\n',
-                    closefd=False)
+  #
+  # The `cast` is because `mypy` thinks this call could transform
+  # `stdout` to a binary IO stream since it does not understand that we
+  # are preserving the mode.
+  #
+  sys.stdout = cast(TextIO,
+                 open(sys.__stdout__.fileno(),
+                      mode=sys.__stdout__.mode,
+                      buffering=1,
+                      encoding=sys.__stdout__.encoding,
+                      errors=sys.__stdout__.errors,
+                      newline='\n',
+                      closefd=False))
 
   # Parse command line.
   parser = argparse.ArgumentParser()
@@ -123,10 +131,12 @@ def main():
   for file in opts.files:
     debugPrint(f"processing .d file: {file}")
     target = None
-    deps = []
+    deps: list[str] = []
 
-    def processDeps(d):
+    def processDeps(d: str) -> None:
       """Split 'd' and add elements to 'deps'."""
+      assert(target is not None)
+
       for element in d.split():
         if element == "\\":
           # Continuation backslash.
@@ -191,9 +201,9 @@ def main():
 
 # ---- Repo Queries ----
 # Map from files in the repo to True.
-repoFiles = {}
+repoFiles: dict[str, bool] = {}
 
-def getRepoFiles():
+def getRepoFiles() -> None:
   """Call 'git ls-files' and add the output to 'reopFiles'."""
   command = ["git", "ls-files"]
 
@@ -208,7 +218,7 @@ def getRepoFiles():
     commandString = " ".join(command)
     die(f"While running \"{commandString}\": {exceptionMessage(e)}")
 
-def fileInRepo(file):
+def fileInRepo(file: str) -> bool:
   """True if 'file' is in the repository."""
   return file in repoFiles
 
@@ -219,7 +229,7 @@ def fileInRepo(file):
 #   2: Everything after the final ".".
 fileExtensionRE = re.compile(r"^(.*)\.([^.]*)$")
 
-def stripExtension(name):
+def stripExtension(name: str) -> str:
   """Return 'name' without its file name extension."""
   m = fileExtensionRE.match(name)
   if m:
@@ -228,7 +238,7 @@ def stripExtension(name):
     # No extension.
     return name
 
-def sameWithoutExtensions(f1, f2):
+def sameWithoutExtensions(f1: str, f2: str) -> bool:
   """True if 'f1' and 'f2' are the same after removing extensions."""
   return stripExtension(f1) == stripExtension(f2)
 

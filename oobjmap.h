@@ -1,8 +1,8 @@
 // oobjmap.h            see license.txt for copyright and terms of use
-// owner object map, implemented with a hash table
+// Owner object map, implemented with a hash table
 // maps pointer-to-key-object to pointer-to-value-object, and owns
 // all instances of value-object (they are deallocated when the
-// map itself goes away)
+// map itself goes away).
 
 // I had envisioned an interface which didn't require the function
 // that maps values back to keys.. given that OwnerHashTable requires

@@ -1,14 +1,15 @@
 // nonport.h            see license.txt for copyright and terms of use
-// collection of nonportable routines (the interfaces
-//   are portable, but the implementations are not)
+// A library of utility functions whose implementation is
+// system-specific.  Generally, I try to encapsulate all system
+// depenencies as functions defined in nonport.
+
 // Scott McPeak, Dan Bonachea 1998-1999  This file is public domain.
 
-#ifndef __NONPORT_H
-#define __NONPORT_H
-
-#include "typ.h"                       // bool
+#ifndef SMBASE_NONPORT_H
+#define SMBASE_NONPORT_H
 
 #include <stdarg.h>                    // va_list
+#include <stddef.h>                    // NULL
 #include <stdint.h>                    // int64_t
 
 
@@ -16,7 +17,7 @@
 // called when a syscall fails, *in addition* to whatever error behavior
 // is documented here (e.g., a fn might call this, and then return false).
 // The default behavior is to do nothing.  In sftpc and sftpd, I plan to
-// point this at xSysError::xsyserror (see syserr.h).
+// point this at XSysError::xsyserror (see syserr.h).
 typedef void (*NonportFailFunc)(char const *syscallName, char const *context);
   // syscallName  - name of failing system call
   // context      - current activity (maybe just calling fn's name) or NULL
@@ -167,5 +168,4 @@ int vnprintf(char const *format, va_list args);
 int nprintf(char const *format, ...);
 
 
-#endif // __NONPORT_H
-
+#endif // SMBASE_NONPORT_H

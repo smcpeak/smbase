@@ -4,32 +4,30 @@
 
 #include "str.h"            // this module
 
+#include "flatten.h"        // Flatten
+#include "sm-iostream.h"    // ostream << char*
+#include "xassert.h"        // xassert
+
+#include <algorithm>        // std::max
+
 #include <stdlib.h>         // atoi
 #include <stdio.h>          // sprintf
 #include <ctype.h>          // isspace
 #include <string.h>         // strcmp
-#include "sm-iostream.h"    // ostream << char*
 #include <assert.h>         // assert
-#include <unistd.h>         // write
-
-#include "xassert.h"        // xassert
-#include "flatten.h"        // Flatten
-#include "nonport.h"        // vnprintf
-#include "array.h"          // Array
 
 
-// ----------------------- string ---------------------
-
+// ----------------------- OldSmbaseString ---------------------
 // put the empty string itself in read-only memory
-char const nul_byte = 0;
+static char const nul_byte = 0;
 
 // deliberately cast away the constness; I cannot declare
 // 'emptyString' to be const because it gets assigned to 's', but it
 // is nevertheless the intent that I never modify 'nul_byte'
-char * const string::emptyString = const_cast<char*>(&nul_byte);
+char * const OldSmbaseString::emptyString = const_cast<char*>(&nul_byte);
 
 
-string::string(char const *src, int length, SmbaseStringFunc)
+OldSmbaseString::OldSmbaseString(char const *src, int length, SmbaseStringFunc)
 {
   s=emptyString;
   setlength(length);       // setlength already has the +1; sets final NUL
@@ -38,7 +36,7 @@ string::string(char const *src, int length, SmbaseStringFunc)
 
 
 // This is the same code as the above constructor.
-string::string(char const *src, int length)
+OldSmbaseString::OldSmbaseString(char const *src, int length)
 {
   s=emptyString;
   setlength(length);
@@ -46,7 +44,7 @@ string::string(char const *src, int length)
 }
 
 
-void string::dup(char const *src)
+void OldSmbaseString::dup(char const *src)
 {
   // std::string does not accept NULL pointers
   xassert(src != NULL);
@@ -61,7 +59,7 @@ void string::dup(char const *src)
   }
 }
 
-void string::kill()
+void OldSmbaseString::kill()
 {
   if (s != emptyString) {
     delete[] s;         // found by Coverity Prevent
@@ -69,30 +67,30 @@ void string::kill()
 }
 
 
-string::string(Flatten&)
+OldSmbaseString::OldSmbaseString(Flatten&)
   : s(emptyString)
 {}
 
-void string::xfer(Flatten &flat)
+void OldSmbaseString::xfer(Flatten &flat)
 {
   flat.xferCharString(s);
 }
 
 
-int string::length() const
+int OldSmbaseString::length() const
 {
   xassert(s);
   return strlen(s);
 }
 
-bool string::contains(char c) const
+bool OldSmbaseString::contains(char c) const
 {
   xassert(s);
   return !!strchr(s, c);
 }
 
 
-string string::substring(int startIndex, int len) const
+OldSmbaseString OldSmbaseString::substring(int startIndex, int len) const
 {
   xassert(startIndex >= 0 &&
           len >= 0 &&
@@ -102,14 +100,14 @@ string string::substring(int startIndex, int len) const
 }
 
 
-string::string(std::string const &src)
+OldSmbaseString::OldSmbaseString(std::string const &src)
   : s(emptyString)
 {
   dup(src.c_str());
 }
 
 
-string &string::setlength(int length)
+OldSmbaseString &OldSmbaseString::setlength(int length)
 {
   kill();
   if (length > 0) {
@@ -126,12 +124,12 @@ string &string::setlength(int length)
 }
 
 
-int string::compareTo(string const &src) const
+int OldSmbaseString::compareTo(OldSmbaseString const &src) const
 {
   return compareTo(src.s);
 }
 
-int string::compareTo(char const *src) const
+int OldSmbaseString::compareTo(char const *src) const
 {
   if (src == NULL) {
     src = emptyString;
@@ -140,21 +138,21 @@ int string::compareTo(char const *src) const
 }
 
 
-string string::operator+(string const &tail) const
+OldSmbaseString OldSmbaseString::operator+(OldSmbaseString const &tail) const
 {
-  string dest(length() + tail.length(), SMBASE_STRING_FUNC);
+  OldSmbaseString dest(length() + tail.length(), SMBASE_STRING_FUNC);
   strcpy(dest.s, s);
   strcat(dest.s, tail.s);
   return dest;
 }
 
-string& string::operator+=(string const &tail)
+OldSmbaseString& OldSmbaseString::operator+=(OldSmbaseString const &tail)
 {
   return *this = *this + tail;
 }
 
 
-void string::readdelim(istream &is, char const *delim)
+void OldSmbaseString::readdelim(istream &is, char const *delim)
 {
   stringBuilder sb;
   sb.readdelim(is, delim);
@@ -162,14 +160,54 @@ void string::readdelim(istream &is, char const *delim)
 }
 
 
-void string::write(ostream &os) const
+void OldSmbaseString::write(ostream &os) const
 {
   os << s;     // standard char* writing routine
 }
 
 
-void string::selfCheck() const
+void OldSmbaseString::selfCheck() const
 {}
+
+
+// -------------------------- compatibility ----------------------------
+void stringXfer(std::string &str, Flatten &flat)
+{
+  // For serialization compatibility with OldSmbaseString::xfer,
+  // read and write using 'xferCharString', even though that causes an
+  // extra allocation when reading.
+
+  if (flat.reading()) {
+    char *p = nullptr;
+    flat.xferCharString(p);
+
+    // This causes an extra allocation.
+    str = p;
+
+    delete[] p;
+  }
+
+  else {
+    char const *p = str.c_str();
+
+    // 'xferCharString' will not modifiy the contents of the string in
+    // reading mode.
+    char *q = const_cast<char*>(p);
+
+    flat.xferCharString(q);
+  }
+}
+
+
+bool stringEquals(std::string const &a, char const *b)
+{
+  return a == b;
+}
+
+bool stringEquals(std::string const &a, std::string const &b)
+{
+  return a == b;
+}
 
 
 // ----------------------- rostring ---------------------
@@ -194,7 +232,7 @@ int atoi(rostring s)
 
 string substring(char const *p, int n)
 {
-  return string(p, n, SMBASE_STRING_FUNC);
+  return string(p, n);
 }
 
 
@@ -206,7 +244,7 @@ stringBuilder::stringBuilder(int len)
 
 void stringBuilder::init(int initSize)
 {
-  size = initSize + EXTRA_SPACE + 1;     // +1 to be like string::setlength
+  size = initSize + EXTRA_SPACE + 1;     // +1 to be like OldSmbaseString::setlength
   s = new char[size];
   end = s;
   end[initSize] = 0;
@@ -324,7 +362,7 @@ void stringBuilder::grow(int newMinLength)
   int suggest = size * 3 / 2;
 
   // see which is bigger
-  newMinSize = max(newMinSize, suggest);
+  newMinSize = std::max(newMinSize, suggest);
 
   // remember old length..
   int len = length();
@@ -411,6 +449,12 @@ stringBuilder& stringBuilder::operator<< (Manipulator manip)
 }
 
 
+string stringBuilder::str() const
+{
+  return OldSmbaseString::operator std::string ();
+}
+
+
 // slow but reliable
 void stringBuilder::readdelim(istream &is, char const *delim)
 {
@@ -425,10 +469,10 @@ void stringBuilder::readdelim(istream &is, char const *delim)
 
 
 // ---------------------- toString ---------------------
-#define TOSTRING(type)        \
-  string toString(type val)   \
-  {                           \
-    return stringc << val;    \
+#define TOSTRING(type)      \
+  string toString(type val) \
+  {                         \
+    return stringb(val);    \
   }
 
 TOSTRING(int)
@@ -452,91 +496,4 @@ string toString(char const *str)
 }
 
 
-// ------------------- stringf -----------------
-string stringf(char const *format, ...)
-{
-  va_list args;
-  va_start(args, format);
-  string ret = vstringf(format, args);
-  va_end(args);
-  return ret;
-}
-
-
-// this should eventually be put someplace more general...
-#ifndef va_copy
-  #ifdef __va_copy
-    #define va_copy(a,b) __va_copy(a,b)
-  #else
-    #define va_copy(a,b) (a)=(b)
-  #endif
-#endif
-
-
-string vstringf(char const *format, va_list args)
-{
-  // estimate string length
-  va_list args2;
-  va_copy(args2, args);
-  int est = vnprintf(format, args2);
-  va_end(args2);
-
-  // allocate space
-  Array<char> buf(est+1);
-
-  // render the string
-  int len = vsprintf(buf.ptr(), format, args);
-
-  // check the estimate, and fail *hard* if it was low, to avoid any
-  // possibility that this might become exploitable in some context
-  // (do *not* turn this check off in an NDEGUG build)
-  if (len > est) {
-    // don't go through fprintf, etc., because the state of memory
-    // makes that risky
-    static char const msg[] =
-      "fatal error: vnprintf failed to provide a conservative estimate,\n"
-      "memory is most likely corrupted\n";
-
-    // To suppress the unused-result warning with GCC-5.4, it is
-    // necessary to both negate and cast to void.
-    (void)!write(2 /*stderr*/, msg, strlen(msg));
-    abort();
-  }
-
-  // happy
-  return string(buf.ptrC());
-}
-
-
-// ------------------ test code --------------------
-#ifdef TEST_STR
-
-#include "sm-iostream.h"    // cout
-
-void test(unsigned long val)
-{
-  //cout << stringb(val << " in hex: 0x" << stringBuilder::Hex(val)) << endl;
-
-  cout << stringb(val << " in hex: " << SBHex(val)) << endl;
-}
-
-int main(int argc, char **argv)
-{
-  // for the moment I just want to test the hex formatting
-  test(64);
-  test(0xFFFFFFFF);
-  test(0);
-  test((unsigned long)(-1));
-  test(1);
-
-  cout << "stringf: " << stringf("int=%d hex=%X str=%s char=%c float=%f",
-                                 argc, 0xAA, "hi", 'f', 3.4) << endl;
-
-  cout << "ptr: " << stringb(argv) << endl;
-
-  cout << "tests passed\n";
-
-  return 0;
-}
-
-#endif // TEST_STR
+// EOF

@@ -7,15 +7,17 @@ all: pre-target $(THIS)
 .PHONY: all
 
 
-# ------------------------- Configuration --------------------------
-# ---- Running other programs ----
+# ----------------------- Default configuration ------------------------
+# The settings in this section provide defaults that can be overridden
+# in config.mk or personal.mk.
+
 # C preprocessor, compiler and linker.
 CC = gcc
 
 # C++ compiler.
 CXX = g++
 
-# To use Clang on Windows:
+# To use Clang to create MSVCRT-based executables on Windows:
 #CC = clang.exe --target=x86_64-w64-windows-gnu
 #CXX = clang++.exe --target=x86_64-w64-windows-gnu
 
@@ -42,9 +44,14 @@ WARNING_FLAGS =
 # $(WARINING_FLAGS) for C++ compilation.
 CXX_WARNING_FLAGS =
 
-# Flags for C or C++ standard to use.
+# Flags for C standard to use.
 C_STD_FLAGS   = -std=c99
-CXX_STD_FLAGS = -std=c++11
+
+# Flags for C++ standard to use.
+#
+# I've decided to start trying to use std::optional, which means I need
+# C++17.
+CXX_STD_FLAGS = -std=c++17
 
 # -D flags to pass to preprocessor.
 DEFINES =
@@ -77,27 +84,38 @@ LIBS = $(THIS) $(SYSLIBS)
 # $(CXXFLAGS), depending on whether C++ modules are included.
 LDFLAGS =
 
+# Flags to add to C and C++ compilations to enable coverage measurement.
+COVERAGE_CFLAGS = --coverage
+COVERAGE_CXXFLAGS = --coverage
+
+# When measuring coverage with gcov, if optimization is enabled then it
+# falsely reports some lines as uncovered.
+COVERAGE_OPTIMIZATION_FLAGS =
+
 # Some other tools.
+RM      = rm -f
 AR      = ar
 RANLIB  = ranlib
 PYTHON3 = python3
 
+# https://mypy-lang.org/
+MYPY    = mypy
+
 # How to invoke run-compare-expect.py.
 RUN_COMPARE_EXPECT = $(PYTHON3) ./run-compare-expect.py
+
+# Run whatever command follows with a timeout.  This is used for the
+# unit tests, where it's not uncommon for me to have an infinite loop,
+# which is slightly annoying to kill when the test is run from within
+# my editor.
+TIMEOUT_PROGRAM = timeout
+TIMEOUT_VALUE = 5
+RUN_WITH_TIMEOUT = $(TIMEOUT_PROGRAM) $(TIMEOUT_VALUE)
 
 # This invokes a script called 'mygcov', which is a personal wrapper
 # around 'gcov' that filters out some common false positives.  You
 # could just replace this with 'gcov' if you don't have that script.
 GCOV = mygcov
-
-
-# ---- Options within this Makefile ----
-# Set to 1 if we are building for MinGW.
-TARGET_PLATFORM_IS_MINGW = 0
-
-# Set to 1 if we are cross-compiling, meaning the executables we make
-# do not run on the build machine.
-CROSS_COMPILE = 0
 
 # Set to 1 to activate the rules that generate source code.
 GENSRC = 0
@@ -109,19 +127,16 @@ COVERAGE = 0
 # compile_commands.json.  This requires that we are using Clang.
 CREATE_O_JSON_FILES = 0
 
+# If 1, hook the `mypy` checks into the `check` target.
+ENABLE_MYPY = 0
 
-# ---- Automatic Configuration ----
-# Pull in settings from ./configure.  They override the defaults above,
-# and are in turn overridden by personal.mk, below.
-ifeq ($(wildcard config.mk),)
-  $(error The file 'config.mk' does not exist.  Run './configure' before 'make'.)
-endif
-include config.mk
+# Path to the null device.
+DEV_NULL = /dev/null
 
 
-# ---- Customization ----
+# ------------------------- User customization -------------------------
 # Allow customization of the above variables in a separate file.  Just
-# create personal.mk with desired settings.
+# create config.mk and/or personal.mk with desired settings.
 #
 # Common things to set during development:
 #
@@ -130,19 +145,29 @@ include config.mk
 #   OPTIMIZATION_FLAGS =
 #   CXX_WARNING_FLAGS = -Wsuggest-override
 #
+-include config.mk
 -include personal.mk
 
 
-ifeq ($(COVERAGE),1)
-  CFLAGS += --coverage
-  CXXFLAGS += --coverage
+# ---------------------- Configuration adjustment ----------------------
+# React to user customizations.
 
-  # gcov gets false positives if optimization is enabled.
-  OPTIMIZATION_FLAGS =
+# If coverage is enabled, turn on the relevant settings.
+ifeq ($(COVERAGE),1)
+  CFLAGS += $(COVERAGE_CFLAGS)
+  CXXFLAGS += $(COVERAGE_CXXFLAGS)
+  OPTIMIZATION_FLAGS = $(COVERAGE_OPTIMIZATION_FLAGS)
 endif
 
 
-# ----------------------------- Rules ------------------------------
+# Check if the timeout program can be found.
+ifneq ($(shell which $(TIMEOUT_PROGRAM) >$(DEV_NULL) 2>&1 && echo yes),yes)
+  # Program not found so do not try to use it.
+  RUN_WITH_TIMEOUT=
+endif
+
+
+# ------------------------------- Rules --------------------------------
 # Standard stuff.
 include sm-lib.mk
 
@@ -151,11 +176,12 @@ include sm-lib.mk
 %.o: %.cc
 	$(CXX) -c -o $@ $(GENDEPS_FLAGS) $(call MJ_FLAG,$*) $(CXXFLAGS) $<
 
-%.o: %.cpp
-	$(CXX) -c -o $@ $(GENDEPS_FLAGS) $(call MJ_FLAG,$*) $(CXXFLAGS) $<
-
 %.o: %.c
 	$(CC) -c -o $@ $(GENDEPS_FLAGS) $(call MJ_FLAG,$*) $(CFLAGS) $<
+
+# For occasional diagnostic purposes, a rule to preprocess explicitly.
+%.ii: %.cc
+	$(CXX) -E -o $@ $(CXXFLAGS) $<
 
 
 # $(PRE_TARGET) is usually nothing, but can be set in personal.mk to
@@ -165,7 +191,7 @@ pre-target: $(PRE_TARGET)
 .PHONY: pre-target
 
 
-# -------- experimenting with m4 for related files -------
+# -------------- Experimenting with m4 for related files ---------------
 # This section is disabled by default because the generated files are
 # checked in to the repo, but when git checks them out, they have random
 # timestamps so 'make' usually thinks some are out of date.  If you
@@ -184,7 +210,7 @@ define RUN_M4
 
 $(1): $(2)
 	@# Forcibly remove target, which may be read-only.
-	rm -f $(1)
+	$(RM) $(1)
 	@#
 	@# Generate tmp.h first.  That way, if m4 fails, we will not
 	@# have written an empty or partial target file.
@@ -208,11 +234,7 @@ $(eval $(call RUN_M4,strintdict.h,xstrobjdict.h))
 endif # GENSRC==1
 
 
-# --------------------- main target ---------------------
-
-# mysig needs some flags to *not* be set ....
-mysig.o: mysig.cc mysig.h
-	$(CXX) -c -g mysig.cc
+# ---------------------------- Main target -----------------------------
 
 # Library source files in "LANG=C sort" order
 SRCS :=
@@ -223,262 +245,186 @@ SRCS += binary-stdin.cc
 SRCS += bit2d.cc
 SRCS += bitarray.cc
 SRCS += boxprint.cc
-SRCS += breaker.cpp
+SRCS += breaker.cc
+SRCS += c-string-reader.cc
 SRCS += codepoint.cc
-SRCS += crc.cpp
+SRCS += counting-ostream.cc
+SRCS += crc.cc
 SRCS += cycles.c
 SRCS += d2vector.c
 SRCS += datablok.cc
 SRCS += datetime.cc
 SRCS += dev-warning.cc
-SRCS += exc.cpp
+SRCS += exc.cc
+SRCS += file-line-col.cc
 SRCS += flatten.cc
 SRCS += functional-set.cc
 SRCS += gcc-options.cc
+SRCS += gdvalue-reader.cc
+SRCS += gdvalue-write-options.cc
+SRCS += gdvalue-writer.cc
+SRCS += gdvalue.cc
+SRCS += gdvsymbol.cc
+SRCS += gdvtuple.cc
 SRCS += gprintf.c
 SRCS += growbuf.cc
 SRCS += hashline.cc
 SRCS += hashtbl.cc
-SRCS += missing.cpp
+SRCS += indexed-string-table.cc
+SRCS += missing.cc
 SRCS += mypopen.c
 SRCS += mysig.cc
-SRCS += nonport.cpp
+SRCS += nonport.cc
 SRCS += objcount.cc
 SRCS += ofstreamts.cc
 SRCS += parsestring.cc
 SRCS += point.cc
 SRCS += pprint.cc
+SRCS += rack-allocator.cc
+SRCS += reader.cc
 SRCS += refct-serf.cc
 SRCS += run-process.cc
 SRCS += sm-compare.cc
+SRCS += sm-env.cc
 SRCS += sm-file-util.cc
+SRCS += sm-integer.cc
 SRCS += sm-rc-obj.cc
 SRCS += sm-stristr.cc
-SRCS += sm-to-std-string.cc
+SRCS += sm-test.cc
+SRCS += sm-trace.cc
+SRCS += sm-unixutil.c
 SRCS += smregexp.cc
 SRCS += srcloc.cc
 SRCS += str.cc
 SRCS += strdict.cc
 SRCS += strhash.cc
-SRCS += string-utils.cc
+SRCS += string-hash.cc
+SRCS += string-util.cc
+SRCS += stringf.cc
 SRCS += stringset.cc
 SRCS += strtable.cc
-SRCS += strtokp.cpp
+SRCS += strtokp.cc
 SRCS += strutil.cc
 SRCS += svdict.cc
-SRCS += syserr.cpp
+SRCS += syserr.cc
+SRCS += temporary-file.cc
 SRCS += trace.cc
 SRCS += trdelete.cc
 SRCS += tree-print.cc
-SRCS += unixutil.c
+SRCS += utf8-reader.cc
+SRCS += utf8-writer.cc
 SRCS += vdtllist.cc
 SRCS += voidlist.cc
 SRCS += vptrmap.cc
-SRCS += warn.cpp
-
-# Some modules do not build on Mingw; for the moment I do not need them.
-ifeq ($(TARGET_PLATFORM_IS_MINGW),1)
-  SRCS := $(filter-out mypopen.c mysig.cc smregexp.cc,$(SRCS))
-endif
+SRCS += warn.cc
+SRCS += xarithmetic.cc
+SRCS += xoverflow.cc
 
 # Library object files.
 OBJS := $(SRCS)
 OBJS := $(patsubst %.c,%.o,$(OBJS))
 OBJS := $(patsubst %.cc,%.o,$(OBJS))
-OBJS := $(patsubst %.cpp,%.o,$(OBJS))
 
 # Pull in automatic dependencies created by $(GENDEPS_FLAGS).
 -include $(OBJS:.o=.d)
 
 $(THIS): $(OBJS)
-	rm -f $(THIS)
+	$(RM) $(THIS)
 	$(AR) -r $(THIS) $(OBJS)
 	-$(RANLIB) $(THIS)
 
 
-# ---------- module tests ----------------
-# Test program targets.
-#
-# TODO: I would like to eliminate these stand-alone test programs in
-# favor of testing as much as possible from unit-tests.exe.
-TESTS :=
-TESTS += autofile.exe
-TESTS += bdffont.exe
-TESTS += bit2d.exe
-TESTS += bitarray.exe
-TESTS += boxprint.exe
-TESTS += crc.exe
-TESTS += cycles.exe
-TESTS += d2vector.exe
-TESTS += gprintf.exe
-TESTS += growbuf.exe
-TESTS += hashline.exe
-TESTS += mypopen.exe
-TESTS += mysig.exe
-TESTS += nonport.exe
-TESTS += pprint.exe
-TESTS += smregexp.exe
-TESTS += srcloc.exe
-TESTS += str.exe
-TESTS += strdict.exe
-TESTS += strhash.exe
-TESTS += strutil.exe
-TESTS += svdict.exe
-TESTS += taillist_test.exe
-TESTS += tarray2d.exe
-TESTS += tarrayqueue.exe
-TESTS += test-codepoint.exe
-TESTS += test-datetime.exe
-TESTS += test-owner.exe
-TESTS += test-refct-serf.exe
-TESTS += test-run-process.exe
-TESTS += test-sm-file-util.exe
-TESTS += test-stringset.exe
-TESTS += test-tree-print.exe
-TESTS += testarray.exe
-TESTS += tobjlist.exe
-TESTS += tobjpool.exe
-TESTS += trdelete.exe
-TESTS += tsobjlist.exe
-TESTS += unit-tests.exe
-TESTS += vdtllist.exe
-TESTS += voidlist.exe
-TESTS += vptrmap.exe
-
-# Some programs do not build on Mingw.
-NON_MINGW_TESTS :=
-NON_MINGW_TESTS += mypopen.exe
-NON_MINGW_TESTS += mysig.exe
-NON_MINGW_TESTS += smregexp.exe
-
-ifeq ($(TARGET_PLATFORM_IS_MINGW),1)
-  TESTS := $(filter-out $(NON_MINGW_TESTS),$(TESTS))
-endif
-
-tests: $(TESTS)
-
-
-# this one is explicitly *not* linked against $(THIS)
-nonport.exe: nonport.cpp nonport.h gprintf.o
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_NONPORT $(LDFLAGS) nonport.cpp gprintf.o $(SYSLIBS)
-
-voidlist.exe: voidlist.cc voidlist.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_VOIDLIST $(LDFLAGS) voidlist.cc $(LIBS)
-
-vdtllist.exe: vdtllist.cc vdtllist.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_VDTLLIST $(LDFLAGS) vdtllist.cc $(LIBS)
-
-taillist_test.exe: taillist_test.cc taillist.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) taillist_test.cc $(LIBS)
-
-tobjlist.exe: tobjlist.cc objlist.h voidlist.o $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) tobjlist.cc voidlist.o $(LIBS)
-
-tsobjlist.exe: tsobjlist.cc sobjlist.h voidlist.o $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) tsobjlist.cc voidlist.o $(LIBS)
-
-bit2d.exe: bit2d.cc bit2d.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_BIT2D $(LDFLAGS) bit2d.cc $(LIBS)
-
-growbuf.exe: growbuf.cc growbuf.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_GROWBUF $(LDFLAGS) growbuf.cc $(LIBS)
-
-strdict.exe: strdict.cc strdict.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_STRDICT $(LDFLAGS) strdict.cc $(LIBS)
-
-svdict.exe: svdict.cc svdict.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_SVDICT $(LDFLAGS) svdict.cc $(LIBS)
-
-str.exe: str.cc str.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_STR $(LDFLAGS) str.cc $(LIBS)
-
-strutil.exe: strutil.cc strutil.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_STRUTIL $(LDFLAGS) strutil.cc $(LIBS)
-
-strhash.exe: strhash.cc strhash.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_STRHASH $(LDFLAGS) strhash.cc $(LIBS)
-
-trdelete.exe: trdelete.cc trdelete.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_TRDELETE $(LDFLAGS) trdelete.cc $(LIBS)
-
-mysig.exe: mysig.cc mysig.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_MYSIG $(LDFLAGS) mysig.cc $(LIBS)
-
-mypopen.exe: mypopen.c mypopen.h
-	$(CC) -o $@ $(CFLAGS) -DTEST_MYPOPEN $(LDFLAGS) mypopen.c $(SYSLIBS)
-
-tobjpool.exe: tobjpool.cc objpool.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) tobjpool.cc $(LIBS)
-
-cycles.exe: cycles.h cycles.c
-	$(CC) -o $@ $(CFLAGS) -DTEST_CYCLES $(LDFLAGS) cycles.c $(SYSLIBS)
-
-crc.exe: crc.cpp
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_CRC $(LDFLAGS) crc.cpp $(SYSLIBS)
-
-srcloc.exe: srcloc.cc $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_SRCLOC $(LDFLAGS) srcloc.cc $(LIBS)
-
-hashline.exe: hashline.cc $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_HASHLINE $(LDFLAGS) hashline.cc $(LIBS)
-
-gprintf.exe: gprintf.c gprintf.h
-	$(CC) -o $@ $(CFLAGS) -DTEST_GPRINTF $(LDFLAGS) gprintf.c $(SYSLIBS)
-
-smregexp.exe: smregexp.cc $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_SMREGEXP $(LDFLAGS) smregexp.cc $(LIBS)
-
-vptrmap.exe: vptrmap.cc $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_VPTRMAP $(LDFLAGS) vptrmap.cc $(LIBS)
-
-pprint.exe: pprint.cc $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_PPRINT $(LDFLAGS) pprint.cc $(LIBS)
-
-boxprint.exe: boxprint.cc $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_BOXPRINT $(LDFLAGS) boxprint.cc $(LIBS)
-
-tarrayqueue.exe: tarrayqueue.cc $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) tarrayqueue.cc $(LIBS)
-
-testarray.exe: testarray.cc $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) testarray.cc $(LIBS)
-
-autofile.exe: autofile.cc $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_AUTOFILE $(LDFLAGS) autofile.cc $(LIBS)
-
-bitarray.exe: bitarray.cc $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_BITARRAY $(LDFLAGS) bitarray.cc $(LIBS)
-
-d2vector.exe: d2vector.c $(THIS)
-	$(CC) -o $@ $(CFLAGS) -DTEST_D2VECTOR $(LDFLAGS) d2vector.c $(LIBS) $(MATHLIB)
-
-bdffont.exe: bdffont.cc $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_BDFFONT $(LDFLAGS) bdffont.cc $(LIBS)
-
-tarray2d.exe: tarray2d.cc array2d.h $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) -DTEST_TARRAY2D $(LDFLAGS) tarray2d.cc $(LIBS)
-
+# ---------------------------- Module tests ----------------------------
 # Component test modules.
 #
 # The naming convention is "<module>-test" so that, in an alphabetic
 # file name listing, the test is next to the module it tests.
 UNIT_TEST_OBJS :=
 UNIT_TEST_OBJS += array-test.o
+UNIT_TEST_OBJS += array2d-test.o
+UNIT_TEST_OBJS += arrayqueue-test.o
 UNIT_TEST_OBJS += astlist-test.o
+UNIT_TEST_OBJS += autofile-test.o
+UNIT_TEST_OBJS += bdffont-test.o
 UNIT_TEST_OBJS += bflatten-test.o
+UNIT_TEST_OBJS += bit2d-test.o
+UNIT_TEST_OBJS += bitarray-test.o
+UNIT_TEST_OBJS += boxprint-test.o
+UNIT_TEST_OBJS += c-string-reader-test.o
+UNIT_TEST_OBJS += codepoint-test.o
+UNIT_TEST_OBJS += counting-ostream-test.o
+UNIT_TEST_OBJS += crc-test.o
+UNIT_TEST_OBJS += cycles-test.o
+UNIT_TEST_OBJS += d2vector-test.o
 UNIT_TEST_OBJS += datablok-test.o
+UNIT_TEST_OBJS += datetime-test.o
 UNIT_TEST_OBJS += dict-test.o
+UNIT_TEST_OBJS += exc-test.o
 UNIT_TEST_OBJS += functional-set-test.o
 UNIT_TEST_OBJS += gcc-options-test.o
-UNIT_TEST_OBJS += map-utils-test.o
+UNIT_TEST_OBJS += gdvalue-test.o
+UNIT_TEST_OBJS += gdvsymbol-test.o
+UNIT_TEST_OBJS += gdvtuple-test.o
+UNIT_TEST_OBJS += get-type-name-test.o
+UNIT_TEST_OBJS += gprintf-test.o
+UNIT_TEST_OBJS += growbuf-test.o
+UNIT_TEST_OBJS += hashline-test.o
+UNIT_TEST_OBJS += indexed-string-table-test.o
+UNIT_TEST_OBJS += map-util-test.o
+UNIT_TEST_OBJS += mypopen-test.o
+UNIT_TEST_OBJS += mysig-test.o
+UNIT_TEST_OBJS += nonport-test.o
+UNIT_TEST_OBJS += objlist-test.o
+UNIT_TEST_OBJS += objpool-test.o
+UNIT_TEST_OBJS += optional-util-test.o
 UNIT_TEST_OBJS += overflow-test.o
+UNIT_TEST_OBJS += owner-test.o
 UNIT_TEST_OBJS += parsestring-test.o
+UNIT_TEST_OBJS += pprint-test.o
+UNIT_TEST_OBJS += rack-allocator-test.o
+UNIT_TEST_OBJS += reader-test.o
+UNIT_TEST_OBJS += refct-serf-test.o
+UNIT_TEST_OBJS += run-process-test.o
+UNIT_TEST_OBJS += set-util-test.o
+UNIT_TEST_OBJS += sm-ap-int-test.o
+UNIT_TEST_OBJS += sm-ap-uint-test.o
+UNIT_TEST_OBJS += sm-env-test.o
+UNIT_TEST_OBJS += sm-file-util-test.o
+UNIT_TEST_OBJS += sm-integer-test.o
+UNIT_TEST_OBJS += sm-is-equal-test.o
 UNIT_TEST_OBJS += sm-pp-util-test.o
 UNIT_TEST_OBJS += sm-rc-ptr-test.o
 UNIT_TEST_OBJS += sm-stristr-test.o
-UNIT_TEST_OBJS += string-utils-test.o
+UNIT_TEST_OBJS += sm-trace-test.o
+UNIT_TEST_OBJS += sm-unique-ptr-test.o
+UNIT_TEST_OBJS += smregexp-test.o
+UNIT_TEST_OBJS += sobjlist-test.o
+UNIT_TEST_OBJS += srcloc-test.o
+UNIT_TEST_OBJS += std-map-fwd-test.o
+UNIT_TEST_OBJS += std-optional-fwd-test.o
+UNIT_TEST_OBJS += std-string-fwd-test.o
+UNIT_TEST_OBJS += std-string-view-fwd-test.o
+UNIT_TEST_OBJS += std-vector-fwd-test.o
+UNIT_TEST_OBJS += str-test.o
+UNIT_TEST_OBJS += strdict-test.o
+UNIT_TEST_OBJS += strhash-test.o
+UNIT_TEST_OBJS += string-hash-test.o
+UNIT_TEST_OBJS += string-util-test.o
+UNIT_TEST_OBJS += stringf-test.o
+UNIT_TEST_OBJS += stringset-test.o
 UNIT_TEST_OBJS += strutil-test.o
-UNIT_TEST_OBJS += vector-utils-test.o
+UNIT_TEST_OBJS += svdict-test.o
+UNIT_TEST_OBJS += syserr-test.o
+UNIT_TEST_OBJS += taillist-test.o
+UNIT_TEST_OBJS += temporary-file-test.o
+UNIT_TEST_OBJS += trdelete-test.o
+UNIT_TEST_OBJS += tree-print-test.o
+UNIT_TEST_OBJS += utf8-test.o
+UNIT_TEST_OBJS += vdtllist-test.o
+UNIT_TEST_OBJS += vector-push-pop-test.o
+UNIT_TEST_OBJS += vector-util-test.o
+UNIT_TEST_OBJS += voidlist-test.o
+UNIT_TEST_OBJS += vptrmap-test.o
 
 # Master unit test module.
 UNIT_TEST_OBJS += unit-tests.o
@@ -491,23 +437,13 @@ unit-tests.exe: $(UNIT_TEST_OBJS) $(THIS)
 all: unit-tests.exe
 
 
-# Rule for tests that have dedicated .cc files, which is what I
-# would like to transition toward.
-#
-# Well, I would like to transition *away* from having tests inside the
-# main .cc file.  But, preferably, tests are run from the main unit test
-# program rather than as stand-alone programs.
-#
-test-%.exe: test-%.cc $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) test-$*.cc $(LIBS)
-
-# Same rule but for the other way of naming, which I am slowly adopting.
+# Rule for tests that have dedicated .cc files, which is currently just
+# binary-stdin-test.exe.
 %-test.exe: %-test.cc $(THIS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $*-test.cc $(LIBS)
 
 
-# Create a read-only file I can try to inspect in test-sm-file-util.cc.
-check: test.dir/read-only.txt
+# Create a read-only file I can try to inspect in sm-file-util-test.cc.
 test.dir/read-only.txt:
 	mkdir -p test.dir
 	echo "this file is read-only" >$@
@@ -518,17 +454,25 @@ test.dir/read-only.txt:
 test/%.expect:
 	touch $@
 
-# Run a single test executable and compare to expected output.
-out/%.ok: test/%.expect %.exe
-	@mkdir -p $(dir $@)
+# This variable is used as a dependency on targets that I only want to
+# run after the unit tests have passed, both because the unit tests are
+# more fundamental, and because I do not want the output of both kinds
+# of tests being interleaved during parallel `make`.  Those rules do not
+# actually have a dependency on this file.
+AFTER_UNIT_TESTS := out/unit-tests.exe.ok
+
+# Run one unit test and compare to expected output.
+out/%.unit.ok: test/%.expect $(AFTER_UNIT_TESTS)
+	$(CREATE_OUTPUT_DIRECTORY)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/$*.actual \
 	  --expect test/$*.expect \
-	  ./$*.exe
+	  env VERBOSE=1 ./unit-tests.exe $*
 	touch $@
 
-check: out/boxprint.ok
-check: out/test-tree-print.ok
+check: out/boxprint.unit.ok
+check: out/gdvalue.unit.ok
+check: out/tree_print.unit.ok
 
 
 # ------------------------- binary-stdin-test --------------------------
@@ -567,70 +511,68 @@ out/binary-stdin-test.ok: binary-stdin-test.exe
 check: out/binary-stdin-test.ok
 
 
-# ------------------------------- check --------------------------------
-ifneq ($(CROSS_COMPILE),1)
-  RUN :=
-else
-  # there is a necessary space at the end of the next line ...
-  RUN := true 
-endif
+# ---------------------------- call-abort ------------------------------
+# Test program used by run-process-test.cc.
+call-abort.exe: call-abort.cc
+	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $<
 
-# for now, check-full is just check
-.PHONY: check-full
-check-full: check
 
-check: $(TESTS)
-	$(RUN)./nonport.exe
-	$(RUN)./voidlist.exe
-	$(RUN)./vdtllist.exe
-	$(RUN)./tobjlist.exe
-	$(RUN)./bit2d.exe
-	$(RUN)./growbuf.exe
-	$(RUN)./strdict.exe
-	$(RUN)./svdict.exe
-	$(RUN)./str.exe
-	$(RUN)./strutil.exe
-	$(RUN)./strhash.exe
-	$(RUN)./trdelete.exe
-	$(RUN)./tobjpool.exe
-	$(RUN)./cycles.exe
-	$(RUN)./tsobjlist.exe
-	$(RUN)./hashline.exe
-	$(RUN)./srcloc.exe
-	$(RUN)./gprintf.exe
-	$(RUN)./vptrmap.exe
-	$(RUN)./pprint.exe
-	$(RUN)./tarrayqueue.exe
-	$(RUN)./testarray.exe
-	$(RUN)./taillist_test.exe
-	$(RUN)./autofile.exe autofile.cc
-	$(RUN)./bitarray.exe
-	$(RUN)./d2vector.exe
-	$(RUN)./bdffont.exe
-	$(RUN)./tarray2d.exe
-	$(RUN)./test-codepoint.exe
-	$(RUN)./test-datetime.exe
-	$(RUN)./test-owner.exe
-	$(RUN)./test-refct-serf.exe
-	$(RUN)./test-run-process.exe --unit-test
-	$(RUN)./test-sm-file-util.exe
-	$(RUN)./test-stringset.exe
-	$(RUN)./unit-tests.exe
-ifneq ($(TARGET_PLATFORM_IS_MINGW),1)
-	$(RUN)./mysig.exe
-	$(RUN)./mypopen.exe
-	$(RUN)./smregexp.exe
-endif
-ifneq ($(CROSS_COMPILE),1)
-	@echo
-	@echo "make check: all the tests PASSED"
-else
-	@echo
-	@echo "make check: all the test programs were built, but I did not"
-	@echo "try to run any of them because of cross-compile mode; you"
-	@echo "may want to try running the above commands yourself on the target"
-	@echo "(remove the 'true' prefixes)"
-endif
+# ------------------------------- gdvn ---------------------------------
+# Program to read and write GDVN.
+gdvn.exe: gdvn.cc $(THIS)
+	$(CXX) -o $@ $(CXXFLAGS) $(LFDLAGS) $< $(LIBS)
+
+all: gdvn.exe
+
+
+# Create an empty expected-output file if necessary.
+test/gdvn/%-expect: test/gdvn/%
+	touch $@
+
+# Run a file through gdvn.exe.
+out/gdvn/%-ok: test/gdvn/% test/gdvn/%-expect gdvn.exe $(AFTER_UNIT_TESTS)
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(RUN_COMPARE_EXPECT) \
+	  --actual out/gdvn/$*-actual \
+	  --expect test/gdvn/$*-expect \
+	  ./gdvn.exe $<
+	touch $@
+
+# Files with which to test gdvn.
+GDVN_INPUTS :=
+GDVN_INPUTS += $(wildcard test/gdvn/bad/*.gdvn)
+GDVN_INPUTS += $(wildcard test/gdvn/*.gdvn)
+
+# .ok files resulting from running the tests.
+GDVN_OKFILES := $(patsubst test/gdvn/%,out/gdvn/%-ok,$(GDVN_INPUTS))
+
+
+.PHONY: check-gdvn
+check-gdvn: $(GDVN_OKFILES)
+
+
+# Run one input through `gdvn` via stdin.
+out/gdvn/123-stdin.ok: test/gdvn/123.gdvn test/gdvn/123-stdin-expect gdvn.exe $(AFTER_UNIT_TESTS)
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(RUN_COMPARE_EXPECT) \
+	  --actual out/gdvn/123-stdin-actual \
+	  --expect test/gdvn/123-stdin-expect \
+	  sh -c "./gdvn.exe < $<"
+	touch $@
+
+check-gdvn: out/gdvn/123-stdin.ok
+
+
+check: check-gdvn
+
+
+# -------------------------- run unit tests ----------------------------
+out/unit-tests.exe.ok: unit-tests.exe call-abort.exe test.dir/read-only.txt
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(RUN_WITH_TIMEOUT) ./unit-tests.exe
+	touch $@
+
+check: out/unit-tests.exe.ok
 
 
 # ------------------- test run-compare-expect.py -----------------------
@@ -653,7 +595,7 @@ out/rce_%.ok: test/rce_expect_% run-compare-expect.py
 # behavior even if the user has that variable set.
 RCE_CMD_droplines := \
   env UPDATE_EXPECT=0 $(RUN_COMPARE_EXPECT) \
-    --expect /dev/null \
+    --expect $(DEV_NULL) \
     --drop-lines 'extern' \
     --drop-lines '^x//' \
     --drop-lines '^\s*$$' \
@@ -706,49 +648,81 @@ rce-tests: out/rce_chdir1.ok
 check: rce-tests
 
 
-# ------------------- documentation -------------------------
-# directory of generated documentation
-gendoc:
-	mkdir gendoc
+# ------------------- test create-tuple-class.py -----------------------
+# Rewrite one header and implementation file.
+out/test/ctc/in/%.ok: test/ctc/in/%.h test/ctc/in/%.cc create-tuple-class.py
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(PYTHON3) ./create-tuple-class.py \
+	  --prefix=out/ \
+	  test/ctc/in/$*.h
+	$(RUN_COMPARE_EXPECT) \
+	  --expect test/ctc/exp/$*.h \
+	  --no-separators --no-stderr \
+	  cat out/test/ctc/in/$*.h
+	$(RUN_COMPARE_EXPECT) \
+	  --expect test/ctc/exp/$*.cc \
+	  --no-separators --no-stderr \
+	  cat out/test/ctc/in/$*.cc
+	$(CXX) -c -o $(DEV_NULL) -I. out/test/ctc/in/$*.cc
+	touch $@
 
-# main dependencies for the library; some ubiquitous dependencies
-# are omitted to avoid too much clutter; the files listed below are
-# the roots of the dependency exploration; I don't include any of
-# the stand-alone programs since those are just clutter to someone
-# trying to understand the library's structure
-.PHONY: gendoc/dependencies.dot
-gendoc/dependencies.dot:
-	perl ./scan-depends.pl -r -Xxassert.h -Xtest.h -Xtyp.h -Xmacros.h -Xstr.h \
-		-Xbreaker.h \
-		growbuf.h objpool.h strhash.h voidlist.h svdict.h str.h \
-		warn.cpp mysig.h srcloc.cc hashline.cc astlist.h taillist.h \
-		objstack.h ohashtbl.h okhasharr.h okhashtbl.h sobjlist.h \
-		exc.h >$@
+.PHONY: check-ctc
+check-ctc: out/test/ctc/in/foo.ok
 
-# check to see if they have dot
-.PHONY: dot
-dot:
-	@if ! which dot >/dev/null; then \
-	  echo "You don't have the 'dot' tool.  You can get it at:"; \
-	  echo "http://www.research.att.com/sw/tools/graphviz/"; \
+check: check-ctc
+
+
+# -------------- check create-tuple-class.py outputs -------------------
+# Set of header files that use create-tuple-class.py.
+CTC_HEADERS :=
+CTC_HEADERS += xarithmetic.h
+CTC_HEADERS += xoverflow.h
+
+# Corresponding implementation files.
+CTC_IMPL_FILES := $(CTC_HEADERS:.h=.cc)
+
+# Check that all of the CTC-generated code is up to date.
+out/ctc-up-to-date.ok: $(CTC_HEADERS) $(CTC_IMPL_FILES) create-tuple-class.py
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(PYTHON3) ./create-tuple-class.py \
+	  --check $(CTC_HEADERS)
+	touch $@
+
+check: out/ctc-up-to-date.ok
+
+
+# ------------------------------- mypy ---------------------------------
+# Run `mypy` on a script.
+out/%.mypy.ok: %
+	$(MYPY) --strict $*
+	touch $@
+
+.PHONY: check-mypy
+check-mypy: out/create-tuple-class.py.mypy.ok
+check-mypy: out/find-extra-deps.py.mypy.ok
+check-mypy: out/get-file-descriptions.py.mypy.ok
+check-mypy: out/run-compare-expect.py.mypy.ok
+
+ifeq ($(ENABLE_MYPY),1)
+check: check-mypy
+endif
+
+
+# --------------------------- ad-hoc check -----------------------------
+# Verify that `using namespace` does not appear in any header.
+ALL_HEADERS := $(wildcard *.h)
+out/no-using-namespace-in-header.ok: $(ALL_HEADERS)
+	@if grep 'using namespace' $(ALL_HEADERS); then \
+	  echo "Some headers have 'using namespace'."; \
 	  exit 2; \
+	else \
+	  exit 0; \
 	fi
 
-# use 'dot' to lay out the graph
-%.ps: %.dot dot
-	dot -Tps <$*.dot >$@
+.PHONY: check-ad-hoc
+check-ad-hoc: out/no-using-namespace-in-header.ok
 
-# use 'convert' to make a PNG image with resolution not to exceed
-# 1000 in X or 700 in Y ('convert' will preserve aspect ratio); this
-# also antialiases, so it looks very nice (it's hard to reproduce
-# this using 'gs' alone)
-%.png: %.ps
-	convert -geometry 1000x700 $^ $@
-
-# build auto-generated documentation
-.PHONY: doc
-doc: gendoc gendoc/dependencies.png
-	@echo "built documentation"
+check: check-ad-hoc
 
 
 # ----------------------------- coverage -------------------------------
@@ -776,19 +750,39 @@ compile_commands.json:
 	(echo "["; cat *.o.json; echo "]") > $@
 
 
-# --------------------- clean --------------------
+# ---------------------------- index.html ------------------------------
+HEADERS := $(wildcard *.h)
+out/index.html.ok: index.html get-file-descriptions.py $(HEADERS)
+	$(PYTHON3) ./get-file-descriptions.py \
+	  --ignore='-fwd\.h$$' *.h
+	touch $@
+
+check: out/index.html.ok
+
+
+# ------------------------------- check --------------------------------
+# The actual tests are all prerequisites of 'check' defined above.
+.PHONY: check
+check:
+	@echo 'check: All tests passed.'
+
+.PHONY: check-clean
+check-clean:
+	$(RM) -r out
+
+
+# ------------------------------- clean --------------------------------
 # delete compiling/editing byproducts
-clean: gcov-clean
-	rm -f *.o *.o.json *~ *.a *.d *.exe gmon.out srcloc.tmp testcout flattest.tmp
-	rm -rf test.dir out
+clean: gcov-clean check-clean
+	$(RM) *.o *.o.json *~ *.a *.d *.exe gmon.out srcloc.tmp testcout flattest.tmp
+	$(RM) -r test.dir
 
 distclean: clean
-	rm -f config.mk compile_commands.json
-	rm -rf gendoc
+	$(RM) compile_commands.json
 
 # remove crap that vc makes
 vc-clean:
-	rm -f *.plg *.[ip]db *.pch
+	$(RM) *.plg *.[ip]db *.pch
 
 
-# end of Makefile
+# EOF

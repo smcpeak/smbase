@@ -1,80 +1,65 @@
 // strutil.h            see license.txt for copyright and terms of use
-// various string utilities built upon the 'str' module
-// Scott McPeak, July 2000
-
-#ifndef STRUTIL_H
-#define STRUTIL_H
-
-#include "str.h"      // string
-#include "array.h"    // ArrayStack
-
-#include <stdio.h>    // FILE
-
-
-// direct string replacement, replacing instances of oldstr with newstr
-// (newstr may be "")
-string replace(rostring src, rostring oldstr, rostring newstr);
-
-// works like unix "tr": the source string is translated character-by-character,
-// with occurrences of 'srcchars' replaced by corresponding characters from
-// 'destchars'; further, either set may use the "X-Y" notation to denote a
-// range of characters from X to Y
-string translate(rostring src, rostring srcchars, rostring destchars);
-
-// a simple example of using translate; it was originally inline, but a bug
-// in egcs made me move it out of line
-string stringToupper(rostring src);
-//  { return translate(src, "a-z", "A-Z"); }
-
-string stringTolower(rostring src);
-
-
-// remove any whitespace at the beginning or end of the string
-string trimWhitespace(rostring str);
-// dsw: get the first alphanum token in the string
-string firstAlphanumToken(rostring str);
-
-
-// encode a block of bytes as a string with C backslash escape
-// sequences (but without the opening or closing quotes)
+// A set of generic string utilities, including replace(), translate(),
+// trimWhitespace(), encodeWithEscapes(), etc.
 //
-// 'src' is *not* rostring, since it is not NUL terminated
-string encodeWithEscapes(char const *src, int len);
+// TODO: Move the parts of this module I want to keep into
+// string-util.h.
 
-// Overloads for the other variants of 'char'.
-inline string encodeWithEscapes(unsigned char const *src, int len)
-  { return encodeWithEscapes((char const *)src, len); }
-inline string encodeWithEscapes(signed char const *src, int len)
-  { return encodeWithEscapes((char const *)src, len); }
+#ifndef SMBASE_STRUTIL_H
+#define SMBASE_STRUTIL_H
 
-// safe when the text has no NUL characters
-string encodeWithEscapes(rostring src);
+#include "array.h"                     // ArrayStack
+#include "sm-macros.h"                 // DEPRECATED
 
-// adds the quotes too
-string quoted(rostring src);
+// My basic plan is to move the functionality that I think is worth
+// keeping over into `string-util`, leaving the `strutil` module with
+// only legacy compatibility aliases.  As I do that, modules that are
+// still including `strutil` need access to the moved functions, so I
+// pull them in here.
+#include "string-util.h"               // moved functions
+
+#include <string>                      // std::string
+
+#include <stdio.h>                     // FILE
 
 
-// decode an escaped string; throw xFormat if there is a problem
+// dsw: get the first alphanum token in the string
+//
+// Silently deprecated: I think this is not a good way to do parsing, so
+// I am not moving this to `string-util`.
+//
+std::string firstAlphanumToken(std::string const &str);
+
+
+std::string quoted(std::string const &src)
+  DEPRECATED("Use `doubleQuote` in `string-util` instead.");
+
+
+// decode an escaped string; throw XFormat if there is a problem
 // with the escape syntax; if 'delim' is specified, it will also
 // make sure there are no unescaped instances of that
-void decodeEscapes(ArrayStack<char> &dest, rostring src,
-                   char delim = 0, bool allowNewlines=false);
+void decodeEscapes(ArrayStack<char> &dest, std::string const &src,
+                   char delim = 0, bool allowNewlines=false)
+  DEPRECATED("Use `decodeCStringEscapesToStream` or "
+             "`decodeCStringEscapesToString` in `c-string-reader`.");
 
 // given a string with quotes and escapes, yield just the string;
 // works if there are no escaped NULs
-string parseQuotedString(rostring text);
+std::string parseQuotedString(std::string const &text)
+  DEPRECATED("Use `parseQuotedCString` in `c-string-reader`.");
 
 
 // For printable ASCII other than single quote or backslash, return 'c'.
 // Otherwise, return '\'', '\\', '\xNN', '\uNNNN', or '\UNNNNNNNN'.
-string quoteCharacter(int c);
+std::string quoteCharacter(int c)
+  DEPRECATED("Use `singleQuoteChar` in `string-util`.");
 
 
 // Return a string that, in the POSIX shell syntax, denotes 's'.  If no
 // quoting is needed, returns 's'.  This uses double-quotes when 's'
 // needs quoting, which is when 's' contains a shell metacharacter or
 // any character outside the printable ASCII range.
-string shellDoubleQuote(string const &s);
+std::string shellDoubleQuote(string const &s);
 
 
 // 2018-06-30: I moved 'localTimeString' into datetime.h
@@ -82,11 +67,11 @@ string shellDoubleQuote(string const &s);
 
 // given a directory name like "a/b/c", return "c"
 // renamed from 'basename' because of conflict with something in string.h
-string sm_basename(rostring src);
+std::string sm_basename(std::string const &src);
 
 // given a directory name like "a/b/c", return "a/b"; if 'src' contains
 // no slashes at all, return "."
-string dirname(rostring src);
+std::string dirname(std::string const &src);
 
 
 // return 'prefix', pluralized if n!=1; for example
@@ -94,17 +79,17 @@ string dirname(rostring src);
 //   plural(2, "egg") yields "eggs";
 // it knows about a few irregular pluralizations (see the source),
 // and the expectation is I'll add more irregularities as I need them
-string plural(int n, rostring prefix);
+std::string plural(int n, std::string const &prefix);
 
 // same as 'plural', but with the stringized version of the number:
 //   pluraln(1, "egg") yields "1 egg", and
 //   pluraln(2, "egg") yields "2 eggs"
-string pluraln(int n, rostring prefix);
+std::string pluraln(int n, std::string const &prefix);
 
 // prepend with an indefinite article:
 //   a_or_an("foo") yields "a foo", and
 //   a_or_an("ogg") yields "an ogg"
-string a_or_an(rostring noun);
+std::string a_or_an(std::string const &noun);
 
 
 // Sometimes it's useful to store a string value in a static buffer;
@@ -115,19 +100,16 @@ char *copyToStaticBuffer(char const *src);
 
 
 // true if the first part of 'str' matches 'prefix'
-bool prefixEquals(rostring str, rostring prefix);
+bool prefixEquals(std::string const &str, std::string const &prefix)
+  DEPRECATED("Use `beginsWith` in `string-util` instead.");
 
 // and similar for last part
-bool suffixEquals(rostring str, rostring suffix);
+bool suffixEquals(std::string const &str, std::string const &suffix)
+  DEPRECATED("Use `endsWith` in `string-util` instead.");
 
 
-// True if 'needle' occurs as a substring within 'haystack'.  If
-// 'needle' is empty, this always returns true.
-bool hasSubstring(string const &haystack, string const &needle);
-
-// If 'needle' occurs within 'haystack', return the byte offset of the
-// first byte of the first occurrence.  Otherwise, return -1.
-int indexOfSubstring(string const &haystack, string const &needle);
+// 2024-06-04: Moved `hasSubstring` and `indexOfSubstring` to
+// `string-util`.
 
 
 // Variants of the above where we treat the characters as US-ASCII and
@@ -139,25 +121,26 @@ int indexOfSubstring_insens_ascii(string const &haystack,
 
 
 // read/write strings <-> files
-void writeStringToFile(rostring str, rostring fname);
-string readStringFromFile(rostring fname);
+void writeStringToFile(std::string const &str, std::string const &fname);
+std::string readStringFromFile(std::string const &fname);
 
 // Append to 'dest' all of the lines in 'fname'.  If 'chomp' is true,
 // each line has no newline terminator; otherwise, all but the last have
 // newlines, and the last may or may not depending on how the file ends.
-// Throws an exception on error, including xSysError for file-not-found.
-void readLinesFromFile(ArrayStack<string> /*INOUT*/ &dest, rostring fname,
+// Throws an exception on error, including XSysError for file-not-found.
+void readLinesFromFile(ArrayStack<std::string> /*INOUT*/ &dest,
+                       std::string const &fname,
                        bool chomp = true);
 
 
 // read the next line from a FILE* (e.g. an AutoFILE); the
 // newline is returned if it is present (you can use 'chomp'
 // to remove it); returns false (and "") on EOF
-bool readLine(string &dest, FILE *fp);
+bool readLine(std::string &dest, FILE *fp);
 
 
 // like perl 'chomp': remove a final newline if there is one
-string chomp(rostring src);
+std::string chomp(std::string const &src);
 
 
 // dsw: build a string with delimiters between each appended string
@@ -175,11 +158,7 @@ int compareStrings(const void *a, const void *b);
 void qsortStringArray(char const **strings, int size);
 
 // Variant for use with ArrayStack::sort.
-int compareStringPtrs(string const *a, string const *b);
+int compareStringPtrs(std::string const *a, std::string const *b);
 
 
-// Unit tests, implemented in strutil-test.cc.
-void test_strutil();
-
-
-#endif // STRUTIL_H
+#endif // SMBASE_STRUTIL_H

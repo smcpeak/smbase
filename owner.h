@@ -1,10 +1,12 @@
 // owner.h            see license.txt for copyright and terms of use
-// a stab at an owner ptr abstraction
+// Owner, a pointer that deallocates its referrent in its destructor.
+// Similar to unique_ptr in the C++ Standard.
 
 #ifndef OWNER_H
 #define OWNER_H
 
-#include "typ.h"      // NULL
+#include <stddef.h>   // NULL
+
 
 // Previously, I had #definitions of "owner", "serf", and "nullable"
 // (all expanding to nothing), intended as a form of annotation that

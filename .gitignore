@@ -2,6 +2,7 @@
 # This file should be maintained in "env LANG=C sort" order.
 *.DSW
 *.LIB
+*.bak
 *.csm
 *.d
 *.exe
@@ -9,6 +10,7 @@
 *.gcno
 *.gcov
 *.i
+*.ii
 *.lib
 *.o
 *.o.json
@@ -29,7 +31,6 @@ dependencies.png
 diff
 examples
 fsyncd.log
-gendoc
 gmon.out
 gprof.out
 hide

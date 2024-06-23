@@ -1,6 +1,6 @@
 // vdtllist.h            see license.txt for copyright and terms of use
-// list of void*, with a pointer maintained to the last (tail)
-// element, for constant-time append
+// List of void*, with a pointer maintained to the last (tail)
+// element, for constant-time append.  Used by ASTList and VoidTailList.
 
 #ifndef VDTLLIST_H
 #define VDTLLIST_H

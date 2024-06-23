@@ -6,6 +6,9 @@
 #include "exc.h"          // xassert, CAUTIOUS_RELAY
 #include "crc.h"          // crc32
 #include "syserr.h"       // xsyserror
+#include "xassert.h"      // xassert
+
+#include <algorithm>      // std::{min, max}
 
 #include <limits.h>       // INT_MAX
 #include <stdio.h>        // printf
@@ -13,13 +16,15 @@
 #include <string.h>       // memcpy
 #include <ctype.h>        // isprint
 
+using namespace smbase;
+
 
 // define the endpost byte as something we hope is
 // unlikely to coincidentally be written during an
 // overrun
-/*static*/ unsigned char const DataBlock::endpost = 0xBB;
+STATICDEF unsigned char const DataBlock::endpost = 0xBB;
 
-/*static*/ void (*DataBlock::s_memoryCorruptionOverrideHandler)() = NULL;
+STATICDEF void (*DataBlock::s_memoryCorruptionOverrideHandler)() = NULL;
 
 
 void DataBlock::init(size_t allocatedSize)
@@ -133,7 +138,7 @@ void DataBlock::copyCtorShared(DataBlock const &obj)
 
 DataBlock::DataBlock(DataBlock const &obj, size_t minToAllocate)
 {
-  init(max(obj.getAllocated(), minToAllocate));
+  init(std::max(obj.getAllocated(), minToAllocate));
   copyCtorShared(obj);
 }
 
@@ -173,13 +178,25 @@ bool DataBlock::dataEqual(DataBlock const &obj) const
 }
 
 
-string DataBlock::toString() const
+string DataBlock::toFullString() const
 {
   // My 'string' class uses 'int' for its length.  That should be fixed,
   // but until then, I'll verify the conversion is safe.
   xassert(getDataLen() <= INT_MAX);
 
   return string((char*)getDataC(), getDataLen());
+}
+
+
+string DataBlock::toNTString() const
+{
+  // Calculate the effective length.
+  size_t i=0;
+  while (i < getDataLen() && data[i] != 0) {
+    ++i;
+  }
+
+  return string((char*)getDataC(), i);
 }
 
 
@@ -290,12 +307,12 @@ void DataBlock::print(char const *label, int bytesPerLine) const
   if (label) {
     printf("---- %s, length = %zu, crc32 = 0x%lX ---- {\n",
            label, getDataLen(),
-           crc32(getDataC(), getDataLen()));
+           (unsigned long)crc32(getDataC(), getDataLen()));
   }
 
   size_t cursor = 0;
   while (cursor < getDataLen()) {
-    int linelen = (int)min((size_t)bytesPerLine, getDataLen() - cursor);
+    int linelen = (int)std::min((size_t)bytesPerLine, getDataLen() - cursor);
     xassert(linelen >= 1);    // ensure can't loop infinitely
 
     printf("  ");     // indent

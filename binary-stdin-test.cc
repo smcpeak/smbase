@@ -5,13 +5,16 @@
 
 // smbase
 #include "autofile.h"                  // AutoFILE
-#include "syserr.h"                    // xsyserror
+#include "syserr.h"                    // smbase::xsyserror
+#include "xassert.h"                   // xassert
 
 // libc++
 #include <vector>                      // std::vector
 
 // POSIX
 #include <unistd.h>                    // read, write
+
+using namespace smbase;
 
 
 static std::vector<unsigned char> allbytes()
@@ -179,7 +182,7 @@ int main(int argc, char **argv)
   try {
     innerMain(argc, argv);
   }
-  catch (xBase &x) {
+  catch (XBase &x) {
     cerr << x.why() << endl;
     return 2;
   }

@@ -1,5 +1,5 @@
 // sobjlist.h
-// serf list of arbitrary objects
+// Serf (non-owning) list of arbitrary objects.
 // NOTE: automatically generated from xobjlist.h -- do not edit directly
 
 // Author: Scott McPeak, 2000

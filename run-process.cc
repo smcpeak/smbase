@@ -6,12 +6,17 @@
 #include "sm-iostream.h"               // cout, cerr
 #include "sm-posix.h"                  // fork, exec, etc.
 #include "sm-windows.h"                // Windows API
-#include "syserr.h"                    // xsyserror
-#include "vector-utils.h"              // accumulateWith
+#include "string-util.h"               // contains
+#include "syserr.h"                    // smbase::xsyserror
+#include "vector-util.h"               // accumulateWith
 #include "xassert.h"                   // xassert
+
+#include <iomanip>                     // std::hex
 
 #include <errno.h>                     // errno
 #include <string.h>                    // strerror
+
+using namespace smbase;
 
 
 RunProcess::RunProcess()
@@ -282,7 +287,7 @@ string RunProcess::exitDescription() const
       // As a heuristic, if the value is large (such as Windows
       // exception codes), assume it's most sensible to read it as
       // hexadecimal.
-      return stringb("Signal " << SBHex(getSignal()));
+      return stringb("Signal " << std::hex << getSignal());
     }
     else {
       return stringb("Signal " << getSignal());
@@ -291,7 +296,7 @@ string RunProcess::exitDescription() const
 }
 
 
-/*static*/ void RunProcess::check_run(std::vector<string> const &command)
+STATICDEF void RunProcess::check_run(std::vector<string> const &command)
 {
   RunProcess rproc;
   rproc.setCommand(command);
@@ -311,14 +316,14 @@ string RunProcess::exitDescription() const
 // a command name containing a double-quote cannot be expressed), but
 // are evidently what we're forced to use.
 //
-/*static*/ void RunProcess::buildWindowsCommandLine(
+STATICDEF void RunProcess::buildWindowsCommandLine(
   std::vector<char> &commandLine, std::vector<string> const &command)
 {
   xassert(!command.empty());
 
   // Add the program name.
   auto it = command.begin();
-  if ((*it).contains('"')) {
+  if (contains(*it, '"')) {
     // The rules for escaping double-quotes are not active when
     // decoding argv[0], so there is no way to include them.
     xformatsb(

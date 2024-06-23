@@ -3,10 +3,17 @@
 
 #include "smregexp.h"     // this module
 #include "str.h"          // string
-#include "exc.h"          // xbase
+#include "exc.h"          // smbase::xmessage
 #include "array.h"        // Array
 
 #include <stddef.h>       // size_t
+
+using namespace smbase;
+
+
+// The entire module does not work on Windows.
+#ifndef __WIN32__
+
 
 // for now, I implement everything using the libc POSIX regex
 // facilities
@@ -19,6 +26,12 @@
 #else
   #include <gnuregex.h>
 #endif
+
+
+bool smregexpModuleWorks()
+{
+  return true;
+}
 
 
 // get an error string
@@ -40,7 +53,7 @@ static string regexpErrorString(regex_t const *pat, int code)
 static void regexpError(regex_t const *pat, int code) NORETURN;
 static void regexpError(regex_t const *pat, int code)
 {
-  xbase(regexpErrorString(pat, code));
+  xmessage(regexpErrorString(pat, code));
 }
 
 
@@ -73,7 +86,7 @@ Regexp::Regexp(rostring exp, CFlags flags)
     // deallocate the pattern buffer before throwing the exception
     string msg = regexpErrorString(PAT, code);
     delete PAT;
-    xbase(msg);
+    xmessage(msg);
   }
 }
 
@@ -127,43 +140,33 @@ bool regexpMatch(rostring str, rostring exp)
 }
 
 
-// ----------------- test code --------------------
-#ifdef TEST_SMREGEXP
+#else // windows
 
-#include <stdlib.h>    // exit
-#include <stdio.h>     // printf
-
-
-void matchVector(char const *str, char const *exp, bool expect)
+bool smregexpModuleWorks()
 {
-  bool actual = regexpMatch(str, exp);
-  if (actual != expect) {
-    printf("regexp failure\n");
-    printf("  str: %s\n", str);
-    printf("  exp: %s\n", exp);
-    printf("  expect: %s\n", (expect? "true" : "false"));
-    printf("  actual: %s\n", (actual? "true" : "false"));
-    exit(2);
-  }
+  return false;
 }
 
 
-int main()
+// Stubs.
+Regexp::Regexp(rostring exp, CFlags flags)
+{}
+
+Regexp::~Regexp()
+{}
+
+bool Regexp::match(rostring str, EFlags flags)
 {
-  matchVector("abc", "a", true);
-  matchVector("abc", "b", true);
-  matchVector("abc", "c", true);
-  matchVector("abc", "d", false);
+  return false;
+}
 
-  matchVector("abc", "^a", true);
-  matchVector("abc", "^b", false);
-  matchVector("abc", "b$", false);
-  matchVector("abc", "c$", true);
-  matchVector("abc", "^d", false);
-
-  printf("regexp works\n");
-  return 0;
+bool regexpMatch(rostring str, rostring exp)
+{
+  return false;
 }
 
 
-#endif // TEST_SMREGEXP
+#endif // windows
+
+
+// EOF

@@ -1,10 +1,15 @@
 // hashtbl.cc            see license.txt for copyright and terms of use
 // code for hashtbl.h
 
-#include "hashtbl.h"     // this module
-#include "xassert.h"     // xassert
+#include "hashtbl.h"                   // this module
 
-#include <string.h>      // memset
+#include "pointer-util.h"              // pointerToInteger
+#include "sm-test.h"                   // PVALTO
+#include "xassert.h"                   // xassert
+
+#include <iostream>                    // std::ostream
+
+#include <string.h>                    // memset
 
 
 unsigned HashTable::hashFunction(void const *key) const
@@ -182,6 +187,13 @@ void HashTable::empty(int initSize)
 {
   delete[] hashTable;
   makeTable(initSize);
+}
+
+
+void HashTable::printStats(std::ostream &os) const
+{
+  PVALTO(os, tableSize);
+  PVALTO(os, numEntries);
 }
 
 

@@ -1,0 +1,1216 @@
+gdvalue-design.txt
+==================
+
+
+Revision history
+================
+
+* 0.1 2024-06-05: Pre-publication phase.
+
+
+Introduction
+============
+
+This document describes the Generalized Data Value data model, and a
+textual serialization format called Generalized Data Value Notation
+(GDVN).  It is intended as an improvement primarily upon JSON (see
+section "Problems with JSON"), taking inspiration from a few other
+sources as well.
+
+At a high level, the goals for the data model are:
+
+* Generality: It can naturally accomodate a wide variety of data
+  domains.  It should have commonly used scalars like integers and
+  strings, and commonly used containers like sequences and maps.  Among
+  the intended applications is being able to map to and from almost any
+  data stored in any programming language.
+
+* Value semantics: Despite the preceding, elements are "values", not
+  "objects" (in the programming language sense).  They do not have
+  identity or location apart from the values they describe.  In
+  particular, the data model does not include pointers or references.
+
+* Self-describing: A person can mostly understand what the data means
+  simply by examining that data, without reference to an external
+  document.  In particular, it needs to allow named labels to be applied
+  strategically to convey meaning where it is not otherwise apparent.
+
+* No artificial limits: Integers are unbounded.
+
+* Precise semantics: Among other things, that requires a clear position
+  on the relevance of the order of elements in a map, and extra care if
+  floating-point numbers are included.
+
+The goals for the text representation are:
+
+* Human-readable and human-writable: It is practical for a person to
+  directly interact with it.  Among the intended applications is to be
+  usable as the format of configuration files.
+
+* Self-evident syntax: A person unfamiliar with the notation can infer
+  most of the syntax rules from almost any non-trivial example.
+
+* Familiarity to those already familiar with JSON.
+
+* Free-form: All whitespace is equivalent.  In particular, users have
+  full control over whether and how to indent.
+
+* Priority is given to the human-readable and self-describing aspects
+  over making the format particular compact.  (But a TODO is to also
+  specify a compact binary representation.)
+
+
+Data model
+==========
+
+The core concept of a Generalized Data Value is the "value".  A value is
+one of the following:
+
+  * Symbol: A (possibly-empty) finite sequence of Unicode code points.
+    Symbols are distinct from strings, and intended to be names of
+    entities or concepts with semantics specified elsewhere, rather than
+    having intrinsic meaning.
+
+  * Integer: Positive or negative integer, of unbounded but finite
+    magnitude.  There is only one zero value (not both a positive and
+    negative zero).
+
+  * TODO: Add floats.
+
+  * String: A finite sequence of Unicode code points.
+
+  * Sequence: Also a finite ordered sequence of values.  In a sequence,
+    the meaning of each element typically does not *depend* on its
+    position, even though it *has* a position.
+
+  * Tuple: A finite ordered sequence of values.  In a tuple, the meaning
+    of each element typically *does* depend on its position.
+
+  * Set: A finite unordered set of values.  An empty set is distinct
+    from an empty sequence (or any other container).
+
+  * Map: A finite unordered map from values to values.  An empty map is
+    a distinct value from an empty set (or any other container).
+
+  * TODO: Ordered map?
+
+  * Tagged container: A pair of a symbol (which is the tag) and a
+    container (sequence, tuple, set, or map).  The tag indicates the
+    kind of thing the container represents.
+
+The meaning of a symbol is determined by mutual agreement between
+producer and consumer; its meaning is extrinsic rather than intrinsic.
+In this specification, it is encouraged for producers and consumers to
+regard the following symbols as having pre-established reserved meaning:
+
+  * null: An "absent" value, used in a context where a value is
+    expected but no such value exists.
+
+  * false: Boolean false.
+
+  * true: Boolean true.
+
+  * TODO: NaN, PInf, NInf.
+
+The data model is meant to allow values to be totally ordered (that is,
+for all values A and B, exactly one of A<B, A>B, and A==B is true)
+within applications using it, but this specification does not prescribe
+such an order, as this is just a passive data model without any defined
+operations.
+
+
+Data model rationale
+====================
+
+Symbols
+-------
+
+The inclusion of symbols distinct from strings is done to allow a
+distinction between "data", the main thing being described and
+manipulated, and "metadata", information related to the interpretation
+of that data or the mechanism by which it is processed.  In the JSON
+data model, these are conflated.  Consider:
+
+  {
+    "type": "diagram",
+    "name": "boxes",
+    "shapes": [],
+    "customColors": {
+      "red": "rgb(255,0,0)"
+    }
+  }
+
+In the preceding, "name" is metadata.  It has extrinsic meaning, agreed
+upon between producer and consumder.  In contrast, "boxes" is data with
+intrinsic meaning.  It is a name assigned by the user; the program
+does not treat it specially.
+
+But then, in "customColors", we have a map where both the key and the
+value are data.  The user of this hypothetical program can create an
+arbitrary collection of custom color names with assigned RGB values;
+"red" is not special.
+
+In JSON, there is no distinction between strings used as data and those
+used as metadata.  But of course real people find this distinction
+important, so JSON is somewhat commonly used in a relaxed form that
+allows unquoted keys, and people use unquoted keys to convey metadata.
+
+Rather than forcing people to bend the rules to express their intent,
+the GDV data model explicitly distinguishes strings from symbols (and
+giving them different syntax in the text representation).
+
+The choice to allow symbols to be arbitrary sequences of code points,
+including the empty sequence, reflects that the meaning of those symbols
+is *not* prescribed by the GDV data model.  It is up to the person
+producing or consuming the data to decide what symbols mean, so the
+model allows maximum flexibility.  Of course, in most situations it is
+wise to select symbols that are convenient for humans to read and write,
+but the data model does not insist on that.
+
+
+The name "sequence"
+-------------------
+
+This model uses the name "sequence" to refer to a finite sequence.
+There are several other plausible candidate terms that could have been
+used for this role:
+
+  * List
+
+  * Array (the term used in JSON)
+
+  * Vector
+
+All of these have roots in mathematical literature.  However, when used
+in a programming context, both "list" and "array" are closely associated
+with particular data structures, whereas this data model is specifically
+independent of any particular data structure realization, so those two
+are rejected.
+
+In mathematics, a vector need not consist of a sequence (a matrix can be
+a vector) and has the algebraic properties that come with being a member
+of a vector space.  Furthermore, in C++ at least, "vector" is closely
+associated with an array-like data structure.
+
+In contrast, the mathematical term "finite sequence" is a precise match
+for the "sequence" of GDV, with little need in a programming context for
+the "finite" qualifier.  Consequently, we use "sequence".
+
+The one disadvantage of "sequence" is it is a slightly longer term than
+is ideal for a concept that will be frequently used.  Fortunately, the
+abbreviation "seq" is concise and unambiguous, so works well as a
+substitute in cases where the longer term would get in the way.
+
+
+Tuples versus sequences
+-----------------------
+
+The model includes both tuples (like "(1 2 3)") and sequences (like "[1
+2 3]").  The reason is to better support the idea that the model is,
+to some extent, self-describing.  That is, one can look at a value and
+understand a lot about its intended purpose and meaning just from the
+available structure, without reference to an external document.
+
+In typical usage, a tuple is an object composed of several elements such
+that the *position* of each element is important to interpreting that
+element's meaning.  A good example is a date, e.g., "Date(2024 06 02)",
+or a rational number, "Rational(3 5)".  These are not mere lists of
+values that have an order, the exact position of each element is an
+essential part of determining the element's meaning.
+
+In contrast, while a sequence has an order (unlike a set), the precise
+position of an element does not normally determine how that element is
+interpreted.  That in turn *often* means that list elements are
+"homogeneous" to some degree, but really what is decisive when choosing
+a list over a tuple is whether you have to know the position to make
+sense of the element.  Moreover, it is precisely the *ability* to convey
+that distinction that I find compelling.
+
+Considering the alternative of exclusively using sequences, I find
+something like "[2024 06 02]" to be inadequate in an ostensibly
+self-describing format, with "Date[2024 06 02]" clearly better but still
+falling short of ideal.  Meanwhile, the cost of allowing one more kind
+of container is very small in terms of mechanical concerns like parsing,
+storing, and printing, and does not dramatically impact how the model is
+serialized into less expressive forms like JSON, particularly given the
+presence of tagged containers (discussed below).
+
+
+Sets versus maps
+----------------
+
+In mathmatics, a map (or "function") is usually defined as a set of
+tuples where every first element is unique.  This provides some economy
+of reasoning since maps are not a distinct primitive and many of the
+theorems that apply to sets also apply to maps.
+
+It's therefore tempting to try to do the same for GDValue.  In
+particular, the idea would be to say that a map is simply a set that
+conforms to the requirement of all elements being two-element tuples
+whose first elements are all unique within the map.
+
+However, having pursued that approach a certain distance, there were
+several problems that emerged:
+
+  * It is fairly awkward to enforce the constraint.  Where exactly does
+    the check go?  On every read that treats it as a map?  Upon some
+    action that "imbues" it with map-like qualities?  And how does
+    enforcement interact with modification?
+
+  * If there is a notion of "imbuing" a set with map-like qualities,
+    which seems like it might be needed to deal with the above, that
+    will presumably be lost as soon as the map is serialized and
+    deserialized.
+
+  * That is, unless the serialization format also preserves that aspect,
+    but then the text representation is different for maps and sets,
+    which already undermines one of the presumptive advantages of the
+    scheme to begin with.
+
+  * The operations on the two are in fact fairly different.
+
+Expanding on the last point, despite their constitutive structural
+similarity, the way in which programs interact with sets and maps is
+fairly different:
+
+  Set                         Map
+  --------------------        ------------
+  insert E                    map K to V; deal with collision of K
+
+  check if E is present       check if K (not (K,V)) is present
+
+  remove E                    remove mapping for K (not (K,V))
+
+                              get the V for a given K
+
+  iterate over the Es;        iterate over (K,V); can change Vs
+  cannot change anything
+
+This table lines up the major operations in rows of approximate
+correspondence.  The semantically closest operation is insertion,
+but even there maps have an issue with key collisions: they can
+either (1) remove the old value or (2) ignore the insertion.  In
+case 1, an entry that was previously present is now gone, while in
+case 2, the entry the client inserted is *not* present after the
+insertion.  Neither of those are possible with set insertion, where
+everything that was already there remains, and the inserted element
+is also assured to be there after the insertion.
+
+The other operations have greater semantic differences, and sets do not
+really have a counterpart to the map lookup operation.
+
+Finally, iteration, while superficially similar, is arguably the
+greatest and most problematic divergence.  When iterating over a set,
+the client receives complete elements, but (typically, and for my
+intended API design) cannot modify the elements because doing so would
+jeopardize the ordering invariant of the underlying data structure.  But
+when iterating over a map, it is often (for example with C++ `std::map`)
+allowed to modify the value.  Furthermore, the client interface
+structurally ensures that it receives exactly (K,V) pairs, whereas when
+iterating over a map as if it were a set, the client would receive
+arbitrary values and have to check that they are two-element tuples,
+doing something (what exactly?) when they are not.
+
+Consequently, in this design, I simply treat sets and maps as entirely
+different, unrelated containers.
+
+
+Tagged containers
+-----------------
+
+Tagged containers allow consumers to easily recognize what kind of thing
+a container represents without having to inspect either its context or
+contents.  This is another feature that advances the goal of being
+self-describing.  Because it is so useful, many JSON formats include a
+provision for a "type" or similar field in a map to indicate the entity
+kind, but that is awkward (since it is in the wrong place), and
+impossible for lists.  An alternative is to wrap a two-element list
+around the outside, but that is a weak convention to try to follow and
+creates significant additional delimiter clutter.
+
+Tagged containers have some arguable precedent in s-expressions, where
+one might see "(Date 2024 06 24)", and this prompts the question of why
+not follow that example.  In sort, that syntax puts the symbol ("Date")
+on the wrong side of the delimiter.  Syntactically it is symmetric with
+the following elements, but semantically plays an entirely different
+role.  By swapping them, "Date(2024 06 24)", the syntax reflects the
+role.
+
+As further elaboration, consider three alternative data models:
+
+* Java/C++/etc.: Objects have (class) names, fields have names.
+
+* JSON: Fields have names, objects do not.
+
+* XML: Elements (analogous to objects) have tag names, while
+  sub-elements (analogous to fields) do not.  XML also has named
+  attributes, but these are not recursive (an attribute cannot contain
+  an element).
+
+The data models used by JSON and XML each drop one kind of name that a
+conventional programming language like Java or C++ has in its data
+model.  Names are the most fundamental and important abstraction
+mechanism in data modeling, and their loss is acutely felt in practical
+use of both JSON and XML.  People respond by contorting the respective
+models to shoehorn the missing names in various ways.  The GDV data
+follows the programming language examples by allowing names to be easily
+associated both with container and containee, but does not require
+either.
+
+
+GDVN: Text representation
+=========================
+
+The text form of GDV is called GDVN for General Data Value Notation.
+The acronym "GDVN" could be pronounced "Godwyn" or "Godvyn".  It is
+intended to be superset of JSON (as described in RFC 8259), but is
+nevertheless independently specified here.
+
+GDVN is a textual format, regarded as a sequence of Unicode code points.
+In principle any encoding can be used, but in practice UTF-8 encoding is
+strongly preferred.
+
+Symbols have two forms, unquoted and quoted:
+
+  * An unquoted symbol conforms to the regex: [a-zA-Z_][a-zA-Z0-9_]
+
+    This includes symbols that are expected to have ubiquitous special
+    meaning such as "null", "true", and "false".  The syntax simply
+    treats them uniformly as symbols.
+
+    TODO: I would like to allow arbitrary Unicode "letters" and
+    "digits" in the unquoted form.
+
+  * A quoted symbol begins and ends with backtick '`', and in between
+    has the same set of escape codes as double-quoted strings (see
+    below).
+
+Integers have the form <sign?><radix?><digits> where:
+
+  * <sign?> is either "" or "-", the latter indicating a negative
+    number.  It *is* allowed to use "-" when the magnitude is zero, but
+    this is semantically equivalent to omitting the "-".
+
+  * <radix?> is "0x", "0o", or "0b", indicating hexadecimal, octal, or
+    binary, respectively.  The letter can be uppercase or lowercase.
+
+  * <digits> is a non-empty sequence of digits consistent with the
+    specified base, or decimal of there is no radix indicator.  It can
+    have extra leading zeroes, but they are semantically insignificant;
+    in particular, a leading zero does *not* indicate to use octal.
+    Hexadecimal digits A-F can be uppercase or lowercase.
+
+TODO: Specify a form for floating-point numbers.
+
+A double-quoted string is as in JSON, with a few noted extensions:
+
+  * It begins and ends with '"'.
+
+  * In the string, all unicode code points are allowed, and represent
+    themselves, except:
+
+    * DoubleQuote: "
+    * Backslash: \
+    * Code points less than decimal 32 (space)
+
+  * A string can use the recognized two-character escape sequences:
+
+    * \"     DoubleQuote
+    * \\     Backslash aka Reverse Solidus
+    * \/     Slash aka Solidus
+    * \b     Backspace (dec 8)
+    * \f     FormFeed (dec 12)
+    * \n     LineFeed (dec 10)
+    * \r     CarriageReturn (dec 13)
+    * \t     Tab (dec 9)
+    * \'     Single quote   # Extension of JSON.
+    * \`     Backtick       # Extension of JSON.
+
+  * \uNNNN where N are hex denote UTF-16 code unit in [0,0xFFFF].  If
+    the code unit is a surrogate element, it must be part of a
+    well-formed surrogate pair.  Otherwise it directly denotes a code
+    point.
+
+  * \u{N+} where N+ is a non-empty sequence of hex digits denoting a
+    Unicode code point in [0,0x10FFFF].  There is no limit on the number
+    of digits (there can be any number of leading zeroes while adhering
+    to the value constraint).  This is an extension of JSON.
+
+  * Any other character following backlash is an *error* and must be
+    rejected by the GDVN parser.
+
+Some code points have multiple representations, for example backslash
+can be written as "\\" or as "\u005c".  These two forms are semantically
+equivalent.
+
+  TODO: I'd like to allow string continuation with "+".
+
+TODO: Octet sequences are, perhaps, like in Python.
+
+Whitespace: All of the following are treated as whitespace:
+
+  * Space
+  * Tab
+  * LineFeed
+  * CarriageReturn
+  * Comma ','       # See Rationale section.
+
+Whitespace separates values within a container and optionally separates
+the container delimiters from values inside them.
+
+Sequence: [1 2 3]
+
+  Note that there is no punctuation between values.
+
+Tuple: (1 2 3)
+
+  The rules are the same as for sequences, except using round
+  parentheses instead of square brackets.
+
+Set: {{1 2 3}}
+
+  There is no significance to the order in which elements appear.  The
+  notations "{{1 2}}" and "{{2 1}}" are equivalent, just like the
+  notations "{{1 2}}" and "{{1  2}}" (with an extra space) are
+  equivalent.  Implementations should *not* preserve the serialization
+  order among set elements unless they are also preserving (say)
+  whitespace and comments, which is to say, they are implementing a
+  fundamentally different data model than what GDValue specifies.
+
+  Duplicate elements are *ignored*.  The notation "{{1 1}}" is
+  equivalent to the notation "{{1}}".
+
+Map: {a:1 b:2 c:3}
+
+  Between the braces are any number of key/value pairs, where both the
+  key and value are GDVN values, separated by a colon.
+
+  There is no significance to the order in which map entries appear.
+
+  It is an *error* for a map to have two identical keys, even if their
+  values are also identical.
+
+    {a:1 a:1}     # Syntax error.
+
+  Note: Map keys (and values) are arbitrary values, including strings,
+  symbols that have denote special values, and other maps, for example:
+
+    {
+      a:1
+      "b":2
+      {m:three}:3
+      {{s four}}:4
+      (v five):5
+      null:6
+      true:7
+      123:8
+      -456:9
+      {x:y z:w}:{d:e f:g}
+    }
+
+  The character immediately following the '{' must not be the start
+  character of a container, that is, it must not be '{', '[', or '('.
+  An immediately following '{' is interpreted as the start of a set,
+  while an immediately following '[' or '(' is reserved for future
+  extensions.
+
+Tagged container: Tag[...] or Tag(...) or Tag{{...}} or Tag{...}
+
+  If the character immediately following a symbol, with no intervening
+  whitespace, is '[', '(', or '{', then the symbol is combined with the
+  following container into a "tagged container".
+
+  For a tagged map, like an untagged map, it is prohibited for the
+  character immediately following '{' to be '{' or '[' or '('.
+
+  Note: It *is* allowed for a *tagged* container to be the first key
+  without adding an extra space, for example:
+
+    {A(1):one}
+
+For all values, if their last character is not the last character in the
+serialization (e.g., file), then the following character must be one of:
+
+  * Whitespace, including ','
+  * '}'
+  * ']'
+  * ')'
+  * ':'
+
+Consequently, for example, "[1a]" is invalid, whereas without this rule,
+it could potentially be parsed the same as "[1 a]".
+
+
+GDVN Rationale
+==============
+
+The biggest choice is to be a superset of JSON.  The rationale is fairly
+simple: lots of software can produce and consume JSON already, so this
+faciliates interoperability.  More importantly, it makes it easier for
+people to learn since the foundation is well known.  JSON brings some
+baggage, such as tolerating UTF-16 surrogate code pairs in strings, but
+this is a small price to pay.
+
+An unusual choice is to regard the comma character as "whitespace" since
+it obviously isn't "white" (graphically invisible).  Commas are a
+persistent thorn in the side of JSON, being annoying to produce when not
+allowed in the trailing position and often ugly regardless.  They are
+not necessary for parsing, so originally GDVN did not have them at all.
+I then decided that allowing but ignoring them would let GDVN be a JSON
+superset, which is valuable.  But "canonical" GDVN does not use them.
+
+The common symbols "null", "true", and "false" are not special because
+they do not need to be.  Whether and how applications give them special
+semantics is entirely up to those applications.  Furthermore, this
+allows additional symbols such as "NaN", "PInf", and "NInf" to be used
+as alternatives to ordinary floating point numbers once floats are
+added.
+
+Quoted symbols are enclosed in backticks because this is becoming a
+common way to write symbol-like entities in general text due to the
+influence of Markdown.  Single-quote remains unused (and hence reserved)
+for possible future extension of the format.
+
+The notation for integers allows radix specifiers (unlike JSON) in part
+to allow large integers to be expressed as hexadecimal, which is much
+more efficient since conversion from an internal binary representation
+to decimal digits requires repeated division by 10.  It does not follow
+the C/C++ convention of using a leading zero to indicate octal because
+octal is rare, and that notation is obscure and confusing to those only
+familiar with mathematical notation.  It allows redundant leading zeroes
+in part because standard mathematical notation does, and in part to
+allow situation-specific flexibility in formatting.  For example, "(1980
+01 31)" is much better than "(1980 1 31)" for writing a date since only
+the former fits the ISO-8601 YYYY-MM-DD form (albeit without the
+hyphens).
+
+Within strings, unknown baskslash codes are disallowed in order to
+reserve them for possible future use.  If instead, say, "\c" just meant
+"c", then there would be no room to expand without breaking backward
+compatibility.
+
+GDVN adds "\'" and "\`" codes that JSON does not have.  The latter is of
+course to ensure the escape codes are uniform inside strings and
+symbols.  The former anticipates possibly using single-quoted strings
+for some future purpose, and acknowledges that it would be surprising if
+"\'" were ever given a meaning *other than* single-quote.
+
+GDVN adds "\u{N+}" from C++23, originally described in P2290R3:
+
+  https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2290r3.pdf
+
+The rationale for using this notation in GDVN is basically the same as
+what is articulated in P2290R3, that "\u" cannot express the entire
+range (without surrogates) and "\U" is needlessly long.  "\u{N+}" allows
+a uniform notation from "\u{0}" (already one character shorter than
+"\u0000") to "\u{10FFFF}", while also permitting "\u{0010FFFF}" if
+someone likes digit counts that are a power of 2.
+
+Using doubled braces for sets is imperfect, but using single braces is
+bad because then an empty set could not be distinguished from an empty
+map, and no other choice seemed acceptable.  The single braces are
+reserved for maps because they are more common and important in
+practice, and that is what JSON uses.
+
+Duplicated elements in sets are ignored because this conforms to the
+usual mathematical notion for sets.  Furthermore, rejecting a set
+denoted with duplicate elements is unlikely to reveal latent bugs, nor
+would it preserve a useful syntax extension point for the future, and it
+could be useful in some streaming data scenarios.
+
+For maps, the choice of compact notation is motivated (beyond JSON
+compatibility) by the observation of the paramount role that maps play
+in data interchange.  This is what people will mostly be looking at, so
+is the case to optimize, even at the expense of slight irregularity (by
+which I mean choosing to use "a:1" instead of "(a 1)").
+
+Duplicated map keys are rejected because a duplicated map key *is*
+likely to indicate a problem in the upstream production of the data,
+silently dropping one of two different values (which one?) would be
+quite surprising and constitute potential data loss, and that policy is
+extended to the case of identical values for uniformity.
+
+The restriction on what characters can follow a value, which has the
+effect of preventing values from being juxtaposed, is meant in part to
+ensure readability, and also to preserve future extension points.  For
+example, it means that three double-quotes in a row remains reserved for
+a possible triple-quoted string extension.
+
+I chose to restrict the characters that follow '{' in order to leave
+open the possibility of extending to more containers.  As I have been
+using GDVN, I have found that having the right container available for
+each use is very beneficial, both for convenience of manipulation and
+for its self-describing properties, so being able to add more (ordered
+maps are particularly appearling) is important.  So why not also
+restrict what follows '(' and '[' for regularity and in order to reserve
+even more?  First, I think it is simply too valuable to be able to write
+things like:
+
+  [[1 2] [3 4]]
+
+rather than:
+
+  [ [1 2] [3 4] ]
+
+Tuples and sequences are commonly nested, and being able to do so
+ompactly is a significant benefit to readability and intuitive
+writability.  In contrast, it is much less common to want to compactly
+denote a set or map that contains containers as elements or keys.
+Second, I do not have in mind a likely extension that would take
+advantage of those reservations.
+
+
+Is GDVN syntax self-evident?
+============================
+
+Quoting one of the goals at the top:
+
+  * Self-evident syntax: A person unfamiliar with the notation can infer
+    most of the syntax rules from almost any non-trivial example.
+
+Is this the case?  I think it partly is, although not as strongly as in
+the case of JSON.  Let's look at a realistic example:
+
+  {{
+    Dep{
+      meta: DepMeta{
+        dmf: {{DMF_VISIBLE}}
+        rctx: RCTX_DECL_REF_EXPR
+        refLoc: "in/deps/src/stmt-expr.cc:10:5"
+      }
+      source: Node(
+        "FunctionDecl \"f()\" at in/deps/src/stmt-expr.cc:7:1"
+        DA_DEFINITION
+      )
+      target:
+        Node("VarDecl \"g\" at in/deps/src/stmt-expr.cc:4:1" DA_INTERFACE)
+    }
+  }}
+
+Some issues:
+
+* I must acknowledge that removing the commas in fact does have a cost
+  in this regard.  Without them, someone unfamiliar with the format
+  might conclude that elements are separated by newlines (rather than
+  any whitespace), which would be an unfortunate mistake.  In the
+  example above, the fact that "dmf:" is on the same line as its value
+  while "target:" is on a different line might be a clue.  Ideally, a
+  user would understand that the syntax is free-form, but without the
+  commas, that is not quite as obvious as it would otherwise be.
+
+* The tagged containers are unconventional.  A novice might not realize
+  they have to immediately precede the container opening delimiter with
+  no intervening whitespace.  In a map context, inserting a space after
+  the tag will cause an error due to having multiple values where one is
+  expected, but in other container contexts it will be successfully
+  parsed (at the GDVN level) as multiple values.
+
+* The rules for symbols are not at all self-evident.  You have to be
+  familiar with the lexical rules from a language like C or Java to
+  properly guess the unquoted symbol syntax, and the quoted form is
+  unlikely to be guessed by more than a small fraction of users.  That
+  said, I see a lot of JSON using unquoted keys for precisely the sorts
+  of keys that are treated as symbols by GDVN, so the required
+  familiarity seems commonplace, at least among current JSON users.
+
+* While the syntax for maps, sequences, and tuples is fairly common and
+  intuitive, the notation for sets is not.  Unless someone sees an
+  example in the text they are studying, they won't guess it.  And upon
+  seeing an example, I'd estimate only half of users will correctly
+  guess what it means.
+
+Despite the above, GDVN retains the most important self-evident syntax
+from JSON, that of quoted strings.  This is what YAML gets most wrong
+IMO.  With GDVN, the boundaries of strings *are* manifest, and I think
+that will give many new users the confidence needed to determine many of
+the other rules through experimentation.  And of course the
+documentation exists and is reasonably short.
+
+
+Versioning GDVN
+===============
+
+There is currently no way to indicate the version of GDVN in use.
+
+The primary purpose of an explicit version number is to provide a good
+error message and prevent possible misinterpretation of data when an
+older tool is used on a newer format.
+
+Misinterpretation can, in principle, be prevented by ensuring that the
+progression of versions monotonically transforms previously-invalid
+syntax into valid syntax.  The GDVN form has been designed with this in
+mind, with extension points explicitly preserved in various places.  But
+of course one cannot guarantee that there will not be a need for an
+incompatible change at some point.
+
+Even without the risk of misinterpretation, it is very frustrating for
+users when they get a mysterious error message (like, "unexpected
+<something> at <somewhere deep in the file>") that turns out to be due
+to using a tool that is too old.
+
+Consequently, it would be good to have an explicit versioning scheme.
+However, adding one in a straightforward way would compromise the
+recursive compositionality of GDVN.  For example, if we say "All GDVN
+begins with a version marker" (of whatever syntax), then now GDVN cannot
+contain itself.  It is similar to the way adding a byte order marker to
+text breaks the ability of text to be concatenated.
+
+I don't have a full solution at this time, but my current thinking is
+that when a tool exports and imports GDVN data to a file or other medium
+where versioning makes sense, the form could consist of *two* GDVN
+values where the first is a version marker.  The marker would primarily
+indicate the version of the *tool* and its own formatting semantics, and
+only secondarily imply a certain level of GDVN syntax.  For example:
+
+  MyDrawingProgram{
+    version: (1 2 3)       // Meaning 1.2.3 but in GDVN.
+  }
+  Drawing{
+    title: "Some drawing title"
+    contents: { ... }
+  }
+
+The first value is a tagged map that clearly identifies the tool or
+kind of data and its version.  This first value should be expressed in
+lowest-common-denominator GDVN 1.0 syntax.  The second value can then
+freely use whatever GDVN extensions that MyDrawingProgram 1.2.3 uses.
+
+A GDVN parser should have the ability to open a file and provide the
+client with a stream of parsed values on demand.  With such an API, the
+tool can get the first value, check that the version is understood, and
+error out appropriately if not, thus preventing the GDVN parser from
+choking on some new syntax in the second value.
+
+
+Discouraged versioning alternative: comments
+--------------------------------------------
+
+I think this sequence-of-values strategy is better than putting a
+version number into a comment:
+
+  // MyDrawingProgram{version: (1 2 3)}       // I do NOT recommend!
+  Drawing{...}
+
+Putting that into a comment conveys to the user that it can be removed.
+After all, comments are specifically intended to be for humans only.
+What does the tool do if it is removed?  Or if it is edited in a way
+that breaks whatever syntax containts it has?  There is no good answer
+other than to strictly enforce its presence and well-formedness.  But if
+we are going to do that, then it should not be inside a comment in the
+first place.
+
+
+Discouraged versioning alternative: special keys
+------------------------------------------------
+
+With JSON, the most common approach is to make the version be a special
+key and value of the top-level object:
+
+  {
+    "MyDrawingProgram_version": "1.2.3",
+    "Drawing": {...}
+  }
+
+The obvious problem with that strategy is there is no good way for a
+GDVN parser API to provide the client access to the version information
+without parsing everything else, at which point it is too late if the
+"everything else" contains something that makes the GDVN parser choke.
+
+Sure, you could use a streaming parser, and that is sometimes done for
+efficiency to avoid materializing a large intermediate structure, but
+that design is burdensome to the typical consumer (who usually will not
+regard versioning as being worth the associated pain), and gives
+undesirable implicit meaning to the relative ordering of map entries.
+
+
+Mapping to JSON
+===============
+
+If we have a GDV value that we want to express as JSON, how should we do
+so?  In the interest of GDV->JSON->GDV interoperability, this section
+suggests a mapping.
+
+Generally, is if a GDV value can be expressed directly and naturally as
+JSON, do so.  Otherwise, express it as a map with attributes:
+
+  * "_type": A string indicating the GDV value kind.
+
+  * "value": A string that gives the value of a scalar.
+
+  * "elements": An array that gives the elements of a container.
+
+  * "tag": A string giving the name of the symbol tag, if present.
+
+Specific GDV kinds are handled as follows:
+
+  Symbol:
+
+    GDVN: foo
+
+    JSON: { "_type": "symbol", "value": "foo" }
+
+  Integer:
+
+    GDVN: 123
+
+    If small enough to represent exactly as a 64-bit float:
+
+      JSON: 123
+
+    If too large:
+
+      JSON: { "_type": "integer", "value": "123" }
+
+  String: Usual JSON representation.
+
+  Sequence: Usual JSON representation.
+
+  Tuple:
+
+    GDVN: (1 2 3)
+
+    JSON: { "_type": "tuple", "elements": [1, 2, 3] }
+
+  Set:
+
+    GDVN: {{1 2}}
+
+    JSON: { "_type": "set", "elements": [1, 2] }
+
+  Map:
+
+    If all of the keys are strings, usual JSON representation:
+
+      GDVN: {"a":1 "b":2}
+
+      JSON: {"a":1, "b":2}
+
+    If some keys are not strings:
+
+      GDVN: {1:2 3:4}
+
+      JSON: { "_type": "map", "elements": [[1, 2], [3, 4]] }
+
+  Tagged sequence:
+
+    GDVN: Foo[1 2]
+
+    JSON: { "_type": "sequence", "tag": "Foo", "elements": [1, 2] }
+
+  Tagged tuple:
+
+    GDVN: Foo(1 2)
+
+    JSON: { "_type": "tuple", "tag": "Foo", "elements": [1, 2] }
+
+  Tagged set:
+
+    GDVN: Foo{{1 2}}
+
+    JSON: { "_type": "set", "tag": "Foo", "elements": [1, 2] }
+
+  Tagged map:
+
+    GDVN: Foo{"a":1}
+
+    JSON: { "_type": "map", "tag": "Foo", "elements": [["a", 1]] }
+
+During JSON->GDV parsing, when a map is encountered, the parser checks
+for the "_type" attribute, and if it exists and has one of the kinds
+listed above, then the appropriate GDV kind of value is populated from
+that map.  Otherwise, an ordinary GDV map with string keys is created.
+
+
+Problems with JSON
+==================
+
+JSON (as described in RFC 8259) has several problems evident from
+comparing it to the goals outlined in the Introduction of this document.
+
+The problems with the JSON data model are:
+
+* Limited generality:
+
+  * Map keys can only be strings.
+
+  * It does not include sets, requiring that a set be expressed as
+    either an array, which misleadingly suggests order matters, or a map
+    to 1, which is verbose for that application (and only works for
+    sets of strings).
+
+  * It does not have a way to express an octet sequence other than by
+    abusing strings.
+
+  * Many other common kinds of data can only be expressed as strings,
+    requiring further steps of substantial parsing and validation work
+    after the JSON phase is complete.  Version numbers, dates, and
+    rationals are just a few examples of data that must be packed into
+    strings.
+
+* Limited self-description: Although JSON is pretty good at being
+  self-describing, there are still a couple problems.  The lack of
+  symbols to use as map keys conflates data with metadata, and the lack
+  of a standard way to convey the "type" of (in particular) maps leads
+  to various contortions.
+
+* Limited range: JSON tacitly inherits JavaScript's use of 64-bit floats
+  to represent all numbers, limiting integers to 53 bits in practice.
+
+* Imprecise semantics of integers: Due to representing them as floats
+  it is unclear what numbers larger than 2**53 mean.  In practice this
+  leads to loss of information during reading and writing.
+
+* Imprecise semantics of maps: The spec refrains from specifying whether
+  the order of elements in a map is significant, and only recommends
+  (via "SHOULD") that map keys be unique.  This puts the burden of
+  interoperability for arguably the most important component of the data
+  model on the *users* of JSON.
+
+* Imprecise semantics of floats: JSON uses floating-point numbers
+  serialized as decimal representations.  While that does not inherently
+  mean a loss of precision (as every binary float can be exactly
+  expressed as a decimal float with sufficient digits) the specification
+  is very casual about the interpretation of floats and their associated
+  precision, again putting the burden of interoperability on users.
+
+Turning our attention to the JSON text format, one problem is the comma
+separator.  Commas are annoying to properly insert between elements,
+both for generated JSON (requiring awkward special casing at the end of
+containers) and hand-edited JSON (where commas are easily overlooked or
+improperly removed or retained during copy+paste operations).  They also
+add little for either human- or machine-readability; what matters to
+humans is *whitespace*, and what matters to machines is deterministic
+left-to-right parsing, which JSON has even without the commas.  JSON has
+them because JavaScript has them because Java has them because C++ has
+them (I could go on), and in C++ they are required due to the fact that
+juxtoposition can mean function application (for example, "{f (3)}"
+versus "{f,(3)}").  But in JSON they are just burdensome clutter.
+
+However, the most important problem with the JSON text format is the
+limited human-writability due to lack of comments.  Comments are an
+essential feature of any format that humans will edit.  They are needed
+to allow the editor to express rationale, and also quite useful for
+disabling chunks of text (both large and small) for various reasons.
+
+Douglas Crockford explained the rationale for JSON not including
+comments in a Google+ post:
+
+  https://web.archive.org/web/20190112173904/https://plus.google.com/118095276221607585885/posts/RK8qyGVaGSr
+
+  Douglas Crockford
+  Public
+  Apr 30, 2012
+  Comments in JSON
+
+  I removed comments from JSON because I saw people were using them to
+  hold parsing directives, a practice which would have destroyed
+  interoperability.  I know that the lack of comments makes some people
+  sad, but it shouldn't.
+
+  Suppose you are using JSON to keep configuration files, which you
+  would like to annotate. Go ahead and insert all the comments you like.
+  Then pipe it through JSMin before handing it to your JSON parser.
+
+(Note: Although the above post is dated 2012, I've found references to
+this text (presumably posted elsewhere) from 2010.  I do not know when
+or where the above was originally published.)
+
+First, I'm extremely skeptical of his claim that "people were using them
+to hold parsing directives".  Like what?  Many modern JSON dialects
+allow comments and I've never seen a "parsing directive".  *All*
+programming languages of note have comments, and yet none of them have
+divided into mutually incompatible dialects simply due to proliferation
+of "parsing directives" (again, like what?) in comments.  I of course
+agree with the goal of interoperability, but JSON has far greater risks
+to that than the potential presence of comments.  And, ironically,
+removing them then created *vastly* more interoperability problems
+because now some implementations accept them (either for historical
+reasons or simply because of how important they are) and some don't.  In
+this case the cure is far worse than the disease.
+
+Second, the idea that the effect of comments can be satisfactorily
+achieved by using an external tool (such as JSMin) to strip comments is
+absurd.  (Incidentally, the creator of JSMin was initially heavily
+criticized by JSON purists for allowing comments.  Yet here is Crockford
+pointing approvingly at JSMin to justify his own decision.  More twists
+of irony.)  If my configuration is stored as a JSON file, just when am I
+supposed to run that tool?  Do I keep two copies of my config file so I
+can edit one, then run JSMin to make the other, and the other is what
+the tool reads?  What happens when the tool reports an error?  I have to
+map whatever location it says back through the minimizer.  This is
+totally impractical and I've never seen anyone even try to do it.
+
+Separately, I've often heard people (not Douglas Crockford, to my
+knowledge) suggest to simply put comments into a throwaway map entry,
+something like:
+
+  {
+    "_": "This is 8080 because port 80 is in use.  Blah blah.",
+    "port": 8080
+  }
+
+This inconvenient syntax *might* accomplish the task on those occasions
+when the thing to be commented is the sole element of a map and the
+comment fits on one line.  Long comment?  It will be off the right edge
+of the screen on many editors, and JSON has no string continuation.
+More elements?  Your comment is going to get separated from the thing it
+describes.  Want to comment anything besides a map element, including
+the document as a whole?  You can't.  What if you want to disable
+something temporarily?  You can't.  And what if you're trying to
+validate the JSON schema and the tool complains about this unrecognized
+"_" key?  You can't.  This approach cannot be used for the majority of
+comment use cases, and creates even more interoperability problems for
+the cases where it can be.
+
+Of the various deficiencies in JSON, this one is to me the least
+excusable.  It created a lot of practical pain and expense while being
+purely a step backward in terms of its stated objective.
+
+
+Problems with YAML
+==================
+
+How does YAML fare when compared to the goals of GDV and GDVN?
+
+The main problem I have with YAML is its syntax is not "self-evident" in
+the way JSON is (or GDVN intends to be).  YAML looks more like plain
+text than a data format.  That is obviously a deliberate choice seen as
+advantageous by its designers, but it has the effect that one cannot
+readily infer the syntax from non-trivial examples the way one can with
+JSON.
+
+To expand on this point, I spent some time reviewing the examples at the
+top of the spec at https://yaml.org/spec/1.2.2/.  As I read through
+them, these questions spring to mind:
+
+  * Can I put blank lines between container elements?
+
+  * Can I continue elements to the next line?
+
+  * Is the space after "-" signficant or required?
+
+  * Are spaces after a value but before a comment significant?
+
+  * Are spaces on either side of ":" significant?
+
+  * Can keys have spaces in the middle?
+
+  * Can keys have spaces at either end?
+
+  * Can values have leading and trailing spaces?
+
+  * What does it mean to have "k: v" pairs at top level?  Is the whole
+    thing implicitly an anonymous map?
+
+  * Can I put a small map on one line, like "{a:1 b:2}"?
+
+  * Example 2.4: Really?  Each element of a list of maps is indicated by
+    a lone hyphen on a line by itself?  What if I want one of the
+    elements to not be a map?
+
+  * Example 2.4: This shows two different syntaxes for sequences, one
+    with each element on its own line and one with elements inside
+    brackets.  How does nesting work with these two styles?
+
+  * What is the deal with "---"?  Half the YAML I see in the wild has
+    it, the other half does not.  That holds true in of the examples in
+    this very spec.
+
+  * Directives?  In my data model?  Framing with "..."?  Oof.  (Not so
+    much a question...)
+
+  * Example 2.10: References.  Ouch.  I have lots of questions about
+    that, but I'm not sure where to begin.
+
+  * Example 2.11: What is "?"?  What is ":" at the start of a line?  The
+    text explains they denote key and value of a "complex map", but I
+    would never guess that from seeing just the example.
+
+  * Example 2.12: Ok, so hyphens do not have to be on their own line.
+    Do items below the hyphen need to align with the key on the line
+    that has the hyphen?
+
+  * Example 2.13 (ASCII art): Ummm....
+
+  * Example 2.14: Where does the ">" thing end?  What if I want newlines
+    in a long string?
+
+  * Example 2.15, 2.16: ....
+
+  * Example 2.17: Ok, quoted strings start to look reasonable.  Single
+    quotes I'm guessing work like in Python?
+
+  * Example 2.18: Are the leading spaces on the second line of the
+    multiline quoted string significant?
+
+  * Example 2.22: Timestamps in the data model opens an enormous can of
+    worms both syntactically and semantically.
+
+  * Example 2.3: Ouch.  I have to put "!!str" before a string that
+    might, unbenownst to me, be interpreted as a date.  How many other
+    landmines are waiting?  This alone is a deal-breaker for me.
+    Otherwise, tags seem useful, but the rules about usage are dangerous
+    and not self-evident.
+
+  * And so on.
+
+I'm sure the spec answers all of these questions.  But that spec is very
+large in comparison to the JSON or GDVN specs, and I would prefer to not
+have to to have to search it answer basic syntax questions.
+Furthermore, if I am a YAML novice with one of the above questions, it's
+not clear *where* to look because the associated syntax is either just
+whitespace or is a common symbol like "-" or "?" that makes searching
+impossible (both in the spec and on the wider internet) and finding it
+in the table of contents non-trivial since I have to have some initial
+idea of what it means.
+
+With JSON (and GDVN), I claim the answers to these questions are clear
+from mere inspection of almost any non-trivial idiomatic example.  These
+formats use explicit delimiters (not mere whitespace) at the start and
+end of values, which is both intuitive and familiar.  Nesting is uniform
+and regular (except in JSON, which requires map keys to be strings).
+Sure, one still would need to occasionally consult the spec, for example
+to see exactly which backslash escapes exist, but the vast majority of
+the time the spec is not required to either read or write JSON (or
+GDVN).  And when I do, it's clear where to look, in part because the
+spec is very small, and in part because the delimiters make it clear
+which part of the spec applies.
+
+I am aware that YAML is (or at least purports to be) a superset of JSON.
+That does not help because *idiomatic* YAML is completely different.
+The fact that a YAML tool will also accept some other, nearly disjoint,
+language is of little to no practical benefit.  In particular, my
+knowledge of JSON does not help me understand real-world YAML *at all*.
+
+On top of issues with the syntax, the YAML data model appears quite
+complex.  Skimming the table of contents, I see "processes", "nodes",
+"presentation", and "directives", all of which seem well outside what I
+would like in a data model and have never felt a need for.  Yet anyone
+(tool or person) working with YAML has to potentially deal with all of
+it.
+
+I do not intend this section to be a thorough or even fair critique of
+YAML in all of its possible application scenarios.  I use YAML only when
+forced to, mainly because I find the loosey-goosey syntax so
+off-putting; I have not really "given it a chance".  Rather, I intend
+this section to explain why I think it is not an adequate solution to
+the shortcomings of JSON for the situations in which JSON would
+otherwise be appropriate.
+
+
+TODO
+====
+
+Triple-quoted strings.
+
+Continued strings.
+
+Symbols with non-English letters (and digits?).
+
+Floats.
+
+Binary serialization format.
+
+
+
+EOF

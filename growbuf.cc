@@ -27,27 +27,4 @@ void GrowBuffer::append(unsigned char const *str, size_t len)
 }
 
 
-// ----------------- test code ----------------
-#ifdef TEST_GROWBUF
-#include "sm-test.h"
-
-void entry()
-{
-  unsigned char const str[] = "crazy like a mad cow!";
-  size_t len = sizeof(str);
-
-  GrowBuffer buf;
-  loopi(10) {
-    buf.append(str, len);
-  }
-  loopi(10) {
-    if (0!=memcmp(str, buf.getData()+len*i, len)) {
-      xfailure("buffer contents are wrong");
-    }
-  }
-  cout << "growbuf ok\n";
-}
-
-USUAL_MAIN
-
-#endif // TEST_GROWBUF
+// EOF
