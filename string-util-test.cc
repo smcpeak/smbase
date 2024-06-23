@@ -7,6 +7,7 @@
 
 #include <exception>                   // std::exception
 #include <iostream>                    // std::ostream
+#include <limits>                      // std::numeric_limits
 
 
 static void testSplitNonEmpty()

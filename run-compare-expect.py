@@ -127,8 +127,21 @@ def hexReplacer(m: Match[str]) -> str:
     return "0xHEXDIGITS"
 
 
+# A string that might appear in an error message.
+pathNotFoundRE = re.compile("Path not found")
+
+# What to replace a match with.
+pathNotFoundReplacement = "File not found"
+
+
 # True to use the hexadecimal replacer.
 use_hex_replacer = False
+
+# True to use the "Path not found" replacer.  This handles the problem
+# where Linux says "File not found" and Windows says "Path not found"
+# for the same circumstances.
+use_path_not_found_replacer = False
+
 
 # If "VOLATILE" appears on a line, treat the entire line as volatile
 # in the sense of changing from run to run, and hence should not be
@@ -143,6 +156,8 @@ def normalizeOutput(line: str) -> str:
     return "VOLATILE"
   elif use_hex_replacer:
     line = hexDigitsRE.sub(hexReplacer, line)
+  elif use_path_not_found_replacer:
+    line = pathNotFoundRE.sub(pathNotFoundReplacement, line)
   return line
 
 
@@ -177,6 +192,8 @@ def main() -> None:
     help="Discard lines matching REGEX before comparison.  Can specify multiple.")
   parser.add_argument("--hex-replacer", action="store_true",
     help="Use the 0xHEXDIGITS replacer.")
+  parser.add_argument("--path-not-found-replacer", action="store_true",
+    help="Replace \"Path not found\" with \"File not found\".")
   parser.add_argument("--no-separators", action="store_true",
     help="Do not print the stdout/stderr/exit code separators.")
   parser.add_argument("--no-stderr", action="store_true",
@@ -192,6 +209,10 @@ def main() -> None:
   if opts.hex_replacer:
     global use_hex_replacer
     use_hex_replacer = True
+
+  if opts.path_not_found_replacer:
+    global use_path_not_found_replacer
+    use_path_not_found_replacer = True
 
   # Read the expected output.
   with open(opts.expect) as f:

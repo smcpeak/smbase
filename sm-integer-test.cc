@@ -11,6 +11,8 @@
 #include "sm-test.h"                   // VPVAL
 #include "xoverflow.h"                 // XOverflow
 
+#include <cstdint>                     // std::int8_t
+
 using namespace smbase;
 
 

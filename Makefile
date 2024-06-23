@@ -131,6 +131,10 @@ CREATE_O_JSON_FILES = 0
 ENABLE_MYPY = 0
 
 # Path to the null device.
+#
+# I made this with the intention of being able to use 'NUL' on Windows,
+# but that does not really work because we end up invoking a mixture of
+# cygwin and native executables.
 DEV_NULL = /dev/null
 
 
@@ -467,6 +471,7 @@ out/%.unit.ok: test/%.expect $(AFTER_UNIT_TESTS)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/$*.actual \
 	  --expect test/$*.expect \
+	  --path-not-found-replacer \
 	  env VERBOSE=1 ./unit-tests.exe $*
 	touch $@
 
@@ -663,7 +668,7 @@ out/test/ctc/in/%.ok: test/ctc/in/%.h test/ctc/in/%.cc create-tuple-class.py
 	  --expect test/ctc/exp/$*.cc \
 	  --no-separators --no-stderr \
 	  cat out/test/ctc/in/$*.cc
-	$(CXX) -c -o $(DEV_NULL) -I. out/test/ctc/in/$*.cc
+	$(CXX) -c -I. out/test/ctc/in/$*.cc
 	touch $@
 
 .PHONY: check-ctc
