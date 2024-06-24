@@ -51,6 +51,8 @@ void test_findSubstring_insens_ascii()
 void test_sm_stristr()
 {
   test_equalChars_insens_ascii();
+  test_prefixEquals_insens_ascii();
+  test_findSubstring_insens_ascii();
 }
 
 

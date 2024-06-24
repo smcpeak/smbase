@@ -4,7 +4,7 @@
 #include "sm-stristr.h"                // this module
 
 #include "codepoint.h"                 // convertUSASCIIToUpper
-#include "xassert.h"                   // xassert
+#include "xassert.h"                   // xassertPrecondition
 
 
 bool equalChars_insens_ascii(char a, char b)
@@ -39,17 +39,26 @@ bool prefixEquals_insens_ascii(char const *str, char const *prefix)
 char const *findSubstring_insens_ascii(char const *haystack,
                                        char const *needle)
 {
-  xassert(haystack);
-  xassert(needle);
+  xassertPrecondition(haystack);
+  xassertPrecondition(needle);
 
-  do {
+  if (*haystack == 0) {
+    if (*needle == 0) {
+      return haystack;
+    }
+    else {
+      return nullptr;
+    }
+  }
+
+  while (*haystack) {
     // Does the needle match here?
     if (prefixEquals_insens_ascii(haystack, needle)) {
       return haystack;
     }
 
     ++haystack;
-  } while (*haystack);
+  }
 
   return nullptr;
 }
