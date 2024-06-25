@@ -853,6 +853,13 @@ FOR_EACH_GDV_CONTAINER(DEFER_INSTANTIATE)
 #undef DEFER_INSTANTIATE
 
 
+// Temporarily (for the enclosing scope) add `amount` to the indent
+// level.  This is meant for use before tracing output statements that
+// provide some of their own indentation context.
+#define GDVALUE_SCOPED_SET_INDENT(amount) \
+  SET_RESTORE(GDValue::s_defaultWriteOptions.m_indentLevel, amount)
+
+
 // ----------------------------- toGDValue -----------------------------
 /* The purpose of `toGDValue` is to provide something that can be
    overloaded to convert something to `GDValue` when it cannot be

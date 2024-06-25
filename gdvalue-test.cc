@@ -1880,6 +1880,37 @@ void testMapSymbolOps()
 }
 
 
+void testScopedSetIndent()
+{
+  SET_RESTORE(GDValue::s_defaultWriteOptions.m_targetLineWidth, 20);
+  SET_RESTORE(GDValue::s_defaultWriteOptions.m_enableIndentation, true);
+
+  GDValue v(GDVSequence{
+    "a somewhat long string", "a somewhat long string"
+  });
+  EXPECT_EQ(v.asString(),
+    "[\n"
+    "  \"a somewhat long string\"\n"
+    "  \"a somewhat long string\"\n"
+    "]");
+
+  {
+    GDVALUE_SCOPED_SET_INDENT(1);
+    EXPECT_EQ(v.asString(),
+      "[\n"
+      "    \"a somewhat long string\"\n"
+      "    \"a somewhat long string\"\n"
+      "  ]");
+  }
+
+  EXPECT_EQ(v.asString(),
+    "[\n"
+    "  \"a somewhat long string\"\n"
+    "  \"a somewhat long string\"\n"
+    "]");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -1922,6 +1953,7 @@ void test_gdvalue()
     testToGDValue();
     testDefaultWriteOptions();
     testMapSymbolOps();
+    testScopedSetIndent();
 
     // Some interesting values for the particular data used.
     testPrettyPrint(0);
