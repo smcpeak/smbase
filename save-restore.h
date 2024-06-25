@@ -51,4 +51,14 @@ public:      // methods
     (variable, (value)) /* user ; */
 
 
+// SET_RESTORE to add an amount to a numeric value.
+#define ADD_RESTORE(variable, amount) \
+  SET_RESTORE(variable, (variable)+(amount)) /* user ; */
+
+
+// ADD_RESTORE with 1.
+#define INC_RESTORE(variable) \
+  ADD_RESTORE(variable, 1) /* user ; */
+
+
 #endif // SMBASE_SAVE_RESTORE_H
