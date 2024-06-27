@@ -143,6 +143,18 @@ std::ostream &beginTraceOutput(char const *traceScope, char const *suffix);
 #define TRACE4_EXPR(stuff) TRACE_EXPR(4, stuff)
 
 
+// Trace-print a string-typed expression as a quoted string.  The client
+// must `#include "string-util.h"` to get `doubleQuote` in scope.
+#define TRACE_STRING_EXPR(level, expr) \
+  TRACE(level, #expr ": " << doubleQuote(expr))
+
+#define TRACE0_STRING_EXPR(expr) TRACE_STRING_EXPR(0, expr)
+#define TRACE1_STRING_EXPR(expr) TRACE_STRING_EXPR(1, expr)
+#define TRACE2_STRING_EXPR(expr) TRACE_STRING_EXPR(2, expr)
+#define TRACE3_STRING_EXPR(expr) TRACE_STRING_EXPR(3, expr)
+#define TRACE4_STRING_EXPR(expr) TRACE_STRING_EXPR(4, expr)
+
+
 // If the current trace level exceeds 'level', write 'stuff' as a trace
 // message, then increase the indentation level for the remainder of the
 // scope.  Otherwise, do not emit a trace message and do not inc/dec the
