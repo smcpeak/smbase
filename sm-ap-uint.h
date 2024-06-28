@@ -16,7 +16,7 @@
 #include "exc.h"                       // xformatsb
 #include "sm-macros.h"                 // OPEN_NAMESPACE, DMEMB, CMEMB
 #include "string-util.h"               // singleQuoteChar
-#include "vector-util.h"               // vectorReverseOf
+#include "vector-util.h"               // vecReverseOf
 #include "xarithmetic.h"               // XDivideByZero
 #include "xassert.h"                   // xassert
 #include "xoverflow.h"                 // XOverflow
@@ -819,7 +819,7 @@ public:      // methods
     }
 
     // Reverse the digits to get the most significant first.
-    std::vector revDigits = vectorReverseOf(digits);
+    std::vector revDigits = vecReverseOf(digits);
 
     return std::string(revDigits.begin(), revDigits.end());
   }

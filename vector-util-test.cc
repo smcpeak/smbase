@@ -13,114 +13,114 @@
 using std::string;
 
 
-static void testAccumulateWith()
+static void testVecAccumulateWith()
 {
   std::vector<string> v;
-  EXPECT_EQ(accumulateWith(v, string("-")), "");
+  EXPECT_EQ(vecAccumulateWith(v, string("-")), "");
 
   v.push_back("a");
-  EXPECT_EQ(accumulateWith(v, string("-")), "a");
+  EXPECT_EQ(vecAccumulateWith(v, string("-")), "a");
 
   v.push_back("b");
-  EXPECT_EQ(accumulateWith(v, string("-")), "a-b");
+  EXPECT_EQ(vecAccumulateWith(v, string("-")), "a-b");
 }
 
 
-// Test 'vec_erase' and 'vec_element_set'.
-static void testVecErase()
+// Test 'vecEraseAll', 'vecToElementSet', and `vecFindIndex`.
+static void testVecEraseAll()
 {
   std::vector<int> v{1,2,3,2,1};
 
-  vec_erase(v, 4);
+  vecEraseAll(v, 4);
   xassert((v == std::vector<int>{1,2,3,2,1}));
-  xassert((vec_element_set(v) == std::set<int>{1,2,3}));
+  xassert((vecToElementSet(v) == std::set<int>{1,2,3}));
 
-  // Also test 'vec_find_index'.
-  xassert(vec_find_index(v, 1) == 0);
-  xassert(vec_find_index(v, 2) == 1);
-  xassert(vec_find_index(v, 3) == 2);
-  xassert(vec_find_index(v, 4) == -1);
+  // Also test 'vecFindIndex'.
+  xassert(*vecFindIndex(v, 1) == 0);
+  xassert(*vecFindIndex(v, 2) == 1);
+  xassert(*vecFindIndex(v, 3) == 2);
+  xassert(vecFindIndex(v, 4) == std::nullopt);
 
-  vec_erase(v, 2);
+  vecEraseAll(v, 2);
   xassert((v == std::vector<int>{1,3,1}));
-  xassert((vec_element_set(v) == std::set<int>{1,3}));
-  xassert(vec_find_index(v, 3) == 1);
+  xassert((vecToElementSet(v) == std::set<int>{1,3}));
+  xassert(*vecFindIndex(v, 3) == 1);
 
-  vec_erase(v, 3);
+  vecEraseAll(v, 3);
   xassert((v == std::vector<int>{1,1}));
-  xassert((vec_element_set(v) == std::set<int>{1}));
+  xassert((vecToElementSet(v) == std::set<int>{1}));
 
-  vec_erase(v, 1);
+  vecEraseAll(v, 1);
   xassert((v == std::vector<int>{}));
-  xassert((vec_element_set(v) == std::set<int>{}));
-  xassert(vec_find_index(v, 1) == -1);
+  xassert((vecToElementSet(v) == std::set<int>{}));
+  xassert(vecFindIndex(v, 1) == std::nullopt);
 }
 
 
-static void testMapElements()
+static void testVecMapElements()
 {
   std::vector<string> src {"a", "b"};
-  std::vector<string> dest(mapElements<string>(src,
+  std::vector<string> dest(vecMapElements<string>(src,
     [](string const &s) { return doubleQuote(s); }));
   EXPECT_EQ(dest, (std::vector<string>{"\"a\"", "\"b\""}));
 
   // I do not like that I have to specify '<string>' here, but I do not
   // know how to avoid it.
-  dest = mapElements<string>(src, doubleQuote);
+  dest = vecMapElements<string>(src, doubleQuote);
   EXPECT_EQ(dest, (std::vector<string>{"\"a\"", "\"b\""}));
 }
 
 
-static void testConvertElements()
+static void testVecConvertElements()
 {
   std::vector<string> src {"a", "b", "c"};
 
   // Convert smbase 'string' to 'std::string'.
-  std::vector<std::string> dest(convertElements<std::string>(src));
+  std::vector<std::string> dest(vecConvertElements<std::string>(src));
   EXPECT_EQ(dest, (std::vector<std::string>{"a", "b", "c"}));
 }
 
 
-static void testCommonPrefixLength()
+static void testVecCommonPrefixLength()
 {
   std::vector<int> v0{};
   std::vector<int> v1{1};
   std::vector<int> v12{1,2};
   std::vector<int> v2{2};
 
-  EXPECT_EQ(commonPrefixLength(v0, v0), 0);
-  EXPECT_EQ(commonPrefixLength(v0, v1), 0);
-  EXPECT_EQ(commonPrefixLength(v1, v1), 1);
-  EXPECT_EQ(commonPrefixLength(v1, v12), 1);
-  EXPECT_EQ(commonPrefixLength(v12, v12), 2);
-  EXPECT_EQ(commonPrefixLength(v1, v2), 0);
+  EXPECT_EQ(vecCommonPrefixLength(v0, v0), 0);
+  EXPECT_EQ(vecCommonPrefixLength(v0, v1), 0);
+  EXPECT_EQ(vecCommonPrefixLength(v1, v1), 1);
+  EXPECT_EQ(vecCommonPrefixLength(v1, v12), 1);
+  EXPECT_EQ(vecCommonPrefixLength(v12, v12), 2);
+  EXPECT_EQ(vecCommonPrefixLength(v1, v2), 0);
 }
 
 
-static void testFirstIndexOf()
+static void testVecFindIndex()
 {
   std::vector<int> v0{};
   std::vector<int> v1{1};
   std::vector<int> v12{1,2};
   std::vector<int> v2{2};
 
-  EXPECT_EQ(vectorFirstIndexOf(v0, 0), std::nullopt);
-  EXPECT_EQ(vectorFirstIndexOf(v1, 0), std::nullopt);
-  EXPECT_EQ(vectorFirstIndexOf(v1, 1), std::optional(0));
-  EXPECT_EQ(vectorFirstIndexOf(v12, 1), std::optional(0));
-  EXPECT_EQ(vectorFirstIndexOf(v12, 2), std::optional(1));
-  EXPECT_EQ(vectorFirstIndexOf(v12, 3), std::nullopt);
+  EXPECT_EQ(vecFindIndex(v0, 0), std::nullopt);
+  EXPECT_EQ(vecFindIndex(v1, 0), std::nullopt);
+  EXPECT_EQ(vecFindIndex(v1, 1), std::optional(0));
+  EXPECT_EQ(vecFindIndex(v12, 1), std::optional(0));
+  EXPECT_EQ(vecFindIndex(v12, 2), std::optional(1));
+  EXPECT_EQ(vecFindIndex(v12, 3), std::nullopt);
 }
 
 
 void test_vector_util()
 {
-  testAccumulateWith();
-  testVecErase();
-  testMapElements();
-  testConvertElements();
-  testCommonPrefixLength();
-  testFirstIndexOf();
+  testVecAccumulateWith();
+  testVecEraseAll();
+  testVecMapElements();
+  testVecConvertElements();
+  testVecCommonPrefixLength();
+  testVecFindIndex();
 }
 
 

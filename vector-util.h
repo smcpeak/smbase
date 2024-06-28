@@ -1,8 +1,7 @@
 // vector-util.h
 // Utilities for `std::vector`.
 
-// TODO: Rename the functions in this module to have a consistent
-// naming scheme.
+// Convention: Names begin with "vec" and use camelCase.
 
 #ifndef SMBASE_VECTOR_UTIL_H
 #define SMBASE_VECTOR_UTIL_H
@@ -13,6 +12,7 @@
 #include "xassert.h"                   // xfailure
 
 #include <algorithm>                   // std::remove
+#include <cstddef>                     // std::size_t
 #include <iostream>                    // std::ostream
 #include <optional>                    // std::optional
 #include <set>                         // std::set
@@ -29,7 +29,7 @@
 //
 // This requires that T have a default copy constructor and 'operator+='.
 template <class T>
-T accumulateWith(std::vector<T> const &vec, T const &separator)
+T vecAccumulateWith(std::vector<T> const &vec, T const &separator)
 {
   if (vec.empty()) {
     return T();
@@ -47,10 +47,21 @@ T accumulateWith(std::vector<T> const &vec, T const &separator)
 }
 
 
+template <class T>
+T accumulateWith(std::vector<T> const &vec, T const &separator)
+  DEPRECATED("2024-06-28: Use `vecAccumulateWith` instead.");
+
+template <class T>
+T accumulateWith(std::vector<T> const &vec, T const &separator)
+{
+  return vecAccumulateWith(vec, separator);
+}
+
+
 // Like above, but apply 'op' to each element first.
 template <class A, class B, class MapOperation>
-B accumulateWithMap(std::vector<A> const &vec, MapOperation op,
-                    B const &separator)
+B vecAccumulateWithMap(std::vector<A> const &vec, MapOperation op,
+                       B const &separator)
 {
   if (vec.empty()) {
     return B();
@@ -68,10 +79,23 @@ B accumulateWithMap(std::vector<A> const &vec, MapOperation op,
 }
 
 
+template <class A, class B, class MapOperation>
+B accumulateWithMap(std::vector<A> const &vec, MapOperation op,
+                    B const &separator)
+  DEPRECATED("2024-06-28: Use `vecAccumulateWithMap` instead.");
+
+template <class A, class B, class MapOperation>
+B accumulateWithMap(std::vector<A> const &vec, MapOperation op,
+                    B const &separator)
+{
+  return vecAccumulateWithMap(vec, op, separator);
+}
+
+
 // Apply 'op' to all elements.
 template <class DEST, class SRC, class MapOperation>
-std::vector<DEST> mapElements(std::vector<SRC> const &vec,
-                              MapOperation op)
+std::vector<DEST> vecMapElements(std::vector<SRC> const &vec,
+                                 MapOperation op)
 {
   std::vector<DEST> ret;
   ret.reserve(vec.size());
@@ -82,12 +106,36 @@ std::vector<DEST> mapElements(std::vector<SRC> const &vec,
 }
 
 
+template <class DEST, class SRC, class MapOperation>
+std::vector<DEST> mapElements(std::vector<SRC> const &vec,
+                              MapOperation op)
+  DEPRECATED("2024-06-28: Use `vecMapElements` instead.");
+
+template <class DEST, class SRC, class MapOperation>
+std::vector<DEST> mapElements(std::vector<SRC> const &vec,
+                              MapOperation op)
+{
+  return vecMapElements<DEST>(vec, op);
+}
+
+
 // Convert elements from SRC to DEST.
+template <class DEST, class SRC>
+std::vector<DEST> vecConvertElements(std::vector<SRC> const &vec)
+{
+  return vecMapElements<DEST, SRC>(vec,
+    [](SRC const &s) { return DEST(s); });
+}
+
+
+template <class DEST, class SRC>
+std::vector<DEST> convertElements(std::vector<SRC> const &vec)
+  DEPRECATED("2024-06-28: Use `vecConvertElements` instead.");
+
 template <class DEST, class SRC>
 std::vector<DEST> convertElements(std::vector<SRC> const &vec)
 {
-  return mapElements<DEST, SRC>(vec,
-    [](SRC const &s) { return DEST(s); });
+  return vecConvertElements<DEST>(vec);
 }
 
 
@@ -101,7 +149,7 @@ template <class T>
 std::ostream& operator<< (std::ostream &os, std::vector<T> const &vec)
 {
   os << '[';
-  for (size_t i=0; i < vec.size(); i++) {
+  for (std::size_t i=0; i < vec.size(); i++) {
     if (i > 0) {
       os << ' ';
     }
@@ -125,7 +173,7 @@ std::string toString(std::vector<T> const &vec)
 
 // Return the back element of 'vec', or 'value' if it is empty.
 template <class T>
-T back_or_value(std::vector<T> const &vec, T const &value)
+T vecBackOr(std::vector<T> const &vec, T const &value)
 {
   if (vec.empty()) {
     return value;
@@ -136,17 +184,40 @@ T back_or_value(std::vector<T> const &vec, T const &value)
 }
 
 
-// Return the back element of 'vec', or NULL if it is empty.
+
+template <class T>
+T back_or_value(std::vector<T> const &vec, T const &value)
+  DEPRECATED("2024-06-28: Use `vecBackOr` instead.");
+
+template <class T>
+T back_or_value(std::vector<T> const &vec, T const &value)
+{
+  return vecBackOr(vec, value);
+}
+
+
+// Return the back element of 'vec', or `nullptr` if it is empty.
+template <class T>
+T *vecBackOrNull(std::vector<T*> const &vec)
+{
+  return vecBackOr(vec, (T*)nullptr);
+}
+
+
+template <class T>
+T *back_or_null(std::vector<T*> const &vec)
+  DEPRECATED("2024-06-28: Use `vecBackOrNull` instead.");
+
 template <class T>
 T *back_or_null(std::vector<T*> const &vec)
 {
-  return back_or_value(vec, (T*)NULL);
+  return vecBackOrNull(vec);
 }
 
 
 // Pop the last element of 'vec', requiring it to equal 'value'.
 template <class T>
-void pop_check(std::vector<T> &vec, T const &value)
+void vecPopCheck(std::vector<T> &vec, T const &value)
 {
   if (vec.empty()) {
     xfailure("Cannot pop empty vector.");
@@ -160,10 +231,21 @@ void pop_check(std::vector<T> &vec, T const &value)
 }
 
 
+template <class T>
+void pop_check(std::vector<T> &vec, T const &value)
+  DEPRECATED("2024-06-28: Use `vecPopCheck` instead.");
+
+template <class T>
+void pop_check(std::vector<T> &vec, T const &value)
+{
+  return vecPopCheck(vec, value);
+}
+
+
 // Return true if any element in 'vec' compares equal to 'value' using
 // linear search.
 template <class T>
-bool vec_contains(std::vector<T> const &vec, T const &value)
+bool vecContains(std::vector<T> const &vec, T const &value)
 {
   CONTAINER_FOREACH(vec, it) {
     if (*it == value) {
@@ -174,17 +256,39 @@ bool vec_contains(std::vector<T> const &vec, T const &value)
 }
 
 
+template <class T>
+bool vec_contains(std::vector<T> const &vec, T const &value)
+  DEPRECATED("2024-06-28: Use `vecContains` instead.");
+
+template <class T>
+bool vec_contains(std::vector<T> const &vec, T const &value)
+{
+  return vecContains(vec, value);
+}
+
+
 // Remove all occurrences of 'value' from 'vec'.
 template <class T>
-void vec_erase(std::vector<T> &vec, T const &value)
+void vecEraseAll(std::vector<T> &vec, T const &value)
 {
   vec.erase(std::remove(vec.begin(), vec.end(), value), vec.end());
 }
 
 
+template <class T>
+void vec_erase(std::vector<T> &vec, T const &value)
+  DEPRECATED("2024-06-28: Use `vecEraseAll` instead.");
+
+template <class T>
+void vec_erase(std::vector<T> &vec, T const &value)
+{
+  return vecEraseAll(vec, value);
+}
+
+
 // Return the set of elements in 'vec'.
 template <class T>
-std::set<T> vec_element_set(std::vector<T> const &vec)
+std::set<T> vecToElementSet(std::vector<T> const &vec)
 {
   std::set<T> ret;
   for (T const &t : vec) {
@@ -194,14 +298,42 @@ std::set<T> vec_element_set(std::vector<T> const &vec)
 }
 
 
-// Report the first index of 'value' in 'vec', or -1 if it is not
-// present.
+template <class T>
+std::set<T> vec_element_set(std::vector<T> const &vec)
+  DEPRECATED("2024-06-28: Use `vecToElementSet` instead.");
+
+template <class T>
+std::set<T> vec_element_set(std::vector<T> const &vec)
+{
+  return vecToElementSet(vec);
+}
+
+
+// Return the first index of 'vec' where the element equals 't', or
+// an empty value.
+template <class T>
+std::optional<std::size_t> vecFindIndex(std::vector<T> const &vec,
+                                        T const &t)
+{
+  for (std::size_t i=0; i < vec.size(); ++i) {
+    if (vec[i] == t) {
+      return i;
+    }
+  }
+
+  return std::nullopt;
+}
+
+
+template <class T>
+long vec_find_index(std::vector<T> const &vec, T const &value)
+  DEPRECATED("2024-06-28: Use `vecFindIndex` instead.");
+
 template <class T>
 long vec_find_index(std::vector<T> const &vec, T const &value)
 {
-  auto it = std::find(vec.begin(), vec.end(), value);
-  if (it != vec.end()) {
-    return convertNumber<long>(it - vec.begin());
+  if (std::optional<std::size_t> indexOpt = vecFindIndex(vec, value)) {
+    return convertNumber<long>(*indexOpt);
   }
   else {
     return -1;
@@ -209,10 +341,23 @@ long vec_find_index(std::vector<T> const &vec, T const &value)
 }
 
 
+template <class T>
+std::optional<std::size_t> vectorFirstIndexOf(std::vector<T> const &vec,
+                                              T const &t)
+  DEPRECATED("2024-06-28: Use `vecFindIndex` instead.");
+
+template <class T>
+std::optional<std::size_t> vectorFirstIndexOf(std::vector<T> const &vec,
+                                              T const &t)
+{
+  return vecFindIndex(vec, t);
+}
+
+
 // Return a new vector with the same elements as `vec` but in reverse
 // order.
 template <class T>
-std::vector<T> vectorReverseOf(std::vector<T> const &vec)
+std::vector<T> vecReverseOf(std::vector<T> const &vec)
 {
   std::vector<T> ret;
   for (auto it = vec.crbegin(); it != vec.crend(); ++it) {
@@ -222,12 +367,23 @@ std::vector<T> vectorReverseOf(std::vector<T> const &vec)
 }
 
 
+template <class T>
+std::vector<T> vectorReverseOf(std::vector<T> const &vec)
+  DEPRECATED("2024-06-28: Use `vecReverseOf` instead.");
+
+template <class T>
+std::vector<T> vectorReverseOf(std::vector<T> const &vec)
+{
+  return vecReverseOf(vec);
+}
+
+
 // Number of elements in common at the start of 'a' and 'b'.
 template <class T>
-size_t commonPrefixLength(std::vector<T> const &a,
-                          std::vector<T> const &b)
+std::size_t vecCommonPrefixLength(std::vector<T> const &a,
+                                  std::vector<T> const &b)
 {
-  size_t i = 0;
+  std::size_t i = 0;
   for (; i < a.size() && i < b.size(); ++i) {
     if (!( a[i] == b[i] )) {
       break;
@@ -237,19 +393,16 @@ size_t commonPrefixLength(std::vector<T> const &a,
 }
 
 
-// Return the first index of 'vec' where the element equals 't', or
-// an empty value.
 template <class T>
-std::optional<size_t> vectorFirstIndexOf(std::vector<T> const &vec,
-                                         T const &t)
-{
-  for (size_t i=0; i < vec.size(); ++i) {
-    if (vec[i] == t) {
-      return i;
-    }
-  }
+std::size_t commonPrefixLength(std::vector<T> const &a,
+                               std::vector<T> const &b)
+  DEPRECATED("2024-06-28: Use `vecCommonPrefixLength` instead.");
 
-  return {};
+template <class T>
+std::size_t commonPrefixLength(std::vector<T> const &a,
+                               std::vector<T> const &b)
+{
+  return vecCommonPrefixLength(a, b);
 }
 
 

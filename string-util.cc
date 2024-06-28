@@ -8,7 +8,7 @@
 #include "overflow.h"                  // safeToInt
 #include "strcmp-compare.h"            // StrcmpCompare
 #include "strutil.h"                   // stringf
-#include "vector-util.h"               // accumulateWith
+#include "vector-util.h"               // vecAccumulateWith
 #include "xassert.h"                   // xassert, xassertdb, xassertPrecondition
 
 #include <algorithm>                   // std::binary_search
@@ -142,14 +142,14 @@ int indexOfSubstring(
 
 // ------------------ Manipulating vectors of strings ------------------
 // Given that this is a one-liner, one might ask: why have it at all,
-// rather than letting callers use 'accumulateWith'?  The problem with
-// the latter is that I can't just pass a quoted string literal because
-// template argument deduction is unhappy if I do that.  By defining
-// this non-template, that problem goes away.
+// rather than letting callers use 'vecAccumulateWith'?  The problem
+// with the latter is that I can't just pass a quoted string literal
+// because template argument deduction is unhappy if I do that.  By
+// defining this non-template, that problem goes away.
 std::string join(std::vector<std::string> const &vec,
                  std::string const &sep)
 {
-  return accumulateWith(vec, sep);
+  return vecAccumulateWith(vec, sep);
 }
 
 

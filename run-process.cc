@@ -8,7 +8,7 @@
 #include "sm-windows.h"                // Windows API
 #include "string-util.h"               // contains
 #include "syserr.h"                    // smbase::xsyserror
-#include "vector-util.h"               // accumulateWith
+#include "vector-util.h"               // vecAccumulateWith
 #include "xassert.h"                   // xassert
 
 #include <iomanip>                     // std::hex
@@ -302,7 +302,7 @@ STATICDEF void RunProcess::check_run(std::vector<string> const &command)
   rproc.setCommand(command);
   rproc.runAndWait();
   if (!rproc.exitedWith0()) {
-    xfatal("Command \"" << accumulateWith(command, string(" ")) <<
+    xfatal("Command \"" << vecAccumulateWith(command, string(" ")) <<
            "\" failed: " << rproc.exitDescription());
   }
 }

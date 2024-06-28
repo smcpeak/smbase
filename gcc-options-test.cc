@@ -6,7 +6,7 @@
 #include "exc.h"                       // smbase::XBase
 #include "sm-test.h"                   // EXPECT_EQ
 #include "string-util.h"               // toString(std::vector)
-#include "vector-util.h"               // accumulateWith[Map]
+#include "vector-util.h"               // vecAccumulateWith[Map]
 #include "xassert.h"                   // xassert
 
 #include <iostream>                    // std::cout
@@ -32,8 +32,8 @@ static void checkEqual(
 
   if (actual != expect) {
     auto ts = [](GCCOptions::Option const &opt) { return opt.toString(); };
-    std::cout << "expect: " << accumulateWithMap(expect, ts, sep) << '\n';
-    std::cout << "actual: " << accumulateWithMap(actual, ts, sep) << '\n';
+    std::cout << "expect: " << vecAccumulateWithMap(expect, ts, sep) << '\n';
+    std::cout << "actual: " << vecAccumulateWithMap(actual, ts, sep) << '\n';
     xfailure("actual is different from expect");
   }
 }
@@ -46,8 +46,8 @@ static void checkEqual(
   std::string sep(" ");
 
   if (actual != expect) {
-    std::cout << "expect: " << accumulateWith(expect, sep) << '\n';
-    std::cout << "actual: " << accumulateWith(actual, sep) << '\n';
+    std::cout << "expect: " << vecAccumulateWith(expect, sep) << '\n';
+    std::cout << "actual: " << vecAccumulateWith(actual, sep) << '\n';
     xfailure("actual is different from expect");
   }
 }
