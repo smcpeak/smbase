@@ -181,11 +181,18 @@ inline void pretendUsedFn(T const &) {}
   // Declare that a function is deprecated, and provide a string to
   // explain why or what to use instead:
   //
-  //   void oldFunc() DEPRECATED("Use `newFunc` instead.")
+  //   void oldFunc() DEPRECATED("Use `newFunc` instead.");
+  //
+  // This can only be placed on a non-definition declaration, so it is
+  // often necessary to add such a declaration, even when otherwise not
+  // needed, to have a place to put it.
   //
   // The GCC macro does not actually do anything with the reason string,
   // but this provides a standard place to put it, and in the future
-  // perhaps there would be a way for the compiler to use it.
+  // perhaps there would be a way for the compiler to use it.  Clang
+  // also does not use it, but it prints the line containing the
+  // DEPRECATED attribute usage, so the user sees the string in that
+  // case.
   //
   #define DEPRECATED(reasonString) __attribute__((deprecated))
 
