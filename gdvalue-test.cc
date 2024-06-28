@@ -1839,6 +1839,9 @@ void testToGDValue()
             "{A(7):17 A(8):18}");
   EXPECT_EQ(toGDValue(std::make_pair(std::string("hi"), 9)).asString(),
             "(\"hi\" 9)");
+
+  EXPECT_EQ(toGDValue(true).asString(), "true");
+  EXPECT_EQ(toGDValue(false).asString(), "false");
 }
 
 

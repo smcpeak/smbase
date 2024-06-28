@@ -853,7 +853,7 @@ FOR_EACH_GDV_CONTAINER(DEFER_INSTANTIATE)
 #undef DEFER_INSTANTIATE
 
 
-// Temporarily (for the enclosing scope) add `amount` to the indent
+// Temporarily (for the enclosing scope) set `amount` as the indent
 // level.  This is meant for use before tracing output statements that
 // provide some of their own indentation context.
 #define GDVALUE_SCOPED_SET_INDENT(amount) \
@@ -895,6 +895,10 @@ toGDValue(T const &t)
 {
   return t.asGDValue();
 }
+
+
+// Return `GDValue::makeBool(b)`.
+GDValue toGDValue(bool b);
 
 
 // `toGDValue` for when there is an implicit conversion, either because

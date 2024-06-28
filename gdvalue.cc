@@ -1405,6 +1405,13 @@ FOR_EACH_GDV_CONTAINER(DEFINE_TAGGED_CONTAINER_METHODS)
 FOR_EACH_GDV_CONTAINER(EXPLICITLY_INSTANTIATE)
 
 
+// ----------------------------- toGDValue -----------------------------
+GDValue toGDValue(bool b)
+{
+  return GDValue::makeBool(b);
+}
+
+
 CLOSE_NAMESPACE(gdv)
 
 
