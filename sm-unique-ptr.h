@@ -21,7 +21,7 @@
    * It omits the `Deleter` template argument.  (This class exclusively
      uses `delete` to deallocate.)
 
-   * It omits support for managing points to arrays.
+   * It omits support for managing pointers to arrays.
 
    * The dereference operators are not marked `noexcept`, and in fact
      will throw `XAssert` if a precondition is violated.
