@@ -150,6 +150,38 @@ void testBool()
   GDValue b = GDValue::makeBool(true);
   xassert(b == dTrue);
   xassert(GDValue::makeBool(false) == dFalse);
+
+  // I now allow semi-implicit conversion with `toGDValue`.
+  {
+    GDValue v = toGDValue(true);
+    v = toGDValue(false);
+    bool b = true;
+    v = toGDValue(b);
+    EXPECT_EQ(v.asString(), "true");
+  }
+
+  // And now I'm trying to allow implicit conversion of exactly `bool`.
+  {
+    GDValue v1(true);
+    GDValue v2(false);
+    bool b = true;
+    GDValue v3(b);
+    EXPECT_EQ(v3.asString(), "true");
+  }
+
+  // But not these.  Each of these cases is exercised by the
+  // `check-gdvalue-bool` target in `Makefile`.
+  {
+    #if ERRNUM == 1
+      void *p = nullptr;
+      GDValue v = toGDValue(p);
+    #endif
+
+    #if ERRNUM == 2
+      void *p = nullptr;
+      GDValue v(p);
+    #endif
+  }
 }
 
 

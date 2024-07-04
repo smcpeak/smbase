@@ -495,12 +495,20 @@ public:      // methods
   // A boolean is a symbol that is either `false` or `true`.
   bool isBool() const;
 
-  // A constructor that just accepts 'bool' creates too many ambiguities
-  // so we use a discriminator tag.  But with the tag, this should be
-  // safe to make usable implicitly in brace initializers.
+  // A non-template constructor that accepts 'bool' without any
+  // possibility of ambiguity.
   enum BoolTagType { BoolTag };
   /*implicit*/ GDValue(BoolTagType, bool b);
 
+  // A constructor that accepts exactly `bool`.
+  template <typename BOOL,
+            typename = typename std::enable_if<
+                         std::is_same<BOOL, bool>::value>::type>
+  /*implicit*/ GDValue(BOOL b)
+    : GDValue(BoolTag, b)
+  {}
+
+  // Another way to construct `GDValue` from `bool` explicitly.
   static GDValue makeBool(bool b);
 
   void boolSet(bool b);
@@ -872,7 +880,7 @@ FOR_EACH_GDV_CONTAINER(DEFER_INSTANTIATE)
 */
 
 // `has_asGDValue_method<T>::value` is true iff `T` has an `asGDValue`
-// member.
+// member (that is not overloaded).
 //
 // False case:
 //
@@ -897,15 +905,24 @@ toGDValue(T const &t)
 }
 
 
-// Return `GDValue::makeBool(b)`.
-GDValue toGDValue(bool b);
+// `toGDValue(bool)` without implicit conversions to `bool`.
+template <typename BOOL>
+typename std::enable_if<std::is_same<BOOL, bool>::value,
+                        GDValue>::type
+                     // ^^^^^^^ Return type of this function.
+toGDValue(BOOL const &b)
+{
+  return GDValue::makeBool(b);
+}
 
 
 // `toGDValue` for when there is an implicit conversion, either because
 // there is a matching `GDValue` constructor or because `T` has an
-// `operator GDValue()`.
+// `operator GDValue()`.  But specifically exclude `bool` since it is
+// handled by the overload above.
 template <typename T>
-typename std::enable_if<std::is_convertible<T, GDValue>::value,
+typename std::enable_if<std::is_convertible<T, GDValue>::value &&
+                          !std::is_same<T, bool>::value,
                         GDValue>::type
                      // ^^^^^^^ Return type of this function.
 toGDValue(T const &t)

@@ -572,6 +572,33 @@ check-gdvn: out/gdvn/123-stdin.ok
 check: check-gdvn
 
 
+# ------------------------- test GDValue(bool) -------------------------
+# Attempt to compile `gdvalue-test.cc` with `ERRNUM` set to enable a
+# particular piece of syntax that should cause a compilation error.
+#
+# This depends on `gdvalue-test.o` in order to delay running it until
+# after we have confirmed that the file compiles successfully without
+# any seeded errors.
+#
+out/gdvalue-test-error-%.ok.txt: gdvalue-test.o
+	$(CREATE_OUTPUT_DIRECTORY)
+	if $(CXX) -c -o out/gdvalue-test-error-$*.o \
+	          $(CXXFLAGS) -DERRNUM=$* gdvalue-test.cc \
+	          >out/gdvalue-test-error-$*.txt 2>&1; then \
+	  echo "gdvalue-test compile error case $* passed but should have failed!"; \
+	  exit 2; \
+	else \
+	  echo "failed as expected: out/gdvalue-test-error-$*.txt"; \
+	fi
+	touch $@
+
+.PHONY: check-gdvalue-bool
+check-gdvalue-bool: out/gdvalue-test-error-1.ok.txt
+check-gdvalue-bool: out/gdvalue-test-error-2.ok.txt
+
+check: check-gdvalue-bool
+
+
 # -------------------------- run unit tests ----------------------------
 out/unit-tests.exe.ok: unit-tests.exe call-abort.exe test.dir/read-only.txt
 	$(CREATE_OUTPUT_DIRECTORY)
@@ -714,7 +741,7 @@ check: check-mypy
 endif
 
 
-# --------------------------- ad-hoc check -----------------------------
+# ---------------------- `using namespace` check -----------------------
 # Verify that `using namespace` does not appear in any header.
 ALL_HEADERS := $(wildcard *.h)
 out/no-using-namespace-in-header.ok: $(ALL_HEADERS)
