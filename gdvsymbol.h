@@ -155,6 +155,13 @@ inline void swap(GDVSymbol &a, GDVSymbol &b)
 }
 
 
+// Literal operator for symbols.
+//
+// Ex: "symname"_sym is equivalent to GDVSymbol("symname").
+//
+GDVSymbol operator ""_sym(char const *name, std::size_t len);
+
+
 CLOSE_NAMESPACE(gdv)
 
 

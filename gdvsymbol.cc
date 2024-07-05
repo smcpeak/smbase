@@ -144,6 +144,12 @@ std::string GDVSymbol::asString() const
 }
 
 
+GDVSymbol operator ""_sym(char const *name, std::size_t len)
+{
+  return GDVSymbol(std::string_view(name, len));
+}
+
+
 CLOSE_NAMESPACE(gdv)
 
 

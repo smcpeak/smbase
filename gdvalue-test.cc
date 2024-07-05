@@ -1946,6 +1946,12 @@ void testScopedSetIndent()
 }
 
 
+void testSymbolLiteralOperator()
+{
+  EXPECT_EQ(GDVSymbol("name"), "name"_sym);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -1989,6 +1995,7 @@ void test_gdvalue()
     testDefaultWriteOptions();
     testMapSymbolOps();
     testScopedSetIndent();
+    testSymbolLiteralOperator();
 
     // Some interesting values for the particular data used.
     testPrettyPrint(0);
