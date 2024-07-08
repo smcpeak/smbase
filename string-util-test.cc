@@ -4,6 +4,7 @@
 #include "string-util.h"               // module under test
 
 #include "exc.h"                       // EXN_CONTEXT
+#include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
 #include "sm-test.h"                   // EXPECT_EQ, tprintf
 
 #include <exception>                   // std::exception
@@ -11,10 +12,10 @@
 #include <limits>                      // std::numeric_limits
 
 
-// TODO: Put the test functions into an anonymous namespace.
+OPEN_ANONYMOUS_NAMESPACE
 
 
-static void testSplit()
+void testSplit()
 {
   EXN_CONTEXT("testSplit");
 
@@ -65,7 +66,7 @@ static void testSplit()
 }
 
 
-static void testSplitNonEmpty()
+void testSplitNonEmpty()
 {
   struct Test {
     char const *m_input;
@@ -105,7 +106,7 @@ static void testSplitNonEmpty()
 }
 
 
-static void testNumLeadingChars()
+void testNumLeadingChars()
 {
   EXPECT_EQ(numLeadingChars("", ' '), 0);
   EXPECT_EQ(numLeadingChars(" ", ' '), 1);
@@ -115,7 +116,7 @@ static void testNumLeadingChars()
 }
 
 
-static void testJoin()
+void testJoin()
 {
   struct Test {
     std::vector<std::string> m_vec;
@@ -157,7 +158,7 @@ static void testJoin()
 }
 
 
-static void testPrefixAll()
+void testPrefixAll()
 {
   EXPECT_EQ(prefixAll(std::vector<std::string>{}, "foo"),
                       std::vector<std::string>{});
@@ -173,7 +174,7 @@ static void testPrefixAll()
 }
 
 
-static void testSuffixAll()
+void testSuffixAll()
 {
   EXPECT_EQ(suffixAll(std::vector<std::string>{}, "foo"),
                       std::vector<std::string>{});
@@ -189,7 +190,7 @@ static void testSuffixAll()
 }
 
 
-static void testDoubleQuote()
+void testDoubleQuote()
 {
   static struct Test {
     std::string m_input;
@@ -218,7 +219,7 @@ static void testDoubleQuote()
 }
 
 
-static void testVectorToString()
+void testVectorToString()
 {
   struct Test {
     std::vector<std::string> m_input;
@@ -258,7 +259,7 @@ static void testVectorToString()
 }
 
 
-static void testStripExtension()
+void testStripExtension()
 {
   static struct Test {
     char const *m_input;
@@ -277,7 +278,7 @@ static void testStripExtension()
 }
 
 
-static void testIsStrictlySortedArray()
+void testIsStrictlySortedArray()
 {
   // Basic ordering and rejection of repetition.
   static char const * const arr1[] = {
@@ -300,7 +301,7 @@ static void testIsStrictlySortedArray()
 }
 
 
-static void testStringInSortedArray()
+void testStringInSortedArray()
 {
   static char const * const arr1[] = {
     "baz",
@@ -315,7 +316,7 @@ static void testStringInSortedArray()
 }
 
 
-static void testBeginsWith()
+void testBeginsWith()
 {
   static struct Test {
     char const *m_str;
@@ -340,7 +341,7 @@ static void testBeginsWith()
 }
 
 
-static void testEndsWith()
+void testEndsWith()
 {
   static struct Test {
     char const *m_str;
@@ -368,7 +369,7 @@ static void testEndsWith()
 }
 
 
-static void testOneMatchesRegex(
+void testOneMatchesRegex(
   char const *str,
   char const *re,
   bool expect)
@@ -387,7 +388,7 @@ static void testOneMatchesRegex(
 }
 
 
-static void testMatchesRegex()
+void testMatchesRegex()
 {
   testOneMatchesRegex("hello", "el", true);
 
@@ -407,7 +408,7 @@ static void testMatchesRegex()
 }
 
 
-static void testInsertPossiblyEscapedChar()
+void testInsertPossiblyEscapedChar()
 {
   std::ostringstream oss;
   insertPossiblyEscapedChar(oss, 'x');
@@ -417,13 +418,13 @@ static void testInsertPossiblyEscapedChar()
 }
 
 
-static void expectSingleQuoteChar(int c, string const &expect)
+void expectSingleQuoteChar(int c, string const &expect)
 {
   string actual = singleQuoteChar(c);
   EXPECT_EQ(actual, expect);
 }
 
-static void testSingleQuoteChar()
+void testSingleQuoteChar()
 {
   EXPECT_EQ(singleQuoteChar('x'), std::string("'x'"));
   EXPECT_EQ(singleQuoteChar('\0'), std::string("'\\000'"));
@@ -450,14 +451,14 @@ static void testSingleQuoteChar()
 }
 
 
-static void testEscapeForRegex()
+void testEscapeForRegex()
 {
   EXPECT_EQ(escapeForRegex("["), "\\[");
   EXPECT_EQ(escapeForRegex("(*hello*)"), "\\(\\*hello\\*\\)");
 }
 
 
-static void testInt64ToRadixDigits()
+void testInt64ToRadixDigits()
 {
   for (int r=2; r <= 36; ++r) {
     EXPECT_EQ(int64ToRadixDigits(0, r, false), "0");
@@ -504,7 +505,7 @@ static void testInt64ToRadixDigits()
 }
 
 
-static void testReplaceAll()
+void testReplaceAll()
 {
   EXPECT_EQ(replaceAll("", "x", ""), "");
   EXPECT_EQ(replaceAll("", "x", "y"), "");
@@ -515,7 +516,7 @@ static void testReplaceAll()
 }
 
 
-static void expRangeVector(char const *in, char const *out)
+void expRangeVector(char const *in, char const *out)
 {
   tprintf("expRangeVector(%s, %s)\n", in, out);
   string result = expandRanges(in);
@@ -523,7 +524,7 @@ static void expRangeVector(char const *in, char const *out)
 }
 
 
-static void testExpandRanges()
+void testExpandRanges()
 {
   expRangeVector("abcd", "abcd");
   expRangeVector("a", "a");
@@ -532,7 +533,7 @@ static void testExpandRanges()
 }
 
 
-static void trVector(char const *in, char const *srcSpec, char const *destSpec, char const *out)
+void trVector(char const *in, char const *srcSpec, char const *destSpec, char const *out)
 {
   tprintf("trVector(%s, %s, %s, %s)\n", in, srcSpec, destSpec, out);
   string result = translate(in, srcSpec, destSpec);
@@ -541,7 +542,7 @@ static void trVector(char const *in, char const *srcSpec, char const *destSpec, 
 
 
 // testcase from Hendrik Tews
-static void translateAscii()
+void translateAscii()
 {
   char input[256];
   char underscores[256];
@@ -575,7 +576,7 @@ static void translateAscii()
 }
 
 
-static void testTranslate()
+void testTranslate()
 {
   trVector("foo", "a-z", "A-Z", "FOO");
   trVector("foo BaR", "a-z", "A-Z", "FOO BAR");
@@ -585,7 +586,7 @@ static void testTranslate()
 }
 
 
-static void testTrimWhitespace()
+void testTrimWhitespace()
 {
   EXPECT_EQ(trimWhitespace(""), "");
   EXPECT_EQ(trimWhitespace(" "), "");
@@ -596,7 +597,7 @@ static void testTrimWhitespace()
 }
 
 
-static void testRemoveSuffix()
+void testRemoveSuffix()
 {
   EXPECT_EQ(removeSuffix("", ""), "");
   EXPECT_EQ(removeSuffix("xyz", "z"), "xy");
@@ -605,7 +606,7 @@ static void testRemoveSuffix()
 }
 
 
-static void testEncodeWithEscapes()
+void testEncodeWithEscapes()
 {
   EXPECT_EQ(encodeWithEscapes(""), "");
   EXPECT_EQ(encodeWithEscapes("abc"), "abc");
@@ -614,7 +615,7 @@ static void testEncodeWithEscapes()
 }
 
 
-static void expectIndexOfSubstring(std::string const &haystack,
+void expectIndexOfSubstring(std::string const &haystack,
   std::string const &needle, int expect)
 {
   int actual = indexOfSubstring(haystack, needle);
@@ -625,7 +626,7 @@ static void expectIndexOfSubstring(std::string const &haystack,
 }
 
 
-static void testIndexOfSubstring()
+void testIndexOfSubstring()
 {
   expectIndexOfSubstring("", "", 0);
   expectIndexOfSubstring("", "x", -1);
@@ -641,7 +642,7 @@ static void testIndexOfSubstring()
 }
 
 
-static void testReplaceAllRegex()
+void testReplaceAllRegex()
 {
   EXPECT_EQ(replaceAllRegex("", "x", ""), "");
   EXPECT_EQ(replaceAllRegex("x", "x", ""), "");
@@ -654,7 +655,7 @@ static void testReplaceAllRegex()
 }
 
 
-static void testStringVectorFromPointerArray()
+void testStringVectorFromPointerArray()
 {
   EXPECT_EQ(stringVectorFromPointerArray(0, nullptr),
             std::vector<std::string>{});
@@ -677,7 +678,7 @@ static void testStringVectorFromPointerArray()
 }
 
 
-static void testRemoveTestCaseIndentation()
+void testRemoveTestCaseIndentation()
 {
   EXPECT_EQ(removeTestCaseIndentation(R"(
     one
@@ -692,6 +693,9 @@ static void testRemoveTestCaseIndentation()
   )"),
   "a\n");
 }
+
+
+CLOSE_ANONYMOUS_NAMESPACE
 
 
 void test_string_util()
