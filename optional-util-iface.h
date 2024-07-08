@@ -4,9 +4,9 @@
 #ifndef SMBASE_OPTIONAL_UTIL_IFACE_H
 #define SMBASE_OPTIONAL_UTIL_IFACE_H
 
+#include "std-optional-fwd.h"          // std::{optional,nullopt_t} [n]
 #include "std-string-fwd.h"            // std::string [n]
 
-#include <optional>                    // std::{optional,nullopt_t} [n]
 #include <iosfwd>                      // std::ostream [n]
 
 
