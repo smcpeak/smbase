@@ -15,6 +15,7 @@
 #include "codepoint.h"                 // CodePoint
 #include "sm-macros.h"                 // DEPRECATED
 
+#include <cstddef>                     // std::size_t
 #include <cstdint>                     // std::{int64_t, uint64_t}
 #include <iosfwd>                      // std::ostream
 #include <string>                      // std::string
@@ -22,6 +23,12 @@
 
 
 // ------------------------------ Parsing ------------------------------
+// Split `text` into words separated by `sep`.  If two occurrences of
+// `sep` are adjacent, the corresponding word will be empty.  The output
+// always has at least one element.
+std::vector<std::string> split(std::string const &text, char sep);
+
+
 // Split 'text' into non-empty words separated by 'sep', which never
 // appears in any of the result words.
 std::vector<std::string> splitNonEmpty(std::string const &text, char sep);
@@ -30,6 +37,10 @@ std::vector<std::string> splitNonEmpty(std::string const &text, char sep);
 // Remove any whitespace (as determined by `std::isspace`) at the
 // beginning or end of the string.
 std::string trimWhitespace(std::string const &str);
+
+
+// Return the number of copies of `c` that are at the start of `s`.
+std::size_t numLeadingChars(std::string const &s, char c);
 
 
 // ------------------------- Tests on strings --------------------------
@@ -209,6 +220,37 @@ std::string stringToupper(std::string const &src);
 
 // Convert all of the US-ASCII letters in `src` to lowercase.
 std::string stringTolower(std::string const &src);
+
+
+/*
+  We expect that `src` is made from a raw string literal like the
+  argument in:
+
+    someFunctionCall(R"(
+      first text line
+      second text line
+
+      fourth text line
+    )");
+
+  This function:
+
+    1. Removes the leading newline.
+
+    2. Removes any trailing spaces.
+
+    3. Identifies the longest sequence of spaces such that every
+       non-blank line begins with that sequence, and removes it from
+       all of those lines.
+
+  For example, with the input above, the result would have four
+  newline-terminated lines, the third one being blank (as it was to
+  begin with).
+
+  This is intended for use in test cases where, otherwise, the raw
+  string literal syntax clashes with the surrounding code's indentation.
+*/
+std::string removeTestCaseIndentation(std::string const &src);
 
 
 // ----------------------- Regular expressions -------------------------

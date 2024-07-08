@@ -5,13 +5,14 @@
 
 #include "breaker.h"                   // breaker
 #include "exc.h"                       // smbase::xmessage
+#include "optional-util.h"             // liftToOptional
 #include "overflow.h"                  // safeToInt
 #include "strcmp-compare.h"            // StrcmpCompare
 #include "strutil.h"                   // stringf
 #include "vector-util.h"               // vecAccumulateWith
 #include "xassert.h"                   // xassert, xassertdb, xassertPrecondition
 
-#include <algorithm>                   // std::binary_search
+#include <algorithm>                   // std::{binary_search, remove_if}
 #include <cctype>                      // std::isspace
 #include <cstdlib>                     // std::abs
 #include <cstring>                     // std::{strchr, strrchr}
@@ -25,11 +26,11 @@ using namespace smbase;
 
 
 // ------------------------------ Parsing ------------------------------
-// Based on one of the answers at
+// This code was originally based on one of the answers at
 // https://stackoverflow.com/questions/236129/how-do-i-iterate-over-the-words-of-a-string
-// although that answer is buggy (the final test is wrong) so I fixed
-// the bug.
-std::vector<std::string> splitNonEmpty(std::string const &text, char sep)
+// but that was buggy and I've now changed it enough to be mostly
+// unrelated, although I acknowledge the provenance.
+std::vector<std::string> split(std::string const &text, char sep)
 {
   // Result words.
   std::vector<std::string> tokens;
@@ -43,22 +44,34 @@ std::vector<std::string> splitNonEmpty(std::string const &text, char sep)
 
   // Look for the next occurrence of 'sep'.
   while ((end = text.find(sep, start)) != std::string::npos) {
-    // Take the token unless 'sep' occurred immediately.
-    if (end != start) {
-      tokens.push_back(text.substr(start, end - start));
-    }
+    // Take the token.
+    tokens.push_back(text.substr(start, end - start));
 
     // Skip past the separator we just found.
     start = end + 1;
   }
 
-  // In the code I started with, the test was 'end != start', but that
-  // is always true because we know that 'end==npos'.  Instead we want
-  // to check that 'start' is not at the end of the string, which is
-  // *not* where 'end' is.
-  if (start < text.size()) {
-    tokens.push_back(text.substr(start));
-  }
+  // Final token, which is empty if `sep` occurred at the end of `text`
+  // or `text` was empty.
+  tokens.push_back(text.substr(start));
+
+  return tokens;
+}
+
+
+std::vector<std::string> splitNonEmpty(std::string const &text, char sep)
+{
+  std::vector<std::string> tokens = split(text, sep);
+
+  // Remove the empty tokens using remove-erase.
+  tokens.erase(
+    std::remove_if(
+      tokens.begin(),
+      tokens.end(),
+      [](std::string const &s) -> bool {
+        return s.empty();
+      }),
+    tokens.end());
 
   return tokens;
 }
@@ -88,6 +101,18 @@ std::string trimWhitespace(string const &origStr)
   xassert(begin <= end);
 
   return std::string(str.substr(begin, end-begin));
+}
+
+
+std::size_t numLeadingChars(std::string const &s, char c)
+{
+  std::size_t i = 0;
+
+  while (i < s.size() && s[i] == c) {
+    ++i;
+  }
+
+  return i;
 }
 
 
@@ -515,6 +540,48 @@ std::string stringToupper(std::string const &src)
 std::string stringTolower(std::string const &src)
 {
   return translate(src, "A-Z", "a-z");
+}
+
+
+std::string removeTestCaseIndentation(std::string const &src)
+{
+  std::vector<std::string> lines = split(src, '\n');
+
+  // Remove the first line if (as expected) it is empty.
+  if (lines.at(0).empty()) {
+    lines.erase(lines.begin());
+  }
+
+  // Clear the last line so we will, at the end, retain the newline
+  // that precedes it, but none of the characters after it.
+  if (!lines.empty()) {
+    lines.at(lines.size()-1).clear();
+  }
+
+  // Find the length of the longest prefix of spaces common to all
+  // non-blank lines; i.e., the minimum number of leading spaces.
+  std::optional<int> minNumSpaces;
+  for (std::string const &line : lines) {
+    if (!line.empty()) {
+      int numSpaces = numLeadingChars(line, ' ');
+      minNumSpaces = liftToOptional<int>(minNumSpaces, numSpaces,
+        // Unfortunately, since `std::min` is overloaded, it cannot be
+        // passed as the argument to a higher-order function.
+        [](int a, int b) -> int { return std::min(a, b); });
+    }
+  }
+
+  if (minNumSpaces) {
+    // Trim the indicated number of spaces.
+    for (std::string &line : lines) {
+      if (!line.empty()) {
+        line = line.substr(*minNumSpaces);
+      }
+    }
+  }
+
+  // Join what remains with newlines separating the elements.
+  return join(lines, "\n");
 }
 
 

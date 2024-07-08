@@ -3,11 +3,66 @@
 
 #include "string-util.h"               // module under test
 
+#include "exc.h"                       // EXN_CONTEXT
 #include "sm-test.h"                   // EXPECT_EQ, tprintf
 
 #include <exception>                   // std::exception
 #include <iostream>                    // std::ostream
 #include <limits>                      // std::numeric_limits
+
+
+// TODO: Put the test functions into an anonymous namespace.
+
+
+static void testSplit()
+{
+  EXN_CONTEXT("testSplit");
+
+  struct Test {
+    char const *m_input;
+    std::vector<std::string> m_expect;
+  }
+  const tests[] = {
+    {
+      "",
+      {""},
+    },
+    {
+      " ",
+      {"", ""},
+    },
+    {
+      "a",
+      {"a"},
+    },
+    {
+      "a  ",
+      {"a", "", ""},
+    },
+    {
+      "a bar c",
+      {"a", "bar", "c"},
+    },
+    {
+      " a  b  c",
+      {"", "a", "", "b", "", "c"},
+    },
+  };
+
+  for (auto t : tests) {
+    EXN_CONTEXT(doubleQuote(t.m_input));
+    std::vector<std::string> actual = split(t.m_input, ' ');
+    EXPECT_EQ(actual, t.m_expect);
+  }
+
+  EXPECT_EQ(split("one\ntwo\nthree\n", '\n'),
+            (std::vector<std::string>{
+              "one",
+              "two",
+              "three",
+              ""
+            }));
+}
 
 
 static void testSplitNonEmpty()
@@ -47,6 +102,16 @@ static void testSplitNonEmpty()
     std::vector<std::string> actual = splitNonEmpty(t.m_input, ' ');
     EXPECT_EQ(actual, t.m_expect);
   }
+}
+
+
+static void testNumLeadingChars()
+{
+  EXPECT_EQ(numLeadingChars("", ' '), 0);
+  EXPECT_EQ(numLeadingChars(" ", ' '), 1);
+  EXPECT_EQ(numLeadingChars(" ", 'x'), 0);
+  EXPECT_EQ(numLeadingChars("x ", 'x'), 1);
+  EXPECT_EQ(numLeadingChars("xx xx", 'x'), 2);
 }
 
 
@@ -612,9 +677,28 @@ static void testStringVectorFromPointerArray()
 }
 
 
+static void testRemoveTestCaseIndentation()
+{
+  EXPECT_EQ(removeTestCaseIndentation(R"(
+    one
+    two
+
+    four
+  )"),
+  "one\ntwo\n\nfour\n");
+
+  EXPECT_EQ(removeTestCaseIndentation(R"(
+    a
+  )"),
+  "a\n");
+}
+
+
 void test_string_util()
 {
+  testSplit();
   testSplitNonEmpty();
+  testNumLeadingChars();
   testJoin();
   testPrefixAll();
   testSuffixAll();
@@ -639,6 +723,7 @@ void test_string_util()
   testIndexOfSubstring();
   testReplaceAllRegex();
   testStringVectorFromPointerArray();
+  testRemoveTestCaseIndentation();
 }
 
 
