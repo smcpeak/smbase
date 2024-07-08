@@ -48,4 +48,21 @@ inline std::ostream& operator<< (std::ostream &os, std::nullopt_t const &)
 }
 
 
+template <typename T, typename FUNC>
+std::optional<T> liftToOptional(
+  std::optional<T> const &a,
+  std::optional<T> const &b,
+  FUNC func)
+{
+  if (!a.has_value()) {
+    return b;
+  }
+  if (!b.has_value()) {
+    return a;
+  }
+
+  return std::optional<T>(func(*a, *b));
+}
+
+
 #endif // SMBASE_OPTIONAL_UTIL_H
