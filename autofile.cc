@@ -4,9 +4,6 @@
 #include "autofile.h"     // this module
 #include "syserr.h"       // xsyserror
 
-#include <errno.h>        // errno
-#include <string.h>       // strerror
-
 using namespace smbase;
 
 
