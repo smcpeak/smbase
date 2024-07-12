@@ -2,10 +2,8 @@
 // code for autofile.h
 
 #include "autofile.h"     // this module
+#include "str.h"          // string::string [h]
 #include "syserr.h"       // xsyserror
-
-// Work around IWYU bug.
-// IWYU pragma: no_include <memory>
 
 using namespace smbase;
 
