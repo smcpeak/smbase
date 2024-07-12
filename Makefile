@@ -779,8 +779,11 @@ gcov-clean:
 
 # This requires that the build was run with Clang and
 # CREATE_O_JSON_FILES.
+#
+# The `sed` command removes the trailing comma from the last line only.
+# IWYU does not tolerate them.
 compile_commands.json:
-	(echo "["; cat *.o.json; echo "]") > $@
+	(echo "["; cat *.o.json | sed '$$ s/,$$//'; echo "]") > $@
 
 
 # ---------------------------- index.html ------------------------------
