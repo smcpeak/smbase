@@ -5,11 +5,14 @@
 
 #include "flatutil.h"                  // xferEnum, xferVectorBytewise
 #include "sm-macros.h"                 // EMEMB, OPEN_ANONYMOUS_NAMESPACE
-#include "sm-test.h"                   // USUAL_MAIN
+#include "str.h"                       // string, std::string
+#include "xassert.h"                   // xassert
 
 #include <sstream>                     // std::i/ostringstream
-#include <string>                      // std::string
 #include <vector>                      // std::vector
+
+#include <stdio.h>                     // remove
+#include <stdint.h>                    // int32_t, etc.
 
 
 OPEN_ANONYMOUS_NAMESPACE

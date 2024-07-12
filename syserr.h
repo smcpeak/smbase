@@ -10,6 +10,7 @@
 
 #include "exc.h"                       // XBase
 #include "sm-macros.h"                 // OPEN_NAMESPACE
+#include "str.h"                       // rostring
 
 
 OPEN_NAMESPACE(smbase)

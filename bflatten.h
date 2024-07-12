@@ -4,7 +4,7 @@
 #ifndef BFLATTEN_H
 #define BFLATTEN_H
 
-#include "flatten.h"                   // Flatten
+#include "flatten.h"                   // Flatten // IWYU pragma: export
 #include "ohashtbl.h"                  // OwnerHashTable
 
 #include <iosfwd>                      // std::istream, std::ostream
