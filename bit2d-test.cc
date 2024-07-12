@@ -4,6 +4,7 @@
 #include "bit2d.h"                     // module under test
 
 #include "bflatten.h"                  // BFlatten
+#include "point.h"                     // point
 #include "sm-test.h"                   // verbose
 #include "xassert.h"                   // xassert
 
