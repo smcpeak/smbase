@@ -4,7 +4,12 @@
 #include "bitarray.h"                  // module under test
 
 #include "exc.h"                       // smbase::xbase
+#include "sm-iostream.h"               // cout, endl
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
+#include "str.h"                       // string
+#include "xassert.h"                   // xassert
+
+#include <string.h>                    // strlen
 
 using namespace smbase;
 
