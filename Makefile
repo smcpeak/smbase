@@ -445,7 +445,7 @@ all: unit-tests.exe
 # Rule for tests that have dedicated .cc files, which is currently just
 # binary-stdin-test.exe.
 %-test.exe: %-test.cc $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $*-test.cc $(LIBS)
+	$(CXX) -o $@ $(call MJ_FLAG,$*-test) $(CXXFLAGS) $(LDFLAGS) $*-test.cc $(LIBS)
 
 
 # Create a read-only file I can try to inspect in sm-file-util-test.cc.
