@@ -8,7 +8,7 @@
 #ifndef AUTOFILE_H
 #define AUTOFILE_H
 
-#include <stdio.h>      // FILE
+#include <stdio.h>      // FILE // IWYU pragma: export
 
 
 // Like 'fopen', but throw an XSysError exception (see syserr.h) on

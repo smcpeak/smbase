@@ -5,14 +5,24 @@
 
 // smbase
 #include "autofile.h"                  // AutoFILE
+#include "exc.h"                       // XBase, xfatal
+#include "sm-iostream.h"               // cout, cin
+#include "stringb.h"                   // stringb
 #include "syserr.h"                    // smbase::xsyserror
 #include "xassert.h"                   // xassert
 
 // libc++
 #include <vector>                      // std::vector
 
+// libc
+#include <string.h>                    // strcmp
+
 // POSIX
 #include <unistd.h>                    // read, write
+
+// According to POSIX 6 and 7, <unistd.h> should be sufficient to get
+// `ssize_t`.
+// IWYU pragma: no_include <sys/types.h>
 
 using namespace smbase;
 
