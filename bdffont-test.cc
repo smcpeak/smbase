@@ -7,7 +7,9 @@
 #include "strutil.h"                   // readStringFromFile
 
 #include <iostream>                    // std::{cout, endl}
+#include <string>                      // std::string::operator!=
 
+#include <stdlib.h>                    // getenv
 #include <unistd.h>                    // unlink
 
 using namespace smbase;
