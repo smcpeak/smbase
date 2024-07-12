@@ -7,9 +7,12 @@
 #include "exc.h"             // xformat
 #include "objcount.h"        // CHECK_OBJECT_COUNT
 #include "owner.h"           // Owner
+#include "stringb.h"         // stringb
+#include "stringf.h"         // stringf
 #include "strutil.h"         // readStringFromFile
+#include "xassert.h"         // xassert
 
-#include <unistd.h>          // unlink
+#include <string.h>          // memcmp
 
 using namespace smbase;
 

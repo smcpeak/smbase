@@ -5,8 +5,10 @@
 #ifndef SMBASE_STRINGB_H
 #define SMBASE_STRINGB_H
 
+// IWYU pragma: begin_exports
 #include <string>                      // std::string
 #include <sstream>                     // std::ostringstream
+// IWYU pragma: end_exports
 
 
 /* Convert an rvalue reference to `ostream` into an lvalue reference to
