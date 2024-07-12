@@ -1,12 +1,13 @@
 // bit2d.cc            see license.txt for copyright and terms of use
 // code for bit2d.h
 
-#include "bit2d.h"      // this module
-#include "xassert.h"    // xassert
-#include "flatten.h"    // Flatten
+#include "bit2d.h"                     // this module
+#include "flatten.h"                   // Flatten
+#include "sm-macros.h"                 // smbase_loopi, ASSERT_TABLESIZE
+#include "xassert.h"                   // xassert
 
-#include <string.h>     // memset, memcpy
-#include <stdio.h>      // printf
+#include <stdio.h>                     // printf
+#include <string.h>                    // memset, memcpy
 
 
 Bit2d::Bit2d(point const &aSize)
