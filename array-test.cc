@@ -5,9 +5,14 @@
 
 // this dir
 #include "compare-util.h"              // compare
+#include "exc.h"                       // XBase
 #include "objlist.h"                   // ObjList
+#include "sm-iostream.h"               // ostream
 #include "sm-macros.h"                 // TABLESIZE
 #include "sm-test.h"                   // PVAL, DIAG, verbose
+#include "str.h"                       // string
+#include "stringb.h"                   // stringb
+#include "xassert.h"                   // xassert
 
 // libc++
 #include <algorithm>                   // std::sort
@@ -16,8 +21,6 @@
 
 // libc
 #include <assert.h>                    // assert
-#include <stdio.h>                     // printf
-#include <stdlib.h>                    // exit
 
 using namespace smbase;
 

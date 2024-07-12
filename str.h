@@ -11,7 +11,9 @@
 #include "stringb.h"     // stringb
 #include "stringf.h"     // stringf
 
+// IWYU pragma: begin_exports
 #include <string>        // std::string
+// IWYU pragma: end_exports
 
 #include <string.h>      // strcmp, etc.
 
