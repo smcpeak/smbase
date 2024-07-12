@@ -3,8 +3,8 @@
 
 #include "arrayqueue.h"      // module to test
 #include "objlist.h"         // ObjList
+#include "xassert.h"         // xassert
 
-#include <stdio.h>           // printf
 #include <stdlib.h>          // exit
 
 
