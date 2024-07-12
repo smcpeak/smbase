@@ -4,6 +4,9 @@
 #include "autofile.h"     // this module
 #include "syserr.h"       // xsyserror
 
+// Work around IWYU bug.
+// IWYU pragma: no_include <memory>
+
 using namespace smbase;
 
 
