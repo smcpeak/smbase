@@ -5,7 +5,7 @@
 #define SM_STDINT_H
 
 // for now, just assume it exists
-#include <stdint.h>
+#include <stdint.h>                    // IWYU pragma: export
 
 // symbols we want to export:
 // * intptr_t
