@@ -1,11 +1,13 @@
 // boxprint.cc
 // code for boxprint.h
 
-#include "boxprint.h"       // this module
+#include "boxprint.h"                  // this module
 
-#include "string-util.h"    // doubleQuote
+#include "string-util.h"               // doubleQuote
+#include "stringb.h"                   // stringb
+#include "xassert.h"                   // xassert
 
-#include <string.h>         // strlen
+#include <string.h>                    // strlen
 
 
 // ----------------------- BPRender ----------------------

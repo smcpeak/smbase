@@ -10,9 +10,10 @@
 #ifndef BOXPRINT_H
 #define BOXPRINT_H
 
-#include "str.h"          // stringBuilder
-#include "astlist.h"      // ASTList
-#include "array.h"        // ObjArrayStack
+#include "array.h"                     // ObjArrayStack
+#include "astlist.h"                   // ASTList
+#include "sm-iostream.h"               // ostream
+#include "str.h"                       // stringBuilder // IWYU pragma: export
 
 
 // fwd

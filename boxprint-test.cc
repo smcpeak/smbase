@@ -3,6 +3,7 @@
 
 #include "boxprint.h"                  // module under test
 
+#include "sm-iostream.h"               // cout
 #include "sm-test.h"                   // DIAG, verbose
 
 #include <stdlib.h>                    // atoi, getenv
