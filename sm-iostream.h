@@ -4,7 +4,7 @@
 #ifndef SM_IOSTREAM_H
 #define SM_IOSTREAM_H
 
-#include <iostream>                    // std:: stuff
+#include <iostream>                    // IWYU pragma: export
 
 using std::cout;
 using std::cin;

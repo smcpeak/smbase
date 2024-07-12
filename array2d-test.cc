@@ -5,6 +5,7 @@
 
 #include "sm-iostream.h"     // cout
 #include "sm-test.h"         // USUAL_MAIN, DIAG, verbose
+#include "xassert.h"         // xassert
 
 #include <stdlib.h>          // exit
 
