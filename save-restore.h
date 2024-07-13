@@ -50,6 +50,12 @@ public:      // methods
   SetRestore<decltype(variable)> SM_PP_CAT(set_restore_,__LINE__) \
     (variable, (value)) /* user ; */
 
+// Same, but with an additional disambiguator, which is needed if I want
+// to set/restore multiple variables from the same macro.
+#define SET_RESTORE_D(disambig, variable, value)                            \
+  SetRestore<decltype(variable)> SM_PP_CAT(set_restore_##disambig,__LINE__) \
+    (variable, (value)) /* user ; */
+
 
 // SET_RESTORE to add an amount to a numeric value.
 #define ADD_RESTORE(variable, amount) \

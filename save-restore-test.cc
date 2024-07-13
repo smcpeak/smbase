@@ -82,6 +82,30 @@ void testIncRestore()
 }
 
 
+int n2 = 0;
+
+// Use `SET_RESTORE` twice in one macro.
+#define SET_RESTORE_TWO      \
+  SET_RESTORE_D(one, n, 1);  \
+  SET_RESTORE_D(two, n2, 2);
+
+
+void testSaveRestoreTwo()
+{
+  xassert(n == 0);
+  xassert(n2 == 0);
+
+  {
+    SET_RESTORE_TWO
+
+    xassert(n == 1);
+    xassert(n2 == 2);
+  }
+
+  xassert(n == 0);
+  xassert(n2 == 0);
+}
+
 
 CLOSE_ANONYMOUS_NAMESPACE
 
@@ -93,6 +117,7 @@ void test_save_restore()
   testSetRestore();
   testAddRestore();
   testIncRestore();
+  testSaveRestoreTwo();
 }
 
 
