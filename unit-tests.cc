@@ -142,6 +142,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(std_optional_fwd);
   RUN_TEST(std_string_fwd);
   RUN_TEST(std_string_view_fwd);
+  RUN_TEST(std_variant_fwd);
   RUN_TEST(std_vector_fwd);
   RUN_TEST(str);
   RUN_TEST(strdict);
