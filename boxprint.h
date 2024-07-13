@@ -13,7 +13,7 @@
 #include "array.h"                     // ObjArrayStack
 #include "astlist.h"                   // ASTList
 #include "sm-iostream.h"               // ostream
-#include "str.h"                       // stringBuilder // IWYU pragma: export
+#include "str.h"                       // stringBuilder
 
 
 // fwd
