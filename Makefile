@@ -137,6 +137,9 @@ ENABLE_MYPY = 0
 # cygwin and native executables.
 DEV_NULL = /dev/null
 
+# How to invoke include-what-you-use (include-what-you-use.org).
+IWYU := include-what-you-use
+
 
 # ------------------------- User customization -------------------------
 # Allow customization of the above variables in a separate file.  Just
@@ -794,6 +797,30 @@ out/index.html.ok: index.html get-file-descriptions.py $(HEADERS)
 	touch $@
 
 check: out/index.html.ok
+
+
+# -------------------------------- IWYU --------------------------------
+# Run IWYU on one file, but only after compilation has succeeded.
+out/iwyu/%.cc.iwyu: %.cc %.o
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(IWYU) $(CXXFLAGS) $< >$@ 2>&1
+
+out/iwyu/%.c.iwyu: %.c %.o
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(IWYU) $(CFLAGS) $< >$@ 2>&1
+
+# Source files to apply IWYU to.
+IWYU_SRCS :=
+IWYU_SRCS += $(SRCS)
+
+# Resulting per-file outputs.
+IWYU_OUTPUTS := $(patsubst %,out/iwyu/%.iwyu,$(IWYU_SRCS))
+
+# Run IWYU on all of $(IWYU_SRCS).
+#
+# For now, this target is only run manually.
+iwyu.out: $(IWYU_OUTPUTS)
+	cat $(IWYU_OUTPUTS) >$@
 
 
 # ------------------------------- check --------------------------------
