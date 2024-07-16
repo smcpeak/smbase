@@ -581,77 +581,65 @@ check-gdvn: out/gdvn/123-stdin.ok
 check: check-gdvn
 
 
-# ------------------------- test GDValue(bool) -------------------------
-# Attempt to compile `gdvalue-test.cc` with `ERRNUM` set to enable a
-# particular piece of syntax that should cause a compilation error.
+
+# ---------------------- EXPECT_COMPILE_TEST_FAIL ----------------------
+# As the recipe for `out/$1-test-error-$2.txt.ok`, attempt to compile
+# `$1-test.cc` with `ERRNUM` set to $2 in order to enable a particular
+# piece of syntax that should cause a compilation error.
 #
-# This depends on `gdvalue-test.o` in order to delay running it until
-# after we have confirmed that the file compiles successfully without
-# any seeded errors.
+# The generated rule has `$1-test.o` as a prerequisite in order to delay
+# running it until after we have confirmed that the file compiles
+# successfully without any seeded errors.
 #
-out/gdvalue-test-error-%.ok.txt: gdvalue-test.o
-	$(CREATE_OUTPUT_DIRECTORY)
-	if $(CXX) -c -o out/gdvalue-test-error-$*.o \
-	          $(CXXFLAGS) -DERRNUM=$* gdvalue-test.cc \
-	          >out/gdvalue-test-error-$*.txt 2>&1; then \
-	  echo "gdvalue-test compile error case $* passed but should have failed!"; \
+# Make the `ok` file a prerequisite of `check-$1-errs`, which then
+# functions as a group name for all the tests with the same `$1`.
+#
+define EXPECT_COMPILE_TEST_FAIL
+
+out/$1-test-error-$2.txt.ok: $1-test.o
+	$$(CREATE_OUTPUT_DIRECTORY)
+	if $$(CXX) -c -o out/$1-test-error-$2.o \
+	          $$(CXXFLAGS) -DERRNUM=$2 $1-test.cc \
+	          >out/$1-test-error-$2.txt 2>&1; then \
+	  echo "$1-test compile error case $2 passed but should have failed!"; \
 	  exit 2; \
 	else \
-	  echo "failed as expected: out/gdvalue-test-error-$*.txt"; \
+	  echo "failed as expected: out/$1-test-error-$2.txt"; \
 	fi
-	touch $@
+	touch $$@
 
-.PHONY: check-gdvalue-bool
-check-gdvalue-bool: out/gdvalue-test-error-1.ok.txt
-check-gdvalue-bool: out/gdvalue-test-error-2.ok.txt
+.PHONY: check-$1-errs
+check-$1-errs: out/$1-test-error-$2.txt.ok
 
-check: check-gdvalue-bool
-
-
-# ------------------ Test distinct-number error cases ------------------
-# TODO: Factor the commonality with the gdvalue tests, perhaps by
-# putting it into a separate Python script.
-out/distinct-number-test-error-%.ok.txt: distinct-number-test.o
-	$(CREATE_OUTPUT_DIRECTORY)
-	if $(CXX) -c -o out/distinct-number-test-error-$*.o \
-	          $(CXXFLAGS) -DERRNUM=$* distinct-number-test.cc \
-	          >out/distinct-number-test-error-$*.txt 2>&1; then \
-	  echo "distinct-number-test compile error case $* passed but should have failed!"; \
-	  exit 2; \
-	else \
-	  echo "failed as expected: out/distinct-number-test-error-$*.txt"; \
-	fi
-	touch $@
-
-.PHONY: check-distinct-number-errs
-check-distinct-number-errs: out/distinct-number-test-error-1.ok.txt
-check-distinct-number-errs: out/distinct-number-test-error-2.ok.txt
-check-distinct-number-errs: out/distinct-number-test-error-3.ok.txt
-check-distinct-number-errs: out/distinct-number-test-error-4.ok.txt
-check-distinct-number-errs: out/distinct-number-test-error-5.ok.txt
-check-distinct-number-errs: out/distinct-number-test-error-6.ok.txt
-
-check: check-distinct-number-errs
+endef # EXPECT_COMPILE_TEST_FAIL
 
 
-# -------------------- Test dni-vector error cases ---------------------
-out/dni-vector-test-error-%.ok.txt: dni-vector-test.o
-	$(CREATE_OUTPUT_DIRECTORY)
-	if $(CXX) -c -o out/dni-vector-test-error-$*.o \
-	          $(CXXFLAGS) -DERRNUM=$* dni-vector-test.cc \
-	          >out/dni-vector-test-error-$*.txt 2>&1; then \
-	  echo "dni-vector-test compile error case $* passed but should have failed!"; \
-	  exit 2; \
-	else \
-	  echo "failed as expected: out/dni-vector-test-error-$*.txt"; \
-	fi
-	touch $@
+# ------------------------- check-compile-errs -------------------------
+# gdvalue-test errors
+$(eval $(call EXPECT_COMPILE_TEST_FAIL,gdvalue,1))
+$(eval $(call EXPECT_COMPILE_TEST_FAIL,gdvalue,2))
+check-compile-errs: check-gdvalue-errs
 
-.PHONY: check-dni-vector-errs
-check-dni-vector-errs: out/dni-vector-test-error-1.ok.txt
-check-dni-vector-errs: out/dni-vector-test-error-2.ok.txt
 
-check: check-dni-vector-errs
+# distinct-number-test errors
+$(eval $(call EXPECT_COMPILE_TEST_FAIL,distinct-number,1))
+$(eval $(call EXPECT_COMPILE_TEST_FAIL,distinct-number,2))
+$(eval $(call EXPECT_COMPILE_TEST_FAIL,distinct-number,3))
+$(eval $(call EXPECT_COMPILE_TEST_FAIL,distinct-number,4))
+$(eval $(call EXPECT_COMPILE_TEST_FAIL,distinct-number,5))
+$(eval $(call EXPECT_COMPILE_TEST_FAIL,distinct-number,6))
+check-compile-errs: check-distinct-number-errs
+
+
+# dni-vector-test errors
+$(eval $(call EXPECT_COMPILE_TEST_FAIL,dni-vector,1))
+$(eval $(call EXPECT_COMPILE_TEST_FAIL,dni-vector,2))
+check-compile-errs: check-dni-vector-errs
+
+
+# Check that things that should *not* compile in fact do not.
+.PHONY: check-compile-errs
+check: check-compile-errs
 
 
 # -------------------------- run unit tests ----------------------------
