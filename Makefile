@@ -370,6 +370,7 @@ UNIT_TEST_OBJS += datablok-test.o
 UNIT_TEST_OBJS += datetime-test.o
 UNIT_TEST_OBJS += dict-test.o
 UNIT_TEST_OBJS += distinct-number-test.o
+UNIT_TEST_OBJS += dni-vector-test.o
 UNIT_TEST_OBJS += exc-test.o
 UNIT_TEST_OBJS += functional-set-test.o
 UNIT_TEST_OBJS += gcc-options-test.o
@@ -631,6 +632,26 @@ check-distinct-number-errs: out/distinct-number-test-error-5.ok.txt
 check-distinct-number-errs: out/distinct-number-test-error-6.ok.txt
 
 check: check-distinct-number-errs
+
+
+# -------------------- Test dni-vector error cases ---------------------
+out/dni-vector-test-error-%.ok.txt: dni-vector-test.o
+	$(CREATE_OUTPUT_DIRECTORY)
+	if $(CXX) -c -o out/dni-vector-test-error-$*.o \
+	          $(CXXFLAGS) -DERRNUM=$* dni-vector-test.cc \
+	          >out/dni-vector-test-error-$*.txt 2>&1; then \
+	  echo "dni-vector-test compile error case $* passed but should have failed!"; \
+	  exit 2; \
+	else \
+	  echo "failed as expected: out/dni-vector-test-error-$*.txt"; \
+	fi
+	touch $@
+
+.PHONY: check-dni-vector-errs
+check-dni-vector-errs: out/dni-vector-test-error-1.ok.txt
+check-dni-vector-errs: out/dni-vector-test-error-2.ok.txt
+
+check: check-dni-vector-errs
 
 
 # -------------------------- run unit tests ----------------------------

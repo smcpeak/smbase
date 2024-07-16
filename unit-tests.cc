@@ -97,6 +97,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(datetime);
   RUN_TEST(dict);
   RUN_TEST(distinct_number);
+  RUN_TEST(dni_vector);
   RUN_TEST(exc);
   RUN_TEST(functional_set);
   RUN_TEST(gcc_options);
