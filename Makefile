@@ -59,6 +59,9 @@ DEFINES =
 # -I flags to pass to preprocessor.
 INCLUDES =
 
+# Allow writing `#include "smbase/..."` within this directory.
+INCLUDES = -I..
+
 # Preprocessing flags.
 CPPFLAGS = $(INCLUDES) $(DEFINES)
 

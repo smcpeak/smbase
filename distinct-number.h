@@ -7,8 +7,8 @@
 #ifndef DISTINCT_NUMBER_H
 #define DISTINCT_NUMBER_H
 
-#include "gdvalue-fwd.h"               // gdv::GDValue [n]
-#include "sm-macros.h"                 // OPEN_NAMESPACE, DMEMB, CMEMB
+#include "smbase/gdvalue-fwd.h"        // gdv::GDValue [n]
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE, DMEMB, CMEMB
 
 #include <iosfwd>                      // std::ostream [n]
 

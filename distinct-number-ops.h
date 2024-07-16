@@ -9,10 +9,10 @@
 #ifndef DISTINCT_NUMBER_OPS_H
 #define DISTINCT_NUMBER_OPS_H
 
-#include "distinct-number.h"           // this module
+#include "smbase/distinct-number.h"    // this module
 
-#include "gdvalue.h"                   // gdv::GDValue
-#include "sm-macros.h"                 // OPEN_NAMESPACE
+#include "smbase/gdvalue.h"            // gdv::GDValue
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 
 #include <iostream>                    // std::ostream
 

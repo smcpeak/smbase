@@ -1,9 +1,10 @@
 // autofile.cc            see license.txt for copyright and terms of use
 // code for autofile.h
 
-#include "autofile.h"     // this module
-#include "str.h"          // string::string [h]
-#include "syserr.h"       // xsyserror
+#include "smbase/autofile.h"           // this module
+
+#include "smbase/str.h"                // string::string [h]
+#include "smbase/syserr.h"             // xsyserror
 
 using namespace smbase;
 

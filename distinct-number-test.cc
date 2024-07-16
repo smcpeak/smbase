@@ -1,11 +1,11 @@
 // distinct-number-test.cc
 // Tests for `distinct-number`.
 
-#include "distinct-number-ops.h"       // module under test
+#include "smbase/distinct-number-ops.h"          // module under test
 
-#include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
-#include "sm-test.h"                   // EXPECT_EQ, VPVAL
-#include "xassert.h"                   // xassert
+#include "smbase/sm-macros.h"                    // OPEN_ANONYMOUS_NAMESPACE
+#include "smbase/sm-test.h"                      // EXPECT_EQ, VPVAL
+#include "smbase/xassert.h"                      // xassert
 
 using namespace gdv;
 using namespace smbase;
