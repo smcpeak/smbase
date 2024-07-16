@@ -366,6 +366,7 @@ UNIT_TEST_OBJS += d2vector-test.o
 UNIT_TEST_OBJS += datablok-test.o
 UNIT_TEST_OBJS += datetime-test.o
 UNIT_TEST_OBJS += dict-test.o
+UNIT_TEST_OBJS += distinct-number-test.o
 UNIT_TEST_OBJS += exc-test.o
 UNIT_TEST_OBJS += functional-set-test.o
 UNIT_TEST_OBJS += gcc-options-test.o
@@ -601,6 +602,32 @@ check-gdvalue-bool: out/gdvalue-test-error-1.ok.txt
 check-gdvalue-bool: out/gdvalue-test-error-2.ok.txt
 
 check: check-gdvalue-bool
+
+
+# ------------------ Test distinct-number error cases ------------------
+# TODO: Factor the commonality with the gdvalue tests, perhaps by
+# putting it into a separate Python script.
+out/distinct-number-test-error-%.ok.txt: distinct-number-test.o
+	$(CREATE_OUTPUT_DIRECTORY)
+	if $(CXX) -c -o out/distinct-number-test-error-$*.o \
+	          $(CXXFLAGS) -DERRNUM=$* distinct-number-test.cc \
+	          >out/distinct-number-test-error-$*.txt 2>&1; then \
+	  echo "distinct-number-test compile error case $* passed but should have failed!"; \
+	  exit 2; \
+	else \
+	  echo "failed as expected: out/distinct-number-test-error-$*.txt"; \
+	fi
+	touch $@
+
+.PHONY: check-distinct-number-errs
+check-distinct-number-errs: out/distinct-number-test-error-1.ok.txt
+check-distinct-number-errs: out/distinct-number-test-error-2.ok.txt
+check-distinct-number-errs: out/distinct-number-test-error-3.ok.txt
+check-distinct-number-errs: out/distinct-number-test-error-4.ok.txt
+check-distinct-number-errs: out/distinct-number-test-error-5.ok.txt
+check-distinct-number-errs: out/distinct-number-test-error-6.ok.txt
+
+check: check-distinct-number-errs
 
 
 # -------------------------- run unit tests ----------------------------
