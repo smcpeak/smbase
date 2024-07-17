@@ -1952,6 +1952,17 @@ void testSymbolLiteralOperator()
 }
 
 
+void testGDV_SKV()
+{
+  int two = 2;
+  GDValue v(GDVMap{
+    GDV_SKV("one", 1),
+    GDV_SKV_EXPR(two),
+  });
+  EXPECT_EQ(v.asString(), "{one:1 two:2}");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -1996,6 +2007,7 @@ void test_gdvalue()
     testMapSymbolOps();
     testScopedSetIndent();
     testSymbolLiteralOperator();
+    testGDV_SKV();
 
     // Some interesting values for the particular data used.
     testPrettyPrint(0);

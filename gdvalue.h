@@ -868,6 +868,15 @@ FOR_EACH_GDV_CONTAINER(DEFER_INSTANTIATE)
   SET_RESTORE(GDValue::s_defaultWriteOptions.m_indentLevel, amount)
 
 
+// Create a key/value pair that uses a symbol as a key.
+#define GDV_SKV(name, value) \
+  GDVMapEntry(GDVSymbol(name), toGDValue(value))
+
+// Stringify an expression to name the symbol.
+#define GDV_SKV_EXPR(expr) \
+  GDV_SKV(#expr, (expr))
+
+
 // ----------------------------- toGDValue -----------------------------
 /* The purpose of `toGDValue` is to provide something that can be
    overloaded to convert something to `GDValue` when it cannot be
