@@ -4,16 +4,15 @@
 #ifndef SMBASE_ORDERED_MAP_H
 #define SMBASE_ORDERED_MAP_H
 
-#include "smbase/compare-util.h"       // compare, RET_IF_COMPARE, DEFINE_FRIEND_RELATIONAL_OPERATORS
-#include "smbase/map-util.h"           // keySet
-#include "smbase/sm-macros.h"          // OPEN_NAMESPACE, [M]DMEMB, [M]CMEMB
-#include "smbase/vector-util.h"        // vecToElementSet, vecEraseAt
-#include "smbase/xassert.h"            // xassertPrecondition
+#include "ordered-map-fwd.h"           // fwds for this module
+
+#include "smbase/compare-util-iface.h" // DEFINE_FRIEND_RELATIONAL_OPERATORS
+#include "smbase/sm-macros.h"          // CLOSE_NAMESPACE, DMEMB, MDMEMB, OPEN_NAMESPACE
+#include "smbase/std-utility-fwd.h"    // std::pair [n]
 
 #include <cstddef>                     // std::size_t
-#include <initializer_list>            // std::initializer_list
+#include <initializer_list>            // std::initializer_list [n]
 #include <map>                         // std::map
-#include <utility>                     // std::pair
 #include <vector>                      // std::vector
 
 
@@ -74,65 +73,22 @@ public:      // types
         DMEMB(m_index)
     {}
 
-    const_iterator(OrderedMap const &map, size_type index)
-      : m_map(map),
-        m_mapModificationCount(map.m_modificationCount),
-        m_index(index)
-    {}
+    inline const_iterator(OrderedMap const &map, size_type index);
 
     // Assigning an iterator requires that both refer to the same map.
-    const_iterator &operator=(const_iterator const &obj)
-    {
-      xassertPrecondition(&m_map == &obj.m_map);
-      CMEMB(m_mapModificationCount);
-      CMEMB(m_index);
-      return *this;
-    }
+    inline const_iterator &operator=(const_iterator const &obj);
 
     // True if this iterator can still be used with the container.
-    bool isValid() const
-    {
-      return m_mapModificationCount == m_map.m_modificationCount;
-    }
+    inline bool isValid() const;
 
-    bool operator==(const_iterator const &obj) const
-    {
-      // Both iterators must be valid.
-      xassertPrecondition(isValid());
-      xassertPrecondition(obj.isValid());
+    inline bool operator==(const_iterator const &obj) const;
+    inline bool operator!=(const_iterator const &obj) const;
 
-      // Both iterators must refer to the same container.
-      xassertPrecondition(&m_map == &(obj.m_map));
+    inline bool isEnd() const;
 
-      return m_index == obj.m_index;
-    }
+    inline const_iterator &operator++();
 
-    bool operator!=(const_iterator const &obj) const
-    {
-      return !operator==(obj);
-    }
-
-    bool isEnd() const
-    {
-      xassertPrecondition(isValid());
-      return m_index == m_map.size();
-    }
-
-    const_iterator &operator++()
-    {
-      xassertPrecondition(!isEnd());
-
-      ++m_index;
-
-      return *this;
-    }
-
-    value_type const &operator*() const
-    {
-      xassertPrecondition(!isEnd());
-
-      return m_map.entryAtIndex(m_index);
-    }
+    inline value_type const &operator*() const;
   };
 
 private:     // data
@@ -158,22 +114,12 @@ private:     // data
   unsigned m_modificationCount = 0;
 
 public:      // methods
-  ~OrderedMap() {}
+  inline ~OrderedMap();
 
-  void selfCheck() const
-  {
-    // Same elements.
-    xassertdb(vecToElementSet(m_keyVector) == keySet(m_map));
-
-    // Same size.
-    xassert(m_keyVector.size() == m_map.size());
-  }
+  inline void selfCheck() const;
 
   // -------------------------- Constructors ---------------------------
-  OrderedMap()
-    : m_map(),
-      m_keyVector()
-  {}
+  inline OrderedMap();
 
   OrderedMap(OrderedMap const &obj)
     : DMEMB(m_map),
@@ -188,19 +134,8 @@ public:      // methods
   OrderedMap(std::initializer_list<value_type> ilist);
 
   // --------------------------- Assignment ----------------------------
-  OrderedMap &operator=(OrderedMap const &obj)
-  {
-    CMEMB(m_map);
-    CMEMB(m_keyVector);
-    return *this;
-  }
-
-  OrderedMap &operator=(OrderedMap &&obj)
-  {
-    MCMEMB(m_map);
-    MCMEMB(m_keyVector);
-    return *this;
-  }
+  inline OrderedMap &operator=(OrderedMap const &obj);
+  inline OrderedMap &operator=(OrderedMap &&obj);
 
   // Although `vector` has `assign` methods, `OrderedMap` does not
   // because the internal design is such that such an `assign` method
@@ -211,54 +146,20 @@ public:      // methods
 
   // ------------------------- Element access --------------------------
   // Return the entry pair at `key`.
-  value_type const &entryAtKey(KEY const &key) const
-  {
-    auto it = m_map.find(key);
-    xassertPrecondition(it != m_map.end());
+  inline value_type const &entryAtKey(KEY const &key) const;
+  inline value_type &entryAtKey(KEY const &key);
 
-    return (*it);
-  }
-
-  value_type &entryAtKey(KEY const &key)
-  {
-    OrderedMap const &ths = *this;
-    return const_cast<value_type&>(ths.entryAtKey(key));
-  }
-
-  VALUE const &valueAtKey(KEY const &key) const
-  {
-    return entryAtKey(key).second;
-  }
-
-  VALUE &valueAtKey(KEY const &key)
-  {
-    return entryAtKey(key).second;
-  }
+  // Return the value at `key`.
+  inline VALUE const &valueAtKey(KEY const &key) const;
+  inline VALUE &valueAtKey(KEY const &key);
 
   // Return the entry pair at `index`.
-  value_type const &entryAtIndex(size_type index) const
-  {
-    xassertPrecondition(index < size());
-    KEY const &key = m_keyVector.at(index);
+  inline value_type const &entryAtIndex(size_type index) const;
+  inline value_type &entryAtIndex(size_type index);
 
-    return entryAtKey(key);
-  }
-
-  value_type &entryAtIndex(size_type index)
-  {
-    OrderedMap const &ths = *this;
-    return const_cast<value_type&>(ths.entryAtIndex(index));
-  }
-
-  VALUE const &valueAtIndex(size_type index) const
-  {
-    return entryAtIndex(index).second;
-  }
-
-  VALUE &valueAtIndex(size_type index)
-  {
-    return entryAtIndex(index).second;
-  }
+  // Return the value at `index`.
+  inline VALUE const &valueAtIndex(size_type index) const;
+  inline VALUE &valueAtIndex(size_type index);
 
   // There is no operator[] here because there is not a way to specify
   // whether that is accepting a key or an index.
@@ -267,17 +168,7 @@ public:      // methods
   //
   // This performs a linear search.
   //
-  size_type indexOfKey(KEY const &key) const
-  {
-    for (size_type i=0; i < m_keyVector.size(); ++i) {
-      if (m_keyVector[i] == key) {
-        return i;
-      }
-    }
-
-    xfailurePrecondition("indexOfKey: key not found");
-    return 0;      // Not reached.
-  }
+  inline size_type indexOfKey(KEY const &key) const;
 
   // There is no `front` or `back` because they would be relatively
   // expensive in comparison to the corresponding `vector` methods.
@@ -286,38 +177,20 @@ public:      // methods
   // permit access in that way.
 
   // ---------------------------- Iterators ----------------------------
-  const_iterator cbegin() const
-  {
-    return const_iterator(*this, 0);
-  }
+  inline const_iterator cbegin() const;
+  inline const_iterator cend() const;
 
-  const_iterator cend() const
-  {
-    return const_iterator(*this, size());
-  }
-
-  const_iterator begin() const
-  {
-    return cbegin();
-  }
-
-  const_iterator end() const
-  {
-    return cend();
-  }
+  inline const_iterator begin() const;
+  inline const_iterator end() const;
 
   // TODO: Reverse iterators.
 
   // ---------------------------- Capacity -----------------------------
-  bool empty() const
-  {
-    return m_keyVector.empty();
-  }
+  // True if the container is empty.
+  inline bool empty() const;
 
-  size_type size() const
-  {
-    return m_keyVector.size();
-  }
+  // Number of entries in the container.
+  inline size_type size() const;
 
   // TODO: max_size
 
@@ -326,31 +199,15 @@ public:      // methods
   // ineffective here due to the presence of the map.
 
   // ---------------------------- Modifiers ----------------------------
-  void clear()
-  {
-    ++m_modificationCount;
-
-    m_map.clear();
-    m_keyVector.clear();
-  }
+  // Remove all entries.
+  inline void clear();
 
   // Insert an entry and return true if the key is not already present.
   // Otherwise, return false.
   //
   // If the entry is inserted, it is appended to the sequence.
   //
-  bool insert(value_type const &entry)
-  {
-    ++m_modificationCount;
-
-    if (m_map.insert(entry).second) {
-      m_keyVector.push_back(entry.first);
-      return true;
-    }
-    else {
-      return false;
-    }
-  }
+  inline bool insert(value_type const &entry);
 
   // Insert an entry at a specific location.
   //
@@ -360,17 +217,7 @@ public:      // methods
   //
   //   * The index must be in [0,size()].
   //
-  void insertAtIndex(size_type index, value_type const &entry)
-  {
-    ++m_modificationCount;
-
-    if (m_map.insert(entry).second) {
-      vecInsertAt(m_keyVector, index, entry.first);
-    }
-    else {
-      xfailurePrecondition("insertAt: key is already mapped");
-    }
-  }
+  inline void insertAtIndex(size_type index, value_type const &entry);
 
   // TODO: emplace
 
@@ -379,30 +226,10 @@ public:      // methods
   //
   // This requires a linear search of the sequence vector.
   //
-  bool eraseKey(KEY const &key)
-  {
-    ++m_modificationCount;
-
-    if (m_map.erase(key)) {
-      size_type i = indexOfKey(key);
-      vecEraseAt(m_keyVector, i);
-      return true;
-    }
-    else {
-      return false;
-    }
-  }
+  inline bool eraseKey(KEY const &key);
 
   // Remove the entry at `index`, which must be within bounds.
-  void eraseIndex(size_type index)
-  {
-    ++m_modificationCount;
-
-    xassertPrecondition(index < size());
-
-    xassert(m_map.erase(m_keyVector[index]));
-    vecEraseAt(m_keyVector, index);
-  }
+  inline void eraseIndex(size_type index);
 
   // There is no `push_back`, since `insert` does what it would do.
 
@@ -411,13 +238,7 @@ public:      // methods
   // There is no `resize` because the case of increasing the size does
   // not make sense.
 
-  void swap(OrderedMap &obj)
-  {
-    ++m_modificationCount;
-
-    m_map.swap(obj.m_map);
-    m_keyVector.swap(obj.m_keyVector);
-  }
+  void swap(OrderedMap &obj);
 
   friend void swap(OrderedMap &a, OrderedMap &b)
   {
@@ -425,20 +246,14 @@ public:      // methods
   }
 
   // ----------------------------- Lookup ------------------------------
-  size_type count(KEY const &key) const
-  {
-    return m_map.count(key);
-  }
+  // Return the number of entries with `key`; always 0 or 1.
+  inline size_type count(KEY const &key) const;
 
   // There is no `find` because it would be inefficient since it would
   // have to do a linear search to return an iterator.
 
-  bool contains(KEY const &key) const
-  {
-    // I am currently targeting C++17, which does not have
-    // `std::map::contains`.
-    return m_map.count(key) != 0;
-  }
+  // True if `key` is mapped to some value.
+  inline bool contains(KEY const &key) const;
 
   // TODO: equal_range, lower_bound, upper_bound
 
@@ -447,9 +262,11 @@ public:      // methods
   //
   // Comparison is lexicographic over the sequence of pairs.
   //
+  int compareTo(OrderedMap const &obj) const;
+
   friend int compare(OrderedMap const &a, OrderedMap const &b)
   {
-    return compareSequences(a, b);
+    return a.compareTo(b);
   }
 
   // Relational operators: == != < > <= >=
