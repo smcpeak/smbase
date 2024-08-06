@@ -10,6 +10,11 @@ template <class NUM>
 int compare(NUM const &a, NUM const &b);
 
 
+// Compare two sequence containers lexicographically.
+template <class CONTAINER>
+int compareSequences(CONTAINER const &a, CONTAINER const &b);
+
+
 // Compare 'a' to 'b' and return if they are unequal.
 #define RET_IF_COMPARE(a, b)         \
   if (int ret = compare((a), (b))) { \

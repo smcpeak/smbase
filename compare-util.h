@@ -28,4 +28,31 @@ int compare(NUM const &a, NUM const &b)
 }
 
 
+template <class CONTAINER>
+int compareSequences(CONTAINER const &a, CONTAINER const &b)
+{
+  auto aIt = a.cbegin();
+  auto bIt = b.cbegin();
+
+  while (aIt != a.cend() &&
+         bIt != b.cend()) {
+    RET_IF_COMPARE(*aIt, *bIt);
+
+    ++aIt;
+    ++bIt;
+  }
+
+  if (bIt != b.cend()) {
+    // `a` is a prefix of `b`, so is less.
+    return -1;
+  }
+
+  if (aIt != a.cend()) {
+    return +1;
+  }
+
+  return 0;
+}
+
+
 #endif // SMBASE_COMPARE_UTIL_H

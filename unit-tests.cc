@@ -116,6 +116,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(objlist);
   RUN_TEST(objpool);
   RUN_TEST(optional_util);
+  RUN_TEST(ordered_map);
   RUN_TEST(overflow);
   RUN_TEST(owner);
   RUN_TEST(parsestring);

@@ -286,6 +286,24 @@ void vec_erase(std::vector<T> &vec, T const &value)
 }
 
 
+// Remove the element at `index`.
+template <class T>
+void vecEraseAt(std::vector<T> &vec, std::size_t index)
+{
+  xassertPrecondition(index < vec.size());
+  vec.erase(vec.begin() + index);
+}
+
+
+// Insert `t` into position `index`, which must be in [0, vec.size()].
+template <class T>
+void vecInsertAt(std::vector<T> &vec, std::size_t index, T const &t)
+{
+  xassertPrecondition(index <= vec.size());
+  vec.insert(vec.begin() + index, t);
+}
+
+
 // Return the set of elements in 'vec'.
 template <class T>
 std::set<T> vecToElementSet(std::vector<T> const &vec)
