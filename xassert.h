@@ -42,6 +42,17 @@ void x_assert_fail(char const *cond, char const *file, int line) NORETURN;
 #define xfailure(why) smbase::x_assert_fail(why, __FILE__, __LINE__)
 
 
+// Assert that a pointer is not null, returning that pointer, so this
+// can be used to check it while (e.g.) returning it or otherwise using
+// it as a pointer.
+template <typename T>
+T *xassertPtr(T *ptr)
+{
+  xassert(ptr != nullptr);
+  return ptr;
+}
+
+
 // This requires 'stringbc', which is declared in 'stringb.h'.  I
 // created this macro to make it easier to convert code that was using
 // 'stringc' since it allows:

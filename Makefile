@@ -440,6 +440,7 @@ UNIT_TEST_OBJS += vector-push-pop-test.o
 UNIT_TEST_OBJS += vector-util-test.o
 UNIT_TEST_OBJS += voidlist-test.o
 UNIT_TEST_OBJS += vptrmap-test.o
+UNIT_TEST_OBJS += xassert-test.o
 
 # Master unit test module.
 UNIT_TEST_OBJS += unit-tests.o
