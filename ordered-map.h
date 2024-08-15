@@ -7,7 +7,7 @@
 #include "ordered-map-fwd.h"           // fwds for this module
 
 #include "smbase/compare-util-iface.h" // DEFINE_FRIEND_RELATIONAL_OPERATORS
-#include "smbase/sm-macros.h"          // CLOSE_NAMESPACE, DMEMB, MDMEMB, OPEN_NAMESPACE
+#include "smbase/sm-macros.h"          // CLOSE_NAMESPACE, OPEN_NAMESPACE
 #include "smbase/std-utility-fwd.h"    // std::pair [n]
 
 #include <cstddef>                     // std::size_t
@@ -67,12 +67,9 @@ public:      // types
     size_type m_index;
 
   public:      // methods
-    const_iterator(const_iterator const &obj)
-      : DMEMB(m_map),
-        DMEMB(m_mapModificationCount),
-        DMEMB(m_index)
-    {}
+    inline const_iterator(const_iterator const &obj);
 
+    // Begin iterating at `index`.
     inline const_iterator(OrderedMap const &map, size_type index);
 
     // Assigning an iterator requires that both refer to the same map.
@@ -121,17 +118,10 @@ public:      // methods
   // -------------------------- Constructors ---------------------------
   inline OrderedMap();
 
-  OrderedMap(OrderedMap const &obj)
-    : DMEMB(m_map),
-      DMEMB(m_keyVector)
-  {}
+  inline OrderedMap(OrderedMap const &obj);
+  inline OrderedMap(OrderedMap &&obj);
 
-  OrderedMap(OrderedMap &&obj)
-    : MDMEMB(m_map),
-      MDMEMB(m_keyVector)
-  {}
-
-  OrderedMap(std::initializer_list<value_type> ilist);
+  inline OrderedMap(std::initializer_list<value_type> ilist);
 
   // --------------------------- Assignment ----------------------------
   inline OrderedMap &operator=(OrderedMap const &obj);
@@ -238,7 +228,7 @@ public:      // methods
   // There is no `resize` because the case of increasing the size does
   // not make sense.
 
-  void swap(OrderedMap &obj);
+  inline void swap(OrderedMap &obj);
 
   friend void swap(OrderedMap &a, OrderedMap &b)
   {
@@ -262,7 +252,7 @@ public:      // methods
   //
   // Comparison is lexicographic over the sequence of pairs.
   //
-  int compareTo(OrderedMap const &obj) const;
+  inline int compareTo(OrderedMap const &obj) const;
 
   friend int compare(OrderedMap const &a, OrderedMap const &b)
   {

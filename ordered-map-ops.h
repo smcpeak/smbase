@@ -8,7 +8,7 @@
 
 #include "smbase/compare-util.h"       // compareSequences
 #include "smbase/map-util.h"           // keySet
-#include "smbase/sm-macros.h"          // OPEN_NAMESPACE, CMEMB, MCMEMB
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE, DMEMB, MDMEMB, CMEMB, MCMEMB
 #include "smbase/vector-util.h"        // vecEraseAt, vecInsertAt, vecToElementSet
 #include "smbase/xassert.h"            // xassert, xassertPrecondition, xassertdb, xfailurePrecondition
 
@@ -17,6 +17,14 @@ OPEN_NAMESPACE(smbase)
 
 
 // -------------------- OrderedMap::const_iterator ---------------------
+template <typename KEY, typename VALUE>
+inline OrderedMap<KEY, VALUE>::const_iterator::const_iterator(const_iterator const &obj)
+  : DMEMB(m_map),
+    DMEMB(m_mapModificationCount),
+    DMEMB(m_index)
+{}
+
+
 template <typename KEY, typename VALUE>
 inline OrderedMap<KEY, VALUE>::const_iterator::const_iterator(OrderedMap const &map, size_type index)
   : m_map(map),
@@ -106,6 +114,20 @@ inline auto OrderedMap<KEY, VALUE>::selfCheck() const -> void
   // Same size.
   xassert(m_keyVector.size() == m_map.size());
 }
+
+
+template <typename KEY, typename VALUE>
+OrderedMap<KEY, VALUE>::OrderedMap(OrderedMap const &obj)
+  : DMEMB(m_map),
+    DMEMB(m_keyVector)
+{}
+
+
+template <typename KEY, typename VALUE>
+OrderedMap<KEY, VALUE>::OrderedMap(OrderedMap &&obj)
+  : MDMEMB(m_map),
+    MDMEMB(m_keyVector)
+{}
 
 
 template <typename KEY, typename VALUE>
