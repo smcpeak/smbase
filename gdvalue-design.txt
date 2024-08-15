@@ -467,18 +467,20 @@ Tuple: (1 2 3)
   The rules are the same as for sequences, except using round
   parentheses instead of square brackets.
 
-Set: {{1 2 3}}
+Set: {1 2 3}
 
   There is no significance to the order in which elements appear.  The
-  notations "{{1 2}}" and "{{2 1}}" are equivalent, just like the
-  notations "{{1 2}}" and "{{1  2}}" (with an extra space) are
+  notations "{1 2}" and "{2 1}" are equivalent, just like the
+  notations "{1 2}" and "{1  2}" (with an extra space) are
   equivalent.  Implementations should *not* preserve the serialization
   order among set elements unless they are also preserving (say)
   whitespace and comments, which is to say, they are implementing a
   fundamentally different data model than what GDValue specifies.
 
-  Duplicate elements are *ignored*.  The notation "{{1 1}}" is
-  equivalent to the notation "{{1}}".
+  Duplicate elements are *ignored*.  The notation "{1 1}" is
+  equivalent to the notation "{1}".
+
+  The empty set is denoted "{}".
 
 Map: {a:1 b:2 c:3}
 
@@ -508,25 +510,16 @@ Map: {a:1 b:2 c:3}
       {x:y z:w}:{d:e f:g}
     }
 
-  The character immediately following the '{' must not be the start
-  character of a container, that is, it must not be '{', '[', or '('.
-  An immediately following '{' is interpreted as the start of a set,
-  while an immediately following '[' or '(' is reserved for future
-  extensions.
+  Maps are distinguished from sets by the presence of colons separting
+  pair elements.
 
-Tagged container: Tag[...] or Tag(...) or Tag{{...}} or Tag{...}
+  The empty map is denoted "{:}".
+
+Tagged container: Tag[...] or Tag(...) or Tag{...}
 
   If the character immediately following a symbol, with no intervening
   whitespace, is '[', '(', or '{', then the symbol is combined with the
   following container into a "tagged container".
-
-  For a tagged map, like an untagged map, it is prohibited for the
-  character immediately following '{' to be '{' or '[' or '('.
-
-  Note: It *is* allowed for a *tagged* container to be the first key
-  without adding an extra space, for example:
-
-    {A(1):one}
 
 For all values, if their last character is not the last character in the
 serialization (e.g., file), then the following character must be one of:
@@ -606,11 +599,12 @@ a uniform notation from "\u{0}" (already one character shorter than
 "\u0000") to "\u{10FFFF}", while also permitting "\u{0010FFFF}" if
 someone likes digit counts that are a power of 2.
 
-Using doubled braces for sets is imperfect, but using single braces is
-bad because then an empty set could not be distinguished from an empty
-map, and no other choice seemed acceptable.  The single braces are
-reserved for maps because they are more common and important in
-practice, and that is what JSON uses.
+The choice to use braces for both sets and maps is motivated by wanting
+the notation to be as natural and compact as possible.  It is not
+particularly difficult to handling the minor parsing challenge of
+delaying the choice about whether '{' begins a set or map until after
+parsing the following value, although this does mean an LL parser would
+not work.
 
 Duplicated elements in sets are ignored because this conforms to the
 usual mathematical notion for sets.  Furthermore, rejecting a set
@@ -624,6 +618,12 @@ in data interchange.  This is what people will mostly be looking at, so
 is the case to optimize, even at the expense of slight irregularity (by
 which I mean choosing to use "a:1" instead of "(a 1)").
 
+Using "{:}" to denote the empty map arguably breaks JSON compatibility
+because a JSON empty map is denoted by "{}".  But I don't see a good
+alternative that distinguishes an empty set from an empty map.  I am,
+however, considering changing the data model to eliminate the
+distinction between an empty set and an empty map.
+
 Duplicated map keys are rejected because a duplicated map key *is*
 likely to indicate a problem in the upstream production of the data,
 silently dropping one of two different values (which one?) would be
@@ -635,29 +635,6 @@ effect of preventing values from being juxtaposed, is meant in part to
 ensure readability, and also to preserve future extension points.  For
 example, it means that three double-quotes in a row remains reserved for
 a possible triple-quoted string extension.
-
-I chose to restrict the characters that follow '{' in order to leave
-open the possibility of extending to more containers.  As I have been
-using GDVN, I have found that having the right container available for
-each use is very beneficial, both for convenience of manipulation and
-for its self-describing properties, so being able to add more (ordered
-maps are particularly appearling) is important.  So why not also
-restrict what follows '(' and '[' for regularity and in order to reserve
-even more?  First, I think it is simply too valuable to be able to write
-things like:
-
-  [[1 2] [3 4]]
-
-rather than:
-
-  [ [1 2] [3 4] ]
-
-Tuples and sequences are commonly nested, and being able to do so
-ompactly is a significant benefit to readability and intuitive
-writability.  In contrast, it is much less common to want to compactly
-denote a set or map that contains containers as elements or keys.
-Second, I do not have in mind a likely extension that would take
-advantage of those reservations.
 
 
 Is GDVN syntax self-evident?
@@ -671,7 +648,7 @@ Quoting one of the goals at the top:
 Is this the case?  I think it partly is, although not as strongly as in
 the case of JSON.  Let's look at a realistic example:
 
-  {{
+  {
     Dep{
       meta: DepMeta{
         dmf: {{DMF_VISIBLE}}
@@ -685,7 +662,7 @@ the case of JSON.  Let's look at a realistic example:
       target:
         Node("VarDecl \"g\" at in/deps/src/stmt-expr.cc:4:1" DA_INTERFACE)
     }
-  }}
+  }
 
 Some issues:
 
@@ -712,12 +689,6 @@ Some issues:
   said, I see a lot of JSON using unquoted keys for precisely the sorts
   of keys that are treated as symbols by GDVN, so the required
   familiarity seems commonplace, at least among current JSON users.
-
-* While the syntax for maps, sequences, and tuples is fairly common and
-  intuitive, the notation for sets is not.  Unless someone sees an
-  example in the text they are studying, they won't guess it.  And upon
-  seeing an example, I'd estimate only half of users will correctly
-  guess what it means.
 
 Despite the above, GDVN retains the most important self-evident syntax
 from JSON, that of quoted strings.  This is what YAML gets most wrong

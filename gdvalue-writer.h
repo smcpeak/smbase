@@ -20,6 +20,19 @@ OPEN_NAMESPACE(gdv)
 
 // Manage the process of writing a GDValue to an ostream.
 class GDValueWriter {
+private:     // types
+  // Description of the syntax elements of a particular container.
+  struct ContainerSyntax {
+    // Delimiter at the start.
+    char const *m_openDelim;
+
+    // Extra text to write when the container is empty.
+    char const *m_emptyIndicator;
+
+    // Delimiter at the end.
+    char const *m_closeDelim;
+  };
+
 private:     // instance data
   // Stream to write to.  This is a pointer so we can temporarily
   // reassign it.
@@ -50,8 +63,7 @@ private:     // methods
   bool writeContainer(
     CONTAINER const &container,
     std::optional<GDVSymbol> tag,
-    char const *openDelim,
-    char const *closeDelim);
+    ContainerSyntax const &syntax);
 
   // Check if we can write 'value' in the available space on the current
   // line.  'VALUE_TYPE' is either GDValue or GDVMapEntry.

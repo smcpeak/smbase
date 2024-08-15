@@ -27,37 +27,15 @@ OPEN_NAMESPACE(gdv)
 INIT_TRACE("gdvalue-writer");
 
 
-// True if 't' is a GDVPair whose first element is an untagged
-// container.
-//
-// In the general case, which is used when `T` is not a `GDVMapEntry`,
-// no.
-template <class T>
-static bool isPairWithContainerAsFirstElement(T const & /*t*/)
-{
-  return false;
-}
-
-
-// Specialize for map entries.
-template <>
-bool isPairWithContainerAsFirstElement(GDVMapEntry const &entry)
-{
-  return entry.first.isContainer() &&
-         !entry.first.isTaggedContainer();
-}
-
-
 template <class CONTAINER>
 bool GDValueWriter::writeContainer(
   CONTAINER const &container,
   std::optional<GDVSymbol> tag,
-  char const *openDelim,
-  char const *closeDelim)
+  ContainerSyntax const &syntax)
 {
   TRACE1_SCOPED("writeContainer:"
     " tag=" << (tag? tag->asString() : std::string("(absent)")) <<
-    " delims=" << openDelim << closeDelim <<
+    " syntax=" << syntax.m_openDelim << syntax.m_emptyIndicator << syntax.m_closeDelim <<
     " enableIndentation=" << m_options.m_enableIndentation <<
     " indentLevel=" << m_options.m_indentLevel);
 
@@ -65,7 +43,7 @@ bool GDValueWriter::writeContainer(
     os() << *tag;
   }
 
-  os() << openDelim;
+  os() << syntax.m_openDelim;
 
   if (exceededSpeculativeCapacity()) {
     TRACE1("writeContainer: bailing after openDelim");
@@ -83,7 +61,6 @@ bool GDValueWriter::writeContainer(
   }
 
   int curIndex = 0;
-  bool emittedLeadingSpace = false;
 
   // This function is a template so this iteration is generic w.r.t.
   // the container type.
@@ -94,13 +71,6 @@ bool GDValueWriter::writeContainer(
     else if (curIndex > 0) {
       os() << ' ';
     }
-    else if (isPairWithContainerAsFirstElement(val)) {
-      // We are writing the first entry of a map, and the first key is a
-      // container.  We need to emit a space in order to separate the
-      // opening brace from the key container start character.
-      os() << ' ';
-      emittedLeadingSpace = true;
-    }
 
     ++curIndex;
 
@@ -108,6 +78,10 @@ bool GDValueWriter::writeContainer(
       TRACE1("writeContainer: bailing after " << curIndex << " items");
       return false;
     }
+  }
+
+  if (curIndex == 0) {
+    os() << syntax.m_emptyIndicator;
   }
 
   if (usingIndentation()) {
@@ -118,13 +92,7 @@ bool GDValueWriter::writeContainer(
     }
   }
 
-  if (emittedLeadingSpace) {
-    // This space is not needed for parsing but makes the output
-    // visually symmetric.
-    os() << ' ';
-  }
-
-  os() << closeDelim;
+  os() << syntax.m_closeDelim;
 
   if (exceededSpeculativeCapacity()) {
     TRACE1("writeContainer: bailing after closeDelim");
@@ -214,14 +182,10 @@ bool GDValueWriter::tryWrite(GDValue const &value,
   }
 
   // For use inside the `CASE` macro below.
-  char const * const sequenceOpenDelim  = "[";
-  char const * const sequenceCloseDelim = "]";
-  char const * const tupleOpenDelim     = "(";
-  char const * const tupleCloseDelim    = ")";
-  char const * const setOpenDelim       = "{{";
-  char const * const setCloseDelim      = "}}";
-  char const * const mapOpenDelim       = "{";
-  char const * const mapCloseDelim      = "}";
+  static ContainerSyntax const sequenceSyntax = { "[", "",  "]" };
+  static ContainerSyntax const    tupleSyntax = { "(", "",  ")" };
+  static ContainerSyntax const      setSyntax = { "{", "",  "}" };
+  static ContainerSyntax const      mapSyntax = { "{", ":", "}" };
 
   switch (value.getKind()) {
     default:
@@ -258,16 +222,14 @@ bool GDValueWriter::tryWrite(GDValue const &value,
       case GDVK_##KIND:                  \
         return writeContainer(           \
           value.kind##Get(),             \
-          std::nullopt, /* tag */        \
-          kind##OpenDelim,               \
-          kind##CloseDelim);             \
+          std::nullopt /* tag */,        \
+          kind##Syntax);                 \
                                          \
       case GDVK_TAGGED_##KIND:           \
         return writeContainer(           \
           value.kind##Get(),             \
           value.taggedContainerGetTag(), \
-          kind##OpenDelim,               \
-          kind##CloseDelim);
+          kind##Syntax);
 
     FOR_EACH_GDV_CONTAINER(CASE)
 

@@ -53,14 +53,19 @@ protected:   // methods
   // them into a sequence.  Return after consuming the ')'.
   GDValue readNextTuple();
 
-  // Having seen and consumed "{{", read the following values and put
-  // them into a set.  Return after consuming the "}}".
-  GDValue readNextSet();
+  // Having seen and consumed '{', read what follows to first determine
+  // whether it denotes a set or map, then parse and return the entire
+  // container value.
+  GDValue readNextSetOrMap();
 
-  // Having seen and consumed '{', and confirmed that the character
-  // after that is *not* another '{', read the following key/value pairs
-  // and put them into a map.  Return after consuming the '}'.
-  GDValue readNextMap();
+  // Having seen '{' followed by `firstValue` and *not* a subsequent
+  // colon, return the set consisting of `firstValue` and all of the
+  // following values until '}'.
+  GDValue readSetAfterFirstValue(GDValue &&firstValue);
+
+  // Having seen '{' followed by `firstValue` and then a colon, parse
+  // and return the remainder of the map.
+  GDValue readMapAfterFirstKey(GDValue &&firstKey);
 
   // Having seen and consumed '"', read the following characters and
   // put them into a string.  Return after consuming the final '"'.

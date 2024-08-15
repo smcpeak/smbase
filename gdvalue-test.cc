@@ -547,7 +547,7 @@ void testSet()
 {
   GDValue v1((GDVSet()));
   DIAG("empty set: " << v1);
-  xassert(v1.asString() == "{{}}");
+  xassert(v1.asString() == "{}");
   xassert(v1.containerSize() == 0);
   xassert(v1.containerIsEmpty());
   xassert(v1.getKind() == GDVK_SET);
@@ -564,14 +564,14 @@ void testSet()
   xassert(v1 < v2);
 
   v2.setInsert(GDValue(2));
-  xassert(v2.asString() == "{{1 2}}");
+  xassert(v2.asString() == "{1 2}");
   testSerializeRoundtrip(v2);
 
   v2.setRemove(GDValue(1));
-  xassert(v2.asString() == "{{2}}");
+  xassert(v2.asString() == "{2}");
 
   v2.setClear();
-  xassert(v2.asString() == "{{}}");
+  xassert(v2.asString() == "{}");
   xassert(v1 == v2);
   testSerializeRoundtrip(v2);
 
@@ -585,7 +585,7 @@ void testSet()
          }),
        });
   DIAG(v2);
-  xassert(v2.asString() == R"({{10 "x" [2 3 4]}})");
+  xassert(v2.asString() == R"({10 "x" [2 3 4]})");
   testSerializeRoundtrip(v2);
 
   {
@@ -593,10 +593,10 @@ void testSet()
 
     // Construct a GDValue from a `const&` set.
     v2 = tmpSet;
-    EXPECT_EQ(v2.asString(), "{{1 2 3}}");
+    EXPECT_EQ(v2.asString(), "{1 2 3}");
 
     v2.setGetMutable().erase(2);
-    EXPECT_EQ(v2.asString(), "{{1 3}}");
+    EXPECT_EQ(v2.asString(), "{1 3}");
 
     // Exercise `setCBegin` and `setCEnd`.
     std::vector<GDValue> expectVec{1,3};
@@ -618,7 +618,7 @@ void testSet()
     // Exercise `setInsert(const&)`.
     GDValue four(4);
     v2.setInsert(four);
-    EXPECT_EQ(v2.asString(), "{{1 3 4}}");
+    EXPECT_EQ(v2.asString(), "{1 3 4}");
   }
 }
 
@@ -627,7 +627,7 @@ void testMap()
 {
   GDValue v1((GDVMap()));
   DIAG("empty map: " << v1);
-  xassert(v1.asString() == "{}");
+  xassert(v1.asString() == "{:}");
   xassert(v1.containerSize() == 0);
   xassert(v1.containerIsEmpty());
   xassert(v1.getKind() == GDVK_MAP);
@@ -736,26 +736,26 @@ void testMap()
     { GDVSet{1,2,3},      4 },
     { GDVMap{{1,2}},      4 },
   };
-  EXPECT_EQ(v2.asString(), "{ [1 2 3]:4 (1 2 3):4 {{1 2 3}}:4 {1:2}:4 }");
+  EXPECT_EQ(v2.asString(), "{[1 2 3]:4 (1 2 3):4 {1 2 3}:4 {1:2}:4}");
   testSerializeRoundtrip(v2);
 
   // Various containers as first keys.
   v2 = GDVMap{
     { GDVTuple{1,2,3},    4 },
   };
-  EXPECT_EQ(v2.asString(), "{ (1 2 3):4 }");
+  EXPECT_EQ(v2.asString(), "{(1 2 3):4}");
   testSerializeRoundtrip(v2);
 
   v2 = GDVMap{
     { GDVSet{1,2,3},      4 },
   };
-  EXPECT_EQ(v2.asString(), "{ {{1 2 3}}:4 }");
+  EXPECT_EQ(v2.asString(), "{{1 2 3}:4}");
   testSerializeRoundtrip(v2);
 
   v2 = GDVMap{
     { GDVMap{{1,2}},      4 },
   };
-  EXPECT_EQ(v2.asString(), "{ {1:2}:4 }");
+  EXPECT_EQ(v2.asString(), "{{1:2}:4}");
   testSerializeRoundtrip(v2);
 
   v2 = GDVMap{
@@ -773,7 +773,7 @@ void testMap()
   v2 = GDVMap{
     { GDVTuple{1}, GDVSymbol("one") }
   };
-  EXPECT_EQ(v2.asString(), "{ (1):one }");
+  EXPECT_EQ(v2.asString(), "{(1):one}");
   testSerializeRoundtrip(v2);
 }
 
@@ -781,7 +781,7 @@ void testMap()
 void testTaggedMap()
 {
   GDValue v(GDVK_TAGGED_MAP);
-  EXPECT_EQ(v.asString(), "null{}");
+  EXPECT_EQ(v.asString(), "null{:}");
   xassert(v.isMap());
   xassert(v.isTaggedContainer());
   xassert(v.isTaggedMap());
@@ -814,7 +814,7 @@ void testTaggedMap()
     xassert(v == v2);
 
     v2.mapClear();
-    EXPECT_EQ(v2.asString(), "z{}");
+    EXPECT_EQ(v2.asString(), "z{:}");
     testSerializeRoundtrip(v2);
   }
 
@@ -853,13 +853,13 @@ void testTaggedMap()
 
   // Exercise `GDVTaggedMap::operator=(&&)`.
   v.taggedMapGetMutable() = GDVTaggedMap(GDVSymbol("a"), {});
-  EXPECT_EQ(v.asString(), "a{}");
+  EXPECT_EQ(v.asString(), "a{:}");
 
   // Exercise `GDVTaggedMap::swap`.
   v.taggedMapGetMutable().swap(tm2);
   EXPECT_EQ(v.asString(), "_{\"a\":\"b\"}");
   v.taggedMapGetMutable().swap(tm2);
-  EXPECT_EQ(v.asString(), "a{}");
+  EXPECT_EQ(v.asString(), "a{:}");
 
   // `GDValue::mapSet(&&)` when the value already has a map.
   v.mapSet(GDVMap{{-1,-2}});
@@ -871,7 +871,7 @@ void testTaggedMap()
 
   // `GDValue::taggedMapSet(&&)` when the value is already a tagged map.
   v.taggedMapSet(GDVTaggedMap(GDVSymbol("j"), {}));
-  EXPECT_EQ(v.asString(), "j{}");
+  EXPECT_EQ(v.asString(), "j{:}");
 
   // `GDValue::taggedMapSet(const&)` when the value is already a tagged
   // map.
@@ -967,7 +967,7 @@ void testTaggedTuple()
 void testTaggedSet()
 {
   GDValue v(GDVK_TAGGED_SET);
-  EXPECT_EQ(v.asString(), "null{{}}");
+  EXPECT_EQ(v.asString(), "null{}");
   xassert(v.isSet());
   xassert(v.isTaggedContainer());
   xassert(v.isTaggedSet());
@@ -977,11 +977,11 @@ void testTaggedSet()
   testSerializeRoundtrip(v);
 
   v.taggedContainerSetTag(GDVSymbol("x"));
-  EXPECT_EQ(v.asString(), "x{{}}");
+  EXPECT_EQ(v.asString(), "x{}");
   testSerializeRoundtrip(v);
 
   v.setInsert(1);
-  EXPECT_EQ(v.asString(), "x{{1}}");
+  EXPECT_EQ(v.asString(), "x{1}");
   testSerializeRoundtrip(v);
 }
 
@@ -1148,44 +1148,44 @@ void testPrettyExpect()
 
   checkLinesStringFor(m, 10, R"({
   {1:2}:
-    {{
+    {
       "drei"
       "ein"
       "zwei"
-    }}
+    }
 }
 )");
 
   checkLinesStringFor(m, 11, R"({
-  {1:2}: {{
+  {1:2}: {
     "drei"
     "ein"
     "zwei"
-  }}
+  }
 }
 )");
 
   checkLinesStringFor(m, 12, R"({
-  {1:2}: {{
+  {1:2}: {
     "drei"
     "ein"
     "zwei"
-  }}
+  }
 }
 )");
 
-  checkLinesStringFor(m, 26, R"({
-  {1:2}: {{
+  checkLinesStringFor(m, 24, R"({
+  {1:2}: {
     "drei"
     "ein"
     "zwei"
-  }}
+  }
 }
 )");
 
-  checkLinesStringFor(m, 27, R"({
+  checkLinesStringFor(m, 25, R"({
   {1:2}:
-    {{"drei" "ein" "zwei"}}
+    {"drei" "ein" "zwei"}
 }
 )");
 }
@@ -1198,6 +1198,8 @@ void testOneErrorSubstrOrRegex(
   char const * NULLABLE expectErrorSubstring,
   char const * NULLABLE expectErrorRegex)
 {
+  EXN_CONTEXT("input=" << doubleQuote(input));
+
   try {
     try {
       GDValue::readFromString(input);
@@ -1345,40 +1347,53 @@ void testSyntaxErrors()
     testMultiErrorRegex("(1 ", {-1, '}'}, 1, 4, "looking for '\\)' at end of tuple");
   }
 
-  // readNextSet
+  // readNextSetOrMap
   {
-    // readCharOrErr('}', "looking for \"}}\" at end of set");
-    testMultiErrorRegex("{{", {-1, ']'}, 1, 3, "looking for \"\\}\\}\" at end of set");
-    testMultiErrorRegex("{{1", {-1, ']'}, 1, 4, "looking for \"\\}\\}\" at end of set");
-    testMultiErrorRegex("{{1 2", {-1, ']'}, 1, 6, "looking for \"\\}\\}\" at end of set");
+    // processCharOrErr(skipWhitespaceAndComments(), '}',
+    //   "looking for '}' after ':' of empty map");
+    testMultiErrorRegex("{:", {-1, ']'}, 1, 3, "looking for '\\}' after ':'");
+    testMultiErrorRegex("{ :", {-1, ']'}, 1, 4, "looking for '\\}' after ':'");
+    testMultiErrorRegex("{ : ", {-1, ']'}, 1, 5, "looking for '\\}' after ':'");
 
-    // readCharOrErr('}', "looking for '}' immediately after '}' at end of set");
-    testMultiErrorRegex("{{}", {-1, ']'}, 1, 4, "looking for '\\}' immediately after '\\}'");
-    testOneErrorRegex("{{} }", 1, 4, "' '.*looking for '\\}' immediately after '\\}'");
+    // unexpectedCharErr(readChar(), "looking for a value after '{'");
+    testMultiErrorRegex("{", {-1, ']'}, 1, 2, "looking for a value after '\\{'");
+    testMultiErrorRegex("{ ", {-1, ']'}, 1, 3, "looking for a value after '\\{'");
+
+    testOneErrorRegex("{3-", 1, 3, "'-' after a value");
   }
 
-  // readNextMap
+  // readSetAfterFirstValue
   {
+    // readCharOrErr('}', "looking for '}' at end of set");
+    testMultiErrorRegex("{1", {-1, ']'}, 1, 3, "looking for '\\}' at end of set");
+    testMultiErrorRegex("{1 2", {-1, ']'}, 1, 5, "looking for '\\}' at end of set");
+  }
+
+  // readMapAfterFirstKey
+  {
+    // unexpectedCharErr(readChar(), "looking for value after ':' in map entry");
+    testMultiErrorRegex("{1:", {-1, ']'}, 1, 4, "looking for value after ':'");
+    testMultiErrorRegex("{1: ", {-1, ']'}, 1, 5, "looking for value after ':'");
+
     // readCharOrErr('}', "looking for '}' at end of map");
-    testOneErrorRegex("{", 1, 2, "after '\\{'");
-    testOneErrorRegex("{]", 1, 2, "'\\]'.*looking for '\\}'");
-    testMultiErrorRegex("{ ", {-1, ']'}, 1, 3, "looking for '\\}' at end of map");
+    testOneErrorRegex("{1:2]", 1, 5, "'\\]'.*looking for '\\}'");
+    testMultiErrorRegex("{1:2 ", {-1, ']'}, 1, 6, "looking for '\\}' at end of map");
     testMultiErrorRegex("{1:2", {-1, ']'}, 1, 5, "looking for '\\}' at end of map");
 
     // processCharOrErr(colon, ':', "looking for ':' in map entry");
-    testOneErrorRegex("{1", 1, 3, "end of file.*looking for ':'");
-    testOneErrorRegex("{1}", 1, 3, "'\\}'.*looking for ':'");
-    testOneErrorRegex("{1]", 1, 3, "'\\]'.*looking for ':'");
-    testOneErrorRegex("{1-", 1, 3, "'-' after a value");
-    testOneErrorRegex("{1 2", 1, 4, "'2'.*looking for ':'");
+    testOneErrorRegex("{1:2 3", 1, 7, "end of file.*looking for ':'");
+    testOneErrorRegex("{1:2 3}", 1, 7, "'\\}'.*looking for ':'");
+    testOneErrorRegex("{1:2 3]", 1, 7, "'\\]'.*looking for ':'");
+    testOneErrorRegex("{1:2 3-", 1, 7, "'-' after a value");
+    testOneErrorRegex("{1:2 3 4", 1, 8, "'4'.*looking for ':'");
 
     // unexpectedCharErr(readChar(), "looking for value after ':' in map entry");
-    testOneErrorRegex("{1:", 1, 4, "end of file.*after ':'");
-    testOneErrorRegex("{1 : ", 1, 6, "end of file.*after ':'");
-    testOneErrorRegex("{1:]", 1, 4, "'\\]'.*after ':'");
-    testOneErrorRegex("{1:}", 1, 4, "'\\}'.*after ':'");
-    testOneErrorRegex("{1::", 1, 4, "':'.*start of a value");
-    testOneErrorRegex("{1: }", 1, 5, "'\\}'.*after ':'");
+    testOneErrorRegex("{1:2 3:", 1, 8, "end of file.*after ':'");
+    testOneErrorRegex("{1:2 3 : ", 1, 10, "end of file.*after ':'");
+    testOneErrorRegex("{1:2 3:]", 1, 8, "'\\]'.*after ':'");
+    testOneErrorRegex("{1:2 3:}", 1, 8, "'\\}'.*after ':'");
+    testOneErrorRegex("{1:2 3::", 1, 8, "':'.*start of a value");
+    testOneErrorRegex("{1:2 3: }", 1, 9, "'\\}'.*after ':'");
 
     // locErr(loc, stringb("Duplicate map key: " << keyAsString));
     testOneErrorSubstr("{1:2 1:2}", 1, 6, "Duplicate map key: 1");
@@ -1477,13 +1492,9 @@ void testSyntaxErrors()
 
   // readNextSymbolOrTaggedContainer
   {
-    // c = readNotEOFCharOrErr(
-    //   "looking for character after symbol and '{'");
-    testOneErrorSubstr("x{", 1, 3, "after symbol and '{'");
-
     // These are no longer tied to a unique "err" site, but were in the
     // past, so I keep them as tests.
-    testOneErrorRegex("x{{", 1, 4, "end of file.*end of set");
+    testOneErrorSubstr("x{", 1, 3, "value after '{'");
     testOneErrorRegex("true[", 1, 6, "end of file.*end of sequence");
 
     // putbackAfterValueOrErr(c);       // Could be EOF, fine.
@@ -1492,13 +1503,6 @@ void testSyntaxErrors()
 
   // readNextValue
   {
-    // inCtxUnexpectedCharErr(c, "after '{'");
-    testOneErrorSubstr("{", 1, 2, "end of file after '{'");
-
-    // err("The '{' character must not be immediately followed by "
-    //     "'['.  Insert a space between them.");
-    testOneErrorSubstr("{[", 1, 2, "'{' character must not be immediately followed by '['");
-
     // unexpectedCharErr(c, "looking for the start of a value");
     testOneErrorSubstr(";", 1, 1, "';' while looking for the start of a value");
   }
@@ -1864,7 +1868,7 @@ void testToGDValue()
             "abc");
 
   EXPECT_EQ(toGDValue(std::set<A>{A(), A(), A()}).asString(),
-            "{{A(1) A(2) A(3)}}");
+            "{A(1) A(2) A(3)}");
   EXPECT_EQ(toGDValue(std::vector<A>{A(), A(), A()}).asString(),
             "[A(4) A(5) A(6)]");
   EXPECT_EQ(toGDValue(std::map<A,int>{{A(),17}, {A(),18}}).asString(),

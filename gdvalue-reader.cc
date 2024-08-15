@@ -231,15 +231,54 @@ GDValue GDValueReader::readNextTuple()
 }
 
 
-GDValue GDValueReader::readNextSet()
+GDValue GDValueReader::readNextSetOrMap()
+{
+  // Check first character after opening brace for something special.
+  int firstChar = skipWhitespaceAndComments();
+
+  if (firstChar == '}') {
+    // Empty set.
+    return GDValue(GDVK_SET);
+  }
+
+  if (firstChar == ':') {
+    // Empty map; but need to confirm the following close brace
+    processCharOrErr(skipWhitespaceAndComments(), '}',
+      "looking for '}' after ':' of empty map");
+    return GDValue(GDVK_MAP);
+  }
+
+  // Put back the first character and read the next value.
+  putback(firstChar);
+  std::optional<GDValue> firstValue = readNextValue();
+  if (!firstValue) {
+    unexpectedCharErr(readChar(), "looking for a value after '{'");
+  }
+
+  // Check the character after that value.
+  int charAfterValue = skipWhitespaceAndComments();
+  if (charAfterValue == ':') {
+    // Commit to the map interpretation.
+    return readMapAfterFirstKey(std::move(*firstValue));
+  }
+  else {
+    // Commit to the set interpretation.
+    putback(charAfterValue);
+    return readSetAfterFirstValue(std::move(*firstValue));
+  }
+}
+
+
+
+GDValue GDValueReader::readSetAfterFirstValue(GDValue &&firstValue)
 {
   GDValue ret(GDVK_SET);
+  ret.setInsert(std::move(firstValue));
 
   while (true) {
     std::optional<GDValue> next = readNextValue();
     if (!next) {
-      readCharOrErr('}', "looking for \"}}\" at end of set");
-      readCharOrErr('}', "looking for '}' immediately after '}' at end of set");
+      readCharOrErr('}', "looking for '}' at end of set");
       return ret;
     }
 
@@ -248,10 +287,18 @@ GDValue GDValueReader::readNextSet()
 }
 
 
-GDValue GDValueReader::readNextMap()
+GDValue GDValueReader::readMapAfterFirstKey(GDValue &&firstKey)
 {
   GDValue ret(GDVK_MAP);
 
+  // Read the first value.
+  std::optional<GDValue> firstValue = readNextValue();
+  if (!firstValue) {
+    unexpectedCharErr(readChar(), "looking for value after ':' in map entry");
+  }
+  ret.mapSetValueAt(std::move(firstKey), std::move(*firstValue));
+
+  // Read second and later key/value entries.
   while (true) {
     // Skip leading whitespace.
     int firstKeyChar = skipWhitespaceAndComments();
@@ -583,26 +630,17 @@ GDValue GDValueReader::readNextSymbolOrTaggedContainer(int firstChar)
 
   int c = readChar();
   if (c == '{') {
-    // Tagged map or set.
-    c = readNotEOFCharOrErr(
-      "looking for character after symbol and '{'");
-    if (c == '{') {
-      // Tagged set.  First parse the set by itself.
-      GDValue containedSet = readNextSet();
-
+    // Tagged set or map.  First parse the container by itself.
+    GDValue container = readNextSetOrMap();
+    if (container.isSet()) {
       // Move the set into a tagged set object.
       return GDValue(GDVTaggedSet(symbol,
-        std::move(containedSet.setGetMutable())));
+        std::move(container.setGetMutable())));
     }
     else {
-      // Tagged map.  We need to put back `c` since it is part of the
-      // map's contents.
-      putback(c);
-
-      // Now proceed like we did for sets.
-      GDValue containedMap = readNextMap();
+      // Make a tagged map.
       return GDValue(GDVTaggedMap(symbol,
-        std::move(containedMap.mapGetMutable())));
+        std::move(container.mapGetMutable())));
     }
   }
 
@@ -654,24 +692,8 @@ std::optional<GDValue> GDValueReader::readNextValue()
       case '(':
         return std::make_optional(readNextTuple());
 
-      case '{': {
-        c = readChar();
-        if (c == eofCode()) {
-          inCtxUnexpectedCharErr(c, "after '{'");
-        }
-        else if (c == '{') {
-          return std::make_optional(readNextSet());
-        }
-        else if (c == '[') {
-          err("The '{' character must not be immediately followed by "
-              "'['.  Insert a space between them.");
-        }
-        else {
-          putback(c);
-          return std::make_optional(readNextMap());
-        }
-        return std::nullopt;    // Not reached.
-      }
+      case '{':
+        return std::make_optional(readNextSetOrMap());
 
       case '"':
         return std::make_optional(readNextDQString());
