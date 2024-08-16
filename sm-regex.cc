@@ -1,172 +1,105 @@
 // sm-regex.cc
 // code for sm-regex.h
 
-#include "sm-regex.h"     // this module
-#include "str.h"          // string
-#include "exc.h"          // smbase::xmessage
-#include "array.h"        // Array
+#include "sm-regex.h"                  // this module
 
-#include <stddef.h>       // size_t
+#include "exc.h"                       // THROW
+#include "sm-macros.h"                 // OPEN_NAMESPACE
+#include "string-util.h"               // doubleQuote
+#include "stringb.h"                   // stringb
 
-using namespace smbase;
-
-
-// The entire module does not work on Windows.
-#ifndef __WIN32__
+#include <regex>                       // std::{regex, regex_search, regex_replace}
+#include <string>                      // std::string
 
 
-// for now, I implement everything using the libc POSIX regex
-// facilities
-//
-// linux (etc.) has proper declarations in regex.h, but FreeBSD (and
-// other BSDs?) has regex.h contents that do not compile under C++,
-// and apparently gnuregex.h is the substitute that does
-#ifndef __FreeBSD__
-  #include <regex.h>
-#else
-  #include <gnuregex.h>
-#endif
+OPEN_NAMESPACE(smbase)
 
 
-bool smregexpModuleWorks()
+// ------------------------- XRegexSyntaxError -------------------------
+XRegexSyntaxError::~XRegexSyntaxError()
+{}
+
+
+XRegexSyntaxError::XRegexSyntaxError(
+  std::string const &regex,
+  std::string const &errorMessage)
+  : m_regex(regex),
+    m_errorMessage(errorMessage)
+{}
+
+
+std::string XRegexSyntaxError::getConflict() const
 {
-  return true;
+  return stringb(
+    "Regex " << doubleQuote(m_regex) <<
+    " syntax error: " << m_errorMessage);
 }
 
 
-// get an error string
-static string regexpErrorString(regex_t const *pat, int code)
+// ------------------------------- Regex -------------------------------
+// Properly-typed 'm_compiled_regex'.
+#define M_STD_REGEX (reinterpret_cast<std::regex * &>(m_compiled_regex))
+#define M_STD_REGEX_C (reinterpret_cast<std::regex * const &>(m_compiled_regex))
+
+
+Regex::~Regex()
 {
-  // find out how long the error string is; this size
-  // includes the final NUL byte
-  int size = regerror(code, pat, NULL, 0);
-
-  // get the string
-  Array<char> buf(size);
-  regerror(code, pat, buf.ptr(), size);
-  buf[size] = 0;     // paranoia
-
-  return string(buf.ptrC());
-}
-
-// throw an exception
-static void regexpError(regex_t const *pat, int code) NORETURN;
-static void regexpError(regex_t const *pat, int code)
-{
-  xmessage(regexpErrorString(pat, code));
+  delete M_STD_REGEX;
 }
 
 
-// -------------------- Regexp --------------------------
-// interpretation of 'impl' field
-#define PAT ((regex_t*&)impl)
-
-Regexp::Regexp(rostring exp, CFlags flags)
+Regex::Regex(std::string const &re)
+  : m_orig_regex(re),
+    m_compiled_regex(nullptr)
 {
-  PAT = new regex_t;
-
-  int f = REG_EXTENDED;    // "extended" language
-
-  // if the values I chose line up perfectly with the values used by
-  // libc, then I don't have to interpret them (hopefully the
-  // optimizer will discover that the 'if' test is constant
-  // (gcc-2.95.3's optimizer does); I can't do it with the
-  // preprocessor because it can't see the enumerator values)
-  if (REG_ICASE==ICASE && REG_NOSUB==NOSUB) {
-    f |= (int)flags;
+  try {
+    M_STD_REGEX = new std::regex(m_orig_regex);
   }
-  else {
-    // interpret my flags
-    if (flags & ICASE) f |= REG_ICASE;
-    if (flags & NOSUB) f |= REG_NOSUB;
-  }
+  catch (std::regex_error &x) {
+    // Note: The memory that `new` allocated before the exception was
+    // thrown has already been deallocated automatically.
 
-  int code = regcomp(PAT, toCStr(exp), f);
-  if (code) {
-    // deallocate the pattern buffer before throwing the exception
-    string msg = regexpErrorString(PAT, code);
-    delete PAT;
-    xmessage(msg);
+    THROW(XRegexSyntaxError(m_orig_regex, x.what()));
   }
 }
 
-Regexp::~Regexp()
+
+bool Regex::search(std::string const &str) const
 {
-  regfree(PAT);
-  delete PAT;
-}
-
-
-void Regexp::err(int code)
-{
-  regexpError(PAT, code);
-}
-
-
-bool Regexp::match(rostring str, EFlags flags)
-{
-  int f = 0;
-
-  // same thing as above
-  if (REG_NOTBOL==NOTBOL && REG_NOTEOL==NOTEOL) {
-    f = (int)flags;
+  try {
+    // This can throw exceptions related to resource usage.
+    return std::regex_search(str, *M_STD_REGEX_C);
   }
-  else {
-    if (flags & NOTBOL) f |= REG_NOTBOL;
-    if (flags & NOTEOL) f |= REG_NOTEOL;
-  }
-
-  int code = regexec(PAT, toCStr(str), 0, NULL, f);
-  if (code == 0) {
-    return true;
-  }
-  else if (code == REG_NOMATCH) {
+  catch (...) {
+    // Excessive resource usage that is detected and reported as an
+    // exception is similar to excessive resource usage that simply
+    // causes the program to run slowly.  Since it's a significant
+    // hassle to try to meaningfully handle a resource exception, I'm
+    // simply going to say that the regex did not match the given input.
+    // If this occurs frequently enough to be an issue, this is probably
+    // best found and dealt with using performance analysis tools.
     return false;
   }
-  else {
-    err(code);
+}
+
+
+std::string Regex::replaceAll(
+  std::string const &str,
+  std::string const &replacement) const
+{
+  try {
+    return std::regex_replace(str, *M_STD_REGEX_C, replacement);
+  }
+  catch (...) {
+    // Similar to above, regard a resource usage exception as meaning
+    // that the regex did not match, meaning there is nothing to
+    // replace.
+    return str;
   }
 }
 
 
-#undef PAT
-
-
-// --------------- convenience functions ---------------
-bool regexpMatch(rostring str, rostring exp)
-{
-  Regexp pat(exp, Regexp::NOSUB);
-  return pat.match(str);
-}
-
-
-#else // windows
-
-bool smregexpModuleWorks()
-{
-  return false;
-}
-
-
-// Stubs.
-Regexp::Regexp(rostring exp, CFlags flags)
-{}
-
-Regexp::~Regexp()
-{}
-
-bool Regexp::match(rostring str, EFlags flags)
-{
-  return false;
-}
-
-bool regexpMatch(rostring str, rostring exp)
-{
-  return false;
-}
-
-
-#endif // windows
+CLOSE_NAMESPACE(smbase)
 
 
 // EOF

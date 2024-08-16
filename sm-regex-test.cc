@@ -3,32 +3,28 @@
 
 #include "sm-regex.h"                  // module under test
 
-#include <stdlib.h>                    // exit
-#include <stdio.h>                     // printf
+#include "exc.h"                       // EXN_CONTEXT
+#include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
+#include "sm-test.h"                   // EXPECT_EQ
+#include "string-util.h"               // doubleQuote
+
+using namespace smbase;
 
 
-static void matchVector(char const *str, char const *exp, bool expect)
+OPEN_ANONYMOUS_NAMESPACE
+
+
+void matchVector(char const *str, char const *exp, bool expect)
 {
-  bool actual = regexpMatch(str, exp);
-  if (actual != expect) {
-    printf("regexp failure\n");
-    printf("  str: %s\n", str);
-    printf("  exp: %s\n", exp);
-    printf("  expect: %s\n", (expect? "true" : "false"));
-    printf("  actual: %s\n", (actual? "true" : "false"));
-    exit(2);
-  }
+  EXN_CONTEXT("str=" << doubleQuote(str));
+  EXN_CONTEXT("exp=" << doubleQuote(exp));
+
+  EXPECT_EQ(Regex(exp).search(str), expect);
 }
 
 
-// Called by unit-tests.cc.
-void test_sm_regex()
+void testMatchVectors()
 {
-  if (!smregexpModuleWorks()) {
-    printf("sm_regex does not work on this platform, skipping test\n");
-    return;
-  }
-
   matchVector("abc", "a", true);
   matchVector("abc", "b", true);
   matchVector("abc", "c", true);
@@ -39,6 +35,33 @@ void test_sm_regex()
   matchVector("abc", "b$", false);
   matchVector("abc", "c$", true);
   matchVector("abc", "^d", false);
+}
+
+
+void testInvalidRegex()
+{
+  try {
+    Regex r("(");
+    xfailure("should have failed");
+  }
+  catch (XRegexSyntaxError &x) {
+    VPVAL(x.what());
+    EXPECT_HAS_SUBSTRING(x.what(), "syntax error");
+  }
+}
+
+
+CLOSE_ANONYMOUS_NAMESPACE
+
+
+// Called by unit-tests.cc.
+void test_sm_regex()
+{
+  testMatchVectors();
+  testInvalidRegex();
+
+  // The tests here are not very thorough in part because there are
+  // additional regex tests in `string-util-test`.
 }
 
 

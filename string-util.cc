@@ -7,6 +7,7 @@
 #include "exc.h"                       // smbase::xmessage
 #include "optional-util.h"             // liftToOptional
 #include "overflow.h"                  // safeToInt
+#include "sm-regex.h"                  // smbase::Regex
 #include "strcmp-compare.h"            // StrcmpCompare
 #include "strutil.h"                   // stringf
 #include "vector-util.h"               // vecAccumulateWith
@@ -19,7 +20,6 @@
 #include <limits>                      // std::numeric_limits
 #include <sstream>                     // std::ostringstream
 #include <string_view>                 // std::string_view
-#include <regex>                       // std::regex
 #include <vector>                      // std::vector
 
 using namespace smbase;
@@ -588,17 +588,7 @@ std::string removeTestCaseIndentation(std::string const &src)
 // ----------------------- Regular expressions -------------------------
 bool matchesRegex(std::string const &str, std::string const &regex)
 {
-  try {
-    std::regex re(regex);
-    return std::regex_search(str, re);
-  }
-  catch (...) {
-    // Give myself an easy place to put a breakpoint.
-    //
-    // TODO: Create a dedicated exception type for this.
-    breaker();
-    throw;
-  }
+  return Regex(regex).search(str);
 }
 
 
@@ -624,8 +614,7 @@ std::string replaceAllRegex(
   std::string const &regexToReplace,
   std::string const &replacement)
 {
-  std::regex re(regexToReplace);
-  return std::regex_replace(str, re, replacement);
+  return Regex(regexToReplace).replaceAll(str, replacement);
 }
 
 

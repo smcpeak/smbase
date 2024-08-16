@@ -1,95 +1,104 @@
 // sm-regex.h
-// Regular expression matching.
+// Regular expression operations, as a wrapper around `std::regex`.
 
-// the "sm" prefix in the name is to avoid a name conflict with something
-// in my version of glibc..
+/*
 
-// The regular expression language is, for now, the "Extended" regexp
-// language described in the regex(7) man page, itself a description
-// of POSIX 1003.2, section 2.8 (Regular Expression Notation).
+The wrapper improves on `std::regex` in these ways:
 
-// The interface is based on the POSIX regex functions too, but I
-// don't actually include regex.h here since I want to allow a
-// different implementation, if that becomes necessary.
+  * It throws exceptions that derive from `smbase::XBase`, so can have
+    context information, including the regex itself for the case of a
+    regex syntax error.
+
+  * It has lightweight #include dependencies, in contrast to `<regex>`,
+    which (for GCC 9.3) pulls in 82k LOC!  (This header still pulls in
+    `<string>`, which is 22k, but that is likely to already be a
+    dependency of any module using regular expressions.)
+
+  * It provides an interface that I prefer, using methods instead of
+    global functions for searching, etc.
+
+  * It provides an opportunity to do my own syntax checking before
+    passing the regex to the standard library.  The latter unfortunately
+    has nonportable variations in allowed syntax.  However, I do not
+    currently do this extra checking.
+
+Note that `std::regex` does not have good performance; its primary
+virtue is portability.  Thus, this wrapper also does not have good
+performance.
+
+*/
 
 #ifndef SMBASE_SM_REGEX_H
 #define SMBASE_SM_REGEX_H
 
-#include "sm-macros.h"   // ENUM_BITWISE_OR, NORETURN
-#include "str.h"         // string
+#include "exc.h"                       // smbase::XBase
+#include "sm-macros.h"                 // OPEN_NAMESPACE, NO_OBJECT_COPIES
+
+#include <string>                      // std::string
 
 
-// True if this module works on this platform.
-bool smregexpModuleWorks();
+OPEN_NAMESPACE(smbase)
 
 
-// ----------------- Regexp class -------------------
-// This class represents a compiled regexp pattern.  For maximum
-// efficiency, repeated uses of the same pattern should use the
-// same Regexp object each time instead of making a new one.
-class Regexp {
-public:      // types
-  // compilation flags
-  enum CFlags {
-    C_NONE     = 0x00,         // no flags
-    ICASE      = 0x02,         // case insensitive
-    NOSUB      = 0x08,         // substring matches are not needed
-    //NEWLINE                  // still not sure what this really means
-  };
+// Exception thrown for a regex syntax error.
+class XRegexSyntaxError : public smbase::XBase {
+public:      // data
+  // The original, uncompiled regular expression.
+  std::string m_regex;
 
-  // execution flags
-  enum EFlags {
-    E_NONE     = 0x00,         // no flags
-    NOTBOL     = 0x01,         // treat 'str' as not including beginning of line
-    NOTEOL     = 0x02,         // ............................ end of line
-  };
+  // The implementation-specific error message describing the problem.
+  std::string m_errorMessage;
 
-private:     // data
-  void *impl;                  // implementation data
-  //int numLParens;              // # of left-parens in the pattern
+public:
+  virtual ~XRegexSyntaxError();
 
-private:     // funcs
-  // not allowed
-  Regexp(Regexp&);
-  void operator=(Regexp&);
+  explicit XRegexSyntaxError(std::string const &regex,
+                             std::string const &errorMessage);
 
-  void err(int code) NORETURN;
-
-public:      // funcs
-  Regexp(rostring exp, CFlags flags = C_NONE);
-  ~Regexp();
-
-  // *******************************************************************
-  // *******************************************************************
-  //
-  // Don't use this module in new code!
-  //
-  // Instead, use std::regex.
-  //
-  // *******************************************************************
-  // *******************************************************************
-
-  bool match(rostring str, EFlags flags = E_NONE);
+  // XBase methods.
+  virtual std::string getConflict() const override;
 };
 
-// allow '|' to be used on the flags
-ENUM_BITWISE_OR(Regexp::CFlags)
-ENUM_BITWISE_OR(Regexp::EFlags)
+
+// Compiled regex pattern.
+class Regex {
+  // For simplicity, no copies.
+  NO_OBJECT_COPIES(Regex);
+
+private:     // data
+  // The original, uncompiled regular expression.
+  std::string m_orig_regex;
+
+  // Pointer to compiled `std::regex` allocated with `new`.
+  void *m_compiled_regex;
+
+public:      // funcs
+  ~Regex();
+
+  // Create a regex from a "Modified ECMAScript regular expression
+  // grammar":
+  //
+  //   https://en.cppreference.com/w/cpp/regex/ecmascript
+  //
+  // If `regex` has a syntax error, throws `XRegexSyntaxError`.
+  //
+  explicit Regex(std::string const &regex);
+
+  // Get the original, uncompiled regex.
+  std::string const &getOrigRegex() const
+    { return m_orig_regex; }
+
+  // True if the regex matches a substring of `str`.
+  bool search(std::string const &str) const;
+
+  // Within `str`, replace occurrences that match this Regex with
+  // `replacement`, and return the substituted result.
+  std::string replaceAll(std::string const &str,
+                         std::string const &replacement) const;
+};
 
 
-// TODO: Add support for substring matches by building a class to
-// remember the substring offsets (enable 'numLParens' above)
-// efficiently.  Major question: do I always make an internal copy of
-// the string in which we searched?  Leaning towards yes...
-
-
-
-// --------------- convenience functions ---------------
-// The functions in this section are built on top of the
-// Regexp class in the obvious way.
-
-// return true if 'str' matches 'exp'
-bool regexpMatch(rostring str, rostring exp);
+CLOSE_NAMESPACE(smbase)
 
 
 #endif // SMBASE_SM_REGEX_H
