@@ -5,10 +5,13 @@
 
 #include "sm-trace.h"                  // this module
 
+#include "smbase/sm-regex.h"           // smbase::{Regex, MatchResults, ...}
+
 // libc++
-#include <cstdlib>                     // std::getenv, std::atoi
-#include <regex>                       // std::regex
+#include <cstdlib>                     // std::{getenv, atoi}
 #include <string>                      // std::string
+
+using namespace smbase;
 
 using std::cout;
 using std::cerr;
@@ -54,17 +57,17 @@ int innerGetTraceLevel(
 
   // The element (itself a regex) is a sequence of characters that are
   // not commas or equals, optionally followed by a numeric level.
-  std::regex elementRE("([^,=]+)(?:=(\\d+))?");
+  Regex elementRE("([^,=]+)(?:=(\\d+))?");
 
   // Level we will return.  This is increased when we find an element
   // that matches the scope.
   int retLevel = 0;
 
   // Extract elements.
-  for (std::sregex_iterator it(spec.begin(), spec.end(), elementRE);
-       it != std::sregex_iterator();
+  for (MatchResultsIterator it(spec, elementRE);
+       it != MatchResultsIterator();
        ++it) {
-    std::smatch m = *it;
+    MatchResults m = *it;
 
     string elt = m.str(1);
     string levelStr = m.str(2);
@@ -74,14 +77,14 @@ int innerGetTraceLevel(
     int level = (levelStr.empty()? 1 : std::atoi(levelStr.c_str()));
 
     try {
-      std::regex eltUserRE(elt);
+      Regex eltUserRE(elt);
 
       if (level > retLevel &&
-          std::regex_search(scope.begin(), scope.end(), eltUserRE)) {
+          eltUserRE.searchB(scope)) {
         retLevel = level;
       }
     }
-    catch (std::regex_error &e) {
+    catch (XRegexSyntaxError &e) {
       errorRE = elt;
       errorMsg = e.what();
       return -1;
