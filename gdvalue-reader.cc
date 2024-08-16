@@ -5,13 +5,13 @@
 
 #include "gdvalue-reader.h"            // this module
 
-#include "codepoint.h"                 // isWhitespace, decodeRadixIndicatorLetter, isASCIIRadixDigit
-#include "exc.h"                       // THROW
-#include "gdvsymbol.h"                 // GDVSymbol
-#include "overflow.h"                  // addWithOverflowCheck, multiplyWithOverflowCheck
-#include "sm-macros.h"                 // OPEN_NAMESPACE
-#include "string-util.h"               // possiblyTruncatedWithEllipsis
-#include "utf8-writer.h"               // smbase::UTF8Writer
+#include "smbase/codepoint.h"          // isWhitespace, decodeRadixIndicatorLetter, isASCIIRadixDigit
+#include "smbase/exc.h"                // THROW
+#include "smbase/gdvsymbol.h"          // GDVSymbol
+#include "smbase/overflow.h"           // addWithOverflowCheck, multiplyWithOverflowCheck
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
+#include "smbase/string-util.h"        // possiblyTruncatedWithEllipsis
+#include "smbase/utf8-writer.h"        // smbase::UTF8Writer
 
 #include <utility>                     // std::move
 

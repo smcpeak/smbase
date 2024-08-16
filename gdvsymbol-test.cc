@@ -5,7 +5,7 @@
 
 #include "gdvsymbol.h"                 // module under test
 
-#include "sm-test.h"                   // EXPECT_EQ
+#include "smbase/sm-test.h"            // EXPECT_EQ
 
 #include <string_view>                 // std::string_view
 

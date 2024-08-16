@@ -5,7 +5,7 @@
 
 #include "gdvalue-write-options.h"     // this module
 
-#include "sm-macros.h"                 // OPEN_NAMESPACE
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 
 
 OPEN_NAMESPACE(gdv)

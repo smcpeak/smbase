@@ -7,8 +7,8 @@
 #define SMBASE_GDVALUE_WRITER_H
 
 // this dir
-#include "gdvalue.h"                   // gdv::GDValueWriteOptions
-#include "sm-macros.h"                 // OPEN_NAMESPACE
+#include "smbase/gdvalue.h"            // gdv::GDValueWriteOptions
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 
 // libc++
 #include <iosfwd>                      // std::ostream

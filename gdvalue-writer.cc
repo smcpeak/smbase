@@ -6,16 +6,16 @@
 #include "gdvalue-writer.h"            // this module
 
 // this dir
-#include "counting-ostream.h"          // CountingOStream
-#include "gdvalue.h"                   // gdv::GDValue
-#include "gdvsymbol.h"                 // gdv::GDVSymbol
-#include "overflow.h"                  // safeToInt
-#include "save-restore.h"              // SAVE_RESTORE, SET_RESTORE
-#include "sm-macros.h"                 // OPEN_NAMESPACE
-#include "sm-trace.h"                  // INIT_TRACE
-#include "string-util.h"               // doubleQuote
-#include "stringf.h"                   // stringf
-#include "xassert.h"                   // xfailure
+#include "smbase/counting-ostream.h"   // CountingOStream
+#include "smbase/gdvalue.h"            // gdv::GDValue
+#include "smbase/gdvsymbol.h"          // gdv::GDVSymbol
+#include "smbase/overflow.h"           // safeToInt
+#include "smbase/save-restore.h"       // SAVE_RESTORE, SET_RESTORE
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
+#include "smbase/sm-trace.h"           // INIT_TRACE
+#include "smbase/string-util.h"        // doubleQuote
+#include "smbase/stringf.h"            // stringf
+#include "smbase/xassert.h"            // xfailure
 
 // libc++
 #include <iostream>                    // std::ostream

@@ -6,12 +6,12 @@
 #include "gdvalue.h"                   // this module
 
 // this dir
-#include "compare-util.h"              // compare, RET_IF_COMPARE
-#include "gdvalue-reader.h"            // gdv::GDValueReader
-#include "gdvalue-writer.h"            // gdv::GDValueWriter
-#include "gdvsymbol.h"                 // gdv::GDVSymbol
-#include "syserr.h"                    // smbase::xsyserror
-#include "xassert.h"                   // xassert
+#include "smbase/compare-util.h"       // compare, RET_IF_COMPARE
+#include "smbase/gdvalue-reader.h"     // gdv::GDValueReader
+#include "smbase/gdvalue-writer.h"     // gdv::GDValueWriter
+#include "smbase/gdvsymbol.h"          // gdv::GDVSymbol
+#include "smbase/syserr.h"             // smbase::xsyserror
+#include "smbase/xassert.h"            // xassert
 
 // libc++
 #include <cstring>                     // std::strcmp

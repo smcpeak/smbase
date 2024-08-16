@@ -3,9 +3,9 @@
 
 #include "gdvtuple.h"                  // this module
 
-#include "compare-util.h"              // COMPARE_MEMBERS
-#include "gdvalue.h"                   // GDValue
-#include "sm-macros.h"                 // DMEMB
+#include "smbase/compare-util.h"       // COMPARE_MEMBERS
+#include "smbase/gdvalue.h"            // GDValue
+#include "smbase/sm-macros.h"          // DMEMB
 
 #include <utility>                     // std::move
 

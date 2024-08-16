@@ -13,26 +13,26 @@
 #ifndef SMBASE_GDVALUE_H
 #define SMBASE_GDVALUE_H
 
-#include "gdvalue-fwd.h"               // fwds for this module
+#include "gdvalue-fwd.h"                         // fwds for this module
 
 // this dir
-#include "compare-util.h"              // DEFINE_FRIEND_RELATIONAL_OPERATORS
-#include "gdvalue-write-options.h"     // gdv::GDValueWriteOptions
-#include "gdvsymbol.h"                 // gdv::GDVSymbol
-#include "gdvtuple.h"                  // gdv::GDVTuple
-#include "sm-integer.h"                // smbase::Integer
-#include "sm-macros.h"                 // OPEN_NAMESPACE
+#include "smbase/compare-util.h"                 // DEFINE_FRIEND_RELATIONAL_OPERATORS
+#include "smbase/gdvalue-write-options.h"        // gdv::GDValueWriteOptions
+#include "smbase/gdvsymbol.h"                    // gdv::GDVSymbol
+#include "smbase/gdvtuple.h"                     // gdv::GDVTuple
+#include "smbase/sm-integer.h"                   // smbase::Integer
+#include "smbase/sm-macros.h"                    // OPEN_NAMESPACE
 
 // libc++
-#include <cstddef>                     // std::size_t
-#include <cstdint>                     // std::int64_t
-#include <iosfwd>                      // std::ostream
-#include <map>                         // std::map
-#include <set>                         // std::set
-#include <string>                      // std::string
-#include <type_traits>                 // std::{enable_if, is_convertible, ...}
-#include <utility>                     // std::pair
-#include <vector>                      // std::vector
+#include <cstddef>                               // std::size_t
+#include <cstdint>                               // std::int64_t
+#include <iosfwd>                                // std::ostream
+#include <map>                                   // std::map
+#include <set>                                   // std::set
+#include <string>                                // std::string
+#include <type_traits>                           // std::{enable_if, is_convertible, ...}
+#include <utility>                               // std::pair
+#include <vector>                                // std::vector
 
 
 OPEN_NAMESPACE(gdv)

@@ -3,8 +3,8 @@
 
 // This file is in the public domain.
 
-#include "exc.h"                       // smbase::XBase
-#include "gdvalue.h"                   // gdv::GDValue
+#include "smbase/exc.h"                // smbase::XBase
+#include "smbase/gdvalue.h"            // gdv::GDValue
 
 #include <iostream>                    // std::{cin, cout, cerr, endl}
 

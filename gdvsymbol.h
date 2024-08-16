@@ -7,15 +7,15 @@
 #define SMBASE_GDVSYMBOL_H
 
 // this dir
-#include "compare-util.h"              // DEFINE_FRIEND_NON_EQUALITY_RELATIONAL_OPERATORS
-#include "indexed-string-table.h"      // smbase::IndexedStringTable::Index
-#include "sm-macros.h"                 // OPEN_NAMESPACE, DMEMB, CMEMB
-#include "std-string-fwd.h"            // std::string [n]
-#include "std-string-view-fwd.h"       // std::string_view [n]
+#include "smbase/compare-util.h"                 // DEFINE_FRIEND_NON_EQUALITY_RELATIONAL_OPERATORS
+#include "smbase/indexed-string-table.h"         // smbase::IndexedStringTable::Index
+#include "smbase/sm-macros.h"                    // OPEN_NAMESPACE, DMEMB, CMEMB
+#include "smbase/std-string-fwd.h"               // std::string [n]
+#include "smbase/std-string-view-fwd.h"          // std::string_view [n]
 
 // libc++
-#include <cstddef>                     // std::size_t
-#include <iosfwd>                      // std::ostream [n]
+#include <cstddef>                               // std::size_t
+#include <iosfwd>                                // std::ostream [n]
 
 
 OPEN_NAMESPACE(gdv)

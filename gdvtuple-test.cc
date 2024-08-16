@@ -3,9 +3,9 @@
 
 #include "gdvtuple.h"                  // module under test
 
-#include "gdvalue.h"                   // gdv::GDValue
-#include "sm-test.h"                   // EXPECT_EQ
-#include "xassert.h"                   // xassert
+#include "smbase/gdvalue.h"            // gdv::GDValue
+#include "smbase/sm-test.h"            // EXPECT_EQ
+#include "smbase/xassert.h"            // xassert
 
 using namespace gdv;
 using namespace smbase;

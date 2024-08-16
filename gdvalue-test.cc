@@ -6,17 +6,17 @@
 #include "gdvalue.h"                   // module under test
 
 // this dir
-#include "counting-ostream.h"          // nullOStream
-#include "gdvsymbol.h"                 // gdv::GDVSymbol
-#include "reader.h"                    // smbase::ReaderException
-#include "save-restore.h"              // SAVE_RESTORE
-#include "sm-file-util.h"              // SMFileUtil
-#include "sm-test.h"                   // EXPECT_EQ, EXPECT_MATCHES_REGEX, VPVAL, DIAG, verbose, tout
-#include "strutil.h"                   // hasSubstring
-#include "string-util.h"               // doubleQuote
-#include "syserr.h"                    // smbase::XSysError
-#include "utf8-writer.h"               // smbase::utf8EncodeVector
-#include "xassert.h"                   // xassert
+#include "smbase/counting-ostream.h"   // nullOStream
+#include "smbase/gdvsymbol.h"          // gdv::GDVSymbol
+#include "smbase/reader.h"             // smbase::ReaderException
+#include "smbase/save-restore.h"       // SAVE_RESTORE
+#include "smbase/sm-file-util.h"       // SMFileUtil
+#include "smbase/sm-test.h"            // EXPECT_EQ, EXPECT_MATCHES_REGEX, VPVAL, DIAG, verbose, tout
+#include "smbase/strutil.h"            // hasSubstring
+#include "smbase/string-util.h"        // doubleQuote
+#include "smbase/syserr.h"             // smbase::XSysError
+#include "smbase/utf8-writer.h"        // smbase::utf8EncodeVector
+#include "smbase/xassert.h"            // xassert
 
 // libc++
 #include <cstdint>                     // INT64_C

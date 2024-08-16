@@ -3,22 +3,22 @@
 
 // This file is in the public domain.
 
-#include "gdvsymbol.h"                 // this module
+#include "gdvsymbol.h"                           // this module
 
 // this dir
-#include "codepoint.h"                 // isCIdentifierCharacter, isCIdentifierStartCharacter
-#include "gdvalue-writer.h"            // GDValueWriter::writeOneQuotedStringChar
-#include "sm-macros.h"                 // PRETEND_USED, OPEN_NAMESPACE
-#include "stringb.h"                   // stringb
-#include "indexed-string-table.h"      // smbase::IndexedStringTable
-#include "xassert.h"                   // xassertdb
+#include "smbase/codepoint.h"                    // isCIdentifierCharacter, isCIdentifierStartCharacter
+#include "smbase/gdvalue-writer.h"               // GDValueWriter::writeOneQuotedStringChar
+#include "smbase/sm-macros.h"                    // PRETEND_USED, OPEN_NAMESPACE
+#include "smbase/stringb.h"                      // stringb
+#include "smbase/indexed-string-table.h"         // smbase::IndexedStringTable
+#include "smbase/xassert.h"                      // xassertdb
 
 // libc++
-#include <cstring>                     // std::strcmp
-#include <iostream>                    // std::ostream
-#include <string>                      // std::string
-#include <string_view>                 // std::string_view
-#include <utility>                     // std::swap
+#include <cstring>                               // std::strcmp
+#include <iostream>                              // std::ostream
+#include <string>                                // std::string
+#include <string_view>                           // std::string_view
+#include <utility>                               // std::swap
 
 using namespace smbase;
 

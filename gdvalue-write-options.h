@@ -6,7 +6,7 @@
 #ifndef SMBASE_GDVALUE_WRITE_OPTIONS_H
 #define SMBASE_GDVALUE_WRITE_OPTIONS_H
 
-#include "sm-macros.h"                 // OPEN_NAMESPACE
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 
 
 OPEN_NAMESPACE(gdv)

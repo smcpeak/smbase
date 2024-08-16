@@ -9,9 +9,9 @@
 #include "gdvtuple-fwd.h"              // fwds for this module
 
 // this dir
-#include "compare-util.h"              // DEFINE_FRIEND_RELATIONAL_OPERATORS
-#include "gdvalue-fwd.h"               // GDValue
-#include "sm-macros.h"                 // OPEN_NAMESPACE
+#include "smbase/compare-util.h"       // DEFINE_FRIEND_RELATIONAL_OPERATORS
+#include "smbase/gdvalue-fwd.h"        // GDValue
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 
 // libc++
 #include <cstddef>                     // std::{size_t, ptrdiff_t}
