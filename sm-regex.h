@@ -218,6 +218,12 @@ public:      // methods
   //
   MatchResultsIterator(std::string const &str, Regex const &regex);
 
+  MatchResultsIterator(MatchResultsIterator const &obj);
+  MatchResultsIterator(MatchResultsIterator &&obj);
+
+  MatchResultsIterator &operator=(MatchResultsIterator const &obj);
+  MatchResultsIterator &operator=(MatchResultsIterator &&obj);
+
   bool operator==(MatchResultsIterator const &obj) const;
   bool operator!=(MatchResultsIterator const &obj) const
     { return !operator==(obj); }
@@ -233,6 +239,35 @@ public:      // methods
   // Requires that this is not the end iterator.
   //
   MatchResultsIterator &operator++();
+};
+
+
+// Container-like iterable object yielding `MatchResults`.
+//
+// Usable like this:
+//
+//   for (MatchResults m : MatchResultsIterable(str, re)) {
+//     // Use `m.str(1)`, etc.
+//   }
+//
+class MatchResultsIterable {
+private:     // data
+  // Begin iterator.
+  MatchResultsIterator m_begin;
+
+  // End iterator.
+  MatchResultsIterator m_end;
+
+public:      // methods
+  ~MatchResultsIterable();
+
+  // This retains a reference to `regex`.
+  MatchResultsIterable(std::string const &str, Regex const &regex);
+
+  MatchResultsIterator const &begin() const
+    { return m_begin; }
+  MatchResultsIterator const &end() const
+    { return m_end; }
 };
 
 

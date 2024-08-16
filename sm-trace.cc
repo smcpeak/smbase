@@ -64,11 +64,7 @@ int innerGetTraceLevel(
   int retLevel = 0;
 
   // Extract elements.
-  for (MatchResultsIterator it(spec, elementRE);
-       it != MatchResultsIterator();
-       ++it) {
-    MatchResults m = *it;
-
+  for (MatchResults m : MatchResultsIterable(spec, elementRE)) {
     string elt = m.str(1);
     string levelStr = m.str(2);
     TRACE1_EXPR(elt);

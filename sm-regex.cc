@@ -175,12 +175,17 @@ MatchResults &MatchResults::operator=(MatchResults &&obj)
   (reinterpret_cast<std::sregex_iterator * const &>((obj).m_iter_ptr))
 
 
+// Replace the existing underlying iterator of `this`.
+#define REPLACE_ITER_PTR(newPtr)            \
+  delete M_ITER_PTR(*this);                 \
+  M_ITER_PTR(*this) = (newPtr) /* user ; */
+
+
 void MatchResultsIterator::setAsEnd()
 {
   m_targetString.clear();
 
-  delete M_ITER_PTR(*this);
-  M_ITER_PTR(*this) = new std::sregex_iterator();
+  REPLACE_ITER_PTR(new std::sregex_iterator());
 }
 
 
@@ -218,6 +223,48 @@ MatchResultsIterator::MatchResultsIterator(
 }
 
 
+MatchResultsIterator::MatchResultsIterator(MatchResultsIterator const &obj)
+  : DMEMB(m_targetString),
+    m_iter_ptr(nullptr)
+{
+  M_ITER_PTR(*this) = new std::sregex_iterator(*M_ITER_PTR_C(obj));
+}
+
+
+MatchResultsIterator::MatchResultsIterator(MatchResultsIterator &&obj)
+  : MDMEMB(m_targetString),
+    m_iter_ptr(nullptr)
+{
+  M_ITER_PTR(*this) =
+    new std::sregex_iterator(std::move(*M_ITER_PTR(obj)));
+}
+
+
+MatchResultsIterator &MatchResultsIterator::operator=(MatchResultsIterator const &obj)
+{
+  if (this != &obj) {
+    CMEMB(m_targetString);
+
+    REPLACE_ITER_PTR(new std::sregex_iterator(*M_ITER_PTR_C(obj)));
+  }
+
+  return *this;
+}
+
+
+MatchResultsIterator &MatchResultsIterator::operator=(MatchResultsIterator &&obj)
+{
+  if (this != &obj) {
+    MCMEMB(m_targetString);
+
+    REPLACE_ITER_PTR(
+      new std::sregex_iterator(std::move(*M_ITER_PTR(obj))));
+  }
+
+  return *this;
+}
+
+
 bool MatchResultsIterator::operator==(MatchResultsIterator const &obj) const
 {
   return *M_ITER_PTR_C(*this) == *M_ITER_PTR_C(obj);
@@ -244,6 +291,19 @@ MatchResultsIterator &MatchResultsIterator::operator++()
 
   return *this;
 }
+
+
+// ----------------------- MatchResultsIterable ------------------------
+MatchResultsIterable::~MatchResultsIterable()
+{}
+
+
+MatchResultsIterable::MatchResultsIterable(
+  std::string const &str,
+  Regex const &regex)
+  : m_begin(str, regex),
+    m_end()
+{}
 
 
 CLOSE_NAMESPACE(smbase)

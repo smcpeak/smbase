@@ -9,6 +9,7 @@ namespace smbase {
   class Regex;
   class MatchResults;
   class MatchResultsIterator;
+  class MatchResultsIterable;
 }
 
 #endif // SMBASE_SM_REGEX_FWD_H
