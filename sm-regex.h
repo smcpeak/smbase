@@ -1,4 +1,4 @@
-// smregexp.h
+// sm-regex.h
 // Regular expression matching.
 
 // the "sm" prefix in the name is to avoid a name conflict with something
@@ -12,8 +12,8 @@
 // don't actually include regex.h here since I want to allow a
 // different implementation, if that becomes necessary.
 
-#ifndef SMBASE_REGEXP_H
-#define SMBASE_REGEXP_H
+#ifndef SMBASE_SM_REGEX_H
+#define SMBASE_SM_REGEX_H
 
 #include "sm-macros.h"   // ENUM_BITWISE_OR, NORETURN
 #include "str.h"         // string
@@ -92,4 +92,4 @@ ENUM_BITWISE_OR(Regexp::EFlags)
 bool regexpMatch(rostring str, rostring exp);
 
 
-#endif // SMBASE_REGEXP_H
+#endif // SMBASE_SM_REGEX_H

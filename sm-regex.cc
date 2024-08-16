@@ -1,7 +1,7 @@
-// smregexp.cc
-// code for smregexp.h
+// sm-regex.cc
+// code for sm-regex.h
 
-#include "smregexp.h"     // this module
+#include "sm-regex.h"     // this module
 #include "str.h"          // string
 #include "exc.h"          // smbase::xmessage
 #include "array.h"        // Array

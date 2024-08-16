@@ -1,7 +1,7 @@
-// smregexp-test.cc
-// Tests for smregexp.
+// sm-regex-test.cc
+// Tests for sm-regex.
 
-#include "smregexp.h"                  // module under test
+#include "sm-regex.h"                  // module under test
 
 #include <stdlib.h>                    // exit
 #include <stdio.h>                     // printf
@@ -22,10 +22,10 @@ static void matchVector(char const *str, char const *exp, bool expect)
 
 
 // Called by unit-tests.cc.
-void test_smregexp()
+void test_sm_regex()
 {
   if (!smregexpModuleWorks()) {
-    printf("smregexp does not work on this platform, skipping test\n");
+    printf("sm_regex does not work on this platform, skipping test\n");
     return;
   }
 
