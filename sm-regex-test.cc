@@ -3,10 +3,13 @@
 
 #include "sm-regex.h"                  // module under test
 
-#include "exc.h"                       // EXN_CONTEXT
-#include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
-#include "sm-test.h"                   // EXPECT_EQ
-#include "string-util.h"               // doubleQuote
+// Must come before sm-test.h.
+#include "smbase/vector-util.h"        // operator<<(vector)
+
+#include "smbase/exc.h"                // EXN_CONTEXT
+#include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
+#include "smbase/sm-test.h"            // EXPECT_EQ
+#include "smbase/string-util.h"        // doubleQuote
 
 using namespace smbase;
 
@@ -19,7 +22,7 @@ void matchVector(char const *str, char const *exp, bool expect)
   EXN_CONTEXT("str=" << doubleQuote(str));
   EXN_CONTEXT("exp=" << doubleQuote(exp));
 
-  EXPECT_EQ(Regex(exp).search(str), expect);
+  EXPECT_EQ(Regex(exp).searchB(str), expect);
 }
 
 
@@ -51,6 +54,31 @@ void testInvalidRegex()
 }
 
 
+void testSearchMR()
+{
+  Regex r("a(b)c(d+)e");
+
+  MatchResults mr = r.searchMR("xabcddey");
+  EXPECT_EQ(mr.empty(), false);
+  EXPECT_EQ(mr.succeeded(), true);
+  EXPECT_EQ((bool)mr, true);
+  EXPECT_EQ(mr.size(), 3);
+  EXPECT_EQ(mr.at(0), "abcdde");
+  EXPECT_EQ(mr[1], "b");
+  EXPECT_EQ(mr[2], "dd");
+  EXPECT_EQ(mr.asVector(),
+            (std::vector<std::string>{ "abcdde", "b", "dd" }));
+
+  mr = r.searchMR("xabcey");
+  EXPECT_EQ(mr.empty(), true);
+  EXPECT_EQ(mr.succeeded(), false);
+  EXPECT_EQ((bool)mr, false);
+  EXPECT_EQ(mr.size(), 0);
+  EXPECT_EQ(mr.asVector(),
+            (std::vector<std::string>{}));
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -59,6 +87,7 @@ void test_sm_regex()
 {
   testMatchVectors();
   testInvalidRegex();
+  testSearchMR();
 
   // The tests here are not very thorough in part because there are
   // additional regex tests in `string-util-test`.

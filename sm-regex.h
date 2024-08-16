@@ -9,10 +9,8 @@ The wrapper improves on `std::regex` in these ways:
     context information, including the regex itself for the case of a
     regex syntax error.
 
-  * It has lightweight #include dependencies, in contrast to `<regex>`,
-    which (for GCC 9.3) pulls in 82k LOC!  (This header still pulls in
-    `<string>`, which is 22k, but that is likely to already be a
-    dependency of any module using regular expressions.)
+  * It has lighterweight #include dependencies compared to `<regex>`,
+    which (for GCC 9.3) pulls in 82k LOC!
 
   * It provides an interface that I prefer, using methods instead of
     global functions for searching, etc.
@@ -31,10 +29,14 @@ performance.
 #ifndef SMBASE_SM_REGEX_H
 #define SMBASE_SM_REGEX_H
 
-#include "exc.h"                       // smbase::XBase
-#include "sm-macros.h"                 // OPEN_NAMESPACE, NO_OBJECT_COPIES
+#include "sm-regex-fwd.h"              // fwds for this module
 
+#include "smbase/exc.h"                // smbase::XBase
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE, NO_OBJECT_COPIES
+
+#include <cstddef>                     // std::size_t
 #include <string>                      // std::string
+#include <vector>                      // std::vector
 
 
 OPEN_NAMESPACE(smbase)
@@ -49,7 +51,7 @@ public:      // data
   // The implementation-specific error message describing the problem.
   std::string m_errorMessage;
 
-public:
+public:      // methods
   virtual ~XRegexSyntaxError();
 
   explicit XRegexSyntaxError(std::string const &regex,
@@ -72,7 +74,7 @@ private:     // data
   // Pointer to compiled `std::regex` allocated with `new`.
   void *m_compiled_regex;
 
-public:      // funcs
+public:      // methods
   ~Regex();
 
   // Create a regex from a "Modified ECMAScript regular expression
@@ -89,13 +91,79 @@ public:      // funcs
     { return m_orig_regex; }
 
   // True if the regex matches a substring of `str`.
-  bool search(std::string const &str) const;
+  //
+  // The "B" suffix means it returns `bool`.
+  bool searchB(std::string const &str) const;
+
+  // Search for a matching substring of `str`, returning a match object
+  // that either indicates a failure to match or has the matching
+  // substrings.
+  //
+  // The "MR" suffix means it returns `MatchResults`.
+  MatchResults searchMR(std::string const &str) const;
 
   // Within `str`, replace occurrences that match this Regex with
   // `replacement`, and return the substituted result.
   std::string replaceAll(std::string const &str,
                          std::string const &replacement) const;
 };
+
+
+// Result of a regex match or search operation.
+//
+// This is similar to `std::smatch_results`, with the primary difference
+// being that it makes a copy of the substrings instead of retaining
+// iterators to the original target due to the danger of the iterators
+// dangling if the target string is destroyed before the matches are
+// examined.  (I consider the solution in LWG DR 2329, namely
+// prohibiting rvalue references, to be inadequate.)
+//
+class MatchResults {
+  // Let Regex populate this object.
+  friend class Regex;
+
+private:     // data
+  // Matched substrings, where index 0 is the entire match, and
+  // subsequent indices correspond to parenthesized groups in the regex.
+  std::vector<std::string> m_matches;
+
+public:      // methods
+  // Construct an empty match, which indicates that match was
+  // unsuccessful if it is not subsequently populated.
+  MatchResults();
+
+  MatchResults(MatchResults const &obj);
+  MatchResults(MatchResults &&obj);
+
+  MatchResults &operator=(MatchResults const &obj);
+  MatchResults &operator=(MatchResults &&obj);
+
+  // True if the match failed.
+  bool empty() const
+    { return m_matches.empty(); }
+
+  // True if the match succeeded.
+  bool succeeded() const
+    { return !empty(); }
+  operator bool () const
+    { return succeeded(); }
+
+  // Number of matched substrings, including the one corresponding to
+  // the entire match.  Returns 0 if the match failed.
+  std::size_t size() const
+    { return m_matches.size(); }
+
+  // Get the indicated match.
+  std::string const &at(std::size_t index) const
+    { return m_matches.at(index); }
+  std::string const &operator[](std::size_t index) const
+    { return at(index); }
+
+  // Get all substrings as a vector.
+  std::vector<std::string> const &asVector() const
+    { return m_matches; }
+};
+
 
 
 CLOSE_NAMESPACE(smbase)

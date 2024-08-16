@@ -588,7 +588,7 @@ std::string removeTestCaseIndentation(std::string const &src)
 // ----------------------- Regular expressions -------------------------
 bool matchesRegex(std::string const &str, std::string const &regex)
 {
-  return Regex(regex).search(str);
+  return Regex(regex).searchB(str);
 }
 
 

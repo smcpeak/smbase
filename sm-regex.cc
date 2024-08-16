@@ -4,12 +4,13 @@
 #include "sm-regex.h"                  // this module
 
 #include "exc.h"                       // THROW
-#include "sm-macros.h"                 // OPEN_NAMESPACE
+#include "sm-macros.h"                 // OPEN_NAMESPACE, [M]{C,D}MEMB
 #include "string-util.h"               // doubleQuote
 #include "stringb.h"                   // stringb
 
-#include <regex>                       // std::{regex, regex_search, regex_replace}
+#include <regex>                       // std::{regex, regex_search, regex_replace, smatch}
 #include <string>                      // std::string
+#include <utility>                     // std::move
 
 
 OPEN_NAMESPACE(smbase)
@@ -64,7 +65,7 @@ Regex::Regex(std::string const &re)
 }
 
 
-bool Regex::search(std::string const &str) const
+bool Regex::searchB(std::string const &str) const
 {
   try {
     // This can throw exceptions related to resource usage.
@@ -83,6 +84,31 @@ bool Regex::search(std::string const &str) const
 }
 
 
+MatchResults Regex::searchMR(std::string const &str) const
+{
+  MatchResults ret;
+
+  std::smatch results;
+  try {
+    std::regex_search(str, results, *M_STD_REGEX_C);
+  }
+  catch (...) {
+    // Treat a resource exception as failure to match.
+    return ret;
+  }
+
+  if (!results.empty()) {
+    // Copy the results into `ret`.
+    ret.m_matches.reserve(results.size());
+    for (std::string s : results) {
+      ret.m_matches.push_back(std::move(s));
+    }
+  }
+
+  return ret;
+}
+
+
 std::string Regex::replaceAll(
   std::string const &str,
   std::string const &replacement) const
@@ -96,6 +122,36 @@ std::string Regex::replaceAll(
     // replace.
     return str;
   }
+}
+
+
+// --------------------------- MatchResults ----------------------------
+MatchResults::MatchResults()
+  : m_matches()
+{}
+
+
+MatchResults::MatchResults(MatchResults const &obj)
+  : DMEMB(m_matches)
+{}
+
+
+MatchResults::MatchResults(MatchResults &&obj)
+  : MDMEMB(m_matches)
+{}
+
+
+MatchResults &MatchResults::operator=(MatchResults const &obj)
+{
+  CMEMB(m_matches);
+  return *this;
+}
+
+
+MatchResults &MatchResults::operator=(MatchResults &&obj)
+{
+  MCMEMB(m_matches);
+  return *this;
 }
 
 
