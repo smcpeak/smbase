@@ -63,9 +63,9 @@ void testSearchMR()
   EXPECT_EQ(mr.succeeded(), true);
   EXPECT_EQ((bool)mr, true);
   EXPECT_EQ(mr.size(), 3);
-  EXPECT_EQ(mr.at(0), "abcdde");
-  EXPECT_EQ(mr[1], "b");
-  EXPECT_EQ(mr[2], "dd");
+  EXPECT_EQ(mr.str(0), "abcdde");
+  EXPECT_EQ(mr.str(1), "b");
+  EXPECT_EQ(mr.str(2), "dd");
   EXPECT_EQ(mr.asVector(),
             (std::vector<std::string>{ "abcdde", "b", "dd" }));
 

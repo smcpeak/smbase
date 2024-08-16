@@ -177,11 +177,9 @@ public:      // methods
   std::size_t size() const
     { return m_matches.size(); }
 
-  // Get the indicated match.
-  std::string const &at(std::size_t index) const
+  // Get the indicated match string.
+  std::string const &str(std::size_t index) const
     { return m_matches.at(index); }
-  std::string const &operator[](std::size_t index) const
-    { return at(index); }
 
   // Get all substrings as a vector.
   std::vector<std::string> const &asVector() const
