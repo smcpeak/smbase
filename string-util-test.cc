@@ -408,6 +408,36 @@ void testMatchesRegex()
 }
 
 
+void testOneInvalidRegex(char const *badRE)
+{
+  DIAG("badRE: " << badRE);
+
+  try {
+    matchesRegex("foo", badRE);
+    DIAG("no exception!");
+  }
+  catch (std::exception &e) {
+    DIAG("exn: " << e.what());
+  }
+}
+
+
+void testInvalidRegex()
+{
+  testOneInvalidRegex("unclosed [bracket");
+  testOneInvalidRegex("unclosed (paren");
+  testOneInvalidRegex("unclosed {brace");
+
+  // This should be rejected, but GCC 9.3 libc++ does not.
+  testOneInvalidRegex("imbalanced ]bracket"); // ok?
+
+  testOneInvalidRegex("imbalanced )paren");
+
+  // Similarly, GCC 9.3 does not reject this either.
+  testOneInvalidRegex("imbalanced }brace");
+}
+
+
 void testInsertPossiblyEscapedChar()
 {
   std::ostringstream oss;
@@ -714,6 +744,7 @@ void test_string_util()
   testBeginsWith();
   testEndsWith();
   testMatchesRegex();
+  testInvalidRegex();
   testInsertPossiblyEscapedChar();
   testSingleQuoteChar();
   testEscapeForRegex();
