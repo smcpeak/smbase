@@ -8,6 +8,7 @@ namespace smbase {
   class XRegexSyntaxError;
   class Regex;
   class MatchResults;
+  class MatchResultsIterator;
 }
 
 #endif // SMBASE_SM_REGEX_FWD_H

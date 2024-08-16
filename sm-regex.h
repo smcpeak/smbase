@@ -20,9 +20,18 @@ The wrapper improves on `std::regex` in these ways:
     has nonportable variations in allowed syntax.  However, I do not
     currently do this extra checking.
 
+  * It suppresses resource exhaustion exceptions arising during regex
+    searching, treating them as failures to match.  I think it is
+    unreasonable to handle such problems at the execution site.  Any
+    resource exhaustion exception is adjacent to a performance problem,
+    and performance problems are better handled holistically.
+
 Note that `std::regex` does not have good performance; its primary
 virtue is portability.  Thus, this wrapper also does not have good
 performance.
+
+This wrapper currently only exposes a subset of the `std::regex`
+functionality.  My plan is to expand it if and when needed.
 
 */
 
@@ -67,12 +76,15 @@ class Regex {
   // For simplicity, no copies.
   NO_OBJECT_COPIES(Regex);
 
+  // Let MatchResultsIterator get the compiled regex.
+  friend class MatchResultsIterator;
+
 private:     // data
   // The original, uncompiled regular expression.
   std::string m_orig_regex;
 
   // Pointer to compiled `std::regex` allocated with `new`.
-  void *m_compiled_regex;
+  void *m_compiled_regex_ptr;
 
 public:      // methods
   ~Regex();
@@ -111,23 +123,35 @@ public:      // methods
 
 // Result of a regex match or search operation.
 //
-// This is similar to `std::smatch_results`, with the primary difference
-// being that it makes a copy of the substrings instead of retaining
-// iterators to the original target due to the danger of the iterators
-// dangling if the target string is destroyed before the matches are
-// examined.  (I consider the solution in LWG DR 2329, namely
-// prohibiting rvalue references, to be inadequate.)
+// This is similar to `std::smatch`, with the primary difference being
+// that it makes a copy of the substrings instead of retaining iterators
+// to the original target due to the danger of the iterators dangling if
+// the target string is destroyed before the matches are examined.  (I
+// consider the solution in LWG DR 2329, namely prohibiting passing an
+// rvalue reference, to be inadequate.)
 //
 class MatchResults {
-  // Let Regex populate this object.
+  // Let Regex and MatchResultsIterator populate this object.
   friend class Regex;
+  friend class MatchResultsIterator;
+
+private:     // types
+  // Marker type to select the private constructor.
+  enum SMatchTag { SMATCH_TAG };
 
 private:     // data
   // Matched substrings, where index 0 is the entire match, and
   // subsequent indices correspond to parenthesized groups in the regex.
   std::vector<std::string> m_matches;
 
+private:     // methods
+  // Populate from a pointer to `std::smatch`.  This copies the
+  // substrings and does not retain the passed pointer.
+  MatchResults(void const *smatch, SMatchTag);
+
 public:      // methods
+  ~MatchResults();
+
   // Construct an empty match, which indicates that match was
   // unsuccessful if it is not subsequently populated.
   MatchResults();
@@ -164,6 +188,54 @@ public:      // methods
     { return m_matches; }
 };
 
+
+// Iterator for successive match results.
+//
+// Similar to `std::sregex_iterator`.
+//
+class MatchResultsIterator {
+private:     // data
+  // The string we are finding matches in.  We make a copy because
+  // otherwise it is easy to get dangling iterators.  This is empty for
+  // the end iterator.
+  std::string m_targetString;
+
+  // Pointer to `std::sregex_iterator` allocated with `new`.
+  void *m_iter_ptr;
+
+private:      // methods
+  // Turn this into an end iterator.
+  void setAsEnd();
+
+public:      // methods
+  ~MatchResultsIterator();
+
+  // Return an end iterator.
+  MatchResultsIterator();
+
+  // Return a begin iterator over matches of `regex` within `str`.
+  //
+  // This makes a copy of `str`, but it retains a reference to `regex`,
+  // so the latter object must live at least as long as the iterator.
+  //
+  MatchResultsIterator(std::string const &str, Regex const &regex);
+
+  bool operator==(MatchResultsIterator const &obj) const;
+  bool operator!=(MatchResultsIterator const &obj) const
+    { return !operator==(obj); }
+
+  // Return the current match results.
+  //
+  // Requires that this is not the end iterator.
+  //
+  MatchResults operator*() const;
+
+  // Advance the iterator.
+  //
+  // Requires that this is not the end iterator.
+  //
+  MatchResultsIterator &operator++();
+};
 
 
 CLOSE_NAMESPACE(smbase)

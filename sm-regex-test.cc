@@ -79,6 +79,42 @@ void testSearchMR()
 }
 
 
+void testMatchResultsIterator()
+{
+  Regex re("a(b)c(d+)e");
+
+  MatchResultsIterator end;
+
+  {
+    MatchResultsIterator it("xabcddey abcddde abcdddde", re);
+    xassert(it != end);
+    xassert(!(it == end));
+    EXPECT_EQ((*it).asVector(),
+              (std::vector<std::string>{"abcdde", "b", "dd"}));
+
+    ++it;
+    xassert(it != end);
+    EXPECT_EQ((*it).asVector(),
+              (std::vector<std::string>{"abcddde", "b", "ddd"}));
+
+    ++it;
+    xassert(it != end);
+    EXPECT_EQ((*it).asVector(),
+              (std::vector<std::string>{"abcdddde", "b", "dddd"}));
+
+    ++it;
+    xassert(it == end);
+    xassert(!(it != end));
+  }
+
+  {
+    MatchResultsIterator it("abc", re);
+    xassert(it == end);
+    xassert(!(it != end));
+  }
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -88,6 +124,7 @@ void test_sm_regex()
   testMatchVectors();
   testInvalidRegex();
   testSearchMR();
+  testMatchResultsIterator();
 
   // The tests here are not very thorough in part because there are
   // additional regex tests in `string-util-test`.

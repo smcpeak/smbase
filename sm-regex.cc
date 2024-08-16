@@ -8,7 +8,7 @@
 #include "string-util.h"               // doubleQuote
 #include "stringb.h"                   // stringb
 
-#include <regex>                       // std::{regex, regex_search, regex_replace, smatch}
+#include <regex>                       // std::{regex, regex_search, ...}
 #include <string>                      // std::string
 #include <utility>                     // std::move
 
@@ -38,23 +38,25 @@ std::string XRegexSyntaxError::getConflict() const
 
 
 // ------------------------------- Regex -------------------------------
-// Properly-typed 'm_compiled_regex'.
-#define M_STD_REGEX (reinterpret_cast<std::regex * &>(m_compiled_regex))
-#define M_STD_REGEX_C (reinterpret_cast<std::regex * const &>(m_compiled_regex))
+// Properly-typed 'm_compiled_regex_ptr'.
+#define M_COMPILED_REGEX_PTR(obj) \
+  (reinterpret_cast<std::regex *       &>((obj).m_compiled_regex_ptr))
+#define M_COMPILED_REGEX_PTR_C(obj) \
+  (reinterpret_cast<std::regex * const &>((obj).m_compiled_regex_ptr))
 
 
 Regex::~Regex()
 {
-  delete M_STD_REGEX;
+  delete M_COMPILED_REGEX_PTR(*this);
 }
 
 
 Regex::Regex(std::string const &re)
   : m_orig_regex(re),
-    m_compiled_regex(nullptr)
+    m_compiled_regex_ptr(nullptr)
 {
   try {
-    M_STD_REGEX = new std::regex(m_orig_regex);
+    M_COMPILED_REGEX_PTR(*this) = new std::regex(m_orig_regex);
   }
   catch (std::regex_error &x) {
     // Note: The memory that `new` allocated before the exception was
@@ -69,9 +71,9 @@ bool Regex::searchB(std::string const &str) const
 {
   try {
     // This can throw exceptions related to resource usage.
-    return std::regex_search(str, *M_STD_REGEX_C);
+    return std::regex_search(str, *M_COMPILED_REGEX_PTR_C(*this));
   }
-  catch (...) {
+  catch (std::regex_error &) {
     // Excessive resource usage that is detected and reported as an
     // exception is similar to excessive resource usage that simply
     // causes the program to run slowly.  Since it's a significant
@@ -86,26 +88,16 @@ bool Regex::searchB(std::string const &str) const
 
 MatchResults Regex::searchMR(std::string const &str) const
 {
-  MatchResults ret;
-
   std::smatch results;
   try {
-    std::regex_search(str, results, *M_STD_REGEX_C);
+    std::regex_search(str, results, *M_COMPILED_REGEX_PTR_C(*this));
   }
-  catch (...) {
+  catch (std::regex_error &) {
     // Treat a resource exception as failure to match.
-    return ret;
+    return MatchResults();
   }
 
-  if (!results.empty()) {
-    // Copy the results into `ret`.
-    ret.m_matches.reserve(results.size());
-    for (std::string s : results) {
-      ret.m_matches.push_back(std::move(s));
-    }
-  }
-
-  return ret;
+  return MatchResults(&results, MatchResults::SMATCH_TAG);
 }
 
 
@@ -114,9 +106,9 @@ std::string Regex::replaceAll(
   std::string const &replacement) const
 {
   try {
-    return std::regex_replace(str, *M_STD_REGEX_C, replacement);
+    return std::regex_replace(str, *M_COMPILED_REGEX_PTR_C(*this), replacement);
   }
-  catch (...) {
+  catch (std::regex_error &) {
     // Similar to above, regard a resource usage exception as meaning
     // that the regex did not match, meaning there is nothing to
     // replace.
@@ -126,6 +118,26 @@ std::string Regex::replaceAll(
 
 
 // --------------------------- MatchResults ----------------------------
+MatchResults::MatchResults(void const *match_results, SMatchTag)
+  : m_matches()
+{
+  std::smatch const &results =
+    *reinterpret_cast<std::smatch const *>(match_results);
+
+  if (!results.empty()) {
+    // Copy the results into `m_matches`.
+    m_matches.reserve(results.size());
+    for (std::string s : results) {
+      m_matches.push_back(std::move(s));
+    }
+  }
+}
+
+
+MatchResults::~MatchResults()
+{}
+
+
 MatchResults::MatchResults()
   : m_matches()
 {}
@@ -151,6 +163,85 @@ MatchResults &MatchResults::operator=(MatchResults const &obj)
 MatchResults &MatchResults::operator=(MatchResults &&obj)
 {
   MCMEMB(m_matches);
+  return *this;
+}
+
+
+// ----------------------- MatchResultsIterator ------------------------
+// Properly-typed 'm_iter_ptr'.
+#define M_ITER_PTR(obj) \
+  (reinterpret_cast<std::sregex_iterator *       &>((obj).m_iter_ptr))
+#define M_ITER_PTR_C(obj) \
+  (reinterpret_cast<std::sregex_iterator * const &>((obj).m_iter_ptr))
+
+
+void MatchResultsIterator::setAsEnd()
+{
+  m_targetString.clear();
+
+  delete M_ITER_PTR(*this);
+  M_ITER_PTR(*this) = new std::sregex_iterator();
+}
+
+
+MatchResultsIterator::~MatchResultsIterator()
+{
+  delete M_ITER_PTR(*this);
+}
+
+
+MatchResultsIterator::MatchResultsIterator()
+  : m_targetString(),
+    m_iter_ptr(nullptr)
+{
+  setAsEnd();
+}
+
+
+MatchResultsIterator::MatchResultsIterator(
+  std::string const &str,
+  Regex const &regex)
+  : m_targetString(str),
+    m_iter_ptr(nullptr)
+{
+  try {
+    // Iterate over the copy in case `str` is destroyed.
+    M_ITER_PTR(*this) = new std::sregex_iterator(
+      m_targetString.begin(),
+      m_targetString.end(),
+      *M_COMPILED_REGEX_PTR_C(regex));
+  }
+  catch (std::regex_error &) {
+    // Treat as no matches.
+    setAsEnd();
+  }
+}
+
+
+bool MatchResultsIterator::operator==(MatchResultsIterator const &obj) const
+{
+  return *M_ITER_PTR_C(*this) == *M_ITER_PTR_C(obj);
+}
+
+
+MatchResults MatchResultsIterator::operator*() const
+{
+  // I don't think this can throw `regex_error`.
+  std::smatch const sm = * *M_ITER_PTR_C(*this);
+  return MatchResults(&sm, MatchResults::SMATCH_TAG);
+}
+
+
+MatchResultsIterator &MatchResultsIterator::operator++()
+{
+  try {
+    ++ *M_ITER_PTR(*this);
+  }
+  catch (std::regex_error &) {
+    // Treat as no more matches.
+    setAsEnd();
+  }
+
   return *this;
 }
 
