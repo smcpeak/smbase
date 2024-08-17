@@ -20,6 +20,8 @@ class GDVSetIterableC;
 class GDVSetIterable;
 class GDVMapIterableC;
 class GDVMapIterable;
+class GDVOrderedMapIterableC;
+class GDVOrderedMapIterable;
 
 } // namespace gdv
 

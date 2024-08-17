@@ -20,6 +20,7 @@
 #include "smbase/gdvalue-write-options.h"        // gdv::GDValueWriteOptions
 #include "smbase/gdvsymbol.h"                    // gdv::GDVSymbol
 #include "smbase/gdvtuple.h"                     // gdv::GDVTuple
+#include "smbase/ordered-map.h"                  // smbase::OrderedMap
 #include "smbase/sm-integer.h"                   // smbase::Integer
 #include "smbase/sm-macros.h"                    // OPEN_NAMESPACE
 
@@ -33,6 +34,9 @@
 #include <type_traits>                           // std::{enable_if, is_convertible, ...}
 #include <utility>                               // std::pair
 #include <vector>                                // std::vector
+
+// Note: For the containers we depend on, a forward declaration is not
+// sufficient because we need their `iterator` member types.
 
 
 OPEN_NAMESPACE(gdv)
@@ -68,14 +72,18 @@ using GDVSet = std::set<GDValue>;
 // GDValue(GDVK_MAP) holds this.
 using GDVMap = std::map<GDValue, GDValue>;
 
-// The entry type for GDVMap.
+// GDValue(GDVK_ORDERED_MAP) holds this.
+using GDVOrderedMap = smbase::OrderedMap<GDValue, GDValue>;
+
+// The entry type for GDVMap and GDVOrderedMap.
 using GDVMapEntry = std::pair<GDValue const, GDValue>;
 
 
 // ------------------------ GDVTaggedContainer -------------------------
 // A pair of a symbol tag and a container.
 //
-// The CONTAINER is one of GDVSequence, GDVTuple, GDVSet, or GDVMap.
+// The CONTAINER is one of GDVSequence, GDVTuple, GDVSet, GDVMap, or
+// GDVOrderedMap.
 template <typename CONTAINER>
 class GDVTaggedContainer {
 public:      // data
@@ -113,10 +121,11 @@ public:      // methods
 };
 
 
-using GDVTaggedSequence = GDVTaggedContainer<GDVSequence>;
-using GDVTaggedTuple    = GDVTaggedContainer<GDVTuple>;
-using GDVTaggedSet      = GDVTaggedContainer<GDVSet>;
-using GDVTaggedMap      = GDVTaggedContainer<GDVMap>;
+using GDVTaggedSequence   = GDVTaggedContainer<GDVSequence>;
+using GDVTaggedTuple      = GDVTaggedContainer<GDVTuple>;
+using GDVTaggedSet        = GDVTaggedContainer<GDVSet>;
+using GDVTaggedMap        = GDVTaggedContainer<GDVMap>;
+using GDVTaggedOrderedMap = GDVTaggedContainer<GDVOrderedMap>;
 
 
 // Expand `macro` once for each kind of GDV container.
@@ -125,11 +134,12 @@ using GDVTaggedMap      = GDVTaggedContainer<GDVMap>;
 // makes it hard to find things with ordinary text search, and some
 // things are important enough that I want to ensure they are easy to
 // find.
-#define FOR_EACH_GDV_CONTAINER(macro) \
-  macro(SEQUENCE, Sequence, sequence) \
-  macro(TUPLE,    Tuple,    tuple   ) \
-  macro(SET,      Set,      set     ) \
-  macro(MAP,      Map,      map     )
+#define FOR_EACH_GDV_CONTAINER(macro)        \
+  macro(SEQUENCE,    Sequence,   sequence  ) \
+  macro(TUPLE,       Tuple,      tuple     ) \
+  macro(SET,         Set,        set       ) \
+  macro(MAP,         Map,        map       ) \
+  macro(ORDERED_MAP, OrderedMap, orderedMap)
 
 
 // --------------------------- GDValueKind -----------------------------
@@ -191,6 +201,13 @@ enum GDValueKind : unsigned char {
   // Tagged map: A symbol and a map.
   GDVK_TAGGED_MAP,
 
+  // Ordered Map: A map where the entries have an externally-imposed
+  // order, typically the insertion order.
+  GDVK_ORDERED_MAP,
+
+  // Tagged ordered map: A symbol and an ordered map.
+  GDVK_TAGGED_ORDERED_MAP,
+
   NUM_GDVALUE_KINDS
 };
 
@@ -220,11 +237,17 @@ char const *toString(GDValueKind gdvk);
            TaggedSequence
          Tuple
            TaggedTuple
+         OrderedMap
+           TaggedOrderedMap
        UnorderedContainer
          Set
            TaggedSet
          Map
            TaggedMap
+
+    In addition, OrderedMap responds to some of the "map" methods,
+    making it partially a subtype of Map, although `isMap()` is false
+    for it.
 */
 class GDValue {
 private:     // class data
@@ -285,16 +308,18 @@ private:     // instance data
     GDVSymbol::Index m_symbol;
 
     // These are all owner pointers (when active, of course).
-    GDVInteger        *m_integer;
-    GDVString         *m_string;
-    GDVSequence       *m_sequence;
-    GDVTaggedSequence *m_taggedSequence;
-    GDVTuple          *m_tuple;
-    GDVTaggedTuple    *m_taggedTuple;
-    GDVSet            *m_set;
-    GDVTaggedSet      *m_taggedSet;
-    GDVMap            *m_map;
-    GDVTaggedMap      *m_taggedMap;
+    GDVInteger          *m_integer;
+    GDVString           *m_string;
+    GDVSequence         *m_sequence;
+    GDVTaggedSequence   *m_taggedSequence;
+    GDVTuple            *m_tuple;
+    GDVTaggedTuple      *m_taggedTuple;
+    GDVSet              *m_set;
+    GDVTaggedSet        *m_taggedSet;
+    GDVMap              *m_map;
+    GDVTaggedMap        *m_taggedMap;
+    GDVOrderedMap       *m_orderedMap;
+    GDVTaggedOrderedMap *m_taggedOrderedMap;
 
     // The value for `GDVK_SMALL_INTEGER`, which is used anytime an
     // integer is representable as `GDVSmallInteger`.
@@ -348,30 +373,41 @@ public:      // methods
   // the kind corresponding to the logical superclass.
   GDValueKind getSuperKind() const;
 
-  // True of sequence, set, and map.  False of others.
+  bool isSymbol()           const { return m_kind == GDVK_SYMBOL;             }
+  bool isInteger()          const { return m_kind == GDVK_INTEGER          ||
+                                           isSmallInteger();                  }
+  bool isSmallInteger()     const { return m_kind == GDVK_SMALL_INTEGER;      }
+  bool isString()           const { return m_kind == GDVK_STRING;             }
+
+  bool isSequence()         const { return m_kind == GDVK_SEQUENCE         ||
+                                           isTaggedSequence();                }
+  bool isTaggedSequence()   const { return m_kind == GDVK_TAGGED_SEQUENCE;    }
+
+  bool isTuple()            const { return m_kind == GDVK_TUPLE            ||
+                                           isTaggedTuple();                   }
+  bool isTaggedTuple()      const { return m_kind == GDVK_TAGGED_TUPLE;       }
+
+  bool isSet()              const { return m_kind == GDVK_SET              ||
+                                           isTaggedSet();                     }
+  bool isTaggedSet()        const { return m_kind == GDVK_TAGGED_SET;         }
+
+  bool isMap()              const { return m_kind == GDVK_MAP              ||
+                                           isTaggedMap();                     }
+  bool isTaggedMap()        const { return m_kind == GDVK_TAGGED_MAP;         }
+
+  bool isOrderedMap()       const { return m_kind == GDVK_ORDERED_MAP      ||
+                                           isTaggedOrderedMap();              }
+  bool isTaggedOrderedMap() const { return m_kind == GDVK_TAGGED_ORDERED_MAP; }
+
+
+  // True of Sequence, Tuple, Set, Map, and OrderedMap, tagged or not.
+  // False of others.
   bool isContainer() const;
 
-  bool isSymbol()         const { return m_kind == GDVK_SYMBOL;          }
-  bool isInteger()        const { return m_kind == GDVK_INTEGER       ||
-                                         isSmallInteger();               }
-  bool isSmallInteger()   const { return m_kind == GDVK_SMALL_INTEGER;   }
-  bool isString()         const { return m_kind == GDVK_STRING;          }
-  bool isSequence()       const { return m_kind == GDVK_SEQUENCE      ||
-                                         isTaggedSequence();             }
-  bool isTaggedSequence() const { return m_kind == GDVK_TAGGED_SEQUENCE; }
-  bool isTuple()          const { return m_kind == GDVK_TUPLE         ||
-                                         isTaggedTuple();                }
-  bool isTaggedTuple()    const { return m_kind == GDVK_TAGGED_TUPLE;    }
-  bool isSet()            const { return m_kind == GDVK_SET           ||
-                                         isTaggedSet();                  }
-  bool isTaggedSet()      const { return m_kind == GDVK_TAGGED_SET;      }
-  bool isMap()            const { return m_kind == GDVK_MAP           ||
-                                         isTaggedMap();                  }
-  bool isTaggedMap()      const { return m_kind == GDVK_TAGGED_MAP;      }
-
+  // True of the containers with a tag.
   bool isTaggedContainer() const;
 
-  // True of Sequence and Tuple.
+  // True of Sequence, Tuple, and OrderedMap.
   bool isOrderedContainer() const;
 
   // True of Set and Map.
@@ -748,6 +784,55 @@ public:      // methods
   bool mapRemoveSym(char const *symName);
 
 
+  // ---- OrderedMap ----
+  /*implicit*/ GDValue(GDVOrderedMap const &map);
+  /*implicit*/ GDValue(GDVOrderedMap      &&map);
+
+  // If the current value is a tagged ordered map, these retain the tag.
+  void orderedMapSet(GDVOrderedMap const &map);
+  void orderedMapSet(GDVOrderedMap      &&map);
+
+  GDVOrderedMap const &orderedMapGet()        const;
+  GDVOrderedMap       &orderedMapGetMutable()      ;
+
+  DECLARE_GDV_KIND_ITERATORS(GDVOrderedMap, orderedMap)
+
+  bool orderedMapContains(GDValue const &key) const;
+
+  // Requires that the key be mapped.
+  GDValue const &orderedMapGetValueAt(GDValue const &key) const;
+  GDValue       &orderedMapGetValueAt(GDValue const &key)      ;
+
+  // If the key is not already mapped, then the new entry is appended to
+  // the order.
+  void orderedMapSetValueAt(GDValue const &key, GDValue const &value);
+  void orderedMapSetValueAt(GDValue      &&key, GDValue      &&value);
+
+  // TODO: Insert unmapped key at index.
+
+  bool orderedMapRemoveKey(GDValue const &key);
+
+  void orderedMapClear();
+
+  // Operations that use symbols, named using `char*`, as keys.  These
+  // are provided for syntactic convenience.
+  bool orderedMapContainsSym(char const *symName);
+  GDValue const &orderedMapGetSym(char const *symName) const;
+  GDValue       &orderedMapGetSym(char const *symName)      ;
+  void orderedMapSetSym(char const *symName, GDValue const &value);
+  void orderedMapSetSym(char const *symName, GDValue      &&value);
+  bool orderedMapRemoveSym(char const *symName);
+
+  // In addition to the dedicated "orderedMap" functions, the following
+  // "map" functions also work on ordered maps:
+  //
+  //   * mapContains
+  //   * mapGetValueAt
+  //   * mapSetValueAt
+  //   * mapRemoveKey
+  //   * mapClear
+  //   * mapXXXSym
+
   // ---- TaggedContainer ----
   // These methods require `isTaggedContainer()`.
 
@@ -847,6 +932,8 @@ DEFINE_GDV_KIND_ITERABLE(GDVTuple, tuple)
 DEFINE_GDV_KIND_ITERABLE(GDVSet, set)
 
 DEFINE_GDV_KIND_ITERABLE(GDVMap, map)
+
+DEFINE_GDV_KIND_ITERABLE(GDVOrderedMap, orderedMap)
 
 
 #undef DEFINE_GDV_KIND_ITERABLE
@@ -967,7 +1054,7 @@ GDValue toGDValue(std::pair<T1,T2> const &p)
 }
 
 
-// TODO: Add a `toGDValue` to `std::tuple`.
+// TODO: Add a `toGDValue` for `std::tuple`.
 
 
 // For `std::set`.
@@ -992,6 +1079,20 @@ GDValue toGDValue(std::map<K,V,C,A> const &m)
 
   for (auto const &kv : m) {
     ret.mapSetValueAt(toGDValue(kv.first), toGDValue(kv.second));
+  }
+
+  return ret;
+}
+
+
+// For `smbase::OrderedMap`.
+template <typename K, typename V>
+GDValue toGDValue(smbase::OrderedMap<K,V> const &m)
+{
+  GDValue ret(GDVK_ORDERED_MAP);
+
+  for (auto const &kv : m) {
+    ret.orderedMapSetValueAt(toGDValue(kv.first), toGDValue(kv.second));
   }
 
   return ret;

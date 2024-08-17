@@ -199,9 +199,11 @@ void GDValueReader::skipCStyleComment(int nestingDepth)
 }
 
 
-GDValue GDValueReader::readNextSequence()
+GDValue GDValueReader::readSequenceAfterFirstValue(GDValue &&firstValue)
 {
   GDValue ret(GDVK_SEQUENCE);
+
+  ret.sequenceAppend(std::move(firstValue));
 
   while (true) {
     std::optional<GDValue> next = readNextValue();
@@ -212,6 +214,8 @@ GDValue GDValueReader::readNextSequence()
 
     ret.sequenceAppend(std::move(*next));
   }
+
+  // Not reached.
 }
 
 
@@ -228,46 +232,64 @@ GDValue GDValueReader::readNextTuple()
 
     ret.tupleAppend(std::move(*next));
   }
+
+  // Not reached.
 }
 
 
-GDValue GDValueReader::readNextSetOrMap()
+GDValue GDValueReader::readNextPossibleMap(bool ordered)
 {
-  // Check first character after opening brace for something special.
+  char const closingDelim = (ordered? ']' : '}');
+
+  // Check first character after opening delimiter for something special.
   int firstChar = skipWhitespaceAndComments();
 
-  if (firstChar == '}') {
-    // Empty set.
-    return GDValue(GDVK_SET);
+  if (firstChar == closingDelim) {
+    // Empty set or sequence.
+    if (ordered) {
+      return GDValue(GDVK_SEQUENCE);
+    }
+    else {
+      return GDValue(GDVK_SET);
+    }
   }
 
   if (firstChar == ':') {
-    // Empty map; but need to confirm the following close brace
-    processCharOrErr(skipWhitespaceAndComments(), '}',
-      "looking for '}' after ':' of empty map");
-    return GDValue(GDVK_MAP);
+    // Empty map or ordered map; but need to confirm the following
+    // closing delimiter.
+    processCharOrErr(skipWhitespaceAndComments(), closingDelim,
+      ordered?
+        "looking for ']' after ':' of empty ordered map" :
+        "looking for '}' after ':' of empty map");
+    return GDValue(ordered? GDVK_ORDERED_MAP : GDVK_MAP);
   }
 
   // Put back the first character and read the next value.
   putback(firstChar);
   std::optional<GDValue> firstValue = readNextValue();
   if (!firstValue) {
-    unexpectedCharErr(readChar(), "looking for a value after '{'");
+    unexpectedCharErr(readChar(), ordered?
+      "looking for a value after '['" :
+      "looking for a value after '{'");
   }
 
   // Check the character after that value.
   int charAfterValue = skipWhitespaceAndComments();
   if (charAfterValue == ':') {
-    // Commit to the map interpretation.
-    return readMapAfterFirstKey(std::move(*firstValue));
+    // Commit to the map or ordered map interpretation.
+    return readPossiblyOrderedMapAfterFirstKey(
+      ordered, std::move(*firstValue));
   }
   else {
-    // Commit to the set interpretation.
     putback(charAfterValue);
-    return readSetAfterFirstValue(std::move(*firstValue));
+    if (ordered) {
+      return readSequenceAfterFirstValue(std::move(*firstValue));
+    }
+    else {
+      return readSetAfterFirstValue(std::move(*firstValue));
+    }
   }
 }
-
 
 
 GDValue GDValueReader::readSetAfterFirstValue(GDValue &&firstValue)
@@ -287,14 +309,19 @@ GDValue GDValueReader::readSetAfterFirstValue(GDValue &&firstValue)
 }
 
 
-GDValue GDValueReader::readMapAfterFirstKey(GDValue &&firstKey)
+GDValue GDValueReader::readPossiblyOrderedMapAfterFirstKey(
+  bool ordered, GDValue &&firstKey)
 {
-  GDValue ret(GDVK_MAP);
+  char const closingDelim = (ordered? ']' : '}');
+
+  GDValue ret(ordered? GDVK_ORDERED_MAP : GDVK_MAP);
 
   // Read the first value.
   std::optional<GDValue> firstValue = readNextValue();
   if (!firstValue) {
-    unexpectedCharErr(readChar(), "looking for value after ':' in map entry");
+    unexpectedCharErr(readChar(), ordered?
+      "looking for value after ':' in ordered map entry" :
+      "looking for value after ':' in map entry");
   }
   ret.mapSetValueAt(std::move(firstKey), std::move(*firstValue));
 
@@ -313,18 +340,24 @@ GDValue GDValueReader::readMapAfterFirstKey(GDValue &&firstKey)
     // Read the key.
     std::optional<GDValue> key = readNextValue();
     if (!key) {
-      readCharOrErr('}', "looking for '}' at end of map");
+      readCharOrErr(closingDelim, ordered?
+        "looking for ']' at end of ordered map" :
+        "looking for '}' at end of map");
       return ret;
     }
 
     int colon = skipWhitespaceAndComments();
 
-    processCharOrErr(colon, ':', "looking for ':' in map entry");
+    processCharOrErr(colon, ':', ordered?
+      "looking for ':' in ordered map entry" :
+      "looking for ':' in map entry");
 
     // Read the value.
     std::optional<GDValue> value = readNextValue();
     if (!value) {
-      unexpectedCharErr(readChar(), "looking for value after ':' in map entry");
+      unexpectedCharErr(readChar(), ordered?
+        "looking for value after ':' in ordered map entry" :
+        "looking for value after ':' in map entry");
     }
 
     if (ret.mapContains(*key)) {
@@ -337,11 +370,14 @@ GDValue GDValueReader::readMapAfterFirstKey(GDValue &&firstKey)
       FileLineCol loc(m_location);
       loc.setLineCol(keyLC);
 
-      locErr(loc, stringb("Duplicate map key: " << keyAsString));
+      locErr(loc, stringb("Duplicate " << (ordered? "ordered " : "") <<
+                          "map key: " << keyAsString));
     }
 
     ret.mapSetValueAt(std::move(*key), std::move(*value));
   }
+
+  // Not reached.
 }
 
 
@@ -631,7 +667,7 @@ GDValue GDValueReader::readNextSymbolOrTaggedContainer(int firstChar)
   int c = readChar();
   if (c == '{') {
     // Tagged set or map.  First parse the container by itself.
-    GDValue container = readNextSetOrMap();
+    GDValue container = readNextPossibleMap(false /*ordered*/);
     if (container.isSet()) {
       // Move the set into a tagged set object.
       return GDValue(GDVTaggedSet(symbol,
@@ -645,10 +681,16 @@ GDValue GDValueReader::readNextSymbolOrTaggedContainer(int firstChar)
   }
 
   else if (c == '[') {
-    // Tagged sequence.
-    GDValue containedSequence = readNextSequence();
-    return GDValue(GDVTaggedSequence(symbol,
-      std::move(containedSequence.sequenceGetMutable())));
+    // Tagged sequence or ordered map.
+    GDValue container = readNextPossibleMap(true /*ordered*/);
+    if (container.isOrderedMap()) {
+      return GDValue(GDVTaggedOrderedMap(symbol,
+        std::move(container.orderedMapGetMutable())));
+    }
+    else {
+      return GDValue(GDVTaggedSequence(symbol,
+        std::move(container.sequenceGetMutable())));
+    }
   }
 
   else if (c == '(') {
@@ -687,13 +729,13 @@ std::optional<GDValue> GDValueReader::readNextValue()
         return std::nullopt;
 
       case '[':
-        return std::make_optional(readNextSequence());
+        return std::make_optional(readNextPossibleMap(true /*ordered*/));
+
+      case '{':
+        return std::make_optional(readNextPossibleMap(false /*ordered*/));
 
       case '(':
         return std::make_optional(readNextTuple());
-
-      case '{':
-        return std::make_optional(readNextSetOrMap());
 
       case '"':
         return std::make_optional(readNextDQString());

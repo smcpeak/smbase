@@ -30,8 +30,8 @@ OPEN_NAMESPACE(smbase)
 // the order information.
 //
 // For simplicitly, this container duplicates the storage of the keys,
-// put them once into the map and again into the vector.  If the keys
-// are large objects then a different data structure might be
+// putting them once into the map and again into the vector.  If the
+// keys are large objects then a different data structure might be
 // preferable.
 //
 // Moreover, the use of the key's intrinsic order for lookup is not
@@ -50,7 +50,8 @@ public:      // types
   // Type for container sizes and numeric (positional) indices.
   using size_type = std::size_t;
 
-  // Iterate over the map entries in extrinsic order.
+  // Iterate over the map entries in extrinsic order without modifying
+  // anything.
   //
   // TODO: Allow random bidirectional access.
   //
@@ -86,6 +87,35 @@ public:      // types
     inline const_iterator &operator++();
 
     inline value_type const &operator*() const;
+  };
+
+  // Iterate in extrinsic order, possibly modifying the values but not
+  // the keys.
+  class iterator {
+  private:     // data
+    // Underlying const iterator to handle the mechanics.
+    const_iterator m_iter;
+
+  public:      // methods
+    inline iterator(iterator const &obj);
+
+    // Begin iterating at `index`.
+    inline iterator(OrderedMap &map, size_type index);
+
+    // Assigning an iterator requires that both refer to the same map.
+    inline iterator &operator=(iterator const &obj);
+
+    // True if this iterator can still be used with the container.
+    inline bool isValid() const;
+
+    inline bool operator==(iterator const &obj) const;
+    inline bool operator!=(iterator const &obj) const;
+
+    inline bool isEnd() const;
+
+    inline iterator &operator++();
+
+    inline value_type &operator*() const;
   };
 
 private:     // data
@@ -173,6 +203,9 @@ public:      // methods
   inline const_iterator begin() const;
   inline const_iterator end() const;
 
+  inline iterator begin();
+  inline iterator end();
+
   // TODO: Reverse iterators.
 
   // ---------------------------- Capacity -----------------------------
@@ -198,6 +231,13 @@ public:      // methods
   // If the entry is inserted, it is appended to the sequence.
   //
   inline bool insert(value_type const &entry);
+  inline bool insert(value_type      &&entry);
+
+  // If `key` is already mapped, update its value and return false.
+  // Otherwise, insert (append) a new entry that maps `key` to `value`
+  // and return true.
+  inline bool setValueAtKey(KEY const &key, VALUE const &value);
+  inline bool setValueAtKey(KEY      &&key, VALUE      &&value);
 
   // Insert an entry at a specific location.
   //
@@ -262,6 +302,9 @@ public:      // methods
   // Relational operators: == != < > <= >=
   DEFINE_FRIEND_RELATIONAL_OPERATORS(OrderedMap)
 };
+
+
+// The methods declared above are defined in `ordered-map-ops.h`.
 
 
 CLOSE_NAMESPACE(smbase)

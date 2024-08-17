@@ -35,6 +35,9 @@ empty set: {}
 empty map: {:}
 {"one":1}
 {2:3 "a":1 [10 11]:ten_eleven}
+empty ordered map: [:]
+["one":1]
+["a":1 2:3 [10 11]:ten_eleven]
 x = open (for writing): "out/gvdn/dir-does-not-exist/123.gdvn": File not found
 x = open (for reading): "out/gvdn/file-does-not-exist.gdvn": File not found
 pretty print target width: 0

@@ -99,6 +99,74 @@ inline auto OrderedMap<KEY, VALUE>::const_iterator::operator*() const -> value_t
 }
 
 
+// ----------------------- OrderedMap::iterator ------------------------
+template <typename KEY, typename VALUE>
+inline OrderedMap<KEY, VALUE>::iterator::iterator(iterator const &obj)
+  : DMEMB(m_iter)
+{}
+
+
+template <typename KEY, typename VALUE>
+inline OrderedMap<KEY, VALUE>::iterator::iterator(OrderedMap &map, size_type index)
+  : m_iter(map, index)
+{}
+
+
+template <typename KEY, typename VALUE>
+inline auto OrderedMap<KEY, VALUE>::iterator::operator=(iterator const &obj) -> iterator &
+{
+  CMEMB(m_iter);
+  return *this;
+}
+
+
+template <typename KEY, typename VALUE>
+inline auto OrderedMap<KEY, VALUE>::iterator::isValid() const -> bool
+{
+  return m_iter.isValid();
+}
+
+
+template <typename KEY, typename VALUE>
+inline auto OrderedMap<KEY, VALUE>::iterator::operator==(iterator const &obj) const -> bool
+{
+  return EMEMB(m_iter);
+}
+
+
+template <typename KEY, typename VALUE>
+inline auto OrderedMap<KEY, VALUE>::iterator::operator!=(iterator const &obj) const -> bool
+{
+  return !operator==(obj);
+}
+
+
+template <typename KEY, typename VALUE>
+inline auto OrderedMap<KEY, VALUE>::iterator::isEnd() const -> bool
+{
+  return m_iter.isEnd();
+}
+
+
+template <typename KEY, typename VALUE>
+inline auto OrderedMap<KEY, VALUE>::iterator::operator++() -> iterator &
+{
+  ++m_iter;
+  return *this;
+}
+
+
+template <typename KEY, typename VALUE>
+inline auto OrderedMap<KEY, VALUE>::iterator::operator*() const -> value_type &
+{
+  value_type const &ret = *m_iter;
+
+  // The lack of a `const` qualifier when we first accepted the
+  // container reference justifies removing `const` here.
+  return const_cast<value_type&>(ret);
+}
+
+
 // ---------------------------- OrderedMap -----------------------------
 template <typename KEY, typename VALUE>
 inline OrderedMap<KEY, VALUE>::~OrderedMap()
@@ -280,6 +348,20 @@ inline auto OrderedMap<KEY, VALUE>::end() const -> const_iterator
 
 
 template <typename KEY, typename VALUE>
+inline auto OrderedMap<KEY, VALUE>::begin() -> iterator
+{
+  return iterator(*this, 0);
+}
+
+
+template <typename KEY, typename VALUE>
+inline auto OrderedMap<KEY, VALUE>::end() -> iterator
+{
+  return iterator(*this, size());
+}
+
+
+template <typename KEY, typename VALUE>
 inline auto OrderedMap<KEY, VALUE>::empty() const -> bool
 {
   return m_keyVector.empty();
@@ -314,6 +396,60 @@ inline auto OrderedMap<KEY, VALUE>::insert(value_type const &entry) -> bool
   }
   else {
     return false;
+  }
+}
+
+
+template <typename KEY, typename VALUE>
+inline auto OrderedMap<KEY, VALUE>::insert(value_type &&entry) -> bool
+{
+  ++m_modificationCount;
+
+  auto res = m_map.insert(std::move(entry));
+  if (res.second) {
+    // `entry` was moved into the map, so we have to get the key from
+    // the iterator in the result.
+    m_keyVector.push_back((*(res.first)).first);
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
+
+template <typename KEY, typename VALUE>
+inline auto OrderedMap<KEY, VALUE>::setValueAtKey(
+  KEY const &key, VALUE const &value) -> bool
+{
+  ++m_modificationCount;
+
+  auto it = m_map.find(key);
+  if (it != m_map.end()) {
+    (*it).second = value;
+    return false;
+  }
+  else {
+    insert(std::make_pair(key, value));
+    return true;
+  }
+}
+
+
+template <typename KEY, typename VALUE>
+inline auto OrderedMap<KEY, VALUE>::setValueAtKey(
+  KEY &&key, VALUE &&value) -> bool
+{
+  ++m_modificationCount;
+
+  auto it = m_map.find(key);
+  if (it != m_map.end()) {
+    (*it).second = std::move(value);
+    return false;
+  }
+  else {
+    insert(std::make_pair(std::move(key), std::move(value)));
+    return true;
   }
 }
 

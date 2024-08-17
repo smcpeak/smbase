@@ -8,6 +8,7 @@
 // this dir
 #include "smbase/counting-ostream.h"   // nullOStream
 #include "smbase/gdvsymbol.h"          // gdv::GDVSymbol
+#include "smbase/ordered-map-ops.h"    // smbase::OrderedMap ctor, etc.
 #include "smbase/reader.h"             // smbase::ReaderException
 #include "smbase/save-restore.h"       // SAVE_RESTORE
 #include "smbase/sm-file-util.h"       // SMFileUtil
@@ -889,6 +890,280 @@ void testTaggedMap()
 }
 
 
+void testOrderedMap()
+{
+  GDValue v1((GDVOrderedMap()));
+  DIAG("empty ordered map: " << v1);
+  xassert(v1.asString() == "[:]");
+  xassert(v1.containerSize() == 0);
+  xassert(v1.containerIsEmpty());
+  xassert(v1.getKind() == GDVK_ORDERED_MAP);
+  xassert(!v1.isMap());
+  xassert(v1.isOrderedMap());
+  xassert(v1.orderedMapGet() == GDVOrderedMap());
+  testSerializeRoundtrip(v1);
+
+  GDValue v2(v1);
+  xassert(v1 == v2);
+
+  v2.orderedMapSetValueAt(GDValue("one"), GDValue(1));
+  v2.selfCheck();
+  xassert(v2.containerSize() == 1);
+  xassert(v2.orderedMapGetValueAt(GDValue("one")) == GDValue(1));
+  DIAG(v2);
+  xassert(v2.asString() == R"(["one":1])");
+  xassert(v2.orderedMapContains(GDValue("one")));
+  xassert(v2 > v1);
+  testSerializeRoundtrip(v2);
+
+  // The normal "map" functions work too.
+  v2.mapSetValueAt(GDValue("one"), GDValue(2));
+  EXPECT_EQ(v2.asString(), R"(["one":2])");
+  xassert(v2.mapContains(GDValue("one")));
+  testSerializeRoundtrip(v2);
+
+  v2.mapSetValueAt(GDValue("two"), GDValue(2));
+  xassert(v2.asString() == R"(["one":2 "two":2])");
+  xassert(v2.containerSize() == 2);
+  testSerializeRoundtrip(v2);
+
+  v2.mapRemoveKey(GDValue("one"));
+  xassert(v2.asString() == R"(["two":2])");
+  xassert(!v2.mapContains(GDValue("one")));
+  testSerializeRoundtrip(v2);
+
+  v2.orderedMapClear();
+  xassert(v1 == v2);
+  testSerializeRoundtrip(v2);
+
+  // Unlike with a normal map, the ordered map remembers the order of
+  // the entries.
+  v2 = GDValue(GDVOrderedMap{
+         GDVMapEntry(GDValue("a"), GDValue(1)),
+         GDVMapEntry(GDValue(2), GDValue(3)),
+         GDVMapEntry(
+           GDValue(GDVSequence({        // Use a sequence as a key.
+             GDValue(10),
+             GDValue(11)
+           })),
+           GDValue(GDVSymbol("ten_eleven"))
+         )
+       });
+  DIAG(v2);
+  xassert(v2.asString() == "[\"a\":1 2:3 [10 11]:ten_eleven]");
+  testSerializeRoundtrip(v2);
+
+  xassert(v2.mapGetValueAt(
+            GDValue(GDVSequence({GDValue(10), GDValue(11)}))) ==
+          GDValue(GDVSymbol("ten_eleven")));
+
+  // Call the ctor that accepts a `OrderedMap const &`.
+  GDVOrderedMap tmpMap{ {1,2}, {3,4} };
+  v2 = tmpMap;
+  EXPECT_EQ(v2.asString(), "[1:2 3:4]");
+  testSerializeRoundtrip(v2);
+
+  // Call 'orderedMapIterableC'.
+  auto expectIt = tmpMap.begin();
+  for (auto const &kv : v2.orderedMapIterableC()) {
+    EXPECT_EQ(kv.first, (*expectIt).first);
+    EXPECT_EQ(kv.second, (*expectIt).second);
+    ++expectIt;
+  }
+  xassert(expectIt == tmpMap.end());
+
+  // Call 'orderedMapIterable'.
+  expectIt = tmpMap.begin();
+  for (auto &kv : v2.orderedMapIterable()) {
+    EXPECT_EQ(kv.first, (*expectIt).first);
+    EXPECT_EQ(kv.second, (*expectIt).second);
+    ++expectIt;
+  }
+  xassert(expectIt == tmpMap.end());
+
+  // Call `orderedMapGetMutable`.
+  v2.orderedMapGetMutable().insert({-5,6});
+  EXPECT_EQ(v2.asString(), "[1:2 3:4 -5:6]");
+
+  testSerializeRoundtrip(v2);
+  // Call `orderedMapGetValueAt() const`.
+  GDValue const &v2c = v2;
+  EXPECT_EQ(v2c.orderedMapGetValueAt(3), GDValue(4));
+
+  // Call `orderedMapSetValueAt(..., const&)` (indirectly).
+  GDValue eight(8);
+  v2.mapSetValueAt(7, eight);
+  EXPECT_EQ(v2.asString(), "[1:2 3:4 -5:6 7:8]");
+  testSerializeRoundtrip(v2);
+
+  // Again, but this time replacing an existing value.
+  v2.mapSetValueAt(-5, eight);
+  EXPECT_EQ(v2.asString(), "[1:2 3:4 -5:8 7:8]");
+  testSerializeRoundtrip(v2);
+
+  // Various containers as keys.
+  v2 = GDVOrderedMap{
+    { GDVTuple{1,2,3},    4 },     // Regular map would rearrange this.
+    { GDVSequence{1,2,3}, 4 },
+    { GDVSet{1,2,3},      4 },
+    { GDVMap{{1,2}},      4 },
+  };
+  EXPECT_EQ(v2.asString(), "[(1 2 3):4 [1 2 3]:4 {1 2 3}:4 {1:2}:4]");
+  testSerializeRoundtrip(v2);
+
+  // Various containers as first keys.
+  v2 = GDVOrderedMap{
+    { GDVTuple{1,2,3},    4 },
+  };
+  EXPECT_EQ(v2.asString(), "[(1 2 3):4]");
+  testSerializeRoundtrip(v2);
+
+  v2 = GDVOrderedMap{
+    { GDVSet{1,2,3},      4 },
+  };
+  EXPECT_EQ(v2.asString(), "[{1 2 3}:4]");
+  testSerializeRoundtrip(v2);
+
+  v2 = GDVOrderedMap{
+    { GDVMap{{1,2}},      4 },
+  };
+  EXPECT_EQ(v2.asString(), "[{1:2}:4]");
+  testSerializeRoundtrip(v2);
+
+  v2 = GDVOrderedMap{
+    { GDVTaggedSequence(GDVSymbol("A"), {1}), GDVSymbol("one") }
+  };
+  EXPECT_EQ(v2.asString(), "[A[1]:one]");
+  testSerializeRoundtrip(v2);
+
+  v2 = GDVOrderedMap{
+    { GDVTaggedTuple(GDVSymbol("A"), {1}), GDVSymbol("one") }
+  };
+  EXPECT_EQ(v2.asString(), "[A(1):one]");
+  testSerializeRoundtrip(v2);
+
+  v2 = GDVOrderedMap{
+    { GDVTuple{1}, GDVSymbol("one") }
+  };
+  EXPECT_EQ(v2.asString(), "[(1):one]");
+  testSerializeRoundtrip(v2);
+}
+
+
+void testTaggedOrderedMap()
+{
+  GDValue v(GDVK_TAGGED_ORDERED_MAP);
+  EXPECT_EQ(v.asString(), "null[:]");
+  xassert(!v.isMap());
+  xassert(v.isTaggedContainer());
+  xassert(!v.isTaggedMap());
+  xassert(v.isTaggedOrderedMap());
+  xassert(v.containerIsEmpty());
+  xassert(v.taggedContainerGetTag() == GDVSymbol());
+  xassert(v.taggedContainerGetTag() == GDVSymbol("null"));
+  v.selfCheck();
+  testSerializeRoundtrip(v);
+
+  v = GDVTaggedOrderedMap(GDVSymbol("x"), {{1,2}});
+  EXPECT_EQ(v.asString(), "x[1:2]");
+  xassert(!v.isMap());
+  xassert(v.isTaggedContainer());
+  xassert(!v.isTaggedMap());
+  xassert(v.isTaggedOrderedMap());
+  xassert(!v.containerIsEmpty());
+  v.selfCheck();
+  testSerializeRoundtrip(v);
+
+  v.taggedContainerSetTag(GDVSymbol("y"));
+  EXPECT_EQ(v.asString(), "y[1:2]");
+  testSerializeRoundtrip(v);
+
+  GDVTaggedOrderedMap tm(GDVSymbol("z"), {{3,4}, {-5,6}});
+  v = tm;
+  EXPECT_EQ(v.asString(), "z[3:4 -5:6]");
+  testSerializeRoundtrip(v);
+
+  {
+    GDValue v2(tm);
+    xassert(v == v2);
+
+    v2.mapClear();
+    EXPECT_EQ(v2.asString(), "z[:]");
+    testSerializeRoundtrip(v2);
+  }
+
+  xassert(v.taggedOrderedMapGet().m_container.size() == 2);
+
+  xassert(v.mapContains(3));
+  xassert(!v.mapContains(4));
+
+  v.mapSetValueAt(-5,7);
+  EXPECT_EQ(v.asString(), "z[3:4 -5:7]");
+  testSerializeRoundtrip(v);
+
+  v.orderedMapGetMutable().insert({8,9});
+  EXPECT_EQ(v.asString(), "z[3:4 -5:7 8:9]");
+  testSerializeRoundtrip(v);
+
+  xassert(v.taggedOrderedMapGetMutable().m_container.eraseKey(-5));
+  EXPECT_EQ(v.asString(), "z[3:4 8:9]");
+  testSerializeRoundtrip(v);
+
+  // Use the constructor for GDVTaggedOrderedMap that takes a `const&`.
+  GDVOrderedMap m{{"a","b"}};
+  GDVTaggedOrderedMap tm2(GDVSymbol("_"), m);
+  v = tm2;
+  EXPECT_EQ(v.asString(), "_[\"a\":\"b\"]");
+
+  // Exercise `GDVTaggedOrderedMap::operator=(const&)`.
+  v.taggedOrderedMapGetMutable() = tm;
+  EXPECT_EQ(v.asString(), "z[3:4 -5:6]");
+
+  {
+    // GDValue copy ctor with a tagged ordered map.
+    GDValue v2(v);
+    EXPECT_EQ(v2.asString(), "z[3:4 -5:6]");
+  }
+
+  // Exercise `GDVTaggedOrderedMap::operator=(&&)`.
+  v.taggedOrderedMapGetMutable() = GDVTaggedOrderedMap(GDVSymbol("a"), {});
+  EXPECT_EQ(v.asString(), "a[:]");
+
+  // Exercise `GDVTaggedMap::swap`.
+  v.taggedOrderedMapGetMutable().swap(tm2);
+  EXPECT_EQ(v.asString(), "_[\"a\":\"b\"]");
+  v.taggedOrderedMapGetMutable().swap(tm2);
+  EXPECT_EQ(v.asString(), "a[:]");
+
+  // `GDValue::orderedMapSet(&&)` when the value already has a map.
+  v.orderedMapSet(GDVOrderedMap{{-1,-2}});
+  EXPECT_EQ(v.asString(), "a[-1:-2]");
+
+  // `GDValue::orderedMapSet(const&)` when the value already has a map.
+  v.orderedMapSet(m);
+  EXPECT_EQ(v.asString(), "a[\"a\":\"b\"]");
+
+  // `GDValue::taggedOrderedMapSet(&&)` when the value is already a
+  // tagged map.
+  v.taggedOrderedMapSet(GDVTaggedOrderedMap(GDVSymbol("j"), {}));
+  EXPECT_EQ(v.asString(), "j[:]");
+
+  // `GDValue::taggedOrderedMapSet(const&)` when the value is already a
+  // tagged map.
+  v.taggedOrderedMapSet(tm2);
+  EXPECT_EQ(v.asString(), "_[\"a\":\"b\"]");
+  testSerializeRoundtrip(v);
+
+  v.taggedContainerSetTag(GDVSymbol(""));
+  EXPECT_EQ(v.asString(), "``[\"a\":\"b\"]");
+  testSerializeRoundtrip(v);
+
+  v.taggedContainerSetTag(GDVSymbol("some{crazy}char[act]ers"));
+  EXPECT_EQ(v.asString(), "`some{crazy}char[act]ers`[\"a\":\"b\"]");
+  testSerializeRoundtrip(v);
+}
+
+
 void testTaggedSequence()
 {
   GDValue v(GDVK_TAGGED_SEQUENCE);
@@ -1333,11 +1608,11 @@ void testSyntaxErrors()
       R"(inside "/*" comment, nested inside 1 other comments of the same kind, looking for corresponding "*/")");
   }
 
-  // readNextSequence
+  // readSequenceAfterFirstValue
   {
     // readCharOrErr(']', "looking for ']' at end of sequence");
-    testMultiErrorRegex("[", {-1, '}'}, 1, 2, "looking for '\\]' at end of sequence");
     testMultiErrorRegex("[1 ", {-1, '}'}, 1, 4, "looking for '\\]' at end of sequence");
+    testMultiErrorRegex("[1 2", {-1, '}'}, 1, 5, "looking for '\\]' at end of sequence");
   }
 
   // readNextTuple
@@ -1347,17 +1622,26 @@ void testSyntaxErrors()
     testMultiErrorRegex("(1 ", {-1, '}'}, 1, 4, "looking for '\\)' at end of tuple");
   }
 
-  // readNextSetOrMap
+  // readNextPossibleMap
   {
-    // processCharOrErr(skipWhitespaceAndComments(), '}',
-    //   "looking for '}' after ':' of empty map");
+    // processCharOrErr(skipWhitespaceAndComments(), closingDelim,
+    //   ordered?
+    //     "looking for ']' after ':' of empty ordered map" :
+    //     "looking for '}' after ':' of empty map");
     testMultiErrorRegex("{:", {-1, ']'}, 1, 3, "looking for '\\}' after ':'");
     testMultiErrorRegex("{ :", {-1, ']'}, 1, 4, "looking for '\\}' after ':'");
     testMultiErrorRegex("{ : ", {-1, ']'}, 1, 5, "looking for '\\}' after ':'");
+    testMultiErrorRegex("[:", {-1, '}'}, 1, 3, "looking for '\\]' after ':'");
+    testMultiErrorRegex("[ :", {-1, '}'}, 1, 4, "looking for '\\]' after ':'");
+    testMultiErrorRegex("[ : ", {-1, '}'}, 1, 5, "looking for '\\]' after ':'");
 
-    // unexpectedCharErr(readChar(), "looking for a value after '{'");
+    // unexpectedCharErr(readChar(), ordered?
+    //   "looking for a value after '['" :
+    //   "looking for a value after '{'");
     testMultiErrorRegex("{", {-1, ']'}, 1, 2, "looking for a value after '\\{'");
     testMultiErrorRegex("{ ", {-1, ']'}, 1, 3, "looking for a value after '\\{'");
+    testMultiErrorRegex("[", {-1, '}'}, 1, 2, "looking for a value after '\\['");
+    testMultiErrorRegex("[ ", {-1, ')'}, 1, 3, "looking for a value after '\\['");
 
     testOneErrorRegex("{3-", 1, 3, "'-' after a value");
   }
@@ -1369,36 +1653,53 @@ void testSyntaxErrors()
     testMultiErrorRegex("{1 2", {-1, ']'}, 1, 5, "looking for '\\}' at end of set");
   }
 
-  // readMapAfterFirstKey
+  // readPossiblyOrderedMapAfterFirstKey
   {
-    // unexpectedCharErr(readChar(), "looking for value after ':' in map entry");
-    testMultiErrorRegex("{1:", {-1, ']'}, 1, 4, "looking for value after ':'");
-    testMultiErrorRegex("{1: ", {-1, ']'}, 1, 5, "looking for value after ':'");
+    // unexpectedCharErr(readChar(), ordered?
+    //   "looking for value after ':' in ordered map entry" :
+    //   "looking for value after ':' in map entry");
+    testMultiErrorRegex("{1:", {-1, ']'}, 1, 4, "looking for value after ':' in map");
+    testMultiErrorRegex("{1: ", {-1, ']'}, 1, 5, "looking for value after ':' in map");
+    testMultiErrorRegex("[1:", {-1, '}'}, 1, 4, "looking for value after ':' in ordered map");
+    testMultiErrorRegex("[1: ", {-1, ')'}, 1, 5, "looking for value after ':' in ordered map");
 
-    // readCharOrErr('}', "looking for '}' at end of map");
-    testOneErrorRegex("{1:2]", 1, 5, "'\\]'.*looking for '\\}'");
+    // readCharOrErr(closingDelim, ordered?
+    //   "looking for ']' at end of ordered map" :
+    //   "looking for '}' at end of map");
+    testOneErrorRegex("{1:2]", 1, 5, "'\\]'.*looking for '\\}' at end of map");
     testMultiErrorRegex("{1:2 ", {-1, ']'}, 1, 6, "looking for '\\}' at end of map");
     testMultiErrorRegex("{1:2", {-1, ']'}, 1, 5, "looking for '\\}' at end of map");
+    testOneErrorRegex("[1:2}", 1, 5, "'\\}'.*looking for '\\]' at end of ordered map");
+    testMultiErrorRegex("[1:2 ", {-1, '}'}, 1, 6, "looking for '\\]' at end of ordered map");
+    testMultiErrorRegex("[1:2", {-1, '}'}, 1, 5, "looking for '\\]' at end of ordered map");
 
-    // processCharOrErr(colon, ':', "looking for ':' in map entry");
+    // processCharOrErr(colon, ':', ordered?
+    //   "looking for ':' in ordered map entry" :
+    //   "looking for ':' in map entry");
     testOneErrorRegex("{1:2 3", 1, 7, "end of file.*looking for ':'");
     testOneErrorRegex("{1:2 3}", 1, 7, "'\\}'.*looking for ':'");
     testOneErrorRegex("{1:2 3]", 1, 7, "'\\]'.*looking for ':'");
     testOneErrorRegex("{1:2 3-", 1, 7, "'-' after a value");
-    testOneErrorRegex("{1:2 3 4", 1, 8, "'4'.*looking for ':'");
+    testOneErrorRegex("{1:2 3 4", 1, 8, "'4'.*looking for ':' in map");
+    testOneErrorRegex("[1:2 3 4", 1, 8, "'4'.*looking for ':' in ordered map");
 
-    // unexpectedCharErr(readChar(), "looking for value after ':' in map entry");
+    // unexpectedCharErr(readChar(), ordered?
+    //   "looking for value after ':' in ordered map entry" :
+    //   "looking for value after ':' in map entry");
     testOneErrorRegex("{1:2 3:", 1, 8, "end of file.*after ':'");
     testOneErrorRegex("{1:2 3 : ", 1, 10, "end of file.*after ':'");
     testOneErrorRegex("{1:2 3:]", 1, 8, "'\\]'.*after ':'");
     testOneErrorRegex("{1:2 3:}", 1, 8, "'\\}'.*after ':'");
     testOneErrorRegex("{1:2 3::", 1, 8, "':'.*start of a value");
-    testOneErrorRegex("{1:2 3: }", 1, 9, "'\\}'.*after ':'");
+    testOneErrorRegex("{1:2 3: }", 1, 9, "'\\}'.*after ':' in map");
+    testOneErrorRegex("[1:2 3: ]", 1, 9, "'\\]'.*after ':' in ordered");
 
-    // locErr(loc, stringb("Duplicate map key: " << keyAsString));
+    // locErr(loc, stringb("Duplicate " << (ordered? "ordered " : "") <<
+    //                     "map key: " << keyAsString));
     testOneErrorSubstr("{1:2 1:2}", 1, 6, "Duplicate map key: 1");
     testOneErrorSubstr("{1:2 3:4 1:2}", 1, 10, "Duplicate map key: 1");
     testOneErrorSubstr("{1:2 {4:4}:4 11:2 {4:4}:5}", 1, 19, "Duplicate map key: {4:4}");
+    testOneErrorSubstr("[1:2 {4:4}:4 11:2 {4:4}:5]", 1, 19, "Duplicate ordered map key: {4:4}");
   }
 
   // readNextQuotedStringContents
@@ -1495,7 +1796,7 @@ void testSyntaxErrors()
     // These are no longer tied to a unique "err" site, but were in the
     // past, so I keep them as tests.
     testOneErrorSubstr("x{", 1, 3, "value after '{'");
-    testOneErrorRegex("true[", 1, 6, "end of file.*end of sequence");
+    testOneErrorRegex("true[", 1, 6, "end of file.*value after '\\['");
 
     // putbackAfterValueOrErr(c);       // Could be EOF, fine.
     testOneErrorSubstr("true!", 1, 5, "'!' after a value");
@@ -1967,6 +2268,52 @@ void testGDV_SKV()
 }
 
 
+void testValueKindCategories()
+{
+  EXN_CONTEXT("testValueKindCategories");
+
+  struct TestElement {
+    // Input kind.
+    GDValueKind m_kind;
+
+    // Expected categorizations.
+    bool m_isContainer;
+    bool m_isTaggedContainer;
+    bool m_isOrderedContainer;
+    bool m_isUnorderedContainer;
+  };
+
+  static TestElement const arr[] = {
+    //kind                     c      tc     oc     uc
+    { GDVK_SYMBOL,             false, false, false, false },
+    { GDVK_INTEGER,            false, false, false, false },
+    { GDVK_SMALL_INTEGER,      false, false, false, false },
+    { GDVK_STRING,             false, false, false, false },
+    { GDVK_SEQUENCE,           true,  false, true,  false },
+    { GDVK_TAGGED_SEQUENCE,    true,  true,  true,  false },
+    { GDVK_TUPLE,              true,  false, true,  false },
+    { GDVK_TAGGED_TUPLE,       true,  true,  true,  false },
+    { GDVK_SET,                true,  false, false, true  },
+    { GDVK_TAGGED_SET,         true,  true,  false, true  },
+    { GDVK_MAP,                true,  false, false, true  },
+    { GDVK_TAGGED_MAP,         true,  true,  false, true  },
+    { GDVK_ORDERED_MAP,        true,  false, true,  false },
+    { GDVK_TAGGED_ORDERED_MAP, true,  true,  true,  false },
+  };
+  ASSERT_TABLESIZE(arr, NUM_GDVALUE_KINDS);
+
+  for (TestElement const &te : arr) {
+    EXN_CONTEXT("kind=" << toString(te.m_kind));
+    GDValue v(te.m_kind);
+
+    EXPECT_EQ(v.isContainer(),          te.m_isContainer);
+    EXPECT_EQ(v.isTaggedContainer(),    te.m_isTaggedContainer);
+    EXPECT_EQ(v.isOrderedContainer(),   te.m_isOrderedContainer);
+    EXPECT_EQ(v.isUnorderedContainer(), te.m_isUnorderedContainer);
+  }
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -1992,10 +2339,12 @@ void test_gdvalue()
     testTuple();
     testSet();
     testMap();
+    testOrderedMap();
     testTaggedSequence();
     testTaggedTuple();
     testTaggedSet();
     testTaggedMap();
+    testTaggedOrderedMap();
     testSyntaxErrors();
     testDeserializeMisc();
     testDeserializeIntegers();
@@ -2012,6 +2361,7 @@ void test_gdvalue()
     testScopedSetIndent();
     testSymbolLiteralOperator();
     testGDV_SKV();
+    testValueKindCategories();
 
     // Some interesting values for the particular data used.
     testPrettyPrint(0);

@@ -9,6 +9,7 @@
 #include "smbase/counting-ostream.h"   // CountingOStream
 #include "smbase/gdvalue.h"            // gdv::GDValue
 #include "smbase/gdvsymbol.h"          // gdv::GDVSymbol
+#include "smbase/ordered-map-ops.h"    // smbase::OrderedMap::begin, etc.
 #include "smbase/overflow.h"           // safeToInt
 #include "smbase/save-restore.h"       // SAVE_RESTORE, SET_RESTORE
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
@@ -182,10 +183,11 @@ bool GDValueWriter::tryWrite(GDValue const &value,
   }
 
   // For use inside the `CASE` macro below.
-  static ContainerSyntax const sequenceSyntax = { "[", "",  "]" };
-  static ContainerSyntax const    tupleSyntax = { "(", "",  ")" };
-  static ContainerSyntax const      setSyntax = { "{", "",  "}" };
-  static ContainerSyntax const      mapSyntax = { "{", ":", "}" };
+  static ContainerSyntax const   sequenceSyntax = { "[", "",  "]" };
+  static ContainerSyntax const      tupleSyntax = { "(", "",  ")" };
+  static ContainerSyntax const        setSyntax = { "{", "",  "}" };
+  static ContainerSyntax const        mapSyntax = { "{", ":", "}" };
+  static ContainerSyntax const orderedMapSyntax = { "[", ":", "]" };
 
   switch (value.getKind()) {
     default:

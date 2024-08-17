@@ -10,6 +10,7 @@
 #include "smbase/gdvalue-reader.h"     // gdv::GDValueReader
 #include "smbase/gdvalue-writer.h"     // gdv::GDValueWriter
 #include "smbase/gdvsymbol.h"          // gdv::GDVSymbol
+#include "smbase/ordered-map-ops.h"    // smbase::OrderedMap::size, etc.
 #include "smbase/syserr.h"             // smbase::xsyserror
 #include "smbase/xassert.h"            // xassert
 
@@ -118,16 +119,18 @@ int compare(
 
 // ---------------------------- GDValueKind ----------------------------
 // Like `FOR_EACH_GDV_ALLOCATED_KIND`, but missing Integer.
-#define FOR_EACH_GDV_ALLOCATED_KIND_EXCEPT_INTEGER(macro) \
-  macro(STRING,          String        , string        )  \
-  macro(SEQUENCE,        Sequence      , sequence      )  \
-  macro(TAGGED_SEQUENCE, TaggedSequence, taggedSequence)  \
-  macro(TUPLE,           Tuple         , tuple         )  \
-  macro(TAGGED_TUPLE,    TaggedTuple   , taggedTuple   )  \
-  macro(SET,             Set           , set           )  \
-  macro(TAGGED_SET,      TaggedSet     , taggedSet     )  \
-  macro(MAP,             Map           , map           )  \
-  macro(TAGGED_MAP,      TaggedMap     , taggedMap     )
+#define FOR_EACH_GDV_ALLOCATED_KIND_EXCEPT_INTEGER(macro)        \
+  macro(STRING,             String          , string          )  \
+  macro(SEQUENCE,           Sequence        , sequence        )  \
+  macro(TAGGED_SEQUENCE,    TaggedSequence  , taggedSequence  )  \
+  macro(TUPLE,              Tuple           , tuple           )  \
+  macro(TAGGED_TUPLE,       TaggedTuple     , taggedTuple     )  \
+  macro(SET,                Set             , set             )  \
+  macro(TAGGED_SET,         TaggedSet       , taggedSet       )  \
+  macro(MAP,                Map             , map             )  \
+  macro(TAGGED_MAP,         TaggedMap       , taggedMap       )  \
+  macro(ORDERED_MAP,        OrderedMap      , orderedMap      )  \
+  macro(TAGGED_ORDERED_MAP, TaggedOrderedMap, taggedOrderedMap)
 
 // Invoke `macro` for all of the kinds where the data is represented
 // using an owner pointer to a GDVXXX object.
@@ -161,7 +164,9 @@ DEFINE_ENUMERATION_TO_STRING_OR(
     CASE(GDVK_SET),
     CASE(GDVK_TAGGED_SET),
     CASE(GDVK_MAP),
-    CASE(GDVK_TAGGED_MAP)
+    CASE(GDVK_TAGGED_MAP),
+    CASE(GDVK_ORDERED_MAP),
+    CASE(GDVK_TAGGED_ORDERED_MAP)
   ),
   "GDVK_invalid"
 )
@@ -354,10 +359,8 @@ GDValueKind GDValue::getSuperKind() const
 
 bool GDValue::isContainer() const
 {
-  return isSequence() ||
-         isTuple() ||
-         isSet() ||
-         isMap();
+  return isOrderedContainer() ||
+         isUnorderedContainer();
 }
 
 
@@ -366,7 +369,23 @@ bool GDValue::isTaggedContainer() const
   return isTaggedSequence() ||
          isTaggedTuple() ||
          isTaggedSet() ||
-         isTaggedMap();
+         isTaggedMap() ||
+         isTaggedOrderedMap();
+}
+
+
+bool GDValue::isOrderedContainer() const
+{
+  return isSequence() ||
+         isTuple() ||
+         isOrderedMap();
+}
+
+
+bool GDValue::isUnorderedContainer() const
+{
+  return isSet() ||
+         isMap();
 }
 
 
@@ -526,6 +545,22 @@ void GDValue::swap(GDValue &obj) noexcept
 }
 
 
+static void checkContainer(void const *)
+{
+  // General case, nothing to do.
+}
+
+static void checkContainer(GDVOrderedMap const *c)
+{
+  c->selfCheck();
+}
+
+static void checkContainer(GDVTaggedOrderedMap const *c)
+{
+  c->m_container.selfCheck();
+}
+
+
 void GDValue::selfCheck() const
 {
   switch (m_kind) {
@@ -549,6 +584,7 @@ void GDValue::selfCheck() const
     #define CASE(KIND, Kind, kind)                     \
       case GDVK_##KIND:                                \
         xassertInvariant(m_value.m_##kind != nullptr); \
+        checkContainer(m_value.m_##kind);              \
         break;
 
     FOR_EACH_GDV_ALLOCATED_KIND_EXCEPT_INTEGER(CASE)
@@ -1206,6 +1242,10 @@ DEFINE_GDV_KIND_BEGIN_END(Map, map)
 
 bool GDValue::mapContains(GDValue const &key) const
 {
+  if (isOrderedMap()) {
+    return orderedMapContains(key);
+  }
+
   xassertPrecondition(isMap());
   return mapGet().find(key) != mapGet().end();
 }
@@ -1213,6 +1253,10 @@ bool GDValue::mapContains(GDValue const &key) const
 
 GDValue const &GDValue::mapGetValueAt(GDValue const &key) const
 {
+  if (isOrderedMap()) {
+    return orderedMapGetValueAt(key);
+  }
+
   xassertPrecondition(isMap());
   auto it = mapGet().find(key);
   xassertPrecondition(it != mapGet().end());
@@ -1222,6 +1266,10 @@ GDValue const &GDValue::mapGetValueAt(GDValue const &key) const
 
 GDValue &GDValue::mapGetValueAt(GDValue const &key)
 {
+  if (isOrderedMap()) {
+    return orderedMapGetValueAt(key);
+  }
+
   xassertPrecondition(isMap());
   auto it = mapGetMutable().find(key);
   xassertPrecondition(it != mapGetMutable().end());
@@ -1231,6 +1279,11 @@ GDValue &GDValue::mapGetValueAt(GDValue const &key)
 
 void GDValue::mapSetValueAt(GDValue const &key, GDValue const &value)
 {
+  if (isOrderedMap()) {
+    orderedMapSetValueAt(key, value);
+    return;
+  }
+
   xassertPrecondition(isMap());
 
   auto it = mapGetMutable().find(key);
@@ -1245,6 +1298,11 @@ void GDValue::mapSetValueAt(GDValue const &key, GDValue const &value)
 
 void GDValue::mapSetValueAt(GDValue &&key, GDValue &&value)
 {
+  if (isOrderedMap()) {
+    orderedMapSetValueAt(std::move(key), std::move(value));
+    return;
+  }
+
   xassertPrecondition(isMap());
 
   auto it = mapGetMutable().find(key);
@@ -1260,6 +1318,10 @@ void GDValue::mapSetValueAt(GDValue &&key, GDValue &&value)
 
 bool GDValue::mapRemoveKey(GDValue const &key)
 {
+  if (isOrderedMap()) {
+    return orderedMapRemoveKey(key);
+  }
+
   xassertPrecondition(isMap());
   return mapGetMutable().erase(key) != 0;
 }
@@ -1267,6 +1329,11 @@ bool GDValue::mapRemoveKey(GDValue const &key)
 
 void GDValue::mapClear()
 {
+  if (isOrderedMap()) {
+    orderedMapClear();
+    return;
+  }
+
   xassertPrecondition(isMap());
   return mapGetMutable().clear();
 }
@@ -1305,6 +1372,100 @@ void GDValue::mapSetSym(char const *symName, GDValue &&value)
 bool GDValue::mapRemoveSym(char const *symName)
 {
   return mapRemoveKey(GDVSymbol(symName));
+}
+
+
+// ---------------------------- OrderedMap -----------------------------
+DEFINE_CONTAINER_CTOR_SET_GET(ORDERED_MAP, OrderedMap, orderedMap)
+
+DEFINE_GDV_KIND_BEGIN_END(OrderedMap, orderedMap)
+
+
+bool GDValue::orderedMapContains(GDValue const &key) const
+{
+  xassertPrecondition(isOrderedMap());
+  return orderedMapGet().contains(key);
+}
+
+
+GDValue const &GDValue::orderedMapGetValueAt(GDValue const &key) const
+{
+  xassertPrecondition(isOrderedMap());
+  return orderedMapGet().valueAtKey(key);
+}
+
+
+GDValue &GDValue::orderedMapGetValueAt(GDValue const &key)
+{
+  xassertPrecondition(isOrderedMap());
+  return orderedMapGetMutable().valueAtKey(key);
+}
+
+
+void GDValue::orderedMapSetValueAt(GDValue const &key, GDValue const &value)
+{
+  xassertPrecondition(isOrderedMap());
+
+  orderedMapGetMutable().setValueAtKey(key, value);
+}
+
+
+void GDValue::orderedMapSetValueAt(GDValue &&key, GDValue &&value)
+{
+  xassertPrecondition(isOrderedMap());
+
+  orderedMapGetMutable().setValueAtKey(
+    std::move(key), std::move(value));
+}
+
+
+bool GDValue::orderedMapRemoveKey(GDValue const &key)
+{
+  xassertPrecondition(isOrderedMap());
+  return orderedMapGetMutable().eraseKey(key);
+}
+
+
+void GDValue::orderedMapClear()
+{
+  xassertPrecondition(isOrderedMap());
+  return orderedMapGetMutable().clear();
+}
+
+
+bool GDValue::orderedMapContainsSym(char const *symName)
+{
+  return orderedMapContains(GDVSymbol(symName));
+}
+
+
+GDValue const &GDValue::orderedMapGetSym(char const *symName) const
+{
+  return orderedMapGetValueAt(GDVSymbol(symName));
+}
+
+
+GDValue &GDValue::orderedMapGetSym(char const *symName)
+{
+  return orderedMapGetValueAt(GDVSymbol(symName));
+}
+
+
+void GDValue::orderedMapSetSym(char const *symName, GDValue const &value)
+{
+  orderedMapSetValueAt(GDVSymbol(symName), value);
+}
+
+
+void GDValue::orderedMapSetSym(char const *symName, GDValue &&value)
+{
+  orderedMapSetValueAt(GDVSymbol(symName), std::move(value));
+}
+
+
+bool GDValue::orderedMapRemoveSym(char const *symName)
+{
+  return orderedMapRemoveKey(GDVSymbol(symName));
 }
 
 

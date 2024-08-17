@@ -5,6 +5,7 @@
 
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
 #include "smbase/sm-test.h"            // EXPECT_EQ, DIAG
+#include "smbase/string-util.h"        // doubleQuote
 #include "smbase/stringb.h"            // stringb
 
 #include <sstream>                     // std::ostringstream
@@ -20,6 +21,12 @@ OPEN_ANONYMOUS_NAMESPACE
 std::string toGDVN(int i)
 {
   return stringb(i);
+}
+
+
+std::string toGDVN(char const *str)
+{
+  return doubleQuote(str);
 }
 
 
@@ -297,6 +304,121 @@ void testInsertAtIndex()
 }
 
 
+void testReadOnlyIteration()
+{
+  OrderedMap<int, int> m = {{2,22}, {1,11}, {3,33}};
+  OrderedMap<int, int> const &cm = m;
+
+  using Entry = OrderedMap<int, int>::value_type;
+
+  auto cit = cm.begin();
+  auto it = m.begin();
+
+  auto cit_end = cm.end();
+  auto it_end = m.end();
+
+  xassert(cit.isValid());
+  xassert(it.isValid());
+
+  xassert(!cit.isEnd());
+  xassert(!it.isEnd());
+
+  xassert(cit != cit_end);
+  xassert(it != it_end);
+
+  xassert(*cit == Entry(2,22));
+  xassert(*it == Entry(2,22));
+
+  ++cit;
+  ++it;
+
+  xassert(!cit.isEnd());
+  xassert(!it.isEnd());
+
+  xassert(cit != cit_end);
+  xassert(it != it_end);
+
+  xassert(*cit == Entry(1,11));
+  xassert(*it == Entry(1,11));
+
+  ++cit;
+  ++it;
+
+  xassert(!cit.isEnd());
+  xassert(!it.isEnd());
+
+  xassert(cit != cit_end);
+  xassert(it != it_end);
+
+  xassert(*cit == Entry(3,33));
+  xassert(*it == Entry(3,33));
+
+  ++cit;
+  ++it;
+
+  xassert(cit.isEnd());
+  xassert(it.isEnd());
+
+  xassert(cit == cit_end);
+  xassert(it == it_end);
+}
+
+
+void testMutatingIteration()
+{
+  OrderedMap<int, int> m = {{2,22}, {1,11}, {3,33}};
+
+  for (auto &kv : m) {
+    if (kv.first > 1) {
+      kv.second += 100;
+    }
+  }
+
+  EXPECT_EQ(toGDVN(m), "[2:122 1:11 3:133]");
+}
+
+
+void testInsertRvalue()
+{
+  OrderedMap<int, int> m = {{2,22}, {1,11}, {3,33}};
+  using Entry = OrderedMap<int, int>::value_type;
+
+  xassert(m.insert(Entry(-5,55)));
+  EXPECT_EQ(toGDVN(m), "[2:22 1:11 3:33 -5:55]");
+
+  xassert(!m.insert(Entry(1,1111)));
+  EXPECT_EQ(toGDVN(m), "[2:22 1:11 3:33 -5:55]");
+}
+
+
+void testSetValueAtKey()
+{
+  OrderedMap<int, int> m = {{2,22}, {1,11}, {3,33}};
+
+  // Rvalue reference.
+  m.setValueAtKey(3, 3333);
+  EXPECT_EQ(toGDVN(m), "[2:22 1:11 3:3333]");
+
+  // Lvalue reference.
+  int k = 2;
+  int v = 2222;
+  m.setValueAtKey(k, v);
+  EXPECT_EQ(toGDVN(m), "[2:2222 1:11 3:3333]");
+}
+
+
+// Lightly exercise the container with a value type different than the
+// key.
+void testDifferentValueType()
+{
+  OrderedMap<int, char const *> m = {{1, "one"}};
+  EXPECT_EQ(toGDVN(m), "[1:\"one\"]");
+
+  m.insert({-1, "negone"});
+  EXPECT_EQ(toGDVN(m), "[1:\"one\" -1:\"negone\"]");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -310,6 +432,11 @@ void test_ordered_map()
   testSwap();
   testCompare();
   testInsertAtIndex();
+  testReadOnlyIteration();
+  testMutatingIteration();
+  testInsertRvalue();
+  testSetValueAtKey();
+  testDifferentValueType();
 }
 
 

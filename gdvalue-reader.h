@@ -45,27 +45,30 @@ protected:   // methods
   // the comment we are about to scan is not nested in anything.
   void skipCStyleComment(int nestingDepth);
 
-  // Having seen and consumed '[', read the following values and put
-  // them into a sequence.  Return after consuming the ']'.
-  GDValue readNextSequence();
+  // Having seen and parsed the first element of a sequence, read the
+  // following values and append them to that sequence.  Return after
+  // consuming the ']'.
+  GDValue readSequenceAfterFirstValue(GDValue &&firstValue);
 
   // Having seen and consumed '(', read the following values and put
   // them into a sequence.  Return after consuming the ')'.
   GDValue readNextTuple();
 
-  // Having seen and consumed '{', read what follows to first determine
-  // whether it denotes a set or map, then parse and return the entire
-  // container value.
-  GDValue readNextSetOrMap();
+  // Having seen and consumed '{' (in which case `ordered` is false) or
+  // '[' (in which case `ordered` is ture), read what follows to first
+  // determine whether it denotes a map, then parse and return the
+  // entire container value.
+  GDValue readNextPossibleMap(bool ordered);
 
   // Having seen '{' followed by `firstValue` and *not* a subsequent
   // colon, return the set consisting of `firstValue` and all of the
   // following values until '}'.
   GDValue readSetAfterFirstValue(GDValue &&firstValue);
 
-  // Having seen '{' followed by `firstValue` and then a colon, parse
-  // and return the remainder of the map.
-  GDValue readMapAfterFirstKey(GDValue &&firstKey);
+  // Having seen '{' or '[' followed by `firstValue` and then a colon,
+  // parse and return the remainder of the possibly-ordered map.
+  GDValue readPossiblyOrderedMapAfterFirstKey(
+    bool ordered, GDValue &&firstKey);
 
   // Having seen and consumed '"', read the following characters and
   // put them into a string.  Return after consuming the final '"'.
