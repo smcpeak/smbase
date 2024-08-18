@@ -171,7 +171,7 @@ void testBool()
   }
 
   // But not these.  Each of these cases is exercised by the
-  // `check-gdvalue-bool` target in `Makefile`.
+  // `check-gdvalue-errs` target in `Makefile`.
   {
     #if ERRNUM == 1
       void *p = nullptr;

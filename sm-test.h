@@ -10,7 +10,7 @@
 #include "exc.h"           // smbase::XBase
 #include "sm-is-equal.h"   // smbase::is_equal
 #include "sm-iostream.h"   // cout
-#include "sm-macros.h"     // SM_PRINTF_ANNOTATION
+#include "sm-macros.h"     // SM_PRINTF_ANNOTATION, NULLABLE
 #include "str.h"           // stringb, string
 #include "xassert.h"       // xassert
 
@@ -26,6 +26,11 @@
 //
 // This has type `int` so it can be used from C modules too.
 extern int verbose;
+
+
+// The value of `argv[0]`.  This is set by `main` in unit-tests.cc, and
+// null until that function runs.
+extern char const * NULLABLE g_argv0;
 
 
 // "Test output", which goes nowhere unless `verbose` is true.

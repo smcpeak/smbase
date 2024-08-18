@@ -2,8 +2,7 @@
 # see license.txt for copyright and terms of use
 
 # Main target.
-THIS := libsmbase.a
-all: pre-target $(THIS)
+all:
 .PHONY: all
 
 
@@ -79,6 +78,17 @@ SYSLIBS =
 # Math library for executables that use floating-point functions.  I
 # haven't historically needed this, but now I do with GCC 9.3 on Linux?
 MATHLIB = -lm
+
+# Directory to put compilation outputs into (including executables and
+# library archives, despite the name).  Part of the point of having this
+# directory is to facilitate compiling with multiple compilers, with the
+# results being kept separate.
+OBJDIR = obj
+
+# Main output file, the smbase library archive.
+#
+# TODO: Rename this variable.
+THIS = $(OBJDIR)/libsmbase.a
 
 # Libraries to link with when creating test executables.
 LIBS = $(THIS) $(SYSLIBS)
@@ -183,11 +193,13 @@ include sm-lib.mk
 
 
 # Compile .cc to .o, also generating dependency files.
-%.o: %.cc
-	$(CXX) -c -o $@ $(GENDEPS_FLAGS) $(call MJ_FLAG,$*) $(CXXFLAGS) $<
+$(OBJDIR)/%.o: %.cc
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(CXX) -c -o $@ $(GENDEPS_FLAGS) $(call MJ_FLAG,$(OBJDIR)/$*) $(CXXFLAGS) $<
 
-%.o: %.c
-	$(CC) -c -o $@ $(GENDEPS_FLAGS) $(call MJ_FLAG,$*) $(CFLAGS) $<
+$(OBJDIR)/%.o: %.c
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(CC) -c -o $@ $(GENDEPS_FLAGS) $(call MJ_FLAG,$(OBJDIR)/$*) $(CFLAGS) $<
 
 # For occasional diagnostic purposes, a rule to preprocess explicitly.
 %.ii: %.cc
@@ -198,6 +210,7 @@ include sm-lib.mk
 # direct 'make' to build something of interest first, in order to speed
 # up reporting errors in a certain module.
 pre-target: $(PRE_TARGET)
+all: pre-target
 .PHONY: pre-target
 
 
@@ -332,16 +345,20 @@ SRCS += xoverflow.cc
 
 # Library object files.
 OBJS := $(SRCS)
-OBJS := $(patsubst %.c,%.o,$(OBJS))
-OBJS := $(patsubst %.cc,%.o,$(OBJS))
+OBJS := $(patsubst %.c,$(OBJDIR)/%.o,$(OBJS))
+OBJS := $(patsubst %.cc,$(OBJDIR)/%.o,$(OBJS))
 
 # Pull in automatic dependencies created by $(GENDEPS_FLAGS).
 -include $(OBJS:.o=.d)
 
+
 $(THIS): $(OBJS)
+	$(CREATE_OUTPUT_DIRECTORY)
 	$(RM) $(THIS)
 	$(AR) -r $(THIS) $(OBJS)
 	-$(RANLIB) $(THIS)
+
+all: $(THIS)
 
 
 # ---------------------------- Module tests ----------------------------
@@ -445,29 +462,35 @@ UNIT_TEST_OBJS += xassert-test.o
 # Master unit test module.
 UNIT_TEST_OBJS += unit-tests.o
 
+# The unit test objects also go into $(OBJDIR).
+UNIT_TEST_OBJS := $(patsubst %.o,$(OBJDIR)/%.o,$(UNIT_TEST_OBJS))
+
 -include $(UNIT_TEST_OBJS:.o=.d)
 
-unit-tests.exe: $(UNIT_TEST_OBJS) $(THIS)
+$(OBJDIR)/unit-tests.exe: $(UNIT_TEST_OBJS) $(THIS)
+	$(CREATE_OUTPUT_DIRECTORY)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $(UNIT_TEST_OBJS) $(LIBS)
 
-all: unit-tests.exe
+all: $(OBJDIR)/unit-tests.exe
 
 
 # Rule for tests that have dedicated .cc files, which is currently just
 # binary-stdin-test.exe.
-%-test.exe: %-test.cc $(THIS)
-	$(CXX) -o $@ $(call MJ_FLAG,$*-test) $(CXXFLAGS) $(LDFLAGS) $*-test.cc $(LIBS)
+$(OBJDIR)/%-test.exe: $(OBJDIR)/%-test.o $(THIS)
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(CXX) -o $@ $(call MJ_FLAG,$(OBJDIR)/$*-test) $(CXXFLAGS) $(LDFLAGS) $< $(LIBS)
 
 
 # Create a read-only file I can try to inspect in sm-file-util-test.cc.
 test.dir/read-only.txt:
-	mkdir -p test.dir
+	$(CREATE_OUTPUT_DIRECTORY)
 	echo "this file is read-only" >$@
 	chmod a-w $@
 
 
 # If we are missing an expect file, just make an empty one.
 test/%.expect:
+	$(CREATE_OUTPUT_DIRECTORY)
 	touch $@
 
 # This variable is used as a dependency on targets that I only want to
@@ -484,7 +507,7 @@ out/%.unit.ok: test/%.expect $(AFTER_UNIT_TESTS)
 	  --actual out/$*.actual \
 	  --expect test/$*.expect \
 	  --path-not-found-replacer \
-	  env VERBOSE=1 ./unit-tests.exe $*
+	  env VERBOSE=1 $(OBJDIR)/unit-tests.exe $*
 	touch $@
 
 check: out/boxprint.unit.ok
@@ -493,33 +516,33 @@ check: out/tree_print.unit.ok
 
 
 # ------------------------- binary-stdin-test --------------------------
-all: binary-stdin-test.exe
+all: $(OBJDIR)/binary-stdin-test.exe
 
-out/binary-stdin-test.ok: binary-stdin-test.exe
-	@mkdir -p $(dir $@)
+out/binary-stdin-test.ok: $(OBJDIR)/binary-stdin-test.exe
+	$(CREATE_OUTPUT_DIRECTORY)
 	@#
 	@# Generate a file with all 256 bytes.
-	./binary-stdin-test.exe allbytes out/allbytes.bin
+	$(OBJDIR)/binary-stdin-test.exe allbytes out/allbytes.bin
 	@#
 	@# Test reading stdin with 'read'.
-	./binary-stdin-test.exe read0 allbytes < out/allbytes.bin
+	$(OBJDIR)/binary-stdin-test.exe read0 allbytes < out/allbytes.bin
 	@#
 	@# Test writing stdout with 'write'.
-	./binary-stdin-test.exe allbytes write1 > out/allbytes-actual.bin
+	$(OBJDIR)/binary-stdin-test.exe allbytes write1 > out/allbytes-actual.bin
 	cmp out/allbytes-actual.bin out/allbytes.bin
 	@#
 	@# Test reading stdin with 'fread'.
-	./binary-stdin-test.exe fread_stdin allbytes < out/allbytes.bin
+	$(OBJDIR)/binary-stdin-test.exe fread_stdin allbytes < out/allbytes.bin
 	@#
 	@# Test writing stdout with 'fwrite'.
-	./binary-stdin-test.exe allbytes fwrite_stdout > out/allbytes-actual.bin
+	$(OBJDIR)/binary-stdin-test.exe allbytes fwrite_stdout > out/allbytes-actual.bin
 	cmp out/allbytes-actual.bin out/allbytes.bin
 	@#
 	@# Test reading stdin with 'cin.read'.
-	./binary-stdin-test.exe cin_read allbytes < out/allbytes.bin
+	$(OBJDIR)/binary-stdin-test.exe cin_read allbytes < out/allbytes.bin
 	@#
 	@# Test writing stdout with 'cout.write'
-	./binary-stdin-test.exe allbytes cout_write > out/allbytes-actual.bin
+	$(OBJDIR)/binary-stdin-test.exe allbytes cout_write > out/allbytes-actual.bin
 	cmp out/allbytes-actual.bin out/allbytes.bin
 	@#
 	@# Done.
@@ -530,29 +553,40 @@ check: out/binary-stdin-test.ok
 
 # ---------------------------- call-abort ------------------------------
 # Test program used by run-process-test.cc.
-call-abort.exe: call-abort.cc
+$(OBJDIR)/call-abort.exe: $(OBJDIR)/call-abort.o
+	$(CREATE_OUTPUT_DIRECTORY)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $<
 
 
 # ------------------------------- gdvn ---------------------------------
 # Program to read and write GDVN.
-gdvn.exe: gdvn.cc $(THIS)
-	$(CXX) -o $@ $(CXXFLAGS) $(LFDLAGS) $< $(LIBS)
+#
+# This rule creates a .o file rather that directly compiling the .cc
+# file because if I do the latter with coverage enabled when the .gcno
+# and .gcda files end up in the source directory instead of $(OBJDIR).
+#
+# TODO: Adjust LDFLAGS so that CXXFLAGS is not needed here when
+# compiling with coverage enabled.
+#
+$(OBJDIR)/gdvn.exe: $(OBJDIR)/gdvn.o $(THIS)
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $< $(LIBS)
 
-all: gdvn.exe
+all: $(OBJDIR)/gdvn.exe
 
 
 # Create an empty expected-output file if necessary.
 test/gdvn/%-expect: test/gdvn/%
+	$(CREATE_OUTPUT_DIRECTORY)
 	touch $@
 
 # Run a file through gdvn.exe.
-out/gdvn/%-ok: test/gdvn/% test/gdvn/%-expect gdvn.exe $(AFTER_UNIT_TESTS)
+out/gdvn/%-ok: test/gdvn/% test/gdvn/%-expect $(OBJDIR)/gdvn.exe $(AFTER_UNIT_TESTS)
 	$(CREATE_OUTPUT_DIRECTORY)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/gdvn/$*-actual \
 	  --expect test/gdvn/$*-expect \
-	  ./gdvn.exe $<
+	  $(OBJDIR)/gdvn.exe $<
 	touch $@
 
 # Files with which to test gdvn.
@@ -569,12 +603,12 @@ check-gdvn: $(GDVN_OKFILES)
 
 
 # Run one input through `gdvn` via stdin.
-out/gdvn/123-stdin.ok: test/gdvn/123.gdvn test/gdvn/123-stdin-expect gdvn.exe $(AFTER_UNIT_TESTS)
+out/gdvn/123-stdin.ok: test/gdvn/123.gdvn test/gdvn/123-stdin-expect $(OBJDIR)/gdvn.exe $(AFTER_UNIT_TESTS)
 	$(CREATE_OUTPUT_DIRECTORY)
 	$(RUN_COMPARE_EXPECT) \
 	  --actual out/gdvn/123-stdin-actual \
 	  --expect test/gdvn/123-stdin-expect \
-	  sh -c "./gdvn.exe < $<"
+	  sh -c "$(OBJDIR)/gdvn.exe < $<"
 	touch $@
 
 check-gdvn: out/gdvn/123-stdin.ok
@@ -598,7 +632,7 @@ check: check-gdvn
 #
 define EXPECT_COMPILE_TEST_FAIL
 
-out/$1-test-error-$2.txt.ok: $1-test.o
+out/$1-test-error-$2.txt.ok: $(OBJDIR)/$1-test.o
 	$$(CREATE_OUTPUT_DIRECTORY)
 	if $$(CXX) -c -o out/$1-test-error-$2.o \
 	          $$(CXXFLAGS) -DERRNUM=$2 $1-test.cc \
@@ -645,9 +679,9 @@ check: check-compile-errs
 
 
 # -------------------------- run unit tests ----------------------------
-out/unit-tests.exe.ok: unit-tests.exe call-abort.exe test.dir/read-only.txt
+out/unit-tests.exe.ok: $(OBJDIR)/unit-tests.exe $(OBJDIR)/call-abort.exe test.dir/read-only.txt
 	$(CREATE_OUTPUT_DIRECTORY)
-	$(RUN_WITH_TIMEOUT) ./unit-tests.exe
+	$(RUN_WITH_TIMEOUT) $(OBJDIR)/unit-tests.exe
 	touch $@
 
 check: out/unit-tests.exe.ok
@@ -655,6 +689,7 @@ check: out/unit-tests.exe.ok
 
 # ------------------- test run-compare-expect.py -----------------------
 test/rce_expect_%:
+	$(CREATE_OUTPUT_DIRECTORY)
 	touch $@
 
 # Run a command through run-compare-expect.py.
@@ -741,7 +776,7 @@ out/test/ctc/in/%.ok: test/ctc/in/%.h test/ctc/in/%.cc create-tuple-class.py
 	  --expect test/ctc/exp/$*.cc \
 	  --no-separators --no-stderr \
 	  cat out/test/ctc/in/$*.cc
-	$(CXX) -c -I. out/test/ctc/in/$*.cc
+	$(CXX) -c -o out/test/ctc/in/$*.o -I. out/test/ctc/in/$*.cc
 	touch $@
 
 .PHONY: check-ctc
@@ -772,6 +807,7 @@ check: out/ctc-up-to-date.ok
 # ------------------------------- mypy ---------------------------------
 # Run `mypy` on a script.
 out/%.mypy.ok: %
+	$(CREATE_OUTPUT_DIRECTORY)
 	$(MYPY) --strict $*
 	touch $@
 
@@ -790,12 +826,14 @@ endif
 # Verify that `using namespace` does not appear in any header.
 ALL_HEADERS := $(wildcard *.h)
 out/no-using-namespace-in-header.ok: $(ALL_HEADERS)
+	$(CREATE_OUTPUT_DIRECTORY)
 	@if grep 'using namespace' $(ALL_HEADERS); then \
 	  echo "Some headers have 'using namespace'."; \
 	  exit 2; \
 	else \
 	  exit 0; \
 	fi
+	touch $@
 
 .PHONY: check-ad-hoc
 check-ad-hoc: out/no-using-namespace-in-header.ok
@@ -808,12 +846,12 @@ check: check-ad-hoc
 # COVERAGE=1.
 .PHONY: run-gcov
 run-gcov:
-	$(GCOV) $(SRCS)
+	$(GCOV) --object-directory $(OBJDIR) $(SRCS)
 
 # Clean up previous gcov output.
 .PHONY: gcov-clean
 gcov-clean:
-	$(RM) *.gcov *.gcda *.gcno
+	$(RM) *.gcov $(OBJDIR)/*.gcda $(OBJDIR)/*.gcno
 
 
 # ----------------------- compile_commands.json ------------------------
@@ -828,12 +866,13 @@ gcov-clean:
 # The `sed` command removes the trailing comma from the last line only.
 # IWYU does not tolerate them.
 compile_commands.json:
-	(echo "["; cat *.o.json | sed '$$ s/,$$//'; echo "]") > $@
+	(echo "["; cat $(OBJDIR)/*.o.json | sed '$$ s/,$$//'; echo "]") > $@
 
 
 # ---------------------------- index.html ------------------------------
 HEADERS := $(wildcard *.h)
 out/index.html.ok: index.html get-file-descriptions.py $(HEADERS)
+	$(CREATE_OUTPUT_DIRECTORY)
 	$(PYTHON3) ./get-file-descriptions.py \
 	  --ignore='-fwd\.h$$' *.h
 	touch $@
@@ -843,11 +882,11 @@ check: out/index.html.ok
 
 # -------------------------------- IWYU --------------------------------
 # Run IWYU on one file, but only after compilation has succeeded.
-out/iwyu/%.cc.iwyu: %.cc %.o
+out/iwyu/%.cc.iwyu: %.cc $(OBJDIR)/%.o
 	$(CREATE_OUTPUT_DIRECTORY)
 	$(IWYU) $(CXXFLAGS) $< >$@ 2>&1
 
-out/iwyu/%.c.iwyu: %.c %.o
+out/iwyu/%.c.iwyu: %.c $(OBJDIR)/%.o
 	$(CREATE_OUTPUT_DIRECTORY)
 	$(IWYU) $(CFLAGS) $< >$@ 2>&1
 
@@ -879,8 +918,8 @@ check-clean:
 # ------------------------------- clean --------------------------------
 # delete compiling/editing byproducts
 clean: gcov-clean check-clean
-	$(RM) *.o *.o.json *~ *.a *.d *.exe gmon.out srcloc.tmp testcout flattest.tmp
-	$(RM) -r test.dir
+	$(RM) *~ gmon.out srcloc.tmp flattest.tmp
+	$(RM) -r $(OBJDIR) test.dir
 
 distclean: clean
 	$(RM) compile_commands.json

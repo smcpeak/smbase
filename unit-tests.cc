@@ -6,10 +6,11 @@
 // test_$MOD(), which is declared and called below by the 'RUN_TEST'
 // macro.
 
-#include "exc.h"                       // xfatal
-#include "nonport.h"                   // getMilliseconds
-#include "str.h"                       // streq
-#include "strutil.h"                   // test_strutil
+#include "smbase/exc.h"                // xfatal
+#include "smbase/nonport.h"            // getMilliseconds
+#include "smbase/sm-test.h"            // g_argv0
+#include "smbase/str.h"                // streq
+#include "smbase/strutil.h"            // test_strutil
 
 #include <cstdlib>                     // std::getenv
 #include <exception>                   // std::exception
@@ -42,6 +43,8 @@ static void printTiming(char const *testName, long elapsed)
 
 static void entry(int argc, char **argv)
 {
+  g_argv0 = argv[0];
+
   char const *testName = NULL;
   if (argc >= 2) {
     testName = argv[1];

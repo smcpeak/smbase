@@ -4,9 +4,10 @@
 #include "run-process.h"               // module under test
 
 #include "exc.h"                       // smbase::{XBase, XFormat}
-#include "sm-test.h"                   // DIAG, verbose
+#include "sm-test.h"                   // DIAG, verbose, g_argv0
 #include "sm-platform.h"               // PLATFORM_IS_POSIX
 #include "string-util.h"               // splitNonEmpty
+#include "strutil.h"                   // dirname
 #include "xassert.h"                   // xassert
 
 #include <cstdlib>                     // std::exit
@@ -172,8 +173,14 @@ static void testRun()
 static void testAborted()
 {
   DIAG("-- testAborted --");
+
+  // Assume that call-abort.exe is in the same directory as the test
+  // executable being run.
+  xassert(g_argv0);
+  std::string exeDir = dirname(g_argv0);
+
   RunProcess rproc;
-  rproc.setCommand(std::vector<string>{"./call-abort.exe"});
+  rproc.setCommand(std::vector<string>{exeDir + "/call-abort.exe"});
 
   if (PLATFORM_IS_POSIX) {
     rproc.runAndWait();

@@ -16,6 +16,9 @@
 int verbose = !!std::getenv("VERBOSE");
 
 
+char const * NULLABLE g_argv0 = nullptr;
+
+
 std::ostream &getTout()
 {
   return verbose? std::cout : nullOStream;

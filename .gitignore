@@ -1,19 +1,17 @@
 # .gitignore
 # This file should be maintained in "env LANG=C sort" order.
+
+# I removed *.o, etc., since they should go into obj/.
+
 *.DSW
 *.LIB
 *.bak
 *.csm
-*.d
-*.exe
 *.gcda
 *.gcno
 *.gcov
 *.i
 *.ii
-*.lib
-*.o
-*.o.json
 *.out
 *.tmp
 *.~DE
@@ -36,11 +34,11 @@ gmon.out
 gprof.out
 hide
 history.txt
-libsmbase.a
 make.out
 mut
 mutant-compile.sh
 mutant.cc
+obj
 out
 personal-make-cmd.sh
 personal.mk
@@ -48,3 +46,5 @@ srcloc.tmp
 strhash_1
 strhash_2
 test.dir
+
+# EOF
