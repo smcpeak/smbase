@@ -146,6 +146,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(srcloc);
   RUN_TEST(std_map_fwd);
   RUN_TEST(std_optional_fwd);
+  RUN_TEST(std_set_fwd);
   RUN_TEST(std_string_fwd);
   RUN_TEST(std_string_view_fwd);
   RUN_TEST(std_variant_fwd);
