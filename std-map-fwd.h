@@ -9,7 +9,7 @@
 #include "detect-libcpp.h"             // SMBASE_LIBCPP_IS_KNOWN, etc.
 #include "std-functional-fwd.h"        // std::less [n]
 #include "std-memory-fwd.h"            // std::allocator [n]
-#include "std-utility-fwd.h"           // std::utility [n]
+#include "std-utility-fwd.h"           // std::pair [n]
 
 
 // ------------------------------- Known -------------------------------
