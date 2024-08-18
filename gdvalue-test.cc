@@ -989,6 +989,7 @@ void testOrderedMap()
   // Call `orderedMapGetValueAt() const`.
   GDValue const &v2c = v2;
   EXPECT_EQ(v2c.orderedMapGetValueAt(3), GDValue(4));
+  EXPECT_EQ(v2c.mapGetValueAt(3), GDValue(4));
 
   // Call `orderedMapSetValueAt(..., const&)` (indirectly).
   GDValue eight(8);
@@ -2220,6 +2221,32 @@ void testMapSymbolOps()
 }
 
 
+// Test the operations on ordered maps dedicated to symbol keys.
+void testOrderedMapSymbolOps()
+{
+  GDValue m(GDVK_ORDERED_MAP);
+
+  xassert(!m.orderedMapContainsSym("x"));
+
+  m.orderedMapSetSym("x", 1);
+  xassert(m.orderedMapContainsSym("x"));
+  EXPECT_EQ(m.orderedMapGetSym("x"), GDValue(1));
+
+  {
+    GDValue const &cm = m;
+    EXPECT_EQ(cm.orderedMapGetSym("x"), GDValue(1));
+  }
+
+  GDValue two(2);
+  m.orderedMapSetSym("x", two);
+  EXPECT_EQ(m.orderedMapGetSym("x"), GDValue(2));
+
+  xassert(!m.orderedMapRemoveSym("y"));
+  xassert(m.orderedMapRemoveSym("x"));
+  xassert(!m.orderedMapContainsSym("x"));
+}
+
+
 void testScopedSetIndent()
 {
   SET_RESTORE(GDValue::s_defaultWriteOptions.m_targetLineWidth, 20);
@@ -2358,6 +2385,7 @@ void test_gdvalue()
     testToGDValue();
     testDefaultWriteOptions();
     testMapSymbolOps();
+    testOrderedMapSymbolOps();
     testScopedSetIndent();
     testSymbolLiteralOperator();
     testGDV_SKV();
