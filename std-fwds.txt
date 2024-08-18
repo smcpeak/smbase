@@ -8,6 +8,10 @@ Overview
 The std-*-fwd.h headers, plus detect-libcpp.h, provide forward
 declarations for standard headers for improved compile times.
 
+These headers are based on the work of Philip Tretter:
+
+  https://github.com/Philip-Trettner/cpp-std-fwd
+
 
 Usage
 =====
@@ -36,13 +40,14 @@ The `stdfwd` namespace
 
 It is unfortunate that a different namespace than `std` is used, but
 there is no alternative for things like `std::vector` since the default
-argument can only be provided once.
+allocator argument can only be provided once.
 
-In practice, types that do not take template arguments, such as
-`stdfwd::string`, can be written `std::string`.  Additionally, those
-that only take one argument, like `char_traits`, are also safe.   Using
-`stdfwd` in such cases can be seen as proactive in case a libc++ shows
-up that requires it, but that seems unlikely.
+In practice, types that do not take default arguments normally left
+unspecified (e.g., allocators and comparators), such as `stdfwd::string`
+and `stdfwd::optional`, can be written normally as `std::string` and
+`std::optional`.  Using `stdfwd` in such cases can be seen as proactive
+in case the library changes to add an argument or for the sake of
+consistency.
 
 
 Implementation notes
@@ -50,7 +55,8 @@ Implementation notes
 
 The basic idea is to detect which libc++ is in use, then provide
 declarations that are compatible with it.  Obviously, this is not
-portable, conforming C++.
+portable, strictly conforming C++ because user code is not allowed to
+declare things in `std`.  But it's fine in practice.
 
 If the libc++ cannot be detected then std-XXX-fwd.h falls back to
 including <XXX>, so it should be no worse than using the standard header
@@ -120,11 +126,13 @@ Changes
 
 Relative to Philip's work:
 
-* These headers have a fallback mechanism if libc++ is not detected.
+* These headers have a fallback mechanism if libc++ is not detected
+  (explained above).
 
 * These headers are subdivided by standard header, rather than all
   rolled into one, to make the fallback no worse than using a standard
-  header directly.
+  header directly in the fallback case, and for closer alignment with
+  normal usage of standard headers.
 
 
 EOF
