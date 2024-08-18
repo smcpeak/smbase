@@ -404,6 +404,16 @@ void testSetValueAtKey()
   int v = 2222;
   m.setValueAtKey(k, v);
   EXPECT_EQ(toGDVN(m), "[2:2222 1:11 3:3333]");
+
+  // Add new key using rvalue reference.
+  m.setValueAtKey(-4, 44);
+  EXPECT_EQ(toGDVN(m), "[2:2222 1:11 3:3333 -4:44]");
+
+  // Add new key using lvalue reference.
+  k = 5;
+  v = 55;
+  m.setValueAtKey(k, v);
+  EXPECT_EQ(toGDVN(m), "[2:2222 1:11 3:3333 -4:44 5:55]");
 }
 
 
