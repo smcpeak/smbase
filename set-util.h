@@ -9,8 +9,13 @@
 #include "container-util.h"            // smbase::contains
 #include "xassert.h"                   // xassert
 
+#include <optional>                    // std::optional
 #include <ostream>                     // std::ostream
 #include <set>                         // std::set
+#include <vector>                      // std::vector
+
+
+// NOTE: Comments describing these functions are in `set-util-iface.h`.
 
 
 template <class T>
@@ -65,6 +70,21 @@ bool isSubsetOf_getExtra(T &extra /*OUT*/,
   }
 
   return true;
+}
+
+
+template <class T>
+std::optional<T> setHasElementNotIn(
+  std::set<T> const &smaller,
+  std::set<T> const &larger)
+{
+  for (T const &element : smaller) {
+    if (!smbase::contains(larger, element)) {
+      return std::make_optional(element);
+    }
+  }
+
+  return std::nullopt;
 }
 
 

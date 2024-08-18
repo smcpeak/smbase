@@ -3,36 +3,41 @@
 
 // One of the reasons this file exists is to allow TUs to get the
 // declaration of `operator<<(set)`, which is needed if the `operator<<`
-// for some other container that contains a set will be used.
+// for some other container that contains a set will be used.  That
+// declaration may need to be included before certain other headers,
+// which could be challenging when using the full header with
+// implementation dependencies.
 
 #ifndef SMBASE_SET_UTIL_IFACE_H
 #define SMBASE_SET_UTIL_IFACE_H
 
 #include "set-util-fwd.h"              // fwds for this module
 
+#include "std-optional-fwd.h"          // std::optional
+#include "std-set-fwd.h"               // stdfwd::set
+#include "std-vector-fwd.h"            // stdfwd::vector
+
 #include <iosfwd>                      // std::ostream [n]
-#include <set>                         // std::set [n]
-#include <vector>                      // std::vector [n]
 
 
 // Insert 't' into 's', return true if it was inserted (i.e., it was not
 // already there).
 template <class T>
-bool setInsert(std::set<T> &s, T const &t);
+bool setInsert(stdfwd::set<T> &s, T const &t);
 
 
 // Insert 't' into 's', requiring that it not already be there.
 template <class T>
-void setInsertUnique(std::set<T> &s, T const &t);
+void setInsertUnique(stdfwd::set<T> &s, T const &t);
 
 
 template <class T>
-void setInsertAll(std::set<T> &dest, std::set<T> const &src);
+void setInsertAll(stdfwd::set<T> &dest, stdfwd::set<T> const &src);
 
 
 // True if every element in 'subset' is also in 'superset'.
 template <class T>
-bool isSubsetOf(std::set<T> const &subset, std::set<T> const &superset);
+bool isSubsetOf(stdfwd::set<T> const &subset, stdfwd::set<T> const &superset);
 
 
 // If 'smaller' is a subset of 'larger', return true.  Otherwise, set
@@ -40,20 +45,33 @@ bool isSubsetOf(std::set<T> const &subset, std::set<T> const &superset);
 // 'larger', and return false.
 template <class T>
 bool isSubsetOf_getExtra(T &extra /*OUT*/,
-                         std::set<T> const &smaller,
-                         std::set<T> const &larger);
+                         stdfwd::set<T> const &smaller,
+                         stdfwd::set<T> const &larger);
+
+
+// If there is an element in `smaller` that is not in `larger`, return
+// the first such.
+//
+// This is basically the same as `isSubsetOf_getExtra` (with opposite
+// return value sense), except it does not require an existing `T`
+// object, which can be an issue when `T` lacks a default constructor.
+//
+template <class T>
+std::optional<T> setHasElementNotIn(
+  stdfwd::set<T> const &smaller,
+  stdfwd::set<T> const &larger);
 
 
 // Call 'func' on every element in 'input' and return the set of all of
 // the results.
 template <typename OELT, typename IELT, typename FUNC>
-std::set<OELT> setMapElements(std::set<IELT> const &input,
-                              FUNC const &func);
+stdfwd::set<OELT> setMapElements(stdfwd::set<IELT> const &input,
+                                 FUNC const &func);
 
 
 // Return a vector containing the elements of 's' in natural order.
 template <class T>
-std::vector<T> setToVector(std::set<T> const &s);
+stdfwd::vector<T> setToVector(stdfwd::set<T> const &s);
 
 
 // Write `s` to `os`.  `printElement` should be like:
@@ -64,12 +82,12 @@ std::vector<T> setToVector(std::set<T> const &s);
 template <class T, class PRINT_ELEMENT>
 void setWrite(
   std::ostream &os,
-  std::set<T> const &s,
+  stdfwd::set<T> const &s,
   PRINT_ELEMENT const &printElement);
 
 
 template <class T>
-std::ostream& operator<< (std::ostream &os, std::set<T> const &s);
+std::ostream& operator<< (std::ostream &os, stdfwd::set<T> const &s);
 
 
 // Object that can participate in an operator<< output chain.
@@ -77,13 +95,13 @@ template <class T, class PRINT_ELEMENT>
 class SetWriter {
 public:      // data
   // Set to write.
-  std::set<T> const &m_set;
+  stdfwd::set<T> const &m_set;
 
   // Element printer.
   PRINT_ELEMENT const &m_printElement;
 
 public:      // methods
-  inline SetWriter(std::set<T> const &s, PRINT_ELEMENT const &pe);
+  inline SetWriter(stdfwd::set<T> const &s, PRINT_ELEMENT const &pe);
 
   inline void write(std::ostream &os) const;
 
@@ -99,7 +117,7 @@ public:      // methods
 // like `printElement` in `setWrite`.
 template <class T, class PRINT_ELEMENT>
 SetWriter<T,PRINT_ELEMENT> setWriter(
-  std::set<T> const &s,
+  stdfwd::set<T> const &s,
   PRINT_ELEMENT const &pe);
 
 

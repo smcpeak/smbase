@@ -80,14 +80,29 @@ void testIsSubsetOf()
 void testIsSubsetOf_getExtra()
 {
   std::set<int> s1{1};
-  std::set<int> s2{1,2};
+  std::set<int> s12{1,2};
 
   int extra = 0;
-  xassert(isSubsetOf_getExtra(extra /*OUT*/, s1, s2));
+  xassert(isSubsetOf_getExtra(extra /*OUT*/, s1, s12));
   xassert(extra == 0);
 
-  xassert(!isSubsetOf_getExtra(extra /*OUT*/, s2, s1));
+  xassert(!isSubsetOf_getExtra(extra /*OUT*/, s12, s1));
   xassert(extra == 2);
+}
+
+
+void testSetHasElementNotIn()
+{
+  std::set<int> s1{1};
+  std::set<int> s12{1,2};
+  std::set<int> s23{2,3};
+
+  xassert(setHasElementNotIn(s12, s1) == std::make_optional(2));
+  xassert(setHasElementNotIn(s1, s12).has_value() == false);
+
+  xassert(setHasElementNotIn(s12, s23) == std::make_optional(1));
+  xassert(setHasElementNotIn(s23, s12) == std::make_optional(3));
+  xassert(setHasElementNotIn(s23, s1) == std::make_optional(2));
 }
 
 
@@ -145,6 +160,7 @@ void test_set_util()
   testSetInsertAll();
   testIsSubsetOf();
   testIsSubsetOf_getExtra();
+  testSetHasElementNotIn();
   testSetMapElements();
   testSetToVector();
   testOstreamInsert();
