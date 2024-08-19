@@ -55,8 +55,22 @@ void testSetInsertUnique()
 void testSetInsertAll()
 {
   std::set<int> s;
-  setInsertAll(s, std::set<int>{1,2,3});
+
+  xassert(setInsertAll(s, std::set<int>{1,2,3}) == true);
   EXPECT_EQ(stringb(s), "{1, 2, 3}");
+
+  xassert(setInsertAll(s, std::set<int>{1,2,3}) == false);
+  EXPECT_EQ(stringb(s), "{1, 2, 3}");
+}
+
+
+void testSetContains()
+{
+  std::set<int> s{1,3,5};
+
+  xassert(setContains(s, 1));
+  xassert(!setContains(s, 2));
+  xassert(setContains(s, 3));
 }
 
 
@@ -158,6 +172,7 @@ void test_set_util()
   testSetInsert();
   testSetInsertUnique();
   testSetInsertAll();
+  testSetContains();
   testIsSubsetOf();
   testIsSubsetOf_getExtra();
   testSetHasElementNotIn();

@@ -6,7 +6,6 @@
 
 #include "set-util-iface.h"            // interface for this module
 
-#include "container-util.h"            // smbase::contains
 #include "xassert.h"                   // xassert
 
 #include <optional>                    // std::optional
@@ -35,11 +34,22 @@ void setInsertUnique(std::set<T> &s, T const &t)
 
 
 template <class T>
-void setInsertAll(std::set<T> &dest, std::set<T> const &src)
+bool setInsertAll(std::set<T> &dest, std::set<T> const &src)
 {
+  bool ret = false;
+
   for (auto const &v : src) {
-    dest.insert(v);
+    ret |= setInsert(dest, v);
   }
+
+  return ret;
+}
+
+
+template <class T>
+bool setContains(stdfwd::set<T> const &s, T const &t)
+{
+  return s.find(t) != s.end();
 }
 
 
@@ -63,7 +73,7 @@ bool isSubsetOf_getExtra(T &extra /*OUT*/,
                          std::set<T> const &larger)
 {
   for (T const &element : smaller) {
-    if (!smbase::contains(larger, element)) {
+    if (!setContains(larger, element)) {
       extra = element;
       return false;
     }
@@ -79,7 +89,7 @@ std::optional<T> setHasElementNotIn(
   std::set<T> const &larger)
 {
   for (T const &element : smaller) {
-    if (!smbase::contains(larger, element)) {
+    if (!setContains(larger, element)) {
       return std::make_optional(element);
     }
   }

@@ -20,8 +20,8 @@
 #include <iosfwd>                      // std::ostream [n]
 
 
-// Insert 't' into 's', return true if it was inserted (i.e., it was not
-// already there).
+// Insert 't' into 's'.  Return true if it was inserted, false if it was
+// already there.
 template <class T>
 bool setInsert(stdfwd::set<T> &s, T const &t);
 
@@ -31,8 +31,19 @@ template <class T>
 void setInsertUnique(stdfwd::set<T> &s, T const &t);
 
 
+// Insert all elements of `src` into `dest`.  Return true if at least
+// one element was inserted.
 template <class T>
-void setInsertAll(stdfwd::set<T> &dest, stdfwd::set<T> const &src);
+bool setInsertAll(stdfwd::set<T> &dest, stdfwd::set<T> const &src);
+
+
+// True if `t` is in `s`.
+//
+// There is a `contains` in `container-util.h` that also works, but in
+// some cases I prefer to be explicit about the type involved.
+//
+template <class T>
+bool setContains(stdfwd::set<T> const &s, T const &t);
 
 
 // True if every element in 'subset' is also in 'superset'.
