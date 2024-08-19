@@ -7,7 +7,8 @@
 static stdfwd::set<int> getASet();
 
 // This must come before sm-test.h.
-#include "set-util.h"                  // operator<<(set)
+#include "set-util.h"                  // smbase::operator<<(set)
+using smbase::operator<<;
 
 #include "sm-test.h"                   // EXPECT_EQ
 

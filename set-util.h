@@ -6,12 +6,16 @@
 
 #include "set-util-iface.h"            // interface for this module
 
-#include "xassert.h"                   // xassert
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
+#include "smbase/xassert.h"            // xassert
 
 #include <optional>                    // std::optional
 #include <ostream>                     // std::ostream
 #include <set>                         // std::set
 #include <vector>                      // std::vector
+
+
+OPEN_NAMESPACE(smbase)
 
 
 // NOTE: Comments describing these functions are in `set-util-iface.h`.
@@ -178,6 +182,9 @@ SetWriter<T,PRINT_ELEMENT> setWriter(
 {
   return SetWriter<T,PRINT_ELEMENT>(s, pe);
 }
+
+
+CLOSE_NAMESPACE(smbase)
 
 
 #endif // SMBASE_SET_UTIL_H

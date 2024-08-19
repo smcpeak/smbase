@@ -13,11 +13,15 @@
 
 #include "set-util-fwd.h"              // fwds for this module
 
-#include "std-optional-fwd.h"          // std::optional
-#include "std-set-fwd.h"               // stdfwd::set
-#include "std-vector-fwd.h"            // stdfwd::vector
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
+#include "smbase/std-optional-fwd.h"   // std::optional
+#include "smbase/std-set-fwd.h"        // stdfwd::set
+#include "smbase/std-vector-fwd.h"     // stdfwd::vector
 
 #include <iosfwd>                      // std::ostream [n]
+
+
+OPEN_NAMESPACE(smbase)
 
 
 // Insert 't' into 's'.  Return true if it was inserted, false if it was
@@ -130,6 +134,9 @@ template <class T, class PRINT_ELEMENT>
 SetWriter<T,PRINT_ELEMENT> setWriter(
   stdfwd::set<T> const &s,
   PRINT_ELEMENT const &pe);
+
+
+CLOSE_NAMESPACE(smbase)
 
 
 #endif // SMBASE_SET_UTIL_IFACE_H
