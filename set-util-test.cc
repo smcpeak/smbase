@@ -74,6 +74,22 @@ void testSetContains()
 }
 
 
+struct Base {};
+struct Derived : Base {};
+
+// Test that `setContains` works when passed a pointer to a derived
+// class when the set is declared to contain base class pointers.
+void testSetContainsDerived()
+{
+  Derived d;
+
+  std::set<Base const *> s{&d};
+
+  xassert(setContains(s, &d));
+  xassert(!setContains(s, nullptr));
+}
+
+
 void testIsSubsetOf()
 {
   std::set<int> s0;
@@ -173,6 +189,7 @@ void test_set_util()
   testSetInsertUnique();
   testSetInsertAll();
   testSetContains();
+  testSetContainsDerived();
   testIsSubsetOf();
   testIsSubsetOf_getExtra();
   testSetHasElementNotIn();

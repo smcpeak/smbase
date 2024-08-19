@@ -50,10 +50,10 @@ bool setInsertAll(std::set<T> &dest, std::set<T> const &src)
 }
 
 
-template <class T>
-bool setContains(stdfwd::set<T> const &s, T const &t)
+template <class T, class KEY>
+bool setContains(stdfwd::set<T> const &s, KEY const &k)
 {
-  return s.find(t) != s.end();
+  return s.count(k) > 0;
 }
 
 

@@ -41,13 +41,16 @@ template <class T>
 bool setInsertAll(stdfwd::set<T> &dest, stdfwd::set<T> const &src);
 
 
-// True if `t` is in `s`.
+// True if `k` is in `s`.
 //
 // There is a `contains` in `container-util.h` that also works, but in
 // some cases I prefer to be explicit about the type involved.
 //
-template <class T>
-bool setContains(stdfwd::set<T> const &s, T const &t);
+// The key type is allowed to be different from `T` to allow the use of
+// types implicitly convertible to or comparable with `T`.
+//
+template <class T, class KEY>
+bool setContains(stdfwd::set<T> const &s, KEY const &k);
 
 
 // True if every element in 'subset' is also in 'superset'.
