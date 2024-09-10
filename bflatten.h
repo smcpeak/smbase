@@ -1,15 +1,16 @@
-// bflatten.h            see license.txt for copyright and terms of use
+// bflatten.h
 // Implementation of the Flatten interface for reading/writing binary files.
 
-#ifndef BFLATTEN_H
-#define BFLATTEN_H
+// See license.txt for copyright and terms of use.
 
-#include "flatten.h"                   // Flatten
-#include "ohashtbl.h"                  // OwnerHashTable
+#ifndef SMBASE_BFLATTEN_H
+#define SMBASE_BFLATTEN_H
 
-#include <iosfwd>                      // std::istream, std::ostream
+#include "smbase/flatten.h"            // Flatten
+#include "smbase/ohashtbl.h"           // OwnerHashTable
 
-#include <stdio.h>                     // remove
+#include <cstdio>                      // std::remove
+#include <iosfwd>                      // std::{istream, ostream} [f]
 
 
 // Partial Flatten implementation that handles serialization of owner
@@ -117,10 +118,10 @@ T *writeThenRead(T &obj)
   T *ret = new T(in);
   ret->xfer(in);
 
-  remove(fname);
+  std::remove(fname);
 
   return ret;
 }
 
 
-#endif // BFLATTEN_H
+#endif // SMBASE_BFLATTEN_H

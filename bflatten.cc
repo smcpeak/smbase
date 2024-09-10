@@ -1,16 +1,18 @@
-// bflatten.cc            see license.txt for copyright and terms of use
-// code for bflatten.h
+// bflatten.cc
+// Code for bflatten.h.
+
+// See license.txt for copyright and terms of use.
 
 #include "bflatten.h"                  // this module
 
-#include "exc.h"                       // xformat
-#include "hashtbl.h"                   // HashTable
-#include "overflow.h"                  // convertNumber
-#include "sm-macros.h"                 // STATICDEF
-#include "sm-stdint.h"                 // intptr_t
-#include "stringb.h"                   // stringb
-#include "syserr.h"                    // xsyserror
-#include "xassert.h"                   // xassert
+#include "smbase/exc.h"                // xformat
+#include "smbase/hashtbl.h"            // HashTable
+#include "smbase/overflow.h"           // convertNumber
+#include "smbase/sm-macros.h"          // STATICDEF
+#include "smbase/sm-stdint.h"          // intptr_t
+#include "smbase/stringb.h"            // stringb
+#include "smbase/syserr.h"             // xsyserror
+#include "smbase/xassert.h"            // xassert
 
 #include <fstream>                     // std::fstream, etc.
 
