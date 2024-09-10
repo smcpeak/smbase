@@ -1,10 +1,12 @@
-// bit2d.h            see license.txt for copyright and terms of use
+// bit2d.h
 // Two-dimensional array of bits.
+
+// See license.txt for copyright and terms of use.
 
 #ifndef SMBASE_BIT2D_H
 #define SMBASE_BIT2D_H
 
-#include "bit2d-fwd.h"                 // fwds for this module
+#include "bit2d-fwd.h"                 // fwds for this module // IWYU pragma: export
 
 #include "smbase/flatten-fwd.h"        // Flatten [f]
 #include "smbase/point.h"              // point

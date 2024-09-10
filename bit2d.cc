@@ -1,10 +1,12 @@
-// bit2d.cc            see license.txt for copyright and terms of use
-// code for bit2d.h
+// bit2d.cc
+// Code for bit2d.h.
 
-#include "bit2d.h"                     // this module
-#include "flatten.h"                   // Flatten
-#include "sm-macros.h"                 // smbase_loopi, ASSERT_TABLESIZE
-#include "xassert.h"                   // xassert
+// See license.txt for copyright and terms of use.
+
+#include "smbase/bit2d.h"              // this module
+#include "smbase/flatten.h"            // Flatten
+#include "smbase/sm-macros.h"          // smbase_loopi, ASSERT_TABLESIZE
+#include "smbase/xassert.h"            // xassert
 
 #include <stdio.h>                     // printf
 #include <string.h>                    // memset, memcpy
