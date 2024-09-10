@@ -1,18 +1,23 @@
 // bdffont.cc
-// code for bdffont.h
+// Code for bdffont.h.
 
-#include "bdffont.h"         // this module
+// See license.txt for copyright and terms of use.
 
-#include "bit2d.h"           // Bit2d
-#include "exc.h"             // xformat
-#include "objcount.h"        // CHECK_OBJECT_COUNT
-#include "owner.h"           // Owner
-#include "stringb.h"         // stringb
-#include "stringf.h"         // stringf
-#include "strutil.h"         // readStringFromFile
-#include "xassert.h"         // xassert
+#include "bdffont.h"                   // this module
 
-#include <string.h>          // memcmp
+#include "smbase/bit2d.h"              // Bit2d
+#include "smbase/exc.h"                // xformat
+#include "smbase/objcount.h"           // CHECK_OBJECT_COUNT
+#include "smbase/objlist.h"            // ObjList, FOREACH_OBJLIST
+#include "smbase/owner.h"              // Owner
+#include "smbase/point.h"              // point
+#include "smbase/str.h"                // stringBuilder
+#include "smbase/stringb.h"            // stringb
+#include "smbase/stringf.h"            // stringf
+#include "smbase/strutil.h"            // readStringFromFile
+#include "smbase/xassert.h"            // xassert
+
+#include <cstring>                     // std::memcmp
 
 using namespace smbase;
 
@@ -477,7 +482,7 @@ static void parseBitmap(char const *&p, Bit2d &bitmap)
   int textLength = ((bitmap.Size().x + 7) / 8) * 2;
 
   for (int y=0; y < bitmap.Size().y; y++) {
-    if (0==memcmp(p, "ENDCHAR", 7)) {
+    if (0==std::memcmp(p, "ENDCHAR", 7)) {
       XFORMAT("unexpected ENDCHAR after reading " << y <<
               " of " << bitmap.Size().y << " lines");
     }

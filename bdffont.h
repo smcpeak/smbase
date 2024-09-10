@@ -1,6 +1,8 @@
 // bdffont.h
 // Parse and represent BDF fonts in memory.
 
+// See license.txt for copyright and terms of use.
+
 // spec:
 // http://partners.adobe.com/public/developer/en/font/5005.BDF_Spec.pdf
 //
@@ -36,16 +38,16 @@
 // semantics of arithmetic and the implicit conversions in C/C++ make
 // it almost meaningless anyway.
 
-#ifndef BDFFONT_H
-#define BDFFONT_H
+#ifndef SMBASE_BDFFONT_H
+#define SMBASE_BDFFONT_H
 
-#include "array.h"           // ArrayStack
-#include "objlist.h"         // ObjList
-#include "point.h"           // point
-#include "sm-macros.h"       // NO_OBJECT_COPIES
-#include "str.h"             // string
+#include "smbase/array.h"              // ArrayStack
+#include "smbase/bit2d-fwd.h"          // Bit2d [f]
+#include "smbase/objlist.h"            // ObjList
+#include "smbase/point.h"              // point
+#include "smbase/sm-macros.h"          // NO_OBJECT_COPIES
+#include "smbase/str.h"                // string
 
-class Bit2d;                 // bit2d.h
 
 // An entire BDF font.  The class itself is responsible only for
 // storage of the information.  Global functions (declared below) then
@@ -283,4 +285,4 @@ void writeBDFString(stringBuilder &dest, BDFFont const &font);
 void writeBDFFile(char const *destFname, BDFFont const &font);
 
 
-#endif // BDFFONT_H
+#endif // SMBASE_BDFFONT_H

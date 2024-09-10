@@ -4,9 +4,11 @@
 #ifndef SMBASE_BIT2D_H
 #define SMBASE_BIT2D_H
 
-#include "point.h"           // point
+#include "bit2d-fwd.h"                 // fwds for this module
 
-class Flatten;
+#include "smbase/flatten-fwd.h"        // Flatten [f]
+#include "smbase/point.h"              // point
+
 
 class Bit2d {
 private:     // data
