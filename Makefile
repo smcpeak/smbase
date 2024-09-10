@@ -886,10 +886,16 @@ check: out/index.html.ok
 out/iwyu/%.cc.iwyu: %.cc $(OBJDIR)/%.o
 	$(CREATE_OUTPUT_DIRECTORY)
 	$(IWYU) $(CXXFLAGS) $< >$@ 2>&1
+ifeq ($(PRINT_IWYU_OUT),1)
+	cat $@
+endif
 
 out/iwyu/%.c.iwyu: %.c $(OBJDIR)/%.o
 	$(CREATE_OUTPUT_DIRECTORY)
 	$(IWYU) $(CFLAGS) $< >$@ 2>&1
+ifeq ($(PRINT_IWYU_OUT),1)
+	cat $@
+endif
 
 # Source files to apply IWYU to.
 IWYU_SRCS :=
