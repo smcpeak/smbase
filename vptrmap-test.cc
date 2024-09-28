@@ -129,6 +129,8 @@ void test1()
     }
 
     xassert(map.getNumEntries() == stack.length());
+    xassert(VoidPtrMap::lookups > 0);  // Otherwise divbyzero.
+
     //     "  iter  iters  entries  lookups  probes  avgprobes"
     avgprobes[i] = ((double)VoidPtrMap::probes) / ((double)VoidPtrMap::lookups);
     printf("  %4d  %5d  %7d  %7d  %6d    %g\n",
