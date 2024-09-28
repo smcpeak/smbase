@@ -3,7 +3,7 @@
 
 #include "bflatten.h"                  // this module
 
-#include "exc.h"                       // xformat
+#include "exc.h"                       // xformat, GENERIC_CATCH_{BEGIN,END}
 #include "hashtbl.h"                   // HashTable
 #include "overflow.h"                  // convertNumber
 #include "sm-macros.h"                 // STATICDEF
@@ -210,12 +210,16 @@ BFlatten::BFlatten(char const *fname, bool r)
 
 BFlatten::~BFlatten()
 {
+  GENERIC_CATCH_BEGIN
+
   if (reading()) {
     delete m_stream.is();
   }
   else {
     delete m_stream.os();
   }
+
+  GENERIC_CATCH_END
 }
 
 

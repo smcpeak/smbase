@@ -1,8 +1,11 @@
 // strdict.cc            see license.txt for copyright and terms of use
 // code for strdict.h
 
-#include "strdict.h"        // this module
-#include <string.h>         // strcmp
+#include "strdict.h"                   // this module
+
+#include "exc.h"                       // GENERIC_CATCH_{BEGIN,END}
+
+#include <string.h>                    // strcmp
 
 
 #define FOREACH_NODE(itervar) \
@@ -31,8 +34,12 @@ StringDict::StringDict(StringDict const &obj)
 
 StringDict::~StringDict()
 {
+  GENERIC_CATCH_BEGIN
+
   SELFCHECK();
   empty();
+
+  GENERIC_CATCH_END
 }
 
 

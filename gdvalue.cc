@@ -7,6 +7,7 @@
 
 // this dir
 #include "smbase/compare-util.h"       // compare, RET_IF_COMPARE
+#include "smbase/exc.h"                // GENERIC_CATCH_{BEGIN,END}
 #include "smbase/gdvalue-reader.h"     // gdv::GDValueReader
 #include "smbase/gdvalue-writer.h"     // gdv::GDValueWriter
 #include "smbase/gdvsymbol.h"          // gdv::GDVSymbol
@@ -216,6 +217,8 @@ void GDValue::resetSelfAndSwapWith(GDValue &obj) noexcept
 {
   using std::swap;
 
+  GENERIC_CATCH_BEGIN
+
   reset();
 
   switch (obj.m_kind) {
@@ -233,6 +236,8 @@ void GDValue::resetSelfAndSwapWith(GDValue &obj) noexcept
   }
 
   std::swap(m_kind, obj.m_kind);
+
+  GENERIC_CATCH_END
 }
 
 

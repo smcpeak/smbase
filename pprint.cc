@@ -1,10 +1,13 @@
 // pprint.cc
 // code for pprint.h
 
-#include "pprint.h"      // this module
-#include "breaker.h"     // breaker
-#include <stdio.h>       // sprintf
-#include <string.h>      // memcpy
+#include "pprint.h"                    // this module
+
+#include "breaker.h"                   // breaker
+#include "exc.h"                       // GENERIC_CATCH_{BEGIN,END}
+
+#include <stdio.h>                     // sprintf
+#include <string.h>                    // memcpy
 
 
 // ---------------------- PPrintOut ----------------------
@@ -33,6 +36,8 @@ PPrint::PPrint(PPrintOut &o)
 
 PPrint::~PPrint()
 {
+  GENERIC_CATCH_BEGIN
+
   if (line.length() > 0) {
     // hit a breakpoint if we're in the debugger, since this
     // is unexpected
@@ -41,6 +46,8 @@ PPrint::~PPrint()
     // add a final newline to get all the output out
     print("\n");
   }
+
+  GENERIC_CATCH_END
 }
 
 
