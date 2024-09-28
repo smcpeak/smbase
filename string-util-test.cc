@@ -50,7 +50,7 @@ void testSplit()
     },
   };
 
-  for (auto t : tests) {
+  for (auto const &t : tests) {
     EXN_CONTEXT(doubleQuote(t.m_input));
     std::vector<std::string> actual = split(t.m_input, ' ');
     EXPECT_EQ(actual, t.m_expect);
@@ -99,7 +99,7 @@ void testSplitNonEmpty()
     },
   };
 
-  for (auto t : tests) {
+  for (auto const &t : tests) {
     std::vector<std::string> actual = splitNonEmpty(t.m_input, ' ');
     EXPECT_EQ(actual, t.m_expect);
   }
@@ -151,7 +151,7 @@ void testJoin()
     },
   };
 
-  for (auto t : tests) {
+  for (auto const &t : tests) {
     std::string actual = join(t.m_vec, t.m_sep);
     EXPECT_EQ(actual, t.m_expect);
   }
@@ -212,7 +212,7 @@ void testDoubleQuote()
       "\"'\\\"?\\\\\\a\\b\\f\\n\\r\\t\\v\"" },
   };
 
-  for (auto t : tests) {
+  for (auto const &t : tests) {
     std::string actual = doubleQuote(t.m_input);
     EXPECT_EQ(actual, std::string(t.m_expect));
   }
@@ -252,7 +252,7 @@ void testVectorToString()
     },
   };
 
-  for (auto t : tests) {
+  for (auto const &t : tests) {
     std::string actual = toString(t.m_input);
     EXPECT_EQ(actual, std::string(t.m_expect));
   }
@@ -271,7 +271,7 @@ void testStripExtension()
     { "foobar", "foobar" }
   };
 
-  for (auto t : tests) {
+  for (auto const &t : tests) {
     std::string actual = stripExtension(t.m_input);
     EXPECT_EQ(actual, std::string(t.m_expect));
   }
@@ -334,7 +334,7 @@ void testBeginsWith()
     { "defabc", "abc", false },
   };
 
-  for (auto t : tests) {
+  for (auto const &t : tests) {
     bool actual = beginsWith(t.m_str, t.m_prefix);
     EXPECT_EQ(actual, t.m_expect);
   }
@@ -362,7 +362,7 @@ void testEndsWith()
     { "a\n",    "\n",  true  },
   };
 
-  for (auto t : tests) {
+  for (auto const &t : tests) {
     bool actual = endsWith(t.m_str, t.m_suffix);
     EXPECT_EQ(actual, t.m_expect);
   }
