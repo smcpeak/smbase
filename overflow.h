@@ -225,7 +225,7 @@ bool divideWithOverflowCheckOpt(
     return false;
   }
 
-  if (is_signed<NUM>::value) {
+  if constexpr (is_signed<NUM>::value) {
     if (dividend == numeric_limits<NUM>::min() &&
         divisor == -1) {
       // The specific case of dividing the most negative integer by -1
