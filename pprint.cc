@@ -58,7 +58,8 @@ struct BreakInfo {
 
   BreakInfo(int pp, int pc, int pi)
     : p(pp), pCol(pc), pInd(pi) {}
-  BreakInfo() {}      // for use in arrays
+  BreakInfo()                     // for use in arrays
+    : p(), pCol(), pInd() {}
 
   // when choosing breaks, we maximize this sum: the # of chars
   // that will be on this line, and the # of chars available to
