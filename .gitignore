@@ -26,6 +26,7 @@ TAGS
 changes
 compile_commands.json
 config.mk
+cov-int
 dependencies.png
 diff
 examples
