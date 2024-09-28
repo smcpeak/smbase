@@ -7,7 +7,7 @@
 #ifndef SOBJLIST_H
 #define SOBJLIST_H
 
-#include "voidlist.h"    // VoidList
+#include "voidlist.h"                  // VoidList
 
 
 // forward declarations of template classes, so we can befriend them in SObjList
