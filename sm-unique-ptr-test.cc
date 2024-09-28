@@ -165,18 +165,18 @@ void testSwap()
   UniquePtr<Super> p1(new Super(1));
   UniquePtr<Super> p2(new Super(2));
 
-  xassert(p1->one = 1);
-  xassert(p2->one = 2);
+  xassert(p1->one == 1);
+  xassert(p2->one == 2);
 
   p1.swap(p2);
 
-  xassert(p1->one = 2);
-  xassert(p2->one = 1);
+  xassert(p1->one == 2);
+  xassert(p2->one == 1);
 
   std::swap(p1, p2);
 
-  xassert(p1->one = 1);
-  xassert(p2->one = 2);
+  xassert(p1->one == 1);
+  xassert(p2->one == 2);
 }
 
 
