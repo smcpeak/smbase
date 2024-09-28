@@ -794,13 +794,13 @@ public:      // methods
   APInteger &operator/=(APInteger const &divisor)
   {
     APInteger q = *this / divisor;
-    return *this = q;
+    return *this = std::move(q);
   }
 
   APInteger &operator%=(APInteger const &divisor)
   {
     APInteger r = *this % divisor;
-    return *this = r;
+    return *this = std::move(r);
   }
 };
 
