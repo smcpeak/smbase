@@ -6,7 +6,8 @@
 #ifndef OBJPOOL_H
 #define OBJPOOL_H
 
-#include "array.h"     // GrowArray
+#include "array.h"                     // GrowArray
+#include "xassert.h"                   // xassertPrecondition, xassert
 
 // the class T should have:
 //   // a link in the free list; it is ok for T to re-use this
@@ -27,7 +28,7 @@ private:     // data
   // exponential) expansion strategy because these are supposed
   // to be used for small sets of rapidly-reused objects, not
   // things allocated for long-term storage
-  int rackSize;
+  int const rackSize;
 
   // growable array of pointers to arrays of 'rackSize' T objects
   ArrayStack<T*> racks;
@@ -71,7 +72,9 @@ ObjectPool<T>::ObjectPool(int rs)
   : rackSize(rs),
     racks(5),
     head(NULL)
-{}
+{
+  xassertPrecondition(rs > 0);
+}
 
 template <class T>
 ObjectPool<T>::~ObjectPool()
@@ -115,6 +118,9 @@ void ObjectPool<T>::expandPool()
     rack[i].nextInFreeList = head;
     head = &(rack[i]);
   }
+
+  // This is assured by the fact that `rackSize` is positive.
+  xassert(head != NULL);
 }
 
 
