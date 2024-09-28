@@ -3,6 +3,7 @@
 
 #include "file-line-col.h"             // this module
 
+#include <utility>                     // std::move
 
 
 // ------------------------------ LineCol ------------------------------
@@ -51,7 +52,7 @@ void LineCol::decrementForChar(int c)
 FileLineCol::FileLineCol(std::optional<std::string> fileName,
                          int line,
                          int column) noexcept
-  : m_fileName(fileName),
+  : m_fileName(std::move(fileName)),
     m_lc(line, column)
 {}
 

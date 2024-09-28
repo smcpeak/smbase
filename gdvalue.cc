@@ -1053,7 +1053,7 @@ bool GDValue::containerIsEmpty() const
   void GDValue::kind##Set(GDV##Kind &&container)              \
   {                                                           \
     if (is##Kind()) {                                         \
-      kind##GetMutable() = container;                         \
+      kind##GetMutable() = std::move(container);              \
     }                                                         \
     else {                                                    \
       reset();                                                \

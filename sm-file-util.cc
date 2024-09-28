@@ -16,6 +16,7 @@
 // libc++
 #include <algorithm>                   // std::max
 #include <fstream>                     // std::fstream
+#include <utility>                     // std::move
 
 // libc
 #include <errno.h>                     // errno
@@ -215,7 +216,7 @@ SMFileName::SMFileName(string const &path, Syntax syntax)
 SMFileName::SMFileName(string fileSystem, bool isAbsolute,
                        ArrayStack<string> const &pathComponents,
                        bool trailingSlash)
-  : m_fileSystem(fileSystem),
+  : m_fileSystem(std::move(fileSystem)),
     m_isAbsolute(isAbsolute),
     m_pathComponents(pathComponents),
     m_trailingSlash(trailingSlash)

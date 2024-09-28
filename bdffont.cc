@@ -12,6 +12,8 @@
 #include "strutil.h"         // readStringFromFile
 #include "xassert.h"         // xassert
 
+#include <utility>           // std::move
+
 #include <string.h>          // memcmp
 
 using namespace smbase;
@@ -30,7 +32,7 @@ BDFFont::Property::Property(rostring n, string s)
   : name(n),
     isInteger(false),
     intValue(0),
-    stringValue(s)
+    stringValue(std::move(s))
 {}
 
 

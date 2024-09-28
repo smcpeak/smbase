@@ -27,6 +27,7 @@
 #include <optional>                    // std::optional
 #include <string_view>                 // std::string_view
 #include <type_traits>                 // std::{is_integral, is_signed, is_unsigned}
+#include <utility>                     // std::move
 #include <vector>                      // std::vector
 
 
@@ -1049,7 +1050,7 @@ public:      // methods
   APUInteger &operator*=(APUInteger const &other)
   {
     APUInteger prod = *this * other;
-    return *this = prod;
+    return *this = std::move(prod);
   }
 
   // ---------- Division ----------
@@ -1137,13 +1138,13 @@ public:      // methods
   APUInteger &operator/=(APUInteger const &divisor)
   {
     APUInteger q = *this / divisor;
-    return *this = q;
+    return *this = std::move(q);
   }
 
   APUInteger &operator%=(APUInteger const &divisor)
   {
     APUInteger r = *this % divisor;
-    return *this = r;
+    return *this = std::move(r);
   }
 };
 
