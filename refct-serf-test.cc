@@ -709,7 +709,7 @@ static void testMultipleInheritance(int failure)
     s1.del();
     xassert(failCount == 1);
   }
-  else if (failure == 1) {
+  else if (failure == 2) {
     PREPARE_TO_FAIL();
     failingSuper2Serfs.push(&ps2);
     s2.del();
