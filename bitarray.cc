@@ -27,7 +27,8 @@ BitArray::~BitArray()
 
 
 BitArray::BitArray(Flatten&)
-  : bits(NULL)
+  : bits(NULL),
+    numBits(0)
 {}
 
 void BitArray::xfer(Flatten &flat)
