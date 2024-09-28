@@ -6,6 +6,7 @@
 #ifndef SMBASE_ASTLIST_H
 #define SMBASE_ASTLIST_H
 
+#include "exc.h"                       // GENERIC_CATCH_{BEGIN,END}
 #include "vdtllist.h"                  // VoidTailList
 
 #include <stddef.h>                    // size_t
@@ -36,7 +37,13 @@ private:
 
 public:
   ASTList()                             : list() {}
-  ~ASTList()                            { deleteAll(); }
+
+  ~ASTList()
+  {
+    GENERIC_CATCH_BEGIN
+    deleteAll();
+    GENERIC_CATCH_END
+  }
 
   // Make a list with 'elt' as the only element.
   explicit ASTList(T *elt)              : list() { prepend(elt); }
