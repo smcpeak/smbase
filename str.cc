@@ -10,6 +10,7 @@
 
 #include <algorithm>        // std::max
 
+#include <assert.h>         // assert
 #include <stdlib.h>         // atoi
 #include <stdio.h>          // sprintf
 #include <ctype.h>          // isspace
@@ -369,7 +370,7 @@ void stringBuilder::grow(int newMinLength)
 
   // realloc s to be newMinSize bytes
   char *temp = new char[newMinSize];
-  xassert(len+1 <= newMinSize);    // prevent overrun
+  assert(len+1 <= newMinSize);     // prevent overrun
   memcpy(temp, s, len+1);          // copy null too
   delete[] s;
   s = temp;
