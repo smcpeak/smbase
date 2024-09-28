@@ -8,6 +8,7 @@
 #include "autofile.h"                  // AutoFILE
 #include "codepoint.h"                 // isLetter
 #include "compare-util.h"              // compare
+#include "exc.h"                       // GENERIC_CATCH_{BEGIN,END}
 #include "overflow.h"                  // addWithOverflowCheck
 #include "sm-windows.h"                // PLATFORM_IS_WINDOWS
 #include "string-util.h"               // endsWith, doubleQuote
@@ -1021,9 +1022,13 @@ struct CallCloseDir {
 
   ~CallCloseDir()
   {
+    GENERIC_CATCH_BEGIN
+
     if (0 != closedir(m_dirp)) {
       DEV_WARNING_SYSERROR("closedir");
     }
+
+    GENERIC_CATCH_END
   }
 };
 

@@ -7,6 +7,7 @@
 #define OBJPOOL_H
 
 #include "array.h"                     // GrowArray
+#include "exc.h"                       // GENERIC_CATCH_{BEGIN,END}
 #include "xassert.h"                   // xassertPrecondition, xassert
 
 // the class T should have:
@@ -79,10 +80,14 @@ ObjectPool<T>::ObjectPool(int rs)
 template <class T>
 ObjectPool<T>::~ObjectPool()
 {
+  GENERIC_CATCH_BEGIN
+
   // deallocate all the objects in the racks
   for (int i=0; i < racks.length(); i++) {
     delete[] racks[i];
   }
+
+  GENERIC_CATCH_END
 }
 
 
