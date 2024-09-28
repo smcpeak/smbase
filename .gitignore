@@ -43,6 +43,7 @@ obj
 out
 personal-make-cmd.sh
 personal.mk
+smbase.tgz
 srcloc.tmp
 strhash_1
 strhash_2
