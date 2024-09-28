@@ -175,8 +175,8 @@ void testOneAddSmallUsingInt64(SMALL_NUM a, SMALL_NUM b)
   int64_t largeB(b);
   int64_t result(largeA + largeB);
 
-  int64_t minValue(numeric_limits<SMALL_NUM>::min());
-  int64_t maxValue(numeric_limits<SMALL_NUM>::max());
+  int64_t minValue(std::numeric_limits<SMALL_NUM>::min());
+  int64_t maxValue(std::numeric_limits<SMALL_NUM>::max());
 
   // Try addition.
   if (minValue <= result && result <= maxValue) {
@@ -218,8 +218,8 @@ void testOneMultiplySmallUsingInt64(SMALL_NUM a, SMALL_NUM b)
   int64_t largeB(b);
   int64_t result(largeA * largeB);
 
-  int64_t minValue(numeric_limits<SMALL_NUM>::min());
-  int64_t maxValue(numeric_limits<SMALL_NUM>::max());
+  int64_t minValue(std::numeric_limits<SMALL_NUM>::min());
+  int64_t maxValue(std::numeric_limits<SMALL_NUM>::max());
 
   if (minValue <= result && result <= maxValue) {
     // Should not overflow.
@@ -251,8 +251,8 @@ void testOneDivideSmallUsingInt64(SMALL_NUM a, SMALL_NUM b)
   int64_t expectQuotient(largeA / largeB);
   int64_t expectRemainder(largeA % largeB);
 
-  int64_t minValue(numeric_limits<SMALL_NUM>::min());
-  int64_t maxValue(numeric_limits<SMALL_NUM>::max());
+  int64_t minValue(std::numeric_limits<SMALL_NUM>::min());
+  int64_t maxValue(std::numeric_limits<SMALL_NUM>::max());
 
   if (minValue <= expectQuotient && expectQuotient <= maxValue &&
       minValue <= expectRemainder && expectRemainder <= maxValue) {
@@ -286,8 +286,8 @@ void testAddMultiplyAllSmallUsingInt64()
 {
   SET_RESTORE(verbose, false);
 
-  int64_t minValue(numeric_limits<SMALL_NUM>::min());
-  int64_t maxValue(numeric_limits<SMALL_NUM>::max());
+  int64_t minValue(std::numeric_limits<SMALL_NUM>::min());
+  int64_t maxValue(std::numeric_limits<SMALL_NUM>::max());
 
   for (int64_t a = minValue; a <= maxValue; a++) {
     for (int64_t b = minValue; b <= maxValue; b++) {
