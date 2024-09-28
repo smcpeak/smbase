@@ -54,6 +54,7 @@ void test_crc()
     long val = crc32(buf, len);
     tprintf("crc32 of %s: 0x%08lX\n", fname, val);
 
+    free(buf);
     return;
   }
 
