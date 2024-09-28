@@ -8,6 +8,7 @@
 #include "autofile.h"                  // AutoFILE
 #include "codepoint.h"                 // isLetter
 #include "compare-util.h"              // compare
+#include "overflow.h"                  // addWithOverflowCheck
 #include "sm-windows.h"                // PLATFORM_IS_WINDOWS
 #include "string-util.h"               // endsWith, doubleQuote
 #include "strtokp.h"                   // StrtokParse
@@ -467,8 +468,11 @@ string SMFileUtil::currentDirectory()
     maxSize = std::max(20000, PATH_MAX);
   }
 
-  Array<char> a(maxSize+1);
-  if (!getcwd(a.ptr(), maxSize+1)) {
+  // Defensive overflow check instead of trusting `pathconf`.
+  long maxSizePlus1 = addWithOverflowCheck(maxSize, 1L);
+
+  Array<char> a(maxSizePlus1);
+  if (!getcwd(a.ptr(), maxSizePlus1)) {
     xsyserror("getcwd");
   }
 
