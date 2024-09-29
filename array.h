@@ -560,8 +560,14 @@ private:    // data
 public:     // funcs
   explicit ObjArrayStack(int initArraySize = 0)
     : arr(initArraySize)
-    {}
-  ~ObjArrayStack() { deleteAll(); }
+  {}
+
+  ~ObjArrayStack()
+  {
+    GENERIC_CATCH_BEGIN
+    deleteAll();
+    GENERIC_CATCH_END
+  }
 
   void push(T *ptr)          { arr.push(ptr); }
   // synonym of 'push', for compatibility with ObjList
