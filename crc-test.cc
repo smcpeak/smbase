@@ -55,6 +55,7 @@ void test_crc()
     tprintf("crc32 of %s: 0x%08lX\n", fname, val);
 
     free(buf);
+    fclose(fp);
     return;
   }
 
