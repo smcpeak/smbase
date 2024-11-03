@@ -93,7 +93,8 @@ private:     // types
     int arrayOffset;
 
   public:
-    Marker() {}      // for creation in arrays
+    Marker()         // for creation in arrays
+      : charOffset(), lineOffset(), arrayOffset() {}
     Marker(int c, int L, int a)
       : charOffset(c), lineOffset(L), arrayOffset(a) {}
     Marker(Marker const &obj)

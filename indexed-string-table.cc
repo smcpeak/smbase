@@ -4,6 +4,7 @@
 #include "indexed-string-table.h"      // this module
 
 #include "compare-util.h"              // compare
+#include "exc.h"                       // GENERIC_CATCH_{BEGIN,END}
 #include "overflow.h"                  // convertNumber
 #include "sm-macros.h"                 // OPEN_NAMESPACE
 #include "sm-unique-ptr.h"             // smbase::UniquePtr
@@ -62,7 +63,9 @@ STATICDEF bool IndexedStringTable::equalKeys(
 
 IndexedStringTable::~IndexedStringTable()
 {
+  GENERIC_CATCH_BEGIN
   clear();
+  GENERIC_CATCH_END
 }
 
 

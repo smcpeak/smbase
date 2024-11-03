@@ -1,8 +1,11 @@
 // svdict.cc            see license.txt for copyright and terms of use
 // code for svdict.h
 
-#include "svdict.h"         // this module
-#include <string.h>         // strcmp
+#include "svdict.h"                    // this module
+
+#include "exc.h"                       // GENERIC_CATCH_{BEGIN,END}
+
+#include <string.h>                    // strcmp
 
 
 #define FOREACH_NODE(itervar) \
@@ -39,8 +42,12 @@ StringVoidDict::StringVoidDict(StringVoidDict const &obj)
 
 StringVoidDict::~StringVoidDict()
 {
+  GENERIC_CATCH_BEGIN
+
   SELFCHECK();
   empty();
+
+  GENERIC_CATCH_END
 }
 
 

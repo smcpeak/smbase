@@ -7,6 +7,7 @@
 #include "sm-rc-obj.h"                 // RefCountObject
 
 #include <type_traits>                 // std::is_convertible
+#include <utility>                     // std::move
 
 #include <stddef.h>                    // NULL
 
@@ -141,7 +142,7 @@ public:      // methods
   {}
 
   RCPtr(RCPtr &&src) noexcept
-    : RCPtrBase(src)
+    : RCPtrBase(std::move(src))
   {}
 
   // Allow implicit upcasts with RCPtr.
@@ -157,7 +158,7 @@ public:      // methods
 
   template <class U>
   RCPtr(RCPtr<U> &&src) noexcept
-    : RCPtrBase(src)
+    : RCPtrBase(std::move(src))
   {
     STATIC_ASSERT((std::is_convertible<U*, T*>::value));
   }

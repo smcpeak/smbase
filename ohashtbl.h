@@ -6,7 +6,8 @@
 #ifndef SMBASE_OHASHTBL_H
 #define SMBASE_OHASHTBL_H
 
-#include "hashtbl.h"       // HashTable
+#include "exc.h"                       // GENERIC_CATCH_{BEGIN,END}
+#include "hashtbl.h"                   // HashTable
 
 template <class T> class OwnerHashTableIter;
 
@@ -28,7 +29,13 @@ public:     // funcs
   OwnerHashTable(GetKeyFn gk, HashFn hf, EqualKeyFn ek,
                  int initSize = HashTable::defaultSize)
     : table((HashTable::GetKeyFn)gk, hf, ek, initSize) {}
-  ~OwnerHashTable() { empty(1); }
+
+  ~OwnerHashTable()
+  {
+    GENERIC_CATCH_BEGIN
+    empty(1);
+    GENERIC_CATCH_END
+  }
 
   int getNumEntries() const               { return table.getNumEntries(); }
   T *get(void const *key) const           { return (T*)table.get(key); }

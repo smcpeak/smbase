@@ -55,6 +55,9 @@ m4_changequote([[[, ]]])m4_dnl        // reduce likelihood of confusion
 #ifndef includeLatch
 #define includeLatch
 
+outputCond([[[]]],[[[m4_dnl
+#include "exc.h"                       // GENERIC_CATCH_{BEGIN,END}
+]]])m4_dnl
 #include "strutil.h"                   // qsortStringArray
 #include "svdict.h"                    // StringVoidDict
 
@@ -210,7 +213,12 @@ public:     // funcs
 outputCond([[[m4_dnl
   ~XSTROBJDICT[[[]]]() {}
 ]]],[[[m4_dnl
-  ~XSTROBJDICT[[[]]]() { empty(); }
+  ~XSTROBJDICT[[[]]]()
+  {
+    GENERIC_CATCH_BEGIN
+    empty();
+    GENERIC_CATCH_END
+  }
 ]]])m4_dnl
 
 outputCond([[[m4_dnl

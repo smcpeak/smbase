@@ -9,6 +9,7 @@
 
 #include <iomanip>                     // std::hex
 #include <iostream>                    // std::istream
+#include <utility>                     // std::move
 
 
 OPEN_NAMESPACE(smbase)
@@ -51,7 +52,7 @@ std::string ReaderException::getConflict() const
 Reader::Reader(std::istream &is,
                std::optional<std::string> fileName)
   : m_is(is),
-    m_location(fileName)
+    m_location(std::move(fileName))
 {}
 
 

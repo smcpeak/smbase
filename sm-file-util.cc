@@ -8,6 +8,8 @@
 #include "autofile.h"                  // AutoFILE
 #include "codepoint.h"                 // isLetter
 #include "compare-util.h"              // compare
+#include "exc.h"                       // GENERIC_CATCH_{BEGIN,END}
+#include "overflow.h"                  // addWithOverflowCheck
 #include "sm-windows.h"                // PLATFORM_IS_WINDOWS
 #include "string-util.h"               // endsWith, doubleQuote
 #include "strtokp.h"                   // StrtokParse
@@ -16,6 +18,7 @@
 // libc++
 #include <algorithm>                   // std::max
 #include <fstream>                     // std::fstream
+#include <utility>                     // std::move
 
 // libc
 #include <errno.h>                     // errno
@@ -215,7 +218,7 @@ SMFileName::SMFileName(string const &path, Syntax syntax)
 SMFileName::SMFileName(string fileSystem, bool isAbsolute,
                        ArrayStack<string> const &pathComponents,
                        bool trailingSlash)
-  : m_fileSystem(fileSystem),
+  : m_fileSystem(std::move(fileSystem)),
     m_isAbsolute(isAbsolute),
     m_pathComponents(pathComponents),
     m_trailingSlash(trailingSlash)
@@ -466,8 +469,11 @@ string SMFileUtil::currentDirectory()
     maxSize = std::max(20000, PATH_MAX);
   }
 
-  Array<char> a(maxSize+1);
-  if (!getcwd(a.ptr(), maxSize+1)) {
+  // Defensive overflow check instead of trusting `pathconf`.
+  long maxSizePlus1 = addWithOverflowCheck(maxSize, 1L);
+
+  Array<char> a(maxSizePlus1);
+  if (!getcwd(a.ptr(), maxSizePlus1)) {
     xsyserror("getcwd");
   }
 
@@ -1016,9 +1022,13 @@ struct CallCloseDir {
 
   ~CallCloseDir()
   {
+    GENERIC_CATCH_BEGIN
+
     if (0 != closedir(m_dirp)) {
       DEV_WARNING_SYSERROR("closedir");
     }
+
+    GENERIC_CATCH_END
   }
 };
 

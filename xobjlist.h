@@ -32,7 +32,10 @@ m4_changequote([[[, ]]])m4_dnl        // reduce likelihood of confusion
 #ifndef includeLatch
 #define includeLatch
 
-#include "voidlist.h"    // VoidList
+outputCond([[[]]],[[[m4_dnl
+#include "exc.h"                       // GENERIC_CATCH_{BEGIN,END}
+]]])m4_dnl
+#include "voidlist.h"                  // VoidList
 
 
 // forward declarations of template classes, so we can befriend them in className
@@ -74,8 +77,16 @@ private:
 
 public:
   className[[[]]]()                            : list() {}
-  ~className[[[]]]()                      m4_dnl
-     outputCond({}    /* all items removed */, { deleteAll(); })
+outputCond([[[m4_dnl
+  ~className[[[]]]()                           {}    /* all items removed */
+]]], [[[m4_dnl
+  ~className[[[]]]()
+  {
+    GENERIC_CATCH_BEGIN
+    deleteAll();
+    GENERIC_CATCH_END
+  }
+]]])m4_dnl
 
   // The difference function should return <0 if left should come before
   // right, 0 if they are equivalent, and >0 if right should come before

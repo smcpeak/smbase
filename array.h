@@ -9,6 +9,7 @@
 #define SMBASE_ARRAY_H
 
 // smbase
+#include "exc.h"                       // GENERIC_CATCH_{BEGIN,END}
 #include "sm-macros.h"                 // NO_OBJECT_COPIES
 #include "sm-swap.h"                   // swap
 #include "str.h"                       // string
@@ -41,7 +42,13 @@ public:
     : arr(new T[(len>=0? len :
                   (xfailure("Array with negative length"), 0) )])
   {}
-  ~Array() { delete[] arr; }
+
+  ~Array()
+  {
+    GENERIC_CATCH_BEGIN
+    delete[] arr;
+    GENERIC_CATCH_END
+  }
 
   T const &operator[] (int i) const { return arr[i]; }
   T &operator[] (int i) { return arr[i]; }
@@ -553,8 +560,14 @@ private:    // data
 public:     // funcs
   explicit ObjArrayStack(int initArraySize = 0)
     : arr(initArraySize)
-    {}
-  ~ObjArrayStack() { deleteAll(); }
+  {}
+
+  ~ObjArrayStack()
+  {
+    GENERIC_CATCH_BEGIN
+    deleteAll();
+    GENERIC_CATCH_END
+  }
 
   void push(T *ptr)          { arr.push(ptr); }
   // synonym of 'push', for compatibility with ObjList

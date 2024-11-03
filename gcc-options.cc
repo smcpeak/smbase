@@ -13,6 +13,7 @@
 #include "xassert.h"                   // xassert
 
 #include <sstream>                     // std::ostringstream
+#include <utility>                     // std::move
 
 #include <string.h>                    // strrchr
 
@@ -574,7 +575,7 @@ bool GCCOptions::getDefaultDependencyTarget(std::string &target) const
     std::string ofile;
     if (getArgumentForOption("-o", ofile)) {
       // If explicitly specified, the output file is the target.
-      target = ofile;
+      target = std::move(ofile);
       return true;
     }
   }

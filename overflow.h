@@ -23,18 +23,6 @@
 #include <optional>                    // std::optional
 #include <type_traits>                 // std::is_unsigned
 
-using std::ostream;
-
-
-// I do not want to explicitly refer to 'std' when accessing
-// numeric_limits because that would preclude someone from defining
-// their own number class and providing a numeric_limits specialization
-// for it (since only the standard library is permitted to put things
-// into 'std').
-using std::numeric_limits;
-using std::is_unsigned;
-using std::is_signed;
-
 
 // Throw an exception when overflow would happen.
 template <class NUM>
@@ -56,14 +44,14 @@ template <class NUM>
 std::optional<NUM> addWithOverflowCheckOpt(NUM a, NUM b)
 {
   if (a >= 0) {
-    NUM largest_b = numeric_limits<NUM>::max() - a;
+    NUM largest_b = std::numeric_limits<NUM>::max() - a;
     if (b > largest_b) {
       return std::nullopt;
     }
   }
   else {
     // Here, "smallest" means "most negative".
-    NUM smallest_b = numeric_limits<NUM>::min() - a;
+    NUM smallest_b = std::numeric_limits<NUM>::min() - a;
     if (b < smallest_b) {
       return std::nullopt;
     }
@@ -89,7 +77,7 @@ NUM addWithOverflowCheck(NUM a, NUM b)
 template <class NUM>
 std::optional<NUM> subtractWithOverflowCheckOpt(NUM a, NUM b)
 {
-  if (is_unsigned<NUM>::value) {
+  if constexpr (std::is_unsigned<NUM>::value) {
     if (a < b) {
       return std::nullopt;
     }
@@ -102,7 +90,7 @@ std::optional<NUM> subtractWithOverflowCheckOpt(NUM a, NUM b)
       }
       else /* b < 0 */ {               // PE: b in [-4,-1]
         // PE: `max()` is 3, `largest_minus_b` is in [0,3]
-        NUM largest_minus_b = numeric_limits<NUM>::max() - a;
+        NUM largest_minus_b = std::numeric_limits<NUM>::max() - a;
 
         //   a     -   b
         // = a +     (-b)
@@ -119,7 +107,7 @@ std::optional<NUM> subtractWithOverflowCheckOpt(NUM a, NUM b)
     else /* a < 0 */ {                 // PE: a in [-4,-1]
       if (b >= 0) {                    // PE: b in [0,3]
         // PE: `min()` is -4, `smallest_minus_b` is in [-3,0]
-        NUM smallest_minus_b = numeric_limits<NUM>::min() - a;
+        NUM smallest_minus_b = std::numeric_limits<NUM>::min() - a;
 
         // Since `b` is positive, we can safely invert it.
         if (-b < smallest_minus_b) {
@@ -159,13 +147,13 @@ std::optional<NUM> multiplyWithOverflowCheckOpt(NUM a, NUM b)
   }
   else if (a > 0) {
     if (b > 0) {
-      NUM largest_b = numeric_limits<NUM>::max() / a;
+      NUM largest_b = std::numeric_limits<NUM>::max() / a;
       if (b > largest_b) {
         return std::nullopt;
       }
     }
     else {
-      NUM smallest_b = numeric_limits<NUM>::min() / a;
+      NUM smallest_b = std::numeric_limits<NUM>::min() / a;
       if (b < smallest_b) {
         return std::nullopt;
       }
@@ -177,19 +165,19 @@ std::optional<NUM> multiplyWithOverflowCheckOpt(NUM a, NUM b)
     // magnitude of max().  I'm not sure how to generalize this logic
     // to arbitrary representation limits without incurring extra
     // requirements on NUM like being able to compute the magnitude.
-    if (b == numeric_limits<NUM>::min()) {
+    if (b == std::numeric_limits<NUM>::min()) {
       return std::nullopt;
     }
   }
   else {
     if (b > 0) {
-      NUM largest_b = numeric_limits<NUM>::min() / a;
+      NUM largest_b = std::numeric_limits<NUM>::min() / a;
       if (b > largest_b) {
         return std::nullopt;
       }
     }
     else {
-      NUM smallest_b = numeric_limits<NUM>::max() / a;
+      NUM smallest_b = std::numeric_limits<NUM>::max() / a;
       if (b < smallest_b) {
         return std::nullopt;
       }
@@ -225,8 +213,8 @@ bool divideWithOverflowCheckOpt(
     return false;
   }
 
-  if (is_signed<NUM>::value) {
-    if (dividend == numeric_limits<NUM>::min() &&
+  if constexpr (std::is_signed<NUM>::value) {
+    if (dividend == std::numeric_limits<NUM>::min() &&
         divisor == -1) {
       // The specific case of dividing the most negative integer by -1
       // overflows because the result would be the positive counterpart

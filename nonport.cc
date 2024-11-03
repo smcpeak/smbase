@@ -528,7 +528,7 @@ unsigned getSystemCryptoRandom()
   #if !defined(__WIN32__)     // unix
     // open /dev/random
     int fd = open("/dev/random", O_RDONLY);
-    if (!fd) {
+    if (fd < 0) {
       perror("open");
       exit(2);
     }

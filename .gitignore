@@ -26,6 +26,7 @@ TAGS
 changes
 compile_commands.json
 config.mk
+cov-int
 dependencies.png
 diff
 examples
@@ -42,6 +43,7 @@ obj
 out
 personal-make-cmd.sh
 personal.mk
+smbase.tgz
 srcloc.tmp
 strhash_1
 strhash_2

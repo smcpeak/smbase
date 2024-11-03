@@ -18,6 +18,7 @@
 #include "smbase/xassert.h"            // xassert
 
 #include <cstring>                     // std::memcmp
+#include <utility>                     // std::move
 
 using namespace smbase;
 
@@ -35,7 +36,7 @@ BDFFont::Property::Property(rostring n, string s)
   : name(n),
     isInteger(false),
     intValue(0),
-    stringValue(s)
+    stringValue(std::move(s))
 {}
 
 

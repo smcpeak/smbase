@@ -14,6 +14,7 @@
 #include <iostream>                    // std::istream
 #include <optional>                    // std::optional
 #include <string>                      // std::string
+#include <utility>                     // std::move
 
 
 OPEN_NAMESPACE(smbase)
@@ -81,7 +82,7 @@ private:     // methods
 public:      // methods
   UTF8Reader(std::istream &is,
              std::optional<std::string> fileName = std::nullopt)
-    : Reader(is, fileName)
+    : Reader(is, std::move(fileName))
   {}
 
   // Read the next Unicode code point from `m_current`, advancing it.

@@ -106,7 +106,7 @@ void test_mypopen()
     if (len < 0) {
       die("read");
     }
-    if (buf[len-1] != '\n') {
+    if ((len == 0) || (buf[len-1] != '\n')) {
       buf[len++] = '\n';
     }
     buf[len] = 0;

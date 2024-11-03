@@ -120,6 +120,13 @@ int general_vprintf(Gprintf_output_function output_function,
       {
         while ('0' <= control_char && control_char <= '9')
         {
+          /* smcpeak: Guard against overflow during multiplication.
+             This would be triggered by a format string with a very
+             large width specifier.  Ideally this code would handle that
+             more gracefully, but this module is largely defunct, so I
+             will settle for an assertion. */
+          assert(p.minimum_field_width <= 3000);
+
           p.minimum_field_width =
             p.minimum_field_width * 10 + control_char - '0';
           control_char = *control_string++;

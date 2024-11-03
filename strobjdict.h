@@ -7,6 +7,7 @@
 #ifndef STROBJDICT_H
 #define STROBJDICT_H
 
+#include "exc.h"                       // GENERIC_CATCH_{BEGIN,END}
 #include "strutil.h"                   // qsortStringArray
 #include "svdict.h"                    // StringVoidDict
 
@@ -106,7 +107,12 @@ private:    // data
 
 public:     // funcs
   StringObjDict() : dict() {}
-  ~StringObjDict() { empty(); }
+  ~StringObjDict()
+  {
+    GENERIC_CATCH_BEGIN
+    empty();
+    GENERIC_CATCH_END
+  }
 
 private:    // funcs
   // disallowed

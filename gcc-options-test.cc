@@ -478,7 +478,7 @@ static void testSpecifiesGCCOutputMode()
     { "-dumpspecs",          OM(GCC_INFO) },
   };
 
-  for (auto t : tests) {
+  for (auto const &t : tests) {
     GCCOptions::OutputMode actualMode = om_none;
     bool actual = specifiesGCCOutputMode(t.m_name, /*OUT*/ actualMode);
     EXPECT_EQ(actual, t.m_expect!=om_none);
@@ -581,7 +581,7 @@ static void testGetExplicitOutputFile()
     },
   };
 
-  for (auto t : tests) {
+  for (auto const &t : tests) {
     GCCOptions opts(t.m_input);
     std::string actual;
     bool found = opts.getExplicitOutputFile(actual);
@@ -634,7 +634,7 @@ static void testGetFirstSourceFileName()
     },
   };
 
-  for (auto t : tests) {
+  for (auto const &t : tests) {
     GCCOptions opts(t.m_input);
     std::string actual;
     bool found = opts.getFirstSourceFileName(actual);
@@ -701,7 +701,7 @@ static void testGetOutputFile()
     },
   };
 
-  for (auto t : tests) {
+  for (auto const &t : tests) {
     GCCOptions opts(t.m_input);
     std::string actual;
     bool found = opts.getOutputFile(actual);
@@ -766,7 +766,7 @@ static void testCreatesDependencyFile()
     },
   };
 
-  for (auto t : tests) {
+  for (auto const &t : tests) {
     GCCOptions opts(t.m_input);
     std::string actual;
     bool found = opts.createsDependencyFile(actual);
@@ -823,7 +823,7 @@ static void testGetDefaultDependencyTarget()
     },
   };
 
-  for (auto t : tests) {
+  for (auto const &t : tests) {
     try {
       GCCOptions opts(t.m_input);
       std::string actual;
@@ -882,7 +882,7 @@ static void testNumSourceFiles()
     },
   };
 
-  for (auto t : tests) {
+  for (auto const &t : tests) {
     try {
       GCCOptions opts(t.m_input);
       int actual = opts.numSourceFiles();

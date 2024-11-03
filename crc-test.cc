@@ -5,6 +5,7 @@
 
 #include "sm-test.h"                   // tprintf
 
+#include <assert.h>                    // assert
 #include <errno.h>                     // errno
 #include <stdint.h>                    // uint32_t
 #include <stdio.h>                     // FILE, etc.
@@ -39,6 +40,7 @@ void test_crc()
     // get length
     fseek(fp, 0, SEEK_END);
     int len = ftell(fp);
+    assert(len >= 0);
     fseek(fp, 0, SEEK_SET);
 
     // read the entire contents
@@ -52,6 +54,8 @@ void test_crc()
     long val = crc32(buf, len);
     tprintf("crc32 of %s: 0x%08lX\n", fname, val);
 
+    free(buf);
+    fclose(fp);
     return;
   }
 

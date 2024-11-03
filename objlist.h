@@ -7,7 +7,8 @@
 #ifndef OBJLIST_H
 #define OBJLIST_H
 
-#include "voidlist.h"    // VoidList
+#include "exc.h"                       // GENERIC_CATCH_{BEGIN,END}
+#include "voidlist.h"                  // VoidList
 
 
 // forward declarations of template classes, so we can befriend them in ObjList
@@ -37,7 +38,12 @@ private:
 
 public:
   ObjList()                            : list() {}
-  ~ObjList()                           { deleteAll(); }
+  ~ObjList()
+  {
+    GENERIC_CATCH_BEGIN
+    deleteAll();
+    GENERIC_CATCH_END
+  }
 
   // The difference function should return <0 if left should come before
   // right, 0 if they are equivalent, and >0 if right should come before

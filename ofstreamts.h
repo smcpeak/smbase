@@ -7,6 +7,7 @@
 #ifndef OFSTREAMTS_H
 #define OFSTREAMTS_H
 
+#include "exc.h"                       // GENERIC_CATCH_{BEGIN,END}
 #include "sm-fstream.h"                // ofstream
 #include "str.h"                       // string
 
@@ -53,7 +54,15 @@ class ofstreamTS : public ofstream {
 public:
   ofstreamTS(string const &destFname0) : dosave(true)
   { init_fname(destFname0); openTmp(); }
-  ~ofstreamTS() { if (dosave) save(); }
+
+  ~ofstreamTS()
+  {
+    GENERIC_CATCH_BEGIN
+    if (dosave) {
+      save();
+    }
+    GENERIC_CATCH_END
+  }
 
   // Indicate that the output shouldn't be saved, e.g. due to an error.
   void dontsave() { dosave = false; }

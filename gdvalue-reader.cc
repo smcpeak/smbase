@@ -23,7 +23,7 @@ OPEN_NAMESPACE(gdv)
 
 GDValueReader::GDValueReader(std::istream &is,
                              std::optional<std::string> fileName)
-  : Reader(is, fileName)
+  : Reader(is, std::move(fileName))
 {}
 
 
