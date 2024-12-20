@@ -101,10 +101,10 @@ int popen_pipes(int *parentWritesChild, int *parentReadsChild,
                 int *readChildStderr,
                 execFunction func, void *extraArgs)
 {
-  int childReadsParent;
-  int childWritesParent;
-  int childWritesStderr;
-  int childPid;
+  int childReadsParent = -1;
+  int childWritesParent = -1;
+  int childWritesStderr = -1;
+  int childPid = -1;
   int stderrToStdout = 0;
 
   // create pipes
