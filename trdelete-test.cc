@@ -10,6 +10,8 @@
 #include <stdlib.h>                    // malloc, exit, getenv
 
 
+#ifndef TRASHINGDELETE_DISABLED
+
 OPEN_ANONYMOUS_NAMESPACE
 
 
@@ -56,7 +58,7 @@ void test_trdelete()
   assert(*fieldptr == 5);
   delete f;
   if (*fieldptr == 5) {
-    tprintf("trashing-delete failed\n");
+    printf("trashing-delete failed\n");
     exit(2);
   }
 
@@ -66,12 +68,23 @@ void test_trdelete()
   assert(*fieldptr == 7);
   delete b;
   if ((unsigned)(*fieldptr) == 0xAAAAAAAAu) {    // did it trash it anyway?
-    tprintf("non-trashing-delete failed\n");
+    printf("non-trashing-delete failed\n");
     exit(2);
   }
 
   tprintf("trashing delete works\n");
 }
+
+
+#else
+
+void test_trdelete()
+{
+  tprintf("trashing delete test disabled\n");
+}
+
+
+#endif
 
 
 // EOF

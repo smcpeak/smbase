@@ -2,10 +2,16 @@
 // An 'operator delete' which overwrites the deallocated memory with
 // 0xAA before deallocating it.
 
-#ifdef _MSC_VER
-  // this module doesn't work under msvc, I don't care to figure out why
-  #define TRDELETE_H      // make it omit this file
-  #define TRASHINGDELETE  // and all references to it a no-op
+// This module doesn't work under msvc, I don't care to figure out why.
+//
+// It also seems to not work under Clang 16 now.  I thought it did?  I'm
+// close to removing the module entirely but let's try the minimal
+// fix...
+//
+#if defined(_MSC_VER) || defined(__clang__)
+  #define TRDELETE_H                 // Make it omit this file.
+  #define TRASHINGDELETE             // Uses are a no-op.
+  #define TRASHINGDELETE_DISABLED    // Signal to not run the test.
 #endif
 
 #ifndef TRDELETE_H

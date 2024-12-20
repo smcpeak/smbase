@@ -9,6 +9,9 @@
 #include "xassert.h"     // xassert
 #include "trdelete.h"    // TRASHINGDELETE
 
+#include <stddef.h>      // NULL
+
+
 // -------------------------- non-typesafe core -----------------------------
 // non-typesafe list node
 class VoidNode {
