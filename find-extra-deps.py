@@ -172,6 +172,11 @@ def main() -> None:
   # Gather set of files in the repository.
   getRepoFiles()
 
+  # Get the name of the current directory without parent names,
+  # surrounded with directory path syntax as if it were being named via
+  # the parent directory.
+  dotdot_cdn = "../" + os.path.basename(os.getcwd()) + "/"
+
   # Process the .d files.
   for file in opts.files:
     debugPrint(f"processing .d file: {file}")
@@ -185,6 +190,12 @@ def main() -> None:
         (target, deps) = m.group(1,2)
 
         for element in deps.split():
+          # If the path begins with "../$CDN/", strip that off.  The way
+          # I'm doing my #includes now, they are usually prefixed that
+          # way in the dependency file, but of course do not appear that
+          # way in the output of "git ls-files".
+          element = element.removeprefix(dotdot_cdn)     # requires Python 3.9
+
           if element.startswith("../"):
             # File in another directory.
             pass
