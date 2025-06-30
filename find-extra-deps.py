@@ -228,7 +228,7 @@ repoFiles: dict[str, bool] = {}
 
 def getRepoFiles() -> None:
   """Call 'git ls-files' and add the output to 'reopFiles'."""
-  command = ["git", "ls-files"]
+  command = ["git", "ls-files", "--recurse-submodules"]
 
   try:
     lines = subprocess.check_output(command).decode()
