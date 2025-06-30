@@ -6,6 +6,7 @@ Makefile dependencies in sorted order.
 """
 
 import argparse              # argparse
+import io                    # io.TextIOWrapper
 import os                    # os.getenv
 import re                    # re.compile
 import signal                # signal.signal
@@ -66,12 +67,59 @@ def call_main() -> None:
 # --------------- END: boilerplate --------------
 
 
+def read_file_stripped_lines(fname: str) -> list[str]:
+  """Read the lines of `fname` into an array, removing leading and
+  trailing whitespace from each."""
+
+  with open(fname, "r") as f:
+    return [line.strip() for line in f]
+
+
+def join_backslashed_lines(lines: list[str]) -> list[str]:
+  """Join adjacent lines when the first ends in a backslash."""
+
+  result: list[str] = []
+  accumulator: str = ""
+  continuation: bool = False
+
+  for line in lines:
+    if line.endswith("\\"):
+      # Add this line to the accumulator, without the backslash.
+      accumulator += line[:-1]
+      continuation = True
+
+    else:
+      if continuation:
+        # We had previous lines to join and now finish.
+        accumulator += line
+        result.append(accumulator)
+        accumulator = ""
+        continuation = False
+
+      else:
+        # This line is not continued and was not preceded by a
+        # continuation.
+        result.append(line)
+
+  if continuation:
+    # The last line had a backslash; emit the accumulator.
+    result.append(accumulator)
+
+  return result
+
+
+assert(join_backslashed_lines(
+  ['a', 'b \\', 'c', 'd \\', 'e \\', 'f', 'g']) ==
+  ['a', 'b c', 'd e f', 'g']);
+
+assert(join_backslashed_lines(['a \\']) == ['a ']);
+
+
 # ---- Main ----
 # Match the line specifying the target file.  Groups:
 #   1: Name of target file.
-#   2: Space-separated list of first set of dependencies, possibly
-#      including a continuation backslash.
-targetRE = re.compile(r"^([^:]+):\s+(.*)$")
+#   2: Space-separated list of dependencies, which might be empty.
+targetRE = re.compile(r"^([^:]+):(.*)$")
 
 # Set of exclusions, as a map to True.
 exclusions: dict[str, bool] = {}
@@ -85,22 +133,19 @@ dependencyLines: list[str] = []
 
 def main() -> None:
   # Write only LF line endings to stdout, even on Windows.
-  # https://stackoverflow.com/questions/34960955/print-lf-with-python-3-to-windows-stdout
   #
   # This is important because the output will be checked into the repo.
   #
-  # The `cast` is because `mypy` thinks this call could transform
-  # `stdout` to a binary IO stream since it does not understand that we
-  # are preserving the mode.
+  # Previously, I used a method based on the answer at:
   #
-  sys.stdout = cast(TextIO,
-                 open(sys.__stdout__.fileno(),
-                      mode=sys.__stdout__.mode,
-                      buffering=1,
-                      encoding=sys.__stdout__.encoding,
-                      errors=sys.__stdout__.errors,
-                      newline='\n',
-                      closefd=False))
+  #   https://stackoverflow.com/questions/34960955/print-lf-with-python-3-to-windows-stdout
+  #
+  # but more recent (?) mypy does not like it.  ChatGPT suggested the
+  # code used now, although I'm not easily able to properly test it.
+  sys.stdout = io.TextIOWrapper(
+    sys.stdout.buffer,
+    encoding='utf-8',
+    newline='\n')
 
   # Parse command line.
   parser = argparse.ArgumentParser()
@@ -130,58 +175,36 @@ def main() -> None:
   # Process the .d files.
   for file in opts.files:
     debugPrint(f"processing .d file: {file}")
-    target = None
-    deps: list[str] = []
 
-    def processDeps(d: str) -> None:
-      """Split 'd' and add elements to 'deps'."""
-      assert(target is not None)
+    # Get logical lines.
+    lines: list[str] = join_backslashed_lines(read_file_stripped_lines(file))
 
-      for element in d.split():
-        if element == "\\":
-          # Continuation backslash.
-          pass
-        elif element.startswith("../"):
-          # File in another directory.
-          pass
-        elif fileInRepo(element) and element not in inclusions:
-          # File checked in, and not explicitly included; no need to
-          # emit dependency.
-          pass
-        elif element in exclusions:
-          # Explicitly excluded.
-          pass
-        elif sameWithoutExtensions(target, element):
-          # The target probably already depends on the element due to
-          # another rule like the ordinary compilation rule.
-          pass
-        else:
-          deps.append(element)
+    for line in lines:
+      m = targetRE.match(line)
+      if m:
+        (target, deps) = m.group(1,2)
 
-    # Process lines in 'file'.
-    with open(file) as f:
-      for line in f:
-        line = line.rstrip("\n")
-        debugPrint(f"line: {line}")
+        for element in deps.split():
+          if element.startswith("../"):
+            # File in another directory.
+            pass
+          elif fileInRepo(element) and element not in inclusions:
+            # File checked in, and not explicitly included; no need to
+            # emit dependency.
+            pass
+          elif element in exclusions:
+            # Explicitly excluded.
+            pass
+          elif sameWithoutExtensions(target, element):
+            # The target probably already depends on the element due to
+            # another rule like the ordinary compilation rule.
+            pass
+          else:
+            dependencyLines.append(f"{target}: {element}")
 
-        m = targetRE.match(line)
-        if m:
-          (t, d) = m.group(1,2)
-          if target != None:
-            die(f"{file}: There is more than one target.")
-          target = t
+      else:
+        die(f"Unexpected line: {line}")
 
-          processDeps(d)
-
-        else:
-          if target == None:
-            die(f"{file}: Missed target name.")
-
-          # Second or later line after a backslash continuation.
-          processDeps(line)
-
-    for dep in deps:
-      dependencyLines.append(f"{target}: {dep}")
 
   # Add the --add rules.
   if opts.add:
