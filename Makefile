@@ -370,6 +370,7 @@ UNIT_TEST_OBJS :=
 UNIT_TEST_OBJS += array-test.o
 UNIT_TEST_OBJS += array2d-test.o
 UNIT_TEST_OBJS += arrayqueue-test.o
+UNIT_TEST_OBJS += astlist-gdvalue-test.o
 UNIT_TEST_OBJS += astlist-test.o
 UNIT_TEST_OBJS += autofile-test.o
 UNIT_TEST_OBJS += bdffont-test.o
@@ -825,10 +826,15 @@ endif
 
 # ---------------------- `using namespace` check -----------------------
 # Verify that `using namespace` does not appear in any header.
+#
+# This `grep` command only checks for the `using` at the start of the
+# line because it is fine to have such a directive inside the body of a
+# function template, etc.
+#
 ALL_HEADERS := $(wildcard *.h)
 out/no-using-namespace-in-header.ok: $(ALL_HEADERS)
 	$(CREATE_OUTPUT_DIRECTORY)
-	@if grep 'using namespace' $(ALL_HEADERS); then \
+	@if grep '^using namespace' $(ALL_HEADERS); then \
 	  echo "Some headers have 'using namespace'."; \
 	  exit 2; \
 	else \
