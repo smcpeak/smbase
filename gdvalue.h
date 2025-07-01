@@ -22,7 +22,7 @@
 #include "smbase/gdvtuple.h"                     // gdv::GDVTuple
 #include "smbase/ordered-map.h"                  // smbase::OrderedMap
 #include "smbase/sm-integer.h"                   // smbase::Integer
-#include "smbase/sm-macros.h"                    // OPEN_NAMESPACE
+#include "smbase/sm-macros.h"                    // OPEN_NAMESPACE, NULLABLE
 
 // libc++
 #include <cstddef>                               // std::size_t
@@ -1096,6 +1096,20 @@ GDValue toGDValue(smbase::OrderedMap<K,V> const &m)
   }
 
   return ret;
+}
+
+
+// If `ptr` is null then yield a null GDValue.  Otherwise, dereference
+// it and convert that to a GDValue.
+template <typename T>
+GDValue nullablePtrToGDValue(T const * NULLABLE ptr)
+{
+  if (ptr) {
+    return toGDValue(*ptr);
+  }
+  else {
+    return GDValue();
+  }
 }
 
 

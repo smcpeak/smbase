@@ -2341,6 +2341,18 @@ void testValueKindCategories()
 }
 
 
+void testNullablePtrToGDValue()
+{
+  int i = 3;
+
+  int *p = nullptr;
+  EXPECT_EQ(nullablePtrToGDValue(p).asString(), "null");
+
+  p = &i;
+  EXPECT_EQ(nullablePtrToGDValue(p).asString(), "3");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -2390,6 +2402,7 @@ void test_gdvalue()
     testSymbolLiteralOperator();
     testGDV_SKV();
     testValueKindCategories();
+    testNullablePtrToGDValue();
 
     // Some interesting values for the particular data used.
     testPrettyPrint(0);
