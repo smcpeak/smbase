@@ -1350,7 +1350,7 @@ void GDValue::mapClear()
 }
 
 
-bool GDValue::mapContainsSym(char const *symName)
+bool GDValue::mapContainsSym(char const *symName) const
 {
   return mapContains(GDVSymbol(symName));
 }
@@ -1444,7 +1444,7 @@ void GDValue::orderedMapClear()
 }
 
 
-bool GDValue::orderedMapContainsSym(char const *symName)
+bool GDValue::orderedMapContainsSym(char const *symName) const
 {
   return orderedMapContains(GDVSymbol(symName));
 }

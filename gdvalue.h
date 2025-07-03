@@ -779,7 +779,7 @@ public:      // methods
 
   // Operations that use symbols, named using `char*`, as keys.  These
   // are provided for syntactic convenience.
-  bool mapContainsSym(char const *symName);
+  bool mapContainsSym(char const *symName) const;
   GDValue const &mapGetSym(char const *symName) const;
   GDValue       &mapGetSym(char const *symName)      ;
   void mapSetSym(char const *symName, GDValue const &value);
@@ -819,7 +819,7 @@ public:      // methods
 
   // Operations that use symbols, named using `char*`, as keys.  These
   // are provided for syntactic convenience.
-  bool orderedMapContainsSym(char const *symName);
+  bool orderedMapContainsSym(char const *symName) const;
   GDValue const &orderedMapGetSym(char const *symName) const;
   GDValue       &orderedMapGetSym(char const *symName)      ;
   void orderedMapSetSym(char const *symName, GDValue const &value);
