@@ -6,6 +6,7 @@
 
 #include "smbase/dni-vector.h"         // this module
 
+#include "smbase/gdvalue-vector.h"     // gdv::toGDValue(std::vector)
 #include "smbase/gdvalue.h"            // gdv::GDValue
 
 #include <utility>                     // std::move

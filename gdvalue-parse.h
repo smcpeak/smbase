@@ -16,7 +16,7 @@
 #include "smbase/std-memory-fwd.h"     // std::unique_ptr
 #include "smbase/std-string-fwd.h"     // std::string
 
-#include <type_traits>                 // std::enable_if_t
+#include <type_traits>                 // std::{enable_if_t, is_final, is_constructible}
 
 
 OPEN_NAMESPACE(gdv)
@@ -84,7 +84,7 @@ GDValue mapGetSym_parse(GDValue const &v, char const *symName);
 // things like ASTList<>, but partial specialization of function
 // templates is not allowed.
 //
-template <typename T>
+template <typename T, typename Enable = void>
 struct GDVTo {};
 
 
@@ -99,6 +99,20 @@ template <>
 struct GDVTo<std::string> {
   // Requires that `v` be a string.
   static std::string f(GDValue const &v);
+};
+
+// If `T` is final and can be constructed from `GDValue`, we should be
+// able to safely create it directly.
+template <typename T>
+struct GDVTo<T,
+             std::enable_if_t<
+               std::is_final<T>::value &&
+               std::is_constructible<T, GDValue>::value>
+            > {
+  static T f(GDValue const &v)
+  {
+    return T(v);
+  }
 };
 
 

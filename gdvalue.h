@@ -998,20 +998,6 @@ toGDValue(T const &t)
 }
 
 
-// For `std::vector`.
-template <typename T, typename A>
-GDValue toGDValue(std::vector<T,A> const &v)
-{
-  GDValue ret(GDVK_SEQUENCE);
-
-  for (T const &t : v) {
-    ret.sequenceAppend(toGDValue(t));
-  }
-
-  return ret;
-}
-
-
 // For `std::pair`.
 template <typename T1, typename T2>
 GDValue toGDValue(std::pair<T1,T2> const &p)

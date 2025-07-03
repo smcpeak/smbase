@@ -3,6 +3,7 @@
 
 #include "smbase/gdvalue-parse.h"      // module under test
 #include "smbase/gdvalue-unique-ptr.h" // module under test
+#include "smbase/gdvalue-vector.h"     // module under test
 
 #include "smbase/gdvalue.h"            // gdv::GDValue
 #include "smbase/sm-macros.h"          // {OPEN,CLOSE}_ANONYMOUS_NAMESPACE
@@ -44,7 +45,7 @@ public:      // funcs
 };
 
 
-void test_gdvTo_int()
+void test_int()
 {
   EXPECT_EQ(gdvTo<int>(GDValue(3)), 3);
 
@@ -59,7 +60,7 @@ void test_gdvTo_int()
 }
 
 
-void test_gdvTo_string()
+void test_string()
 {
   EXPECT_EQ(gdvTo<std::string>(GDValue("abc")), "abc");
 
@@ -67,7 +68,7 @@ void test_gdvTo_string()
 }
 
 
-void test_gdvTo_unique_ptr()
+void test_unique_ptr()
 {
   std::unique_ptr<Data> d1(new Data(3,4));
   GDValue v(toGDValue(d1));
@@ -78,14 +79,41 @@ void test_gdvTo_unique_ptr()
 }
 
 
+void test_vector()
+{
+  std::vector<Data> vec1{{1,2}, {3,4}};
+  GDValue v(toGDValue(vec1));
+  EXPECT_EQ(v.asString(), "[Data{x:1 y:2} Data{x:3 y:4}]");
+
+  std::vector<Data> vec2(gdvTo<std::vector<Data>>(v));
+  EXPECT_EQ(toGDValue(vec2), v);
+}
+
+
+void test_vector_of_unique()
+{
+  std::vector<std::unique_ptr<Data>> vec1;
+  vec1.push_back(std::make_unique<Data>(1,2));
+  vec1.push_back(std::make_unique<Data>(3,4));
+  GDValue v(toGDValue(vec1));
+  EXPECT_EQ(v.asString(), "[Data{x:1 y:2} Data{x:3 y:4}]");
+
+  std::vector<std::unique_ptr<Data>> vec2(
+    gdvTo<std::vector<std::unique_ptr<Data>>>(v));
+  EXPECT_EQ(toGDValue(vec2), v);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
 void test_gdvalue_parse()
 {
-  test_gdvTo_int();
-  test_gdvTo_string();
-  test_gdvTo_unique_ptr();
+  test_int();
+  test_string();
+  test_unique_ptr();
+  test_vector();
+  test_vector_of_unique();
 }
 
 
