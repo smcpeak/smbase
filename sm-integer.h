@@ -9,6 +9,8 @@
 #ifndef SMBASE_SM_INTEGER_H
 #define SMBASE_SM_INTEGER_H
 
+#include "smbase/sm-integer-fwd.h"     // fwds for this module
+
 #include "compare-util-iface.h"        // DEFINE_FRIEND_RELATIONAL_OPERATORS
 #include "sm-macros.h"                 // OPEN_NAMESPACE
 #include "std-optional-fwd.h"          // std::optional [n]
