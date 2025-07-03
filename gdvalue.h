@@ -369,6 +369,9 @@ public:      // methods
 
   GDValueKind getKind() const { return m_kind; }
 
+  // Return `toString(m_kind)`.
+  char const *getKindName() const;
+
   // Map SmallInteger to Integer, keeping other kinds the same, to get
   // the kind corresponding to the logical superclass.
   GDValueKind getSuperKind() const;
@@ -839,6 +842,7 @@ public:      // methods
   void taggedContainerSetTag(GDVSymbol tag);
 
   GDVSymbol taggedContainerGetTag() const;
+  std::string_view taggedContainerGetTagName() const;
 
   #define DECLARE_TAGGED_CONTAINER_METHODS(KIND, Kind, kind) \
     /*implicit*/ GDValue(GDVTagged##Kind const &tcont);      \

@@ -362,6 +362,12 @@ GDValueKind GDValue::getSuperKind() const
 }
 
 
+char const *GDValue::getKindName() const
+{
+  return toString(getKind());
+}
+
+
 bool GDValue::isContainer() const
 {
   return isOrderedContainer() ||
@@ -1507,6 +1513,12 @@ GDVSymbol GDValue::taggedContainerGetTag() const
 
     #undef CASE
   }
+}
+
+
+std::string_view GDValue::taggedContainerGetTagName() const
+{
+  return taggedContainerGetTag().getSymbolName();
 }
 
 
