@@ -17,6 +17,7 @@
 
 // this dir
 #include "smbase/compare-util.h"                 // DEFINE_FRIEND_RELATIONAL_OPERATORS
+#include "smbase/gdvalue-types.h"                // GDVSize, GDVIndex, GDVInteger, GDVSmallInteger, GDVString, GDVSequence, GDVSet, GDVMap, GDVOrderedMap, GDVMapEntry
 #include "smbase/gdvalue-write-options.h"        // gdv::GDValueWriteOptions
 #include "smbase/gdvsymbol.h"                    // gdv::GDVSymbol
 #include "smbase/gdvtuple.h"                     // gdv::GDVTuple
@@ -25,8 +26,6 @@
 #include "smbase/sm-macros.h"                    // OPEN_NAMESPACE, NULLABLE
 
 // libc++
-#include <cstddef>                               // std::size_t
-#include <cstdint>                               // std::int64_t
 #include <iosfwd>                                // std::ostream
 #include <map>                                   // std::map
 #include <set>                                   // std::set
@@ -40,43 +39,6 @@
 
 
 OPEN_NAMESPACE(gdv)
-
-
-// ----------------------- GDVXXX Support Types ------------------------
-// Count of elements.
-using GDVSize = std::size_t;
-
-// Index for vectors.
-using GDVIndex = std::size_t;
-
-// GDValue(GDVK_INTEGER) holds this.
-using GDVInteger = smbase::Integer;
-
-// Stored when the kind is GDVK_SMALL_INTEGER.
-using GDVSmallInteger = std::int64_t;
-
-// GDValue(GDVK_STRING) holds this.  It is a UTF-8 encoding of the
-// sequence of Unicode code points the string represents.
-using GDVString = std::string;
-
-//using GDVOctetSequence = std::vector<unsigned char>;
-
-// GDValue(GDVK_SEQUENCE) holds this.
-using GDVSequence = std::vector<GDValue>;
-
-// `GDVTuple` is defined in `gdvtuple.h`.
-
-// GDValue(GDVK_SET) holds this.
-using GDVSet = std::set<GDValue>;
-
-// GDValue(GDVK_MAP) holds this.
-using GDVMap = std::map<GDValue, GDValue>;
-
-// GDValue(GDVK_ORDERED_MAP) holds this.
-using GDVOrderedMap = smbase::OrderedMap<GDValue, GDValue>;
-
-// The entry type for GDVMap and GDVOrderedMap.
-using GDVMapEntry = std::pair<GDValue const, GDValue>;
 
 
 // ------------------------ GDVTaggedContainer -------------------------
