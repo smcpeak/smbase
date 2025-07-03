@@ -10,6 +10,7 @@
 #include <exception>                   // std::exception
 #include <iostream>                    // std::ostream
 #include <limits>                      // std::numeric_limits
+#include <string_view>                 // std::string_view
 
 
 OPEN_ANONYMOUS_NAMESPACE
@@ -215,7 +216,16 @@ void testDoubleQuote()
   for (auto const &t : tests) {
     std::string actual = doubleQuote(t.m_input);
     EXPECT_EQ(actual, std::string(t.m_expect));
+
+    // Check `doubleQuote` on `string_view`.
+    std::string_view sv(t.m_input);
+    actual = doubleQuote(sv);
+    EXPECT_EQ(actual, std::string(t.m_expect));
   }
+
+  // Test `doubleQuote` on `char const *`.  This can't be part of the
+  // above loop since it cannot handle embedded NULs.
+  EXPECT_EQ(doubleQuote("foo"), "\"foo\"");
 }
 
 

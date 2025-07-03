@@ -370,11 +370,24 @@ void insertDoubleQuoted(std::ostream &os, std::string const &str)
 }
 
 
-std::string doubleQuote(std::string const &s)
+std::string doubleQuote_string(std::string const &s)
 {
   std::ostringstream oss;
   insertDoubleQuoted(oss, s);
   return oss.str();
+}
+
+
+std::string doubleQuote_sv(std::string_view sv)
+{
+  // Not efficient.  The entire module should probably be inverted to
+  // operate primarily on `string_view`.  This is a stopgap.
+  return doubleQuote_string(std::string(sv));
+}
+
+std::string doubleQuote_cstr(char const *s)
+{
+  return doubleQuote_sv(s);
 }
 
 

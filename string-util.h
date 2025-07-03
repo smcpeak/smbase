@@ -13,6 +13,7 @@
 #define SMBASE_STRING_UTIL_H
 
 #include "codepoint.h"                 // CodePoint
+#include "std-string-view-fwd.h"       // std::string_view
 #include "sm-macros.h"                 // DEPRECATED
 
 #include <cstddef>                     // std::size_t
@@ -146,7 +147,18 @@ inline std::string encodeWithEscapes(signed char const *src, int len)
 void insertDoubleQuoted(std::ostream &os, std::string const &str);
 
 // Return 's' in the 'insertDoubleQuoted' form.
-std::string doubleQuote(std::string const &s);
+std::string doubleQuote_string(std::string const &s);
+std::string doubleQuote_sv(std::string_view sv);
+std::string doubleQuote_cstr(char const *cstr);
+
+// Normally, these overloads are what I use.  However, the
+// explicitly-typed forms are occasionally helpful.
+inline std::string doubleQuote(std::string const &s)
+  { return doubleQuote_string(s); }
+inline std::string doubleQuote(std::string_view sv)
+  { return doubleQuote_sv(sv); }
+inline std::string doubleQuote(char const *cstr)
+  { return doubleQuote_cstr(cstr); }
 
 // Return `c` enclosed in single quotes if it is printable and not a
 // metacharacter, or as an escape sequence if not.

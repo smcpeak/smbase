@@ -66,7 +66,7 @@ static void testVecMapElements()
 
   // I do not like that I have to specify '<string>' here, but I do not
   // know how to avoid it.
-  dest = vecMapElements<string>(src, doubleQuote);
+  dest = vecMapElements<string>(src, doubleQuote_string);
   EXPECT_EQ(dest, (std::vector<string>{"\"a\"", "\"b\""}));
 }
 
