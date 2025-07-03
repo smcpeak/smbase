@@ -230,6 +230,7 @@ public:      // class data
   static unsigned s_ct_dtor;
   static unsigned s_ct_ctorCopy;
   static unsigned s_ct_ctorMove;
+  static unsigned s_ct_ctorTaggedContainer;
   static unsigned s_ct_assignCopy;
   static unsigned s_ct_assignMove;
   static unsigned s_ct_valueKindCtor;
@@ -799,6 +800,10 @@ public:      // methods
   //   * mapXXXSym
 
   // ---- TaggedContainer ----
+  // Create a tagged container with its tag.  `kind` must identify a
+  // tagged container.
+  explicit GDValue(GDValueKind kind, GDVSymbol tag);
+
   // These methods require `isTaggedContainer()`.
 
   void taggedContainerSetTag(GDVSymbol tag);

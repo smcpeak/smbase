@@ -805,6 +805,13 @@ void testTaggedMap()
   EXPECT_EQ(v.asString(), "y{1:2}");
   testSerializeRoundtrip(v);
 
+  {
+    // Test ctor that accepts kind and tag.
+    GDValue v2(GDVK_TAGGED_MAP, "y"_sym);
+    v2.mapSetValueAt(1,2);
+    EXPECT_EQ(v2, v);
+  }
+
   GDVTaggedMap tm(GDVSymbol("z"), {{3,4}, {5,6}});
   v = tm;
   EXPECT_EQ(v.asString(), "z{3:4 5:6}");
@@ -1079,6 +1086,13 @@ void testTaggedOrderedMap()
   EXPECT_EQ(v.asString(), "y[1:2]");
   testSerializeRoundtrip(v);
 
+  {
+    // Test ctor that accepts kind and tag.
+    GDValue v2(GDVK_TAGGED_ORDERED_MAP, "y"_sym);
+    v2.mapSetValueAt(1, 2);
+    EXPECT_EQ(v2, v);
+  }
+
   GDVTaggedOrderedMap tm(GDVSymbol("z"), {{3,4}, {-5,6}});
   v = tm;
   EXPECT_EQ(v.asString(), "z[3:4 -5:6]");
@@ -1184,6 +1198,13 @@ void testTaggedSequence()
   v.sequenceAppend(1);
   EXPECT_EQ(v.asString(), "x[1]");
   testSerializeRoundtrip(v);
+
+  {
+    // Test ctor that accepts kind and tag.
+    GDValue v2(GDVK_TAGGED_SEQUENCE, "x"_sym);
+    v2.sequenceAppend(1);
+    EXPECT_EQ(v2, v);
+  }
 }
 
 
@@ -1233,6 +1254,13 @@ void testTaggedTuple()
   testSerializeRoundtrip(v);
   writeAsMapElementManyWidths(v);
 
+  {
+    // Test ctor that accepts kind and tag.
+    GDValue v2(GDVK_TAGGED_TUPLE, "x"_sym);
+    v2.tupleAppend(1);
+    EXPECT_EQ(v2, v);
+  }
+
   v.tupleAppend(2);
   EXPECT_EQ(v.asString(), "x(1 2)");
   testSerializeRoundtrip(v);
@@ -1259,6 +1287,13 @@ void testTaggedSet()
   v.setInsert(1);
   EXPECT_EQ(v.asString(), "x{1}");
   testSerializeRoundtrip(v);
+
+  {
+    // Test ctor that accepts kind and tag.
+    GDValue v2(GDVK_TAGGED_SET, "x"_sym);
+    v2.setInsert(1);
+    EXPECT_EQ(v2, v);
+  }
 }
 
 

@@ -183,6 +183,7 @@ unsigned GDValue::s_ct_ctorDefault = 0;
 unsigned GDValue::s_ct_dtor = 0;
 unsigned GDValue::s_ct_ctorCopy = 0;
 unsigned GDValue::s_ct_ctorMove = 0;
+unsigned GDValue::s_ct_ctorTaggedContainer = 0;
 unsigned GDValue::s_ct_assignCopy = 0;
 unsigned GDValue::s_ct_assignMove = 0;
 unsigned GDValue::s_ct_valueKindCtor = 0;
@@ -503,6 +504,7 @@ STATICDEF unsigned GDValue::countConstructorCalls()
     + s_ct_ctorDefault
     + s_ct_ctorCopy
     + s_ct_ctorMove
+    + s_ct_ctorTaggedContainer
     + s_ct_valueKindCtor
     + s_ct_boolCtor
     + s_ct_symbolCtor
@@ -1481,6 +1483,29 @@ bool GDValue::orderedMapRemoveSym(char const *symName)
 
 
 // -------------------------- TaggedContainer --------------------------
+GDValue::GDValue(GDValueKind kind, GDVSymbol tag)
+  : INIT_AS_NULL()
+{
+  switch (kind) {
+    default:
+      xfailurePrecondition("not a tagged container kind");
+
+    #define CASE(KIND, Container, container) \
+      case GDVK_TAGGED_##KIND:               \
+        m_kind = kind;                       \
+        m_value.m_tagged##Container =        \
+          new GDVTagged##Container(tag, {}); \
+        break;
+
+    FOR_EACH_GDV_CONTAINER(CASE)
+
+    #undef CASE
+  }
+
+  ++s_ct_ctorTaggedContainer;
+}
+
+
 void GDValue::taggedContainerSetTag(GDVSymbol tag)
 {
   switch (m_kind) {
