@@ -16,6 +16,10 @@ class Flatten;
 // it's up to clients to manage this ptr, as this module doesn't
 // do anything besides define it into existence
 // (this isn't the ideal solution..)
+//
+// 2025-07-02: This is also used by code that parses GDValues into
+// StringRefs.
+//
 extern class StringTable *flattenStrTable;
 
 

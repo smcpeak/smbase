@@ -60,6 +60,13 @@ public:
     }
   }
 
+  // Move all elements from `obj`.
+  ASTList(ASTList<T> &&obj)
+    : list()
+  {
+    list.stealElements(&obj.list);
+  }
+
   // First, delete all elements from 'this'.  Then, if 'src' is not
   // nullptr, transfer all of its elements to 'this', leaving it empty.
   void stealElements(ASTList<T> * /*nullable*/ src)

@@ -198,4 +198,18 @@ void expectMatchesRegex(
   expectMatchesRegex(#actual, actual, expectRegex) /* user ; */
 
 
+// Check that evaluating `expr` throws an exception of type `ExnType`.
+#define EXPECT_EXN(expr, ExnType)                            \
+  try {                                                      \
+    expr;                                                    \
+    x_assert_fail("Expected exception", __FILE__, __LINE__); \
+  }                                                          \
+  catch (ExnType &e) {                                       \
+    /* As expected. */                                       \
+    if (verbose) {                                           \
+      cout << "As expected: " << e.what() << "\n";           \
+    }                                                        \
+  }
+
+
 #endif // SMBASE_SM_TEST_H

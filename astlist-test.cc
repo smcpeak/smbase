@@ -3,8 +3,9 @@
 
 #include "astlist.h"                   // module under test
 
-#include "sm-macros.h"                 // NO_OBJECT_COPIES
-#include "xassert.h"                   // xassert
+#include "smbase/sm-macros.h"          // NO_OBJECT_COPIES
+#include "smbase/sm-test.h"            // EXPECT_EQ
+#include "smbase/xassert.h"            // xassert
 
 
 namespace {
@@ -123,6 +124,18 @@ static void testStealElements()
   xassert(list2.size() == 2);
 }
 
+static void testMoveCtor()
+{
+  ASTList<Integer> list1;
+  list1.append(new Integer(1));
+  list1.append(new Integer(2));
+  EXPECT_EQ(list1.count(), 2);
+
+  ASTList<Integer> list2(std::move(list1));
+  EXPECT_EQ(list1.count(), 0);
+  EXPECT_EQ(list2.count(), 2);
+}
+
 
 // TODO: Test other things!
 
@@ -133,6 +146,7 @@ void test_astlist()
   testStealingCtor();
   testSteal();
   testStealElements();
+  testMoveCtor();
 
   xassert(Integer::s_objectCount == 0);
 }

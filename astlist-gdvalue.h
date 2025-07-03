@@ -10,6 +10,9 @@
 
 #include "smbase/astlist.h"            // ASTList
 #include "smbase/gdvalue.h"            // gdv::GDValue
+#include "smbase/gdvalue-parse.h"      // gdv::gdvTo
+
+#include <utility>                     // std::move
 
 
 // Convert `lst` to a GDV sequence.
@@ -26,6 +29,23 @@ gdv::GDValue toGDValue(ASTList<T> const &lst)
 
   return s;
 }
+
+
+template <typename T>
+struct gdv::GDVTo<ASTList<T> > {
+  static ASTList<T> f(GDValue const &s)
+  {
+    checkIsSequence(s);
+
+    ASTList<T> ret;
+
+    for (auto const &element : s.sequenceGet()) {
+      ret.append(gdv::gdvToNew<T>(element));
+    }
+
+    return std::move(ret);
+  }
+};
 
 
 #endif // SMBASE_ASTLIST_GDVALUE_H
