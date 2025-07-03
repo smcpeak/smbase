@@ -8,7 +8,7 @@ Overview
 The std-*-fwd.h headers, plus detect-libcpp.h, provide forward
 declarations for standard headers for improved compile times.
 
-These headers are based on the work of Philip Tretter:
+These headers are based on the work of Philip Trettner:
 
   https://github.com/Philip-Trettner/cpp-std-fwd
 
