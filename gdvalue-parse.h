@@ -13,7 +13,10 @@
 #include "smbase/gdvalue-fwd.h"        // gdv::GDValue
 #include "smbase/gdvalue-types.h"      // gdv::GDVIndex
 #include "smbase/sm-macros.h"          // {OPEN,CLOSE}_NAMESPACE
+#include "smbase/std-memory-fwd.h"     // std::unique_ptr
 #include "smbase/std-string-fwd.h"     // std::string
+
+#include <type_traits>                 // std::enable_if_t
 
 
 OPEN_NAMESPACE(gdv)
@@ -55,7 +58,7 @@ void checkContainerTag(GDValue const &v, char const *symName);
 // Throw if `v` is not a tagged map with symbol `symName`.
 void checkTaggedMapTag(GDValue const &v, char const *symName);
 
-// Return `v.tupleGetValueAt(index)`, except throw if if there is a
+// Return `v.tupleGetValueAt(index)`, except throw if there is a
 // problem.
 GDValue tupleGetValueAt_parse(GDValue const &v, GDVIndex index);
 
@@ -64,6 +67,7 @@ GDValue mapGetSym_parse(GDValue const &v, char const *symName);
 
 
 
+// ------------------------------- GDVTo -------------------------------
 // Declaration of a class template that is meant to be specialized to
 // create a set of functions to convert from GDValue to various other
 // types.  This is intended to convert from the obvious kind of GDValue
@@ -84,15 +88,16 @@ template <typename T>
 struct GDVTo {};
 
 
-// Convert from a small integer.
 template <>
 struct GDVTo<int> {
+  // Requires that `v` be a small integer.
   static int f(GDValue const &v);
 };
 
 // Convert from a string.
 template <>
 struct GDVTo<std::string> {
+  // Requires that `v` be a string.
   static std::string f(GDValue const &v);
 };
 
@@ -114,8 +119,18 @@ T gdvTo(GDValue const &v)
 //
 //   static T *f(GDValue const &v);
 //
-template <typename T>
+template <typename T, typename Enable = void>
 struct GDVToNew {};
+
+
+// If `T` is final, we should be able to safely use `new` directly.
+template <typename T>
+struct GDVToNew<T, std::enable_if_t<std::is_final<T>::value>> {
+  static T *f(GDValue const &v)
+  {
+    return new T(v);
+  }
+};
 
 
 // Syntactic convenience for calling the above.

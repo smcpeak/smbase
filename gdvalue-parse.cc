@@ -129,6 +129,7 @@ GDValue mapGetSym_parse(GDValue const &v, char const *symName)
 }
 
 
+// ------------------------------- GDVTo -------------------------------
 int GDVTo<int>::f(GDValue const &v)
 {
   checkIsSmallInteger(v);
