@@ -83,6 +83,15 @@ void checkIsTaggedMap(GDValue const &v)
 }
 
 
+void checkIsPOMap(GDValue const &v)
+{
+  if (!v.isMap() && !v.isOrderedMap()) {
+    xformatsb("expected map or ordered map, not " <<
+              v.getKindCommonName());
+  }
+}
+
+
 void checkIsTaggedContainer(GDValue const &v)
 {
   if (!v.isTaggedContainer()) {
@@ -110,6 +119,13 @@ void checkTaggedMapTag(GDValue const &v, char const *symName)
 }
 
 
+void checkTaggedOrderedMapTag(GDValue const &v, char const *symName)
+{
+  checkGDValueKind(v, GDVK_TAGGED_ORDERED_MAP);
+  checkContainerTag(v, symName);
+}
+
+
 GDValue tupleGetValueAt_parse(GDValue const &v, GDVIndex index)
 {
   checkTupleIndex(v, index);
@@ -119,7 +135,7 @@ GDValue tupleGetValueAt_parse(GDValue const &v, GDVIndex index)
 
 GDValue mapGetSym_parse(GDValue const &v, char const *symName)
 {
-  checkIsMap(v);
+  checkIsPOMap(v);
 
   if (!v.mapContainsSym(symName)) {
     xformatsb("missing key: " << doubleQuote(symName));

@@ -214,6 +214,10 @@ char const *kindCommonName(GDValueKind gdvk);
     In addition, OrderedMap responds to some of the "map" methods,
     making it partially a subtype of Map, although `isMap()` is false
     for it.
+
+    TODO: Why not say that OrderedMap is a subtype of both
+    OrderedContainer and Map?  Is there any Map operation that
+    OrderedMap does not respond to?
 */
 class GDValue {
 private:     // class data

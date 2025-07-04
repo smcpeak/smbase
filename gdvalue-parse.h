@@ -49,6 +49,9 @@ void checkIsMap(GDValue const &v);
 // Throw if `v` is not a tagged map.
 void checkIsTaggedMap(GDValue const &v);
 
+// Throw unless `v` is a possibly-ordered map, possibly tagged.
+void checkIsPOMap(GDValue const &v);
+
 // Throw if `v` is not a tagged container.
 void checkIsTaggedContainer(GDValue const &v);
 
@@ -57,6 +60,9 @@ void checkContainerTag(GDValue const &v, char const *symName);
 
 // Throw if `v` is not a tagged map with symbol `symName`.
 void checkTaggedMapTag(GDValue const &v, char const *symName);
+
+// Throw unless `v` is a tagged ordered map with symbol `symName`.
+void checkTaggedOrderedMapTag(GDValue const &v, char const *symName);
 
 // Return `v.tupleGetValueAt(index)`, except throw if there is a
 // problem.
