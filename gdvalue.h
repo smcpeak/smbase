@@ -1028,20 +1028,6 @@ GDValue toGDValue(std::set<T,C,A> const &s)
 }
 
 
-// For `std::map`.
-template <typename K, typename V, typename C, typename A>
-GDValue toGDValue(std::map<K,V,C,A> const &m)
-{
-  GDValue ret(GDVK_MAP);
-
-  for (auto const &kv : m) {
-    ret.mapSetValueAt(toGDValue(kv.first), toGDValue(kv.second));
-  }
-
-  return ret;
-}
-
-
 // For `smbase::OrderedMap`.
 template <typename K, typename V>
 GDValue toGDValue(smbase::OrderedMap<K,V> const &m)

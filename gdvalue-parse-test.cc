@@ -1,6 +1,10 @@
 // gdvalue-parse-test.cc
 // Code for `gdvalue-parse`.
 
+#include "smbase/gdvalue-map-fwd.h"    // gdv::toGDValue(std::map)
+#include "smbase/gdvalue-vector-fwd.h" // gdv::toGDValue(std::vector)
+
+#include "smbase/gdvalue-map.h"        // module under test
 #include "smbase/gdvalue-parse.h"      // module under test
 #include "smbase/gdvalue-unique-ptr.h" // module under test
 #include "smbase/gdvalue-vector.h"     // module under test
@@ -104,6 +108,48 @@ void test_vector_of_unique()
 }
 
 
+void test_map()
+{
+  std::map<int, int> m1{{1,2}, {3,4}};
+  GDValue v(toGDValue(m1));
+  EXPECT_EQ(v.asString(), "{1:2 3:4}");
+
+  std::map<int, int> m2(gdvTo<std::map<int, int>>(v));
+  EXPECT_EQ(toGDValue(m2), v);
+}
+
+
+void test_map_of_vector_of_unique()
+{
+  typedef std::map<std::string, std::vector<std::unique_ptr<Data>>> DataVecMap;
+
+  std::vector<std::unique_ptr<Data>> fooVec;
+  fooVec.emplace_back(std::make_unique<Data>(1, 2));
+  fooVec.emplace_back(std::make_unique<Data>(3, 4));
+
+  std::vector<std::unique_ptr<Data>> barVec;
+  barVec.emplace_back(std::make_unique<Data>(5, 6));
+
+  DataVecMap m1;
+  m1.insert(std::make_pair(
+    std::string("foo"),
+    std::move(fooVec)
+  ));
+  m1.insert(std::make_pair(
+    std::string("bar"),
+    std::move(barVec)
+  ));
+
+  GDValue v(toGDValue(m1));
+  EXPECT_EQ(v.asString(),
+    "{\"bar\":[Data{x:5 y:6}] "
+     "\"foo\":[Data{x:1 y:2} Data{x:3 y:4}]}");
+
+  DataVecMap m2(gdvTo<DataVecMap>(v));
+  EXPECT_EQ(toGDValue(m2), v);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -114,6 +160,8 @@ void test_gdvalue_parse()
   test_unique_ptr();
   test_vector();
   test_vector_of_unique();
+  test_map();
+  test_map_of_vector_of_unique();
 }
 
 

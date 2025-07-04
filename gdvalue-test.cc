@@ -3,6 +3,7 @@
 
 // This file is in the public domain.
 
+#include "gdvalue-map.h"               // module under test
 #include "gdvalue-vector.h"            // module under test
 #include "gdvalue.h"                   // module under test
 

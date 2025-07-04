@@ -4,6 +4,8 @@
 #ifndef SMBASE_GDVALUE_VECTOR_H
 #define SMBASE_GDVALUE_VECTOR_H
 
+#include "smbase/gdvalue-vector-fwd.h" // fwds for this module
+
 #include "smbase/gdvalue.h"            // gdv::GDValue
 #include "smbase/gdvalue-parse.h"      // gdv::GDVTo
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
