@@ -12,8 +12,6 @@
 #include "smbase/gdvalue.h"            // gdv::GDValue
 #include "smbase/gdvalue-parse.h"      // gdv::gdvTo
 
-#include <utility>                     // std::move
-
 
 // Convert `lst` to a GDV sequence.
 template <typename T>
@@ -43,7 +41,7 @@ struct gdv::GDVTo<ASTList<T> > {
       ret.append(gdv::gdvToNew<T>(element));
     }
 
-    return std::move(ret);
+    return ret;
   }
 };
 

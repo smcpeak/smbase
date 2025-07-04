@@ -9,7 +9,6 @@
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 
 #include <vector>                      // std::vector
-#include <utility>                     // std::move
 
 
 OPEN_NAMESPACE(gdv)
@@ -40,7 +39,7 @@ struct GDVTo<std::vector<T,A>> {
       vec.push_back(gdvTo<T>(element));
     }
 
-    return std::move(vec);
+    return vec;
   }
 };
 
