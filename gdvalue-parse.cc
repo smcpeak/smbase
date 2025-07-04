@@ -18,8 +18,8 @@ OPEN_NAMESPACE(gdv)
 void checkGDValueKind(GDValue const &v, GDValueKind kind)
 {
   if (v.getKind() != kind) {
-    xformatsb("expected " << toString(kind) <<
-              ", not " << v.getKindName());
+    xformatsb("expected " << kindCommonName(kind) <<
+              ", not " << v.getKindCommonName());
   }
 }
 
@@ -45,7 +45,7 @@ void checkIsString(GDValue const &v)
 void checkIsSequence(GDValue const &v)
 {
   if (!v.isSequence()) {
-    xformatsb("expected sequence, not " << v.getKindName());
+    xformatsb("expected sequence, not " << v.getKindCommonName());
   }
 }
 
@@ -53,7 +53,7 @@ void checkIsSequence(GDValue const &v)
 void checkIsTuple(GDValue const &v)
 {
   if (!v.isTuple()) {
-    xformatsb("expected tuple, not " << v.getKindName());
+    xformatsb("expected tuple, not " << v.getKindCommonName());
   }
 }
 
@@ -72,7 +72,7 @@ void checkTupleIndex(GDValue const &v, GDVIndex index)
 void checkIsMap(GDValue const &v)
 {
   if (!v.isMap()) {
-    xformatsb("expected map, not " << v.getKindName());
+    xformatsb("expected map, not " << v.getKindCommonName());
   }
 }
 
@@ -86,7 +86,7 @@ void checkIsTaggedMap(GDValue const &v)
 void checkIsTaggedContainer(GDValue const &v)
 {
   if (!v.isTaggedContainer()) {
-    xformatsb("expected tagged container, not " << v.getKindName());
+    xformatsb("expected tagged container, not " << v.getKindCommonName());
   }
 }
 

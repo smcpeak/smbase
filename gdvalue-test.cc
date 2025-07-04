@@ -41,6 +41,13 @@ using std::cout;
 OPEN_ANONYMOUS_NAMESPACE
 
 
+void testKindCommonName()
+{
+  EXPECT_EQ(kindCommonName(GDVK_SYMBOL), "symbol");
+  EXPECT_EQ(kindCommonName(GDVK_TAGGED_ORDERED_MAP), "tagged ordered map");
+}
+
+
 // Check that 'ser' deserializes to 'expect'.
 void checkParse(GDValue const &expect, std::string const &ser)
 {
@@ -2406,6 +2413,7 @@ void test_gdvalue()
     testPrettyPrint(width);            // gcov-ignore
   }
   else {
+    testKindCommonName();
     testNull();
     testBool();
     testSymbol();

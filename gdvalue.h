@@ -177,6 +177,10 @@ enum GDValueKind : unsigned char {
 // invalid.
 char const *toString(GDValueKind gdvk);
 
+// Return a string like "symbol" that is how the data type would be
+// described in prose.
+char const *kindCommonName(GDValueKind gdvk);
+
 
 // ----------------------------- GDValue -------------------------------
 /* A General Data Value is a disjoint union of several different types
@@ -334,6 +338,9 @@ public:      // methods
 
   // Return `toString(m_kind)`.
   char const *getKindName() const;
+
+  // Return `kindCommonName(m_kind)`.
+  char const *getKindCommonName() const;
 
   // Map SmallInteger to Integer, keeping other kinds the same, to get
   // the kind corresponding to the logical superclass.

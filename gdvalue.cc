@@ -175,6 +175,33 @@ DEFINE_ENUMERATION_TO_STRING_OR(
 #undef CASE
 
 
+char const *kindCommonName(GDValueKind gdvk)
+{
+  RETURN_ENUMERATION_STRING_OR(
+    GDValueKind,
+    NUM_GDVALUE_KINDS,
+    (
+      "symbol",
+      "integer",
+      "small integer",
+      "string",
+      "sequence",
+      "tagged sequence",
+      "tuple",
+      "tagged tuple",
+      "set",
+      "tagged set",
+      "map",
+      "tagged map",
+      "ordered map",
+      "tagged ordered map"
+    ),
+    gdvk,
+    "(invalid GDValueKind)"
+  )
+}
+
+
 // ------------------------ GDValue static data ------------------------
 GDVSymbol::Index GDValue::s_symbolIndex_false = GDVSymbol::lookupSymbolIndex("false");;
 GDVSymbol::Index GDValue::s_symbolIndex_true  = GDVSymbol::lookupSymbolIndex("true");;
@@ -366,6 +393,12 @@ GDValueKind GDValue::getSuperKind() const
 char const *GDValue::getKindName() const
 {
   return toString(getKind());
+}
+
+
+char const *GDValue::getKindCommonName() const
+{
+  return kindCommonName(getKind());
 }
 
 
