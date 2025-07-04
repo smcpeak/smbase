@@ -85,7 +85,7 @@ void checkIsTaggedMap(GDValue const &v)
 
 void checkIsPOMap(GDValue const &v)
 {
-  if (!v.isMap() && !v.isOrderedMap()) {
+  if (!v.isPOMap()) {
     xformatsb("expected map or ordered map, not " <<
               v.getKindCommonName());
   }

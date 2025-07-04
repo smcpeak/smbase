@@ -477,6 +477,8 @@ template <typename T>
 static int compare(std::set<T> const &aSet,
                    std::set<T> const &bSet)
 {
+  // Although a set is unordered, std::set iterates in the right order
+  // such that comparing as if ordered produces the right result.
   return compareOrderedContainer(aSet, bSet);
 }
 

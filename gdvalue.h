@@ -65,7 +65,9 @@ public:      // methods
   GDVTaggedContainer(GDVSymbol tag, CONTAINER const &container);
   GDVTaggedContainer(GDVSymbol tag, CONTAINER &&container);
 
-  // TODO: Allow passing `char const *` as first argument?
+  // Despite the possible additional convenience, I do not allow passing
+  // `char const *` as first argument.  The `_sym` literal suffix is
+  // sufficiently convenient already.
 
   GDVTaggedContainer(GDVTaggedContainer const &obj);
   GDVTaggedContainer(GDVTaggedContainer &&obj);
@@ -197,27 +199,40 @@ char const *kindCommonName(GDValueKind gdvk);
        Integer
          SmallInteger
        String
-     Container
-       OrderedContainer
-         Sequence
-           TaggedSequence
-         Tuple
-           TaggedTuple
-         OrderedMap
-           TaggedOrderedMap
-       UnorderedContainer
-         Set
-           TaggedSet
-         Map
+     Container                  -----+ non-exclusive subtype
+       OrderedContainer              |
+         Sequence                    V
+           TaggedSequence          POMap (possibly-ordered map)
+         Tuple                       |
+           TaggedTuple               |
+         OrderedMap             <----+
+           TaggedOrderedMap          |
+       UnorderedContainer            |
+         Set                         |
+           TaggedSet                 |
+         Map                    <----+
            TaggedMap
 
-    In addition, OrderedMap responds to some of the "map" methods,
-    making it partially a subtype of Map, although `isMap()` is false
-    for it.
+    Every Container is either an OrderedContainer or an
+    UnorderedContainer.  Independently, a Container can be a POMap
+    (partially-ordered map).  In turn, every POMap is either a Map or an
+    OrderedMap.
 
-    TODO: Why not say that OrderedMap is a subtype of both
-    OrderedContainer and Map?  Is there any Map operation that
-    OrderedMap does not respond to?
+    Rationale for terminology: It is tempting to rearrange the terms
+    like this:
+
+      POMap          -> Map
+      Map            -> UnorderedMap
+      OrderedMap        (would stay the same)
+
+    The problem with such a rearrangement is that it would clash with
+    typical programming language vocabulary, and especially that of C++.
+    Specifically, in C++, "map" already means a map whose *keys* have an
+    intrinsic order, while "unordered map" means one where the keys do
+    not have an intrinsic order.  In contrast, in GDValue, everything
+    has an intrinsic order, and OrderedMap is distinguished by also
+    having an arbitrary extrinsic order applied to the (key, value)
+    pairs.
 */
 class GDValue {
 private:     // class data
@@ -375,7 +390,10 @@ public:      // methods
   bool isOrderedMap()       const { return m_kind == GDVK_ORDERED_MAP      ||
                                            isTaggedOrderedMap();              }
   bool isTaggedOrderedMap() const { return m_kind == GDVK_TAGGED_ORDERED_MAP; }
-
+  bool isPOMap()            const { return isMap()                         ||
+                                           isOrderedMap();                    }
+  bool isTaggedPOMap()      const { return isTaggedMap()                   ||
+                                           isTaggedOrderedMap();              }
 
   // True of Sequence, Tuple, Set, Map, and OrderedMap, tagged or not.
   // False of others.
@@ -415,10 +433,14 @@ public:      // methods
                 J is missing from both A and B or A[J] == B[J]
               K is in B but not A, or A[K] < B[K]
 
+       ordered map: Lexicographic by ordered (k,v) pairs.
+
      Note: Since `null`, `false`, and `true` are treated as symbols,
      their relative order is:
 
        false < null < true
+
+     Tagged containers compare the tag then the container.
   */
   friend int compare(GDValue const &a, GDValue const &b);
 
