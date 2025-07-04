@@ -1,19 +1,20 @@
 // gdvalue-parse-test.cc
 // Code for `gdvalue-parse`.
 
-#include "smbase/gdvalue-map-fwd.h"    // gdv::toGDValue(std::map)
-#include "smbase/gdvalue-vector-fwd.h" // gdv::toGDValue(std::vector)
+#include "smbase/gdvalue-map-fwd.h"              // gdv::toGDValue(std::map)
+#include "smbase/gdvalue-unique-ptr-fwd.h"       // gdv::toGDValue(std::unique_ptr)
+#include "smbase/gdvalue-vector-fwd.h"           // gdv::toGDValue(std::vector)
 
-#include "smbase/gdvalue-map.h"        // module under test
-#include "smbase/gdvalue-parse.h"      // module under test
-#include "smbase/gdvalue-unique-ptr.h" // module under test
-#include "smbase/gdvalue-vector.h"     // module under test
+#include "smbase/gdvalue-map.h"                  // module under test
+#include "smbase/gdvalue-parse.h"                // module under test
+#include "smbase/gdvalue-unique-ptr.h"           // module under test
+#include "smbase/gdvalue-vector.h"               // module under test
 
-#include "smbase/gdvalue.h"            // gdv::GDValue
-#include "smbase/sm-macros.h"          // {OPEN,CLOSE}_ANONYMOUS_NAMESPACE
-#include "smbase/sm-test.h"            // EXPECT_EQ
+#include "smbase/gdvalue.h"                      // gdv::GDValue
+#include "smbase/sm-macros.h"                    // {OPEN,CLOSE}_ANONYMOUS_NAMESPACE
+#include "smbase/sm-test.h"                      // EXPECT_EQ
 
-#include <limits>                      // std::numeric_limits
+#include <limits>                                // std::numeric_limits
 
 using namespace gdv;
 using namespace smbase;
