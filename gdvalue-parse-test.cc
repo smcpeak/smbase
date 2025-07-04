@@ -50,6 +50,14 @@ public:      // funcs
 };
 
 
+void test_bool()
+{
+  EXPECT_EQ(gdvTo<bool>(GDValue(true)), true);
+  EXPECT_EQ(gdvTo<bool>(GDValue(false)), false);
+  EXPECT_EXN(gdvTo<bool>(GDValue()), XFormat);
+}
+
+
 void test_int()
 {
   EXPECT_EQ(gdvTo<int>(GDValue(3)), 3);
@@ -156,6 +164,7 @@ CLOSE_ANONYMOUS_NAMESPACE
 
 void test_gdvalue_parse()
 {
+  test_bool();
   test_int();
   test_string();
   test_unique_ptr();

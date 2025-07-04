@@ -89,6 +89,13 @@ struct GDVTo {};
 
 
 template <>
+struct GDVTo<bool> {
+  // Requires that `v` be the symbol `true` or `false`.
+  static bool f(GDValue const &v);
+};
+
+
+template <>
 struct GDVTo<int> {
   // Requires that `v` be a small integer.
   static int f(GDValue const &v);

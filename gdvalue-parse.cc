@@ -130,6 +130,24 @@ GDValue mapGetSym_parse(GDValue const &v, char const *symName)
 
 
 // ------------------------------- GDVTo -------------------------------
+bool GDVTo<bool>::f(GDValue const &v)
+{
+  checkIsSymbol(v);
+
+  std::string_view symName = v.symbolGetName();
+  if (symName == "true") {
+    return true;
+  }
+  else if (symName == "false") {
+    return false;
+  }
+  else {
+    xformatsb("expected symbol `true` or `false`, not " << v.asString());
+    return false;  // not reached
+  }
+}
+
+
 int GDVTo<int>::f(GDValue const &v)
 {
   checkIsSmallInteger(v);
