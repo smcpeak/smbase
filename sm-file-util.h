@@ -18,6 +18,7 @@
 #include "stringset.h"                 // StringSet
 
 // libc++
+#include <optional>                    // std::optional
 #include <vector>                      // std::vector
 
 
@@ -395,20 +396,24 @@ inline stringBuilder& operator<< (stringBuilder &sb, SMFileUtil::FileKind kind)
 // certain queries.  This is only meant for use in test code.
 class TestSMFileUtil : public SMFileUtil {
 public:      // data
-  // For 'windowsPathSemantics'.
-  bool m_windowsPathSemantics;
+  // For `windowsPathSemantics`.  Initially false for compatibility with
+  // older code.
+  std::optional<bool> m_windowsPathSemantics;
 
-  // For 'absolutePathExists'.
-  StringSet m_existingPaths;
+  // For `absolutePathExists`.  Initially an existing but empty map for
+  // compatiblity with older code.
+  std::optional<StringSet> m_existingAbsolutePaths;
 
 public:      // funcs
-  TestSMFileUtil() : m_windowsPathSemantics(false) {}
-  ~TestSMFileUtil() {}
+  TestSMFileUtil();
+  ~TestSMFileUtil();
 
-  // Returns 'm_windowsPathSemantics'.
+  // If `m_windowsPathSemantics` is set, returns that.  Otherwise, calls
+  // the superclass function.
   virtual bool windowsPathSemantics() OVERRIDE;
 
-  // Returns true iff 'path' is in 'm_existingPaths'.
+  // If `m_existingAbsolutePaths` is set, returns true iff 'path' is in
+  // it.  Otherwise, calls the superclass function.
   virtual bool absolutePathExists(string const &path) OVERRIDE;
 };
 

@@ -1327,15 +1327,35 @@ bool SMFileUtil::touchFile(string const &path)
 
 
 // ----------------------- TestSMFileUtil ------------------------
+TestSMFileUtil::TestSMFileUtil()
+  : m_windowsPathSemantics(false),
+    m_existingAbsolutePaths(StringSet())
+{}
+
+
+TestSMFileUtil::~TestSMFileUtil()
+{}
+
+
 bool TestSMFileUtil::windowsPathSemantics()
 {
-  return m_windowsPathSemantics;
+  if (m_windowsPathSemantics.has_value()) {
+    return m_windowsPathSemantics.value();
+  }
+  else {
+    return SMFileUtil::windowsPathSemantics();
+  }
 }
 
 
 bool TestSMFileUtil::absolutePathExists(string const &path)
 {
-  return m_existingPaths.contains(path);
+  if (m_existingAbsolutePaths.has_value()) {
+    return m_existingAbsolutePaths->contains(path);
+  }
+  else {
+    return SMFileUtil::absolutePathExists(path);
+  }
 }
 
 

@@ -1,11 +1,6 @@
 // sm-file-util-test.cc
 // Tests for 'sm-file-util' module.
 
-// Currently these "tests" are quite bad, mostly just printing things
-// and relying on me to manually validate them, although I'm slowly
-// adding tests with greater diagnostic value.  The main difficulty is
-// that some of the behavior is inherently platform-dependent.
-
 #include "sm-file-util.h"              // module to test
 
 // smbase
@@ -456,10 +451,9 @@ static void testAbsolutePathExists()
 static void testTestSMFileUtil()
 {
   TestSMFileUtil sfu;
-
   xassert(!sfu.windowsPathSemantics());
 
-  sfu.m_existingPaths.add("/c");
+  sfu.m_existingAbsolutePaths->add("/c");
   xassert(sfu.absolutePathExists("/c"));
   xassert(!sfu.absolutePathExists("/d"));
 }
