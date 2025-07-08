@@ -3,13 +3,14 @@
 
 #include "sm-file-util.h"              // module to test
 
-// smbase
-#include "exc.h"                       // smbase::XBase
+#include "exc.h"                       // smbase::{XBase, XFatal}
 #include "nonport.h"                   // GetMillisecondsAccumulator, getFileModificationTime
 #include "run-process.h"               // RunProcess
 #include "sm-test.h"                   // VPVAL, DIAG, verbose, EXPECT_EQ
 #include "strutil.h"                   // compareStringPtrs
 #include "syserr.h"                    // XSysError
+
+#include <optional>                    // std::optional
 
 using namespace smbase;
 
@@ -456,6 +457,9 @@ static void testTestSMFileUtil()
   sfu.m_existingPaths->add("/c");
   xassert(sfu.absolutePathExists("/c"));
   xassert(!sfu.absolutePathExists("/d"));
+
+  sfu.m_pid = std::make_optional<int>(234);
+  EXPECT_EQ(sfu.getProcessID(), 234);
 }
 
 
@@ -858,6 +862,36 @@ static void testArrayOfDirEntry()
 }
 
 
+static void testCreateUniqueTemporaryFname()
+{
+  TestSMFileUtil sfu;
+  sfu.m_existingPaths->add("/tmp/d1/foo.123.0.tmp");
+  sfu.m_existingPaths->add("/tmp/d2/foo.123.0.tmp");
+  sfu.m_existingPaths->add("/tmp/d2/foo.123.1.tmp");
+  sfu.m_pid = 123;
+
+  EXPECT_EQ(
+    sfu.createUniqueTemporaryFname("/tmp/d0", "foo"),
+    "/tmp/d0/foo.123.0.tmp");
+
+  EXPECT_EQ(
+    sfu.createUniqueTemporaryFname("/tmp/d1", "foo"),
+    "/tmp/d1/foo.123.1.tmp");
+
+  EXPECT_EQ(
+    sfu.createUniqueTemporaryFname("/tmp/d2", "foo"),
+    "/tmp/d2/foo.123.2.tmp");
+
+  EXPECT_EXN(
+    sfu.createUniqueTemporaryFname("/tmp/d2", "foo", 2),
+    XFatal);
+
+  EXPECT_EQ(
+    sfu.createUniqueTemporaryFname("/tmp/d2", "foo", 3),
+    "/tmp/d2/foo.123.2.tmp");
+}
+
+
 // Called from unit-tests.cc.
 void test_sm_file_util()
 {
@@ -916,6 +950,7 @@ void test_sm_file_util()
   testReadAndWriteFile();
   testReadAndWriteFileAsString();
   testArrayOfDirEntry();
+  testCreateUniqueTemporaryFname();
 
   // This test is annoyingly slow, so it is disabled by default.
   if (getenv("SM_FILE_UTIL_TEST_TOUCH")) {

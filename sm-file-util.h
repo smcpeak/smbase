@@ -366,6 +366,16 @@ public:      // funcs
   // Windows using MSVCRT.  It refuses to work on directories.
   void atomicallyRenameFile(string const &oldPath, string const &newPath);
 
+  // Return a process ID suitable for use in file name generation.
+  virtual int getProcessID();
+
+  // Create a file name like "$dir/$prefix.$pid.$n.tmp" and does not
+  // already exist.
+  string createUniqueTemporaryFname(
+    string const &dir,
+    string const &prefix,
+    int maxAttempts = 1000);
+
   // Delete 'path'.  This is basically POSIX 'remove' except using
   // exceptions to communicate errors.  This includes the case of the
   // file not existing.
@@ -403,6 +413,9 @@ public:      // data
   // compatiblity with older code.
   std::optional<StringSet> m_existingPaths;
 
+  // For `getProcessID`.  Initially unset.
+  std::optional<int> m_pid;
+
 public:      // funcs
   TestSMFileUtil();
   ~TestSMFileUtil();
@@ -418,6 +431,10 @@ public:      // funcs
   // If `m_existingPaths` is set, return true iff `path` is in it.
   // Otherwise, call the superclass function.
   virtual bool pathExists(string const &path) OVERRIDE;
+
+  // If `m_pid` is set, return it.  Otherwise, call the superclass
+  // function.
+  virtual int getProcessID() OVERRIDE;
 };
 
 

@@ -10,6 +10,7 @@
 #include "compare-util.h"              // compare
 #include "exc.h"                       // GENERIC_CATCH_{BEGIN,END}
 #include "overflow.h"                  // addWithOverflowCheck
+#include "nonport.h"                   // getProcessId
 #include "sm-windows.h"                // PLATFORM_IS_WINDOWS
 #include "string-util.h"               // endsWith, doubleQuote
 #include "strtokp.h"                   // StrtokParse
@@ -1288,6 +1289,37 @@ void SMFileUtil::atomicallyRenameFile(string const &oldPath,
 }
 
 
+int SMFileUtil::getProcessID()
+{
+  return ::getProcessId();
+}
+
+
+string SMFileUtil::createUniqueTemporaryFname(
+  string const &dir,
+  string const &prefix,
+  int maxAttempts)
+{
+  int pid = getProcessID();
+
+  for (int n=0; n < maxAttempts; ++n) {
+    string fname = stringb(
+      dir << "/" << prefix << "." << pid << "." << n << ".tmp");
+
+    if (!pathExists(fname)) {
+      return fname;
+    }
+  }
+
+  xfatal(stringb(
+    "createUniqueTempFname: Failed to find an unused name in " <<
+    doubleQuote(dir) << " with prefix " << doubleQuote(prefix) <<
+    " and pid " << pid << " after trying " << maxAttempts <<
+    " names."));
+  return {};      // not reached
+}
+
+
 void SMFileUtil::removeFile(string const &path)
 {
   if (remove(path.c_str()) < 0) {
@@ -1335,7 +1367,8 @@ bool SMFileUtil::touchFile(string const &path)
 // ----------------------- TestSMFileUtil ------------------------
 TestSMFileUtil::TestSMFileUtil()
   : m_windowsPathSemantics(false),
-    m_existingPaths(StringSet())
+    m_existingPaths(StringSet()),
+    m_pid()
 {}
 
 
@@ -1347,6 +1380,7 @@ void TestSMFileUtil::resetAll()
 {
   m_windowsPathSemantics.reset();
   m_existingPaths.reset();
+  m_pid.reset();
 }
 
 
@@ -1368,6 +1402,17 @@ bool TestSMFileUtil::pathExists(string const &path)
   }
   else {
     return SMFileUtil::pathExists(path);
+  }
+}
+
+
+int TestSMFileUtil::getProcessID()
+{
+  if (m_pid.has_value()) {
+    return m_pid.value();
+  }
+  else {
+    return SMFileUtil::getProcessID();
   }
 }
 
