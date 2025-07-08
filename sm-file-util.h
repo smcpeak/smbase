@@ -279,9 +279,8 @@ public:      // funcs
   // permission errors or the like.
   virtual FileKind getFileKind(string const &path);
 
-  // True if 'path' exists.
-  bool pathExists(string const &path)
-    { return getFileKind(path) != FK_NONE; }
+  // True if 'path' exists, i.e., its file kind is not `FK_NONE`.
+  virtual bool pathExists(string const &path);
 
   // Create 'path' and any needed parents if it does not already exist.
   // If it, or any parent, already exists but is not a directory, throw
@@ -400,21 +399,25 @@ public:      // data
   // older code.
   std::optional<bool> m_windowsPathSemantics;
 
-  // For `absolutePathExists`.  Initially an existing but empty map for
+  // For `pathExists`.  Initially an existing but empty map for
   // compatiblity with older code.
-  std::optional<StringSet> m_existingAbsolutePaths;
+  std::optional<StringSet> m_existingPaths;
 
 public:      // funcs
   TestSMFileUtil();
   ~TestSMFileUtil();
 
+  // Reset all data members to absent so all functions behave like the
+  // superclass versions.
+  void resetAll();
+
   // If `m_windowsPathSemantics` is set, returns that.  Otherwise, calls
   // the superclass function.
   virtual bool windowsPathSemantics() OVERRIDE;
 
-  // If `m_existingAbsolutePaths` is set, returns true iff 'path' is in
-  // it.  Otherwise, calls the superclass function.
-  virtual bool absolutePathExists(string const &path) OVERRIDE;
+  // If `m_existingPaths` is set, return true iff `path` is in it.
+  // Otherwise, call the superclass function.
+  virtual bool pathExists(string const &path) OVERRIDE;
 };
 
 

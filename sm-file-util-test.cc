@@ -453,7 +453,7 @@ static void testTestSMFileUtil()
   TestSMFileUtil sfu;
   xassert(!sfu.windowsPathSemantics());
 
-  sfu.m_existingAbsolutePaths->add("/c");
+  sfu.m_existingPaths->add("/c");
   xassert(sfu.absolutePathExists("/c"));
   xassert(!sfu.absolutePathExists("/d"));
 }

@@ -618,7 +618,7 @@ bool SMFileUtil::absolutePathExists(string const &path)
     return false;
   }
 
-  return this->getFileKind(path) != FK_NONE;
+  return pathExists(path);
 }
 
 
@@ -667,6 +667,12 @@ SMFileUtil::FileKind SMFileUtil::getFileKind(string const &path)
   else {
     return FK_OTHER;
   }
+}
+
+
+bool SMFileUtil::pathExists(string const &path)
+{
+  return getFileKind(path) != FK_NONE;
 }
 
 
@@ -1329,12 +1335,19 @@ bool SMFileUtil::touchFile(string const &path)
 // ----------------------- TestSMFileUtil ------------------------
 TestSMFileUtil::TestSMFileUtil()
   : m_windowsPathSemantics(false),
-    m_existingAbsolutePaths(StringSet())
+    m_existingPaths(StringSet())
 {}
 
 
 TestSMFileUtil::~TestSMFileUtil()
 {}
+
+
+void TestSMFileUtil::resetAll()
+{
+  m_windowsPathSemantics.reset();
+  m_existingPaths.reset();
+}
 
 
 bool TestSMFileUtil::windowsPathSemantics()
@@ -1348,13 +1361,13 @@ bool TestSMFileUtil::windowsPathSemantics()
 }
 
 
-bool TestSMFileUtil::absolutePathExists(string const &path)
+bool TestSMFileUtil::pathExists(string const &path)
 {
-  if (m_existingAbsolutePaths.has_value()) {
-    return m_existingAbsolutePaths->contains(path);
+  if (m_existingPaths.has_value()) {
+    return m_existingPaths->contains(path);
   }
   else {
-    return SMFileUtil::absolutePathExists(path);
+    return SMFileUtil::pathExists(path);
   }
 }
 
