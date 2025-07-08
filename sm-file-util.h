@@ -376,10 +376,18 @@ public:      // funcs
     string const &prefix,
     int maxAttempts = 1000);
 
+  // Write `contents` to `fname` (as binary, i.e., without line ending
+  // translation).  Do this atomically.
+  void atomicallyWriteFileAsString(
+    string const &fname, string const &contents);
+
   // Delete 'path'.  This is basically POSIX 'remove' except using
   // exceptions to communicate errors.  This includes the case of the
   // file not existing.
   void removeFile(string const &path);
+
+  // Like `removeFile`, but do nothing if `path` does not exist.
+  void removeFileIfExists(string const &path);
 
   // Update the modification time of 'path' or create it if it does not
   // exist.  Return false on error, but there are no details.
@@ -416,6 +424,9 @@ public:      // data
   // For `getProcessID`.  Initially unset.
   std::optional<int> m_pid;
 
+  // For `writeFile`.  Initially unset.
+  std::optional<std::size_t> m_injectFailureAfterNBytes;
+
 public:      // funcs
   TestSMFileUtil();
   ~TestSMFileUtil();
@@ -435,6 +446,12 @@ public:      // funcs
   // If `m_pid` is set, return it.  Otherwise, call the superclass
   // function.
   virtual int getProcessID() OVERRIDE;
+
+  // If `m_injectFailureAfterNBytes` is set, and `bytes` is that size or
+  // larger, then write that size, then throw `XFatal`, simulating a
+  // write failure.  Otherwise, call the superclass function.
+  virtual void writeFile(string const &fname,
+                         std::vector<unsigned char> const &bytes) OVERRIDE;
 };
 
 

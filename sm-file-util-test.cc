@@ -892,6 +892,57 @@ static void testCreateUniqueTemporaryFname()
 }
 
 
+static void testAtomicallyWriteFileAsString()
+{
+  TestSMFileUtil sfu;
+  sfu.resetAll();
+  sfu.m_pid = 1234;
+  sfu.m_injectFailureAfterNBytes = 100;
+
+  string fname = "test.dir/rw-as-string.txt";
+
+  // Ordinary write to a file that does not already exist.
+  {
+    string expect("this is the string");
+    sfu.atomicallyWriteFileAsString(fname, expect);
+    string actual = sfu.readFileAsString(fname);
+    EXPECT_EQ(actual, expect);
+  }
+
+  {
+    // Overwrite an existing file.
+    string expect("this is another string");
+    sfu.atomicallyWriteFileAsString(fname, expect);
+    string actual = sfu.readFileAsString(fname);
+    EXPECT_EQ(actual, expect);
+
+    // Name that should be used for the temporary.
+    string tmpFname = "test.dir/rw-as-string.txt.1234.0.tmp";
+
+    // Make sure it's not there initially (e.g., from a previous test).
+    sfu.removeFileIfExists(tmpFname);
+    EXPECT_EQ(sfu.pathExists(tmpFname), false);
+
+    // Fail while writing.
+    string longStr = repeatString("this is another string", 20);
+    EXPECT_EXN(
+      sfu.atomicallyWriteFileAsString(fname, longStr),
+      XFatal);
+
+    // The previous contents should still be there.
+    EXPECT_EQ(sfu.readFileAsString(fname), expect);
+
+    // The temporary file fragment should remain.
+    EXPECT_EQ(sfu.pathExists(tmpFname), true);
+
+    // Clean up.
+    sfu.removeFile(tmpFname);
+  }
+
+  sfu.removeFile(fname);
+}
+
+
 // Called from unit-tests.cc.
 void test_sm_file_util()
 {
@@ -951,6 +1002,7 @@ void test_sm_file_util()
   testReadAndWriteFileAsString();
   testArrayOfDirEntry();
   testCreateUniqueTemporaryFname();
+  testAtomicallyWriteFileAsString();
 
   // This test is annoyingly slow, so it is disabled by default.
   if (getenv("SM_FILE_UTIL_TEST_TOUCH")) {

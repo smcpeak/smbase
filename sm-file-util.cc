@@ -1320,10 +1320,32 @@ string SMFileUtil::createUniqueTemporaryFname(
 }
 
 
+void SMFileUtil::atomicallyWriteFileAsString(
+  string const &destFname, string const &contents)
+{
+  string dir, base;
+  splitPath(dir, base, destFname);
+
+  string tempFname = createUniqueTemporaryFname(dir, base);
+
+  writeFileAsString(tempFname, contents);
+
+  atomicallyRenameFile(tempFname, destFname);
+}
+
+
 void SMFileUtil::removeFile(string const &path)
 {
   if (remove(path.c_str()) < 0) {
     xsyserror("remove", path);
+  }
+}
+
+
+void SMFileUtil::removeFileIfExists(string const &path)
+{
+  if (pathExists(path)) {
+    removeFile(path);
   }
 }
 
@@ -1414,6 +1436,24 @@ int TestSMFileUtil::getProcessID()
   else {
     return SMFileUtil::getProcessID();
   }
+}
+
+
+void TestSMFileUtil::writeFile(string const &fname,
+                               std::vector<unsigned char> const &bytes)
+{
+  if (m_injectFailureAfterNBytes.has_value()) {
+    std::size_t const n = m_injectFailureAfterNBytes.value();
+    if (bytes.size() >= n) {
+      std::vector<unsigned char> truncated =
+        std::vector<unsigned char>(bytes.begin(), bytes.begin() + n);
+      SMFileUtil::writeFile(fname, truncated);
+
+      xfatal(stringb("Injected write failure"));
+    }
+  }
+
+  SMFileUtil::writeFile(fname, bytes);
 }
 
 
