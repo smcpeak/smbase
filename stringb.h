@@ -1,6 +1,6 @@
 // stringb.h
-// Define the 'stringb' macro that allows in-place string construction
-// using 'operator<<'.
+// Define the `stringb` macro that allows in-place string construction
+// using `operator<<`.
 
 #ifndef SMBASE_STRINGB_H
 #define SMBASE_STRINGB_H

@@ -27,8 +27,12 @@
 <p>
 "smbase" stands for Scott McPeak's Base Library (sorry, naming things
 is not my specialty).  It's a bunch of
-utility modules I use in virtually all of my projects.  The entire
-library is in the public domain.
+utility modules I use in virtually all of my projects.
+
+<p>
+The entire library is in the public domain except for
+<code>on-leaving-scope.h</code> and <code>crc.cpp</code>.  See
+<a href="license.txt"><code>license.txt</code></a> for details.
 
 <p>
 There is some overlap in functionality between smbase and the C++
@@ -41,7 +45,7 @@ to use standard library facilities when possible.
 <p>
 smbase has developed organically, in response to specific needs.
 While each module individually has been reasonably carefully designed,
-the library as a whole has not.  Consequently, the modules to not
+the library as a whole has not.  Consequently, the modules do not
 always orthogonally cover a given design space, and some of the
 modules are now considered obsolete (marked below as such).
 
@@ -172,7 +176,6 @@ There are a couple of variants that support O(1) appending:
   <!-- AUTO --><dt><a href="astlist-gdvalue.h">astlist-gdvalue.h</a>
   <!-- AUTO --><dd>
   <!-- AUTO -->  Functions involving <code>ASTList</code> and <code>GDValue</code>.
-  <!-- AUTO -->  See license.txt for copyright and terms of use.
 <!-- end file desc -->
 
 
@@ -238,7 +241,7 @@ Arrays are sequences of objects with O(1) random access and replacement.
   <!-- AUTO --><dt><a href="array2d.h">array2d.h</a>
   <!-- AUTO --><dd>
   <!-- AUTO -->  Non-resizable 2D array with bounds checking.
-  <!-- AUTO -->  Meeded because new T[i][j] is not legal if 'i' is not a constant.
+  <!-- AUTO -->  Needed because <code>new T[i][j]</code> is not legal if <code>i</code> is not a constant.
 <!-- end file desc -->
 
 </dl>
@@ -324,8 +327,8 @@ is considerably higher than for arrays and lists.
 Most of what is in this section is obsoleted by <code>std::map</code>,
 possibly in combination with <code>std::unique_ptr</code>, and perhaps
 <code>std::unordered_map</code> in some cases.  But I've recently found
-`hashtbl.h` filling a need for which `unordered_map` did not seem to
-fit.
+<code>hashtbl.h</code> filling a need for which
+<code>unordered_map</code> did not seem to fit.
 
 <p>
 Probably the most common map is the PtrMap template, which will map
@@ -604,7 +607,12 @@ Finally, there is a module to map from strings to strings.
 </dl>
 
 
-<h2 id="gdv">General data values</h2>
+<h2 id="gdv">General Data Values</h2>
+
+<p>
+General Data Value is meant as both a replacement for JSON (in its
+serialized form) and as a general form of in-memory structured data.
+See <code><a href="gdvalue-design.txt">gdvalue-design.txt</a></code>.
 
 <dl>
 
@@ -727,8 +735,8 @@ operations treat them as a unit.
 <!-- begin file desc: stringb.h -->
   <!-- AUTO --><dt><a href="stringb.h">stringb.h</a>
   <!-- AUTO --><dd>
-  <!-- AUTO -->  Define the 'stringb' macro that allows in-place string construction
-  <!-- AUTO -->  using 'operator&lt;&lt;'.
+  <!-- AUTO -->  Define the <code>stringb</code> macro that allows in-place string construction
+  <!-- AUTO -->  using <code>operator&lt;&lt;</code>.
 <!-- end file desc -->
 
 <!-- begin file desc: stringf.h -->
