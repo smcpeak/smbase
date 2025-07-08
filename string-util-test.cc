@@ -735,6 +735,27 @@ void testRemoveTestCaseIndentation()
 }
 
 
+void testRepeatString()
+{
+  // Basic repetition
+  EXPECT_EQ(repeatString("abc", 3), "abcabcabc");
+  EXPECT_EQ(repeatString("x", 5), "xxxxx");
+
+  // Edge cases
+  EXPECT_EQ(repeatString("", 5), "");           // Empty string repeated
+  EXPECT_EQ(repeatString("abc", 0), "");        // Repeated zero times
+  EXPECT_EQ(repeatString("", 0), "");           // Empty string, zero times
+
+  // Single repeat
+  EXPECT_EQ(repeatString("abc", 1), "abc");
+
+  // Large repeat (simple check)
+  std::string s = repeatString("abc", 100000);
+  EXPECT_EQ(s.size(), 300000);
+  EXPECT_EQ(s.substr(0, 5), "abcab");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -769,6 +790,7 @@ void test_string_util()
   testReplaceAllRegex();
   testStringVectorFromPointerArray();
   testRemoveTestCaseIndentation();
+  testRepeatString();
 }
 
 

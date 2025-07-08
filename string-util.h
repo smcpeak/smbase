@@ -264,6 +264,9 @@ std::string stringTolower(std::string const &src);
 */
 std::string removeTestCaseIndentation(std::string const &src);
 
+// Return `n` copies of `src` concatenated.
+std::string repeatString(std::string_view src, std::size_t n);
+
 
 // ----------------------- Regular expressions -------------------------
 // True if 'str' matches 'regex'.

@@ -6,7 +6,7 @@
 #include "breaker.h"                   // breaker
 #include "exc.h"                       // smbase::xmessage
 #include "optional-util.h"             // liftToOptional
-#include "overflow.h"                  // safeToInt
+#include "overflow.h"                  // safeToInt, multiplyWithOverflowCheck
 #include "sm-regex.h"                  // smbase::Regex
 #include "strcmp-compare.h"            // StrcmpCompare
 #include "strutil.h"                   // stringf
@@ -595,6 +595,21 @@ std::string removeTestCaseIndentation(std::string const &src)
 
   // Join what remains with newlines separating the elements.
   return join(lines, "\n");
+}
+
+
+std::string repeatString(std::string_view src, std::size_t n)
+{
+  std::size_t resLen = multiplyWithOverflowCheck(src.size(), n);
+
+  std::string res;
+  res.reserve(resLen);
+
+  for (std::size_t i=0; i<n; ++i) {
+    res += src;
+  }
+
+  return res;
 }
 
 
