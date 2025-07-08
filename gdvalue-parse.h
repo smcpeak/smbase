@@ -68,8 +68,13 @@ void checkTaggedOrderedMapTag(GDValue const &v, char const *symName);
 // problem.
 GDValue tupleGetValueAt_parse(GDValue const &v, GDVIndex index);
 
-// Return `v.mapGetSym(sym)`, except throw if there is a problem.
+// Return `v.mapGetSym(symName)`, except throw if there is a problem.
 GDValue mapGetSym_parse(GDValue const &v, char const *symName);
+
+// Return `v.mapGetSym(symName)`.  If `v` is a map, but does not have
+// `symName` mapped, return `GDValue()` (null).  If it is not a map,
+// then throw.
+GDValue mapGetSym_parseOpt(GDValue const &v, char const *symName);
 
 
 
@@ -89,6 +94,9 @@ GDValue mapGetSym_parse(GDValue const &v, char const *symName);
 // necessitated because we need to partially specialize this to handle
 // things like ASTList<>, but partial specialization of function
 // templates is not allowed.
+//
+// Hmmm, what was the problem with overloading?  I can't remember, and
+// may have been mistaken.
 //
 template <typename T, typename Enable = void>
 struct GDVTo {};
@@ -135,6 +143,15 @@ T gdvTo(GDValue const &v)
 {
   return GDVTo<T>::f(v);
 }
+
+
+// If `v` is null, then return a default-constructed `T`.  Otherwise
+// convert it normally.
+//
+// This is defined in `gdvalue-parse-ops.h` since it requires a
+// definition for `GDValue`.
+template <typename T>
+inline T gdvOptTo(GDValue const &v);
 
 
 // This is similar to `gdvTo`, except it returns a newly allocated

@@ -145,6 +145,18 @@ GDValue mapGetSym_parse(GDValue const &v, char const *symName)
 }
 
 
+GDValue mapGetSym_parseOpt(GDValue const &v, char const *symName)
+{
+  checkIsPOMap(v);
+
+  if (!v.mapContainsSym(symName)) {
+    return GDValue();
+  }
+
+  return v.mapGetSym(symName);
+}
+
+
 // ------------------------------- GDVTo -------------------------------
 bool GDVTo<bool>::f(GDValue const &v)
 {

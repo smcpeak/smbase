@@ -6,7 +6,7 @@
 #include "smbase/gdvalue-vector-fwd.h"           // gdv::toGDValue(std::vector)
 
 #include "smbase/gdvalue-map.h"                  // module under test
-#include "smbase/gdvalue-parse.h"                // module under test
+#include "smbase/gdvalue-parse-ops.h"            // module under test
 #include "smbase/gdvalue-unique-ptr.h"           // module under test
 #include "smbase/gdvalue-vector.h"               // module under test
 
@@ -159,6 +159,33 @@ void test_map_of_vector_of_unique()
 }
 
 
+void test_mapGetSym_parseOpt()
+{
+  // Trying to get a value from a non-map.
+  {
+    GDValue v;
+    EXPECT_EXN(mapGetSym_parseOpt(v, "foo"), XFormat);
+  }
+
+  {
+    // Trying to get a value from an unmapped key.
+    GDValue v(GDVK_MAP);
+    EXPECT_EQ(mapGetSym_parseOpt(v, "foo"), GDValue());
+
+    // And a mapped key.
+    v.mapSetSym("foo", GDValue(3));
+    EXPECT_EQ(mapGetSym_parseOpt(v, "foo"), GDValue(3));
+  }
+}
+
+
+void test_gdvOptTo()
+{
+  EXPECT_EQ(gdvOptTo<int>(GDValue(3)), 3);
+  EXPECT_EQ(gdvOptTo<int>(GDValue()), 0);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -172,6 +199,8 @@ void test_gdvalue_parse()
   test_vector_of_unique();
   test_map();
   test_map_of_vector_of_unique();
+  test_mapGetSym_parseOpt();
+  test_gdvOptTo();
 }
 
 
