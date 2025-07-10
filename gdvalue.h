@@ -1047,18 +1047,8 @@ GDValue toGDValue(std::pair<T1,T2> const &p)
 // TODO: Add a `toGDValue` for `std::tuple`.
 
 
-// For `std::set`.
-template <typename T, typename C, typename A>
-GDValue toGDValue(std::set<T,C,A> const &s)
-{
-  GDValue ret(GDVK_SET);
-
-  for (T const &t : s) {
-    ret.setInsert(toGDValue(t));
-  }
-
-  return ret;
-}
+// Note: Conversions to and from `std::set` and `std::map` are
+// declared in `gdvalue-{set,map}.h`.
 
 
 // For `smbase::OrderedMap`.

@@ -43,6 +43,9 @@ void checkIsTuple(GDValue const &v);
 // Throw if `v` is not a tuple, or `index` is out of range.
 void checkTupleIndex(GDValue const &v, GDVIndex index);
 
+// Throw if `v` is not a set or tagged set.
+void checkIsSet(GDValue const &v);
+
 // Throw if `v` is not a map or tagged map.
 void checkIsMap(GDValue const &v);
 

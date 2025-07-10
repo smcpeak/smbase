@@ -69,6 +69,14 @@ void checkTupleIndex(GDValue const &v, GDVIndex index)
 }
 
 
+void checkIsSet(GDValue const &v)
+{
+  if (!v.isSet()) {
+    xformatsb("expected set, not " << v.getKindCommonName());
+  }
+}
+
+
 void checkIsMap(GDValue const &v)
 {
   if (!v.isMap()) {

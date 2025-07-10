@@ -2,11 +2,13 @@
 // Code for `gdvalue-parse`.
 
 #include "smbase/gdvalue-map-fwd.h"              // gdv::toGDValue(std::map)
+#include "smbase/gdvalue-set-fwd.h"              // gdv::toGDValue(std::set)
 #include "smbase/gdvalue-unique-ptr-fwd.h"       // gdv::toGDValue(std::unique_ptr)
 #include "smbase/gdvalue-vector-fwd.h"           // gdv::toGDValue(std::vector)
 
 #include "smbase/gdvalue-map.h"                  // module under test
 #include "smbase/gdvalue-parse-ops.h"            // module under test
+#include "smbase/gdvalue-set.h"                  // module under test
 #include "smbase/gdvalue-unique-ptr.h"           // module under test
 #include "smbase/gdvalue-vector.h"               // module under test
 
@@ -128,6 +130,17 @@ void test_map()
 }
 
 
+void test_set()
+{
+  std::set<int> s1{2,3,5,7};
+  GDValue v(toGDValue(s1));
+  EXPECT_EQ(v.asString(), "{2 3 5 7}");
+
+  std::set<int> m2(gdvTo<std::set<int>>(v));
+  EXPECT_EQ(toGDValue(m2), v);
+}
+
+
 void test_map_of_vector_of_unique()
 {
   typedef std::map<std::string, std::vector<std::unique_ptr<Data>>> DataVecMap;
@@ -198,6 +211,7 @@ void test_gdvalue_parse()
   test_vector();
   test_vector_of_unique();
   test_map();
+  test_set();
   test_map_of_vector_of_unique();
   test_mapGetSym_parseOpt();
   test_gdvOptTo();
