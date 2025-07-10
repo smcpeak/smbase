@@ -15,6 +15,7 @@
 *.out
 *.tmp
 *.~DE
+.cache
 .cproject
 .fsync-save
 .gdbinit

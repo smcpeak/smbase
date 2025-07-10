@@ -136,10 +136,6 @@ GENSRC = 0
 # Set to 1 to compute code coverage.
 COVERAGE = 0
 
-# If 1, generate the *.o.json files used to create
-# compile_commands.json.  This requires that we are using Clang.
-CREATE_O_JSON_FILES = 0
-
 # If 1, hook the `mypy` checks into the `check` target.
 ENABLE_MYPY = 0
 
@@ -192,14 +188,17 @@ endif
 include sm-lib.mk
 
 
-# Compile .cc to .o, also generating dependency files.
+# Compile .cc to .o, also generating dependency files and
+# compile_commands.json fragments.
 $(OBJDIR)/%.o: %.cc
 	$(CREATE_OUTPUT_DIRECTORY)
-	$(CXX) -c -o $@ $(GENDEPS_FLAGS) $(call MJ_FLAG,$(OBJDIR)/$*) $(CXXFLAGS) $<
+	$(CXX) -c -o $@ $(GENDEPS_FLAGS) $(CXXFLAGS) $<
+	$(PYTHON3) ./make-cc-json.py $(CXX) -c -o $@ $(GENDEPS_FLAGS) $(CXXFLAGS) $< >$(OBJDIR)/$*.o.json
 
 $(OBJDIR)/%.o: %.c
 	$(CREATE_OUTPUT_DIRECTORY)
-	$(CC) -c -o $@ $(GENDEPS_FLAGS) $(call MJ_FLAG,$(OBJDIR)/$*) $(CFLAGS) $<
+	$(CC) -c -o $@ $(GENDEPS_FLAGS) $(CFLAGS) $<
+	$(PYTHON3) ./make-cc-json.py $(CC) -c -o $@ $(GENDEPS_FLAGS) $(CFLAGS) $< >$(OBJDIR)/$*.o.json
 
 # For occasional diagnostic purposes, a rule to preprocess explicitly.
 %.ii: %.cc
@@ -865,15 +864,16 @@ gcov-clean:
 
 # ----------------------- compile_commands.json ------------------------
 # Claim this is "phony" so we can regenerate with just "make
-# compile_commands.json".  Also, I do not clean this file so I can make
-# it using clang then switch back to gcc.
+# compile_commands.json".  There isn't a simple way to properly express
+# the dependencies since the main dependency is on `Makefile` itself,
+# but most changes to that file do not affect the compile commands for
+# most files, and regenerating them is expensive since I do it as part
+# of compilation.
 .PHONY: compile_commands.json
 
-# This requires that the build was run with Clang and
-# CREATE_O_JSON_FILES.
-#
-# The `sed` command removes the trailing comma from the last line only.
-# IWYU does not tolerate them.
+# Read all of the *.o.json files created during compilation and
+# concatenate them into one file.  The `sed` command removes the
+# trailing comma from the last line only.  IWYU does not tolerate them.
 compile_commands.json:
 	(echo "["; cat $(OBJDIR)/*.o.json | sed '$$ s/,$$//'; echo "]") > $@
 
