@@ -214,9 +214,12 @@ def main() -> None:
     global use_path_not_found_replacer
     use_path_not_found_replacer = True
 
-  # Read the expected output.
-  with open(opts.expect) as f:
-    expectLines = readLinesNoNL(f)
+  # Read the expected output.  Explicitly check for "/dev/null" so I can
+  # use that name even with Windows Python.
+  expectLines: list[str] = []
+  if opts.expect != "/dev/null":
+    with open(opts.expect) as f:
+      expectLines = readLinesNoNL(f)
 
   # List of extra argument lines.
   extraArgumentLines = [""]
