@@ -41,6 +41,11 @@ template <class T>
 bool setInsertAll(stdfwd::set<T> &dest, stdfwd::set<T> const &src);
 
 
+// Remove `t` from `s`.  Return true if `s` changed as a result.
+template <typename T, typename C, typename A>
+bool setErase(std::set<T,C,A> &s, T const &t);
+
+
 // True if `k` is in `s`.
 //
 // There is a `contains` in `container-util.h` that also works, but in

@@ -64,6 +64,19 @@ void testSetInsertAll()
 }
 
 
+void testSetErase()
+{
+  std::set<int> s;
+  EXPECT_EQ(setErase(s, 2), false);
+
+  setInsert(s, 2);
+  EXPECT_EQ(setErase(s, 2), true);
+  EXPECT_EQ(setErase(s, 2), false);
+
+  xassert(s.empty());
+}
+
+
 void testSetContains()
 {
   std::set<int> s{1,3,5};
@@ -188,6 +201,7 @@ void test_set_util()
   testSetInsert();
   testSetInsertUnique();
   testSetInsertAll();
+  testSetErase();
   testSetContains();
   testSetContainsDerived();
   testIsSubsetOf();

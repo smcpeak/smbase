@@ -50,6 +50,13 @@ bool setInsertAll(std::set<T> &dest, std::set<T> const &src)
 }
 
 
+template <typename T, typename C, typename A>
+bool setErase(std::set<T,C,A> &s, T const &t)
+{
+  return s.erase(t) > 0;
+}
+
+
 template <class T, class KEY>
 bool setContains(stdfwd::set<T> const &s, KEY const &k)
 {
