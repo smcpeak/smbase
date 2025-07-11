@@ -15,6 +15,7 @@
 #include "smbase/reader.h"             // smbase::ReaderException
 #include "smbase/save-restore.h"       // SAVE_RESTORE
 #include "smbase/sm-file-util.h"       // SMFileUtil
+#include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
 #include "smbase/sm-test.h"            // EXPECT_EQ, EXPECT_MATCHES_REGEX, VPVAL, DIAG, verbose, tout
 #include "smbase/strutil.h"            // hasSubstring
 #include "smbase/string-util.h"        // doubleQuote
@@ -430,7 +431,10 @@ void testSequence()
   xassert(v3 > v1);
   testSerializeRoundtrip(v3);
 
-  v1.sequenceAppend(GDValue(-1));
+  {
+    GDValue neg1(-1);
+    v1.sequenceAppend(neg1);     // Use `const&` rather than `&&`.
+  }
   xassert(v1.asString() == "[-1]");
   xassert(v1 < v3);
 
@@ -1271,7 +1275,10 @@ void testTaggedTuple()
     EXPECT_EQ(v2, v);
   }
 
-  v.tupleAppend(2);
+  {
+    GDValue two(2);
+    v.tupleAppend(two);       // Use `const&` rather than `&&` overload.
+  }
   EXPECT_EQ(v.asString(), "x(1 2)");
   testSerializeRoundtrip(v);
   writeAsMapElementManyWidths(v);

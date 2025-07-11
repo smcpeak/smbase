@@ -1136,9 +1136,15 @@ DEFINE_CONTAINER_CTOR_SET_GET(SEQUENCE, Sequence, sequence)
 DEFINE_GDV_KIND_BEGIN_END(Sequence, sequence)
 
 
-void GDValue::sequenceAppend(GDValue value)
+void GDValue::sequenceAppend(GDValue const &value)
 {
   sequenceGetMutable().push_back(value);
+}
+
+
+void GDValue::sequenceAppend(GDValue &&value)
+{
+  sequenceGetMutable().push_back(std::move(value));
 }
 
 
@@ -1190,9 +1196,15 @@ DEFINE_CONTAINER_CTOR_SET_GET(TUPLE, Tuple, tuple)
 DEFINE_GDV_KIND_BEGIN_END(Tuple, tuple)
 
 
-void GDValue::tupleAppend(GDValue value)
+void GDValue::tupleAppend(GDValue const &value)
 {
   tupleGetMutable().push_back(value);
+}
+
+
+void GDValue::tupleAppend(GDValue &&value)
+{
+  tupleGetMutable().push_back(std::move(value));
 }
 
 

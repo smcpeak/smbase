@@ -683,7 +683,8 @@ public:      // methods
 
   DECLARE_GDV_KIND_ITERATORS(GDVSequence, sequence)
 
-  void sequenceAppend(GDValue value);
+  void sequenceAppend(GDValue const &value);
+  void sequenceAppend(GDValue      &&value);
 
   // Discard extra elements or pad with nulls to match the size.
   void sequenceResize(GDVSize newSize);
@@ -709,7 +710,8 @@ public:      // methods
 
   DECLARE_GDV_KIND_ITERATORS(GDVTuple, tuple)
 
-  void tupleAppend(GDValue value);
+  void tupleAppend(GDValue const &value);
+  void tupleAppend(GDValue      &&value);
 
   // Discard extra elements or pad with nulls to match the size.
   void tupleResize(GDVSize newSize);
