@@ -72,7 +72,7 @@ def readLinesNoNL(filename: str) -> list[str]:
 
 def writeLines(filename: str, lines: list[str]) -> None:
   """Write 'lines', each followed by a newline, to 'filename'."""
-  with open(filename, "w") as file:
+  with open(filename, "w", newline="\n") as file:
     for line in lines:
       print(line, file=file)
 
