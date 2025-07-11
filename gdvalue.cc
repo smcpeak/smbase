@@ -20,6 +20,7 @@
 #include <fstream>                     // std::{ifstream, ofstream}
 #include <new>                         // placement `new`
 #include <sstream>                     // std::ostringstream
+#include <string_view>                 // std::string_view
 #include <utility>                     // std::move, std::swap, std::make_pair
 
 using namespace smbase;
@@ -717,6 +718,17 @@ STATICDEF GDValue GDValue::readFromString(std::string const &str)
 {
   std::istringstream iss(str);
   return readFromStream(iss);
+}
+
+
+STATICDEF GDValue GDValue::readFromStringView(std::string_view sv)
+{
+  // It appears there is no way to construct an `istringstream` from a
+  // `string_view`, so I have to use a temporary string.
+  //
+  // TODO: Confirm this when I have internet again!  AT&T!
+  //
+  return readFromString(std::string(sv));
 }
 
 

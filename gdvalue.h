@@ -24,6 +24,7 @@
 #include "smbase/ordered-map.h"                  // smbase::OrderedMap
 #include "smbase/sm-integer.h"                   // smbase::Integer
 #include "smbase/sm-macros.h"                    // OPEN_NAMESPACE, NULLABLE
+#include "smbase/std-string-view-fwd.h"          // std::string_view
 
 // libc++
 #include <iosfwd>                                // std::ostream
@@ -515,6 +516,9 @@ public:      // methods
   // there is not exactly one value orit is malformed.
   static GDValue readFromString(std::string const &str);
 
+  // Semantically the same as `readFromString`.
+  static GDValue readFromStringView(std::string_view sv);
+
   // Read the single value stored in 'fileName', throwing an exception
   // if it cannot be opened, there is not exactly one value, or is
   // malformed.
@@ -768,6 +772,7 @@ public:      // methods
   GDValue const &mapGetValueAt(GDValue const &key) const;
   GDValue       &mapGetValueAt(GDValue const &key)      ;
 
+  // Insert or update (replace) a mapping.
   void mapSetValueAt(GDValue const &key, GDValue const &value);
   void mapSetValueAt(GDValue      &&key, GDValue      &&value);
 

@@ -92,11 +92,12 @@ one of the following:
   * Map: A finite unordered map from values to values.  An empty map is
     a distinct value from an empty set (or any other container).
 
-  * TODO: Ordered map?
+  * Ordered Map: A map where the entries have an externally-imposed
+    order, typically the insertion order.
 
   * Tagged container: A pair of a symbol (which is the tag) and a
-    container (sequence, tuple, set, or map).  The tag indicates the
-    kind of thing the container represents.
+    container (sequence, tuple, set, map, or ordered map).  The tag
+    indicates the kind of thing the container represents.
 
 The meaning of a symbol is determined by mutual agreement between
 producer and consumer; its meaning is extrinsic rather than intrinsic.
@@ -799,7 +800,8 @@ Mapping to JSON
 
 If we have a GDV value that we want to express as JSON, how should we do
 so?  In the interest of GDV->JSON->GDV interoperability, this section
-suggests a mapping.
+suggests a mapping, which is what is used by the `gdvalue` module when
+JSON serialization is enabled.
 
 Generally, is if a GDV value can be expressed directly and naturally as
 JSON, do so.  Otherwise, express it as a map with attributes:
@@ -819,6 +821,17 @@ Specific GDV kinds are handled as follows:
     GDVN: foo
 
     JSON: { "_type": "symbol", "value": "foo" }
+
+  Special symbols:
+
+    GDVN: null
+    JSON: null
+
+    GDVN: true
+    JSON: true
+
+    GDVN: false
+    JSON: false
 
   Integer:
 
@@ -848,6 +861,10 @@ Specific GDV kinds are handled as follows:
 
     JSON: { "_type": "set", "elements": [1, 2] }
 
+    Note: An empty set still uses the above encoding (with an empty
+    `elements` sequence) since "{}" is how we represent an empty map in
+    JSON, as described below.
+
   Map:
 
     If all of the keys are strings, usual JSON representation:
@@ -861,6 +878,22 @@ Specific GDV kinds are handled as follows:
       GDVN: {1:2 3:4}
 
       JSON: { "_type": "map", "elements": [[1, 2], [3, 4]] }
+
+    If the map is empty:
+
+      GDVN: {:}
+
+      JSON: {}
+
+    In this case, when deserializing in JSON mode, we will treat "{}" as
+    denoting an empty *map*, whereas in GDVN mode, it would denote an
+    empty *set*.
+
+  Ordered map:
+
+    GDVN: ["a":1 "b":2]
+
+    JSON: { "_type": "ordered map", "elements": [["a", 1], ["b", 2]] }
 
   Tagged sequence:
 
@@ -885,6 +918,12 @@ Specific GDV kinds are handled as follows:
     GDVN: Foo{"a":1}
 
     JSON: { "_type": "map", "tag": "Foo", "elements": [["a", 1]] }
+
+  Tagged ordered map:
+
+    GDVN: Foo["a":1]
+
+    JSON: { "_type": "ordered map", "tag": "Foo", "elements": [["a", 1]] }
 
 During JSON->GDV parsing, when a map is encountered, the parser checks
 for the "_type" attribute, and if it exists and has one of the kinds
