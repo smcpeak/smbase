@@ -349,8 +349,14 @@ OBJS := $(patsubst %.c,$(OBJDIR)/%.o,$(OBJS))
 OBJS := $(patsubst %.cc,$(OBJDIR)/%.o,$(OBJS))
 
 # Pull in automatic dependencies created by $(GENDEPS_FLAGS).
--include $(OBJS:.o=.d)
-
+#
+# 2025-07-10: Previously, I was only including specific *.d files,
+# computed from things like $(OBJS), but that approach makes it easy to
+# miss a few, which led to a build that did not rebuild properly
+# (obj/gdvn.o, specifically).  I don't recall why I did it that way, so
+# I'm now including them all (which I think is how it was originally).
+#
+-include $(wildcard $(OBJDIR)/*.d)
 
 $(THIS): $(OBJS)
 	$(CREATE_OUTPUT_DIRECTORY)
@@ -468,7 +474,6 @@ UNIT_TEST_OBJS += unit-tests.o
 # The unit test objects also go into $(OBJDIR).
 UNIT_TEST_OBJS := $(patsubst %.o,$(OBJDIR)/%.o,$(UNIT_TEST_OBJS))
 
--include $(UNIT_TEST_OBJS:.o=.d)
 
 $(OBJDIR)/unit-tests.exe: $(UNIT_TEST_OBJS) $(THIS)
 	$(CREATE_OUTPUT_DIRECTORY)
@@ -564,7 +569,7 @@ $(OBJDIR)/call-abort.exe: $(OBJDIR)/call-abort.o
 # ------------------------------- gdvn ---------------------------------
 # Program to read and write GDVN.
 #
-# This rule creates a .o file rather that directly compiling the .cc
+# This rule creates a .o file rather than directly compiling the .cc
 # file because if I do the latter with coverage enabled when the .gcno
 # and .gcda files end up in the source directory instead of $(OBJDIR).
 #
