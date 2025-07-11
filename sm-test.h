@@ -126,7 +126,7 @@ int main(int argc, char *argv[])                \
   }                                                         \
   else {                                                    \
     /* Evaluate it to ensure no crash, but do not print. */ \
-    (void)stuff;                                            \
+    (void)(stuff);                                          \
   }
 
 // PVAL with a specified output stream.
