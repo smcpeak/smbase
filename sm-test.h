@@ -5,19 +5,22 @@
 #ifndef SMBASE_SM_TEST_H
 #define SMBASE_SM_TEST_H
 
-#include "dev-warning.h"   // g_abortUponDevWarning
-#include "dummy-printf.h"  // dummy_printf
-#include "exc.h"           // smbase::XBase
-#include "sm-is-equal.h"   // smbase::is_equal
-#include "sm-iostream.h"   // cout
-#include "sm-macros.h"     // SM_PRINTF_ANNOTATION, NULLABLE
-#include "str.h"           // stringb, string
-#include "xassert.h"       // xassert
+#include "dev-warning.h"               // g_abortUponDevWarning
+#include "dummy-printf.h"              // dummy_printf
+#include "exc.h"                       // smbase::XBase
+#include "sm-iostream.h"               // cout
+#include "sm-is-equal.h"               // smbase::is_equal
+#include "sm-macros.h"                 // SM_PRINTF_ANNOTATION, NULLABLE
+#include "str.h"                       // string
+#include "string-util.h"               // doubleQuote
+#include "stringb.h"                   // stringb
+#include "xassert.h"                   // xassert, xfailure
 
-#include <iomanip>         // std::hex, std::dec
-#include <iosfwd>          // std::ostream
+#include <cstring>                     // std::strstr
+#include <iomanip>                     // std::hex, std::dec
+#include <iosfwd>                      // std::ostream
 
-#include <stdio.h>         // printf
+#include <stdio.h>                     // printf
 
 
 // This is set, in a global initializer, to true if the "VERBOSE"
@@ -205,10 +208,30 @@ void expectMatchesRegex(
     x_assert_fail("Expected exception", __FILE__, __LINE__); \
   }                                                          \
   catch (ExnType &e) {                                       \
-    /* As expected. */                                       \
     if (verbose) {                                           \
       cout << "As expected: " << e.what() << "\n";           \
     }                                                        \
+  }
+
+
+// Check that evaluating `expr` throws an exception of type `ExnType`
+// whose `what` string contains `substring`.
+#define EXPECT_EXN_SUBSTR(expr, ExnType, substring)                \
+  try {                                                            \
+    expr;                                                          \
+    xfailure("Expected " #ExnType " exception");                   \
+  }                                                                \
+  catch (ExnType &e) {                                             \
+    char const *w = e.what();                                      \
+    if (!std::strstr(w, (substring))) {                            \
+      xfailure_stringbc(                                           \
+        "Expected exception to have " << doubleQuote(substring) << \
+        " as a substring of its what string " << doubleQuote(w) << \
+        " but it did not.");                                       \
+    }                                                              \
+    else if (verbose) {                                            \
+      cout << "As expected: " << w << "\n";                        \
+    }                                                              \
   }
 
 

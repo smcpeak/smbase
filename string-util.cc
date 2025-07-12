@@ -6,7 +6,7 @@
 #include "breaker.h"                   // breaker
 #include "exc.h"                       // smbase::xmessage
 #include "optional-util.h"             // liftToOptional
-#include "overflow.h"                  // safeToInt, multiplyWithOverflowCheck
+#include "overflow.h"                  // safeToInt, multiplyWithOverflowCheck[Opt], addWithOverflowCheckOpt
 #include "sm-regex.h"                  // smbase::Regex
 #include "strcmp-compare.h"            // StrcmpCompare
 #include "strutil.h"                   // stringf
@@ -18,6 +18,7 @@
 #include <cstdlib>                     // std::abs
 #include <cstring>                     // std::{strchr, strrchr}
 #include <limits>                      // std::numeric_limits
+#include <optional>                    // std::optional
 #include <sstream>                     // std::ostringstream
 #include <string_view>                 // std::string_view
 #include <vector>                      // std::vector
@@ -113,6 +114,68 @@ std::size_t numLeadingChars(std::string const &s, char c)
   }
 
   return i;
+}
+
+
+// Compute `a*b + c`.  Return nullopt if that (or the intermediate
+// product) cannot be represented as `int`.
+//
+// This is a candidate to move into the `overflow` module, but I'd like
+// to see it used in at least one more place first.
+//
+template <typename NUM>
+std::optional<NUM> multiplyAddWithOverflowCheckOpt(
+  NUM a,
+  NUM b,
+  NUM c)
+{
+  if (std::optional<NUM> product = multiplyWithOverflowCheckOpt(a,b)) {
+    if (std::optional<NUM> sum = addWithOverflowCheckOpt(*product, c)) {
+      return *sum;
+    }
+  }
+
+  return std::nullopt;
+}
+
+
+int parseDecimalInt_noSign(std::string_view sv)
+{
+  if (sv.empty()) {
+    xformat("Attempt to parse empty string as decimal integer.");
+  }
+
+  // Special-case this since it's a likely error.
+  if (sv[0] == '-' || sv[0] == '+') {
+    xformatsb("Sign prefix not allowed here: " << doubleQuote(sv) << ".");
+  }
+
+  int res = 0;
+  for (char c : sv) {
+    if (!( '0' <= c && c <= '9' )) {
+      std::string letter(&c, 1);
+      xformatsb("Invalid character " << doubleQuote(letter) <<
+                " in decimal integer: " << doubleQuote(sv) << ".");
+    }
+
+    int digitValue = c - '0';
+
+    // Compute:
+    //
+    //   res = res*10 + digitValue;
+    //
+    // except with overflow checking.
+    if (std::optional<int> newRes =
+          multiplyAddWithOverflowCheckOpt<int>(res, 10, digitValue)) {
+      res = *newRes;
+    }
+    else {
+      xformatsb("Number too large to represent as `int`: " <<
+                doubleQuote(sv) << ".");
+    }
+  }
+
+  return res;
 }
 
 

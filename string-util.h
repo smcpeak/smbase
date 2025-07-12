@@ -44,6 +44,14 @@ std::string trimWhitespace(std::string const &str);
 std::size_t numLeadingChars(std::string const &s, char c);
 
 
+// Parse `sv` as an ASCII decimal integer that cannot be preceded by a
+// sign; it must be a non-empty contiguous sequence of digits in [0-9].
+// A leading 0 does *not* cause it to be interpreted as octal.  If the
+// input does not conform to the syntax, or denotes a value too large
+// to represent as a signed `int`, throw `XFormat`.
+int parseDecimalInt_noSign(std::string_view sv);
+
+
 // ------------------------- Tests on strings --------------------------
 // True if 'str' begins with 'prefix'.
 bool beginsWith(std::string const &str, std::string const &prefix);

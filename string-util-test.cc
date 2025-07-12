@@ -3,7 +3,7 @@
 
 #include "string-util.h"               // module under test
 
-#include "exc.h"                       // EXN_CONTEXT
+#include "exc.h"                       // EXN_CONTEXT, smbase::XFormat
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
 #include "sm-test.h"                   // EXPECT_EQ, tprintf
 
@@ -11,6 +11,9 @@
 #include <iostream>                    // std::ostream
 #include <limits>                      // std::numeric_limits
 #include <string_view>                 // std::string_view
+
+
+using namespace smbase;
 
 
 OPEN_ANONYMOUS_NAMESPACE
@@ -756,6 +759,37 @@ void testRepeatString()
 }
 
 
+void test_parseDecimalInt_noSign()
+{
+  EXN_CONTEXT("test_parseDecimalInt_noSign");
+
+  EXPECT_EQ(parseDecimalInt_noSign("0"), 0);
+  EXPECT_EQ(parseDecimalInt_noSign("1"), 1);
+  EXPECT_EQ(parseDecimalInt_noSign("123"), 123);
+  EXPECT_EQ(parseDecimalInt_noSign("0123"), 123);  // not octal
+
+  EXPECT_EQ(parseDecimalInt_noSign("2147483647"), 2147483647);
+  EXPECT_EQ(parseDecimalInt_noSign("0002147483647"), 2147483647);
+
+  EXPECT_EXN_SUBSTR(parseDecimalInt_noSign(""),
+    XFormat, "empty");
+
+  EXPECT_EXN_SUBSTR(parseDecimalInt_noSign("-1"),
+    XFormat, "Sign prefix");
+
+  EXPECT_EXN_SUBSTR(parseDecimalInt_noSign("123a456"),
+    XFormat, "Invalid character \"a\"");
+
+  // This will overflow during the addition.
+  EXPECT_EXN_SUBSTR(parseDecimalInt_noSign("2147483648"),
+    XFormat, "too large");
+
+  // This will overflow during the multiplication.
+  EXPECT_EXN_SUBSTR(parseDecimalInt_noSign("21474836470"),
+    XFormat, "too large");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -791,6 +825,7 @@ void test_string_util()
   testStringVectorFromPointerArray();
   testRemoveTestCaseIndentation();
   testRepeatString();
+  test_parseDecimalInt_noSign();
 }
 
 
