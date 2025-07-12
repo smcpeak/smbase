@@ -634,6 +634,9 @@ public:      // methods
   //template <>
   ///*implicit*/ GDValue(char const *str);
 
+  // Also accept implicit conversion from `string_view`.
+  /*implicit*/ GDValue(std::string_view sv);
+
   void stringSet(GDVString const &str);
   void stringSet(GDVString      &&str);
 

@@ -28,6 +28,7 @@
 #include <cstdlib>                     // std::{atoi, exit}
 #include <iostream>                    // std::cout
 #include <string>                      // std::string
+#include <string_view>                 // std::string_view
 
 using namespace smbase;
 using namespace gdv;
@@ -790,6 +791,17 @@ void testMap()
   };
   EXPECT_EQ(v2.asString(), "{(1):one}");
   testSerializeRoundtrip(v2);
+
+  // Make sure I can convert from `string_view` in an initializer list,
+  // which requires the GDValue constructor that accepts it.
+  {
+    std::string_view sv("abc");
+    v2 = GDVMap{
+      { sv, "x" },
+      { "y", sv },
+    };
+    EXPECT_EQ(v2.asString(), R"({"abc":"x" "y":"abc"})");
+  }
 }
 
 

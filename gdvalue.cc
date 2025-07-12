@@ -984,6 +984,11 @@ GDValue::GDValue(char const *str)
 {}
 
 
+GDValue::GDValue(std::string_view sv)
+  : GDValue(GDVString(sv))
+{}
+
+
 void GDValue::stringSet(GDVString const &str)
 {
   reset();
