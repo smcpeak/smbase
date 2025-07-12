@@ -149,6 +149,10 @@ DEV_NULL = /dev/null
 # How to invoke include-what-you-use (include-what-you-use.org).
 IWYU := include-what-you-use
 
+# Command to generate *.o.json files, which then are combined to make
+# compile_commands.json.
+MAKE_CC_JSON = $(PYTHON3) ./make-cc-json.py
+
 
 # ------------------------- User customization -------------------------
 # Allow customization of the above variables in a separate file.  Just
@@ -193,12 +197,12 @@ include sm-lib.mk
 $(OBJDIR)/%.o: %.cc
 	$(CREATE_OUTPUT_DIRECTORY)
 	$(CXX) -c -o $@ $(GENDEPS_FLAGS) $(CXXFLAGS) $<
-	$(PYTHON3) ./make-cc-json.py $(CXX) -c -o $@ $(GENDEPS_FLAGS) $(CXXFLAGS) $< >$(OBJDIR)/$*.o.json
+	$(MAKE_CC_JSON) $(CXX) -c -o $@ $(GENDEPS_FLAGS) $(CXXFLAGS) $< >$(OBJDIR)/$*.o.json
 
 $(OBJDIR)/%.o: %.c
 	$(CREATE_OUTPUT_DIRECTORY)
 	$(CC) -c -o $@ $(GENDEPS_FLAGS) $(CFLAGS) $<
-	$(PYTHON3) ./make-cc-json.py $(CC) -c -o $@ $(GENDEPS_FLAGS) $(CFLAGS) $< >$(OBJDIR)/$*.o.json
+	$(MAKE_CC_JSON) $(CC) -c -o $@ $(GENDEPS_FLAGS) $(CFLAGS) $< >$(OBJDIR)/$*.o.json
 
 # For occasional diagnostic purposes, a rule to preprocess explicitly.
 %.ii: %.cc
