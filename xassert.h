@@ -63,7 +63,7 @@ T *xassertPtr(T *ptr)
 //
 //   xfailure_stringbc(various << things)
 //
-// which can be accmplished simply by replacing "xfailure(stringc << "
+// which can be accomplished simply by replacing "xfailure(stringc << "
 // with "xfailure_stringbc(".  In particular, that does not require any
 // balancing of parentheses, which is hard when doing regex-based
 // replacement.
