@@ -31,8 +31,13 @@ public:      // methods
 
 // Read from a string.
 class StringReader :
-  // DataWrapper stream carrying the string to read.  This has to be a
-  // base class because it gets passed to the ctor of `Reader`.
+  // DataWrapper stream carrying the string to read.
+  //
+  // This has to be a base class that precedes `Reader` because it gets
+  // passed to the ctor of `Reader`, and during that passing, undergoes
+  // derived-to-base conversion.  See
+  // https://stackoverflow.com/questions/78515255/is-it-undefined-behavior-to-pass-a-pointer-to-an-unconstructed-streambuf-object
+  // which primarily cites class.cdtor p1.
   private DataWrapper<std::istringstream>,
 
   // Main interface.

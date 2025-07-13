@@ -50,6 +50,33 @@ public:      // methods
 
 
 // Holds an input stream and a current location within it.
+//
+// This class operates on *bytes* (octets).  It uses the `int` type to
+// store them because it also uses `eofCode()` to denote EOF.
+//
+// I'm unsatisfied with this design for several reasons:
+//
+// 1. It combines the tasks of tracking the location within `m_is` and
+//    of parsing its contents.  Those should be separated.
+//
+// 2. It uses a quirky scheme of advancing the location even when EOF is
+//    hit, and then relying on backing up one byte when an error is
+//    reported.  But this is due primarily to the existing parsing
+//    methods operating one byte at a time; as I add more parsing
+//    capabilities, the assumption that the proper location to report is
+//    one byte back becomes less tenable.  (For example, it is entirely
+//    wrong when reading UTF-8).  And it is ugly to be storing a
+//    location that is one character beyond EOF.
+//
+// 3. It treats every byte as occupying one column.  This breaks UTF-8,
+//    and arguably also data containing tab characters.
+//
+// 4. The idea of using a special code to denote EOF is at odds with
+//    modern design principles.  std::optional might be a better choice.
+//
+// Due to these issues, I'm thinking I need to redesign this whole
+// system before trying to build more on top of it.
+//
 class Reader {
   NO_OBJECT_COPIES(Reader);
 
