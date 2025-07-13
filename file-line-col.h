@@ -7,6 +7,7 @@
 #ifndef SMBASE_FILE_LINE_COL_H
 #define SMBASE_FILE_LINE_COL_H
 
+#include <cstddef>                     // std::size_t
 #include <optional>                    // std::optional
 #include <string>                      // std::string
 
@@ -22,10 +23,16 @@ public:      // data
   // A 0 value can be used to represent the character before the first
   // on a line in situations where the previous line's length is
   // unavailable.
+  //
+  // Currently, the way this class is used by Reader, it actually tracks
+  // a *byte* count from the line start rather than a character count.
   int m_column;
 
+  // Byte offset from the start of the data.
+  std::size_t m_byteOffset;
+
 public:      // methods
-  LineCol(int line, int column) noexcept;
+  LineCol(int line, int column, std::size_t byteOffset) noexcept;
 
   LineCol(LineCol const &obj) = default;
   LineCol& operator=(LineCol const &obj) = default;
@@ -62,7 +69,8 @@ public:      // methods
   // string to FileLineCol preserves the information.
   FileLineCol(std::optional<std::string> fileName = std::nullopt,
               int line = 1,
-              int column = 1) noexcept;
+              int column = 1,
+              std::size_t byteOffset = 0) noexcept;
   ~FileLineCol();
 
   // Manipulate the line/col.

@@ -109,6 +109,8 @@ public:      // methods
      `readChar` triggers an error.
 
      TODO: Return an instance of `CodePoint` instead of `int`.
+
+     Well, maybe not.  UTF8Reader has its own `readCodePoint`.
   */
   int readChar();
 
