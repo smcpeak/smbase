@@ -136,6 +136,18 @@ NUM subtractWithOverflowCheck(NUM a, NUM b)
 }
 
 
+// Increment `n`, returning its old value.  Throw `XOverflow` if the
+// increment would overflow.
+template <class NUM>
+NUM postIncrementWithOverflowCheck(NUM &n)
+{
+  if (n == std::numeric_limits<NUM>::max()) {
+    detectedOverflow(n, 1, '+');
+  }
+  return n++;
+}
+
+
 // Multiply two integers.  Return `std::nullopt` if they would overflow.
 template <class NUM>
 std::optional<NUM> multiplyWithOverflowCheckOpt(NUM a, NUM b)

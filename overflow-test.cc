@@ -13,7 +13,7 @@
 #include <cstdlib>                     // std::getenv
 #include <optional>                    // std::optional
 
-#include <stdint.h>                    // int64_t, uint64_t, INT64_C
+#include <stdint.h>                    // int64_t, uint64_t, INT64_C, int32_t
 #include <limits.h>                    // INT_MIN, INT_MIN
 
 using namespace smbase;
@@ -536,6 +536,24 @@ void testConvertNumber()
 }
 
 
+void test_postIncrement()
+{
+  int32_t n = 0;
+  EXPECT_EQ(postIncrementWithOverflowCheck(n), 0);
+  EXPECT_EQ(postIncrementWithOverflowCheck(n), 1);
+  EXPECT_EQ(postIncrementWithOverflowCheck(n), 2);
+  EXPECT_EQ(postIncrementWithOverflowCheck(n), 3);
+
+  n = std::numeric_limits<int32_t>::max();
+  EXPECT_EXN(postIncrementWithOverflowCheck(n), XOverflow);
+
+  int32_t const largeNeg = std::numeric_limits<int32_t>::min();
+  n = largeNeg;
+  EXPECT_EQ(postIncrementWithOverflowCheck(n), largeNeg);
+  EXPECT_EQ(postIncrementWithOverflowCheck(n), largeNeg + 1);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -553,6 +571,7 @@ void test_overflow()
   RUNTEST(testDivide);
   RUNTEST(testConvertWithoutLoss);
   RUNTEST(testConvertNumber);
+  RUNTEST(test_postIncrement);
 
   #undef RUNTEST
 }
