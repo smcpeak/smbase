@@ -144,12 +144,30 @@ bool mapRemove(std::map<K,V> &map, K const &k)
 }
 
 
-// Remove the mapping for `k`, which must exist
+// Remove the mapping for `k`, which must exist.
 template <class K, class V>
 void mapRemoveExisting(std::map<K,V> &map, K const &k)
 {
   bool erased = mapRemove(map, k);
   xassert(erased);
+}
+
+
+// Remove the mapping for `k`, which must exist, and return the value at
+// that location by moving it out of the map.
+template <class K, class V>
+V mapMoveValueAt(std::map<K,V> &map, K const &k)
+{
+  auto it = map.find(k);
+  xassert(it != map.end());
+
+  // Move the value out of the node.
+  V ret = std::move((*it).second);
+
+  // Remove the node along with its now-indeterminate value.
+  map.erase(it);
+
+  return ret;
 }
 
 

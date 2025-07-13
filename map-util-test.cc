@@ -63,6 +63,18 @@ void testMapFindOrNull()
 }
 
 
+void testMapMoveValueAt()
+{
+  std::map<int, std::string> m {
+    { 1, "one" },
+    { 2, "two" },
+  };
+  EXPECT_EQ(mapMoveValueAt(m, 1), "one");
+  EXPECT_EQ(mapMoveValueAt(m, 2), "two");
+  xassert(m.empty());
+}
+
+
 void testOstreamInsert()
 {
   std::map<int, char const *> m;
@@ -83,6 +95,7 @@ void test_map_util()
 {
   testInsertMapUnique();
   testMapFindOrNull();
+  testMapMoveValueAt();
   testOstreamInsert();
 }
 
