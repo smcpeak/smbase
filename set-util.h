@@ -134,6 +134,21 @@ std::vector<T> setToVector(std::set<T> const &s)
 }
 
 
+template <typename K, typename C, typename A>
+bool setRemove(std::set<K,C,A> &s, K const &k)
+{
+  return s.erase(k) > 0;
+}
+
+
+template <typename K, typename C, typename A>
+void setRemoveExisting(std::set<K,C,A> &s, K const &k)
+{
+  bool erased = setRemove(s, k);
+  xassert(erased);
+}
+
+
 template <class T, class PRINT_ELEMENT>
 void setWrite(
   std::ostream &os,

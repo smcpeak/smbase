@@ -169,6 +169,18 @@ void testSetToVector()
 }
 
 
+void test_setRemove()
+{
+  std::set<int> s{1,2};
+  EXPECT_EQ(setRemove(s, 1), true);
+  EXPECT_EQ(setRemove(s, 1), false);
+  setRemoveExisting(s, 2);
+  xassert(s.empty());
+
+  EXPECT_EXN_SUBSTR(setRemoveExisting(s, 2), XAssert, "erased");
+}
+
+
 void testOstreamInsert()
 {
   std::set<int> s;
@@ -209,6 +221,7 @@ void test_set_util()
   testSetHasElementNotIn();
   testSetMapElements();
   testSetToVector();
+  test_setRemove();
   testOstreamInsert();
   testSetWriter();
 }

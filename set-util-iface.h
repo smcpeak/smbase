@@ -97,6 +97,16 @@ template <class T>
 stdfwd::vector<T> setToVector(stdfwd::set<T> const &s);
 
 
+// Remove `k` from `s`.  Return true if it was there before.
+template <typename K, typename C, typename A>
+bool setRemove(std::set<K,C,A> &s, K const &k);
+
+
+// Remove `k` from `s`, asserting that it was there before.
+template <typename K, typename C, typename A>
+void setRemoveExisting(std::set<K,C,A> &s, K const &k);
+
+
 // Write `s` to `os`.  `printElement` should be like:
 //
 //   void printElement(std::ostream &os, T const &t);
