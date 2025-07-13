@@ -11,13 +11,13 @@ static void testIter()
 {
   ParseString ps("abc");
   EXPECT_EQ(ps.eos(), false);
-  EXPECT_EQ(ps.cur(), (int)'a');
+  EXPECT_EQ(ps.curByte(), (int)'a');
   ps.adv();
   EXPECT_EQ(ps.eos(), false);
-  EXPECT_EQ(ps.cur(), (int)'b');
+  EXPECT_EQ(ps.curByte(), (int)'b');
   ps.adv();
   EXPECT_EQ(ps.eos(), false);
-  EXPECT_EQ(ps.cur(), (int)'c');
+  EXPECT_EQ(ps.curByte(), (int)'c');
   ps.adv();
   EXPECT_EQ(ps.eos(), true);
 }
@@ -27,11 +27,11 @@ static void testIter()
 static void testParse1()
 {
   ParseString ps("(12,34)");
-  ps.parseChar('(');
+  ps.parseByte('(');
   EXPECT_EQ(ps.parseDecimalUInt(), 12);
-  ps.parseChar(',');
+  ps.parseByte(',');
   EXPECT_EQ(ps.parseDecimalUInt(), 34);
-  ps.parseChar(')');
+  ps.parseByte(')');
   ps.parseEOS();
   EXPECT_EQ(ps.eos(), true);
 }
@@ -42,9 +42,9 @@ static void testFailParse1()
 {
   try {
     ParseString ps("(12!34)");
-    ps.parseChar('(');
+    ps.parseByte('(');
     EXPECT_EQ(ps.parseDecimalUInt(), 12);
-    ps.parseChar(',');
+    ps.parseByte(',');
     xfailure("should have failed");
   }
   catch (XParseString &x) {

@@ -1,11 +1,13 @@
 // parsestring.h
 // ParseString class.
 
-#ifndef PARSESTRING_H
-#define PARSESTRING_H
+#ifndef SMBASE_PARSESTRING_H
+#define SMBASE_PARSESTRING_H
 
 #include "exc.h"                       // smbase::XFormat
-#include "str.h"                       // string
+
+#include <cstddef>                     // std::size_t
+#include <string>                      // std::string
 
 
 // Thrown by ParseString when the string being parsed deviates from the
@@ -13,17 +15,20 @@
 class XParseString : public smbase::XFormat {
 public:      // data
   // String we were trying to parse.
-  string m_str;
+  std::string m_str;
 
   // Byte offset within that string where the error happened.
-  int m_offset;
+  std::size_t m_offset;
 
   // Description of how the string at that location differed from the
   // expectations of the parser.
-  string m_conflict;
+  std::string m_conflict;
 
 public:      // funcs
-  XParseString(string const &str, int offset, string const &conflict);
+  XParseString(
+    std::string const &str,
+    std::size_t offset,
+    std::string const &conflict);
   XParseString(XParseString const &obj);
   ~XParseString();
 };
@@ -32,33 +37,42 @@ public:      // funcs
 // Holds a string to parse and current location within it.  It has
 // routines to parse it, but it can also be used as an iterator over
 // the characters in the string.
+//
+// This class operates on bytes in the range [0,255], which are
+// represented using `int`.
+//
 class ParseString {
 private:     // data
   // String we are parsing.
-  string m_str;
+  std::string m_str;
 
-  // Length of the string.
-  int m_len;
-
-  // Current byte offset within that string.
-  int m_cur;
+  // Current byte offset within that string.  Should always be in
+  // [0, m_str.size()].
+  std::size_t m_curOffset;
 
 public:      // funcs
-  // This makes its own copy of the string.
-  explicit ParseString(string const &str);
   ~ParseString();
 
+  // This makes its own copy of the string.
+  explicit ParseString(std::string const &str);
+
+  // Move the string contents.
+  explicit ParseString(std::string      &&str);
+
   // Throw XParseString for the current offset.
-  void throwErr(string const &conflict);
+  void throwErr(std::string const &conflict);
 
   // True if we are at (or beyond) the end of the string.
-  bool eos() const { return m_cur >= m_len; }
+  bool eos() const { return m_curOffset >= m_str.size(); }
 
-  // Character at m_cur.  Requires '!eos()'.
-  int cur() const;
+  // Byte value at m_curOffset, in [0,255].  Requires '!eos()'.
+  int curByte() const;
 
-  // Character at m_cur, quoted.
-  string quoteCur() const;
+  // Value of `curByte` represented as plain `char`.
+  char curByteAsChar() const;
+
+  // Byte at m_curOffset, quoted.
+  std::string quoteCurByte() const;
 
   // Move to the next character.  Requires '!eos()'.
   void adv();
@@ -69,8 +83,8 @@ public:      // funcs
   // All of these routines throw XParseString if the input does not
   // conform to expectations.
 
-  // Advance past the next character, which should be 'c'.
-  void parseChar(int c);
+  // Advance past the next byte, which should be 'c'.
+  void parseByte(int c);
 
   // Advance past the next sequence of characters, expecting them all to
   // match those in 's'.
@@ -86,17 +100,17 @@ public:      // funcs
   // Parse the next sequence of characters as a single C token.
   //
   // This currently only handles literals and identifiers.
-  string parseCToken();
+  std::string parseCToken();
 
   // Parse a C delimited literal, i.e., string or character, delimited
   // by 'c'.
-  string parseCDelimLiteral(int c);
+  std::string parseCDelimLiteral(int c);
 
   // Parse a C number literal.  Currently only handles integers.
-  string parseCNumberLiteral();
+  std::string parseCNumberLiteral();
 
   // Parse a C identifier.
-  string parseCIdentifier();
+  std::string parseCIdentifier();
 };
 
 
@@ -104,4 +118,4 @@ public:      // funcs
 void test_parsestring();
 
 
-#endif // PARSE_H
+#endif // SMBASE_PARSE_H

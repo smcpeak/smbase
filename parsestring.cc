@@ -1,18 +1,25 @@
 // parsestring.cc
 // code for parsestring.h
 
-#include "parsestring.h"               // ParseString
+#include "smbase/parsestring.h"        // this module
 
-#include "codepoint.h"                 // isASCIIDigit
-#include "overflow.h"                  // multiplyWithOverflowCheck
-#include "string-util.h"               // doubleQuote, singleQuoteChar
-#include "xassert.h"                   // xassert
+#include "smbase/codepoint.h"          // isASCIIDigit
+#include "smbase/overflow.h"           // multiplyWithOverflowCheck
+#include "smbase/string-util.h"        // doubleQuote, singleQuoteChar
+#include "smbase/stringb.h"            // stringb
+#include "smbase/xassert.h"            // xassert
+
+#include <utility>                     // std::move
 
 using namespace smbase;
 
+using std::string;
+
 
 // ------------------------- XParseString ---------------------------
-static string formatCondition(string const &str, int offset,
+static string formatCondition(
+  string const &str,
+  std::size_t offset,
   string const &conflict)
 {
   return stringb("at location " << offset << " in " << doubleQuote(str) <<
@@ -20,8 +27,10 @@ static string formatCondition(string const &str, int offset,
 }
 
 
-XParseString::XParseString(string const &str, int offset,
-                           string const &conflict)
+XParseString::XParseString(
+  string const &str,
+  std::size_t offset,
+  string const &conflict)
   : XFormat(formatCondition(str, offset, conflict)),
     m_str(str),
     m_offset(offset),
@@ -42,47 +51,60 @@ XParseString::~XParseString()
 
 
 // ------------------------- ParseString ----------------------------
-ParseString::ParseString(string const &str)
-  : m_str(str),
-    m_len(str.length()),
-    m_cur(0)
+ParseString::~ParseString()
 {}
 
 
-ParseString::~ParseString()
+ParseString::ParseString(string const &str)
+  : m_str(str),
+    m_curOffset(0)
+{}
+
+
+ParseString::ParseString(string &&str)
+  : m_str(std::move(str)),
+    m_curOffset(0)
 {}
 
 
 void ParseString::throwErr(string const &conflict)
 {
-  throw XParseString(m_str, m_cur, conflict);
+  throw XParseString(m_str, m_curOffset, conflict);
 }
 
 
-int ParseString::cur() const
+int ParseString::curByte() const
 {
   xassert(!eos());
-  xassert(m_cur >= 0);
-  return m_str[m_cur];
+  xassert(m_curOffset >= 0);
+
+  // The cast ensures the result is non-negative.
+  return static_cast<unsigned char>(m_str[m_curOffset]);
 }
 
 
-string ParseString::quoteCur() const
+char ParseString::curByteAsChar() const
 {
-  return singleQuoteChar(cur());
+  return static_cast<char>(curByte());
+}
+
+
+string ParseString::quoteCurByte() const
+{
+  return singleQuoteChar(curByte());
 }
 
 
 void ParseString::adv()
 {
   xassert(!eos());
-  m_cur++;
+  ++m_curOffset;
 }
 
 
 void ParseString::skipWS()
 {
-  while (!eos() && isWhitespace(cur())) {
+  while (!eos() && isWhitespace(curByte())) {
     adv();
   }
 }
@@ -91,13 +113,13 @@ void ParseString::skipWS()
 #define THROWERR(msg) throwErr(stringb(msg))
 
 
-void ParseString::parseChar(int c)
+void ParseString::parseByte(int c)
 {
   if (eos()) {
     THROWERR("found end of string, expected " << singleQuoteChar(c));
   }
-  if (cur() != c) {
-    THROWERR("found " << quoteCur() <<
+  if (curByte() != c) {
+    THROWERR("found " << quoteCurByte() <<
              ", expected " << singleQuoteChar(c));
   }
   adv();
@@ -107,7 +129,7 @@ void ParseString::parseChar(int c)
 void ParseString::parseString(char const *s)
 {
   while (*s) {
-    parseChar(*s);
+    parseByte(*s);
     s++;
   }
 }
@@ -116,7 +138,7 @@ void ParseString::parseString(char const *s)
 void ParseString::parseEOS()
 {
   if (!eos()) {
-    THROWERR("found " << quoteCur() <<
+    THROWERR("found " << quoteCurByte() <<
              ", expected end of string");
   }
 }
@@ -124,16 +146,16 @@ void ParseString::parseEOS()
 
 int ParseString::parseDecimalUInt()
 {
-  if (!isASCIIDigit(cur())) {
-    THROWERR("found " << quoteCur() <<
+  if (!isASCIIDigit(curByte())) {
+    THROWERR("found " << quoteCurByte() <<
              ", expected digit");
   }
 
   int ret = 0;
   try {
-    while (isASCIIDigit(cur())) {
+    while (isASCIIDigit(curByte())) {
       ret = multiplyWithOverflowCheck(ret, 10);
-      ret = addWithOverflowCheck(ret, cur() - '0');
+      ret = addWithOverflowCheck(ret, curByte() - '0');
       adv();
     }
   }
@@ -147,7 +169,7 @@ int ParseString::parseDecimalUInt()
 
 string ParseString::parseCToken()
 {
-  int c = cur();
+  int c = curByte();
   if (c == '"') {
     return parseCDelimLiteral(c);
   }
@@ -161,7 +183,7 @@ string ParseString::parseCToken()
     return parseCIdentifier();
   }
   else {
-    THROWERR("found " << quoteCur() << ", expected C token");
+    THROWERR("found " << quoteCurByte() << ", expected C token");
     return ""; // Not reached.
   }
 }
@@ -171,20 +193,20 @@ string ParseString::parseCDelimLiteral(int delim)
 {
   stringBuilder sb;
 
-  parseChar(delim);
+  parseByte(delim);
   sb << (char)delim;
 
-  while (cur() != delim) {
-    sb << (char)cur();
-    if (cur() == '\\') {
+  while (curByte() != delim) {
+    sb << curByteAsChar();
+    if (curByte() == '\\') {
       // Treat the next character as not special.
       adv();
-      sb << (char)cur();
+      sb << curByteAsChar();
     }
     adv();
   }
 
-  parseChar(delim);
+  parseByte(delim);
   sb << (char)delim;
 
   return sb.str();
@@ -195,37 +217,37 @@ string ParseString::parseCNumberLiteral()
 {
   stringBuilder sb;
 
-  if (cur() == '0') {
-    sb << (char)cur();
+  if (curByte() == '0') {
+    sb << curByteAsChar();
     adv();
 
-    if (!eos() && cur() == 'x') {
-      sb << (char)cur();
+    if (!eos() && curByte() == 'x') {
+      sb << curByteAsChar();
       adv();
 
-      while (!eos() && isASCIIHexDigit(cur())) {
-        sb << (char)cur();
+      while (!eos() && isASCIIHexDigit(curByte())) {
+        sb << curByteAsChar();
         adv();
       }
     }
     else {
-      while (!eos() && isASCIIOctDigit(cur())) {
-        sb << (char)cur();
+      while (!eos() && isASCIIOctDigit(curByte())) {
+        sb << curByteAsChar();
         adv();
       }
     }
   }
-  else if (isASCIIDigit(cur())) {
-    sb << (char)cur();
+  else if (isASCIIDigit(curByte())) {
+    sb << curByteAsChar();
     adv();
 
-    while (!eos() && isASCIIDigit(cur())) {
-      sb << (char)cur();
+    while (!eos() && isASCIIDigit(curByte())) {
+      sb << curByteAsChar();
       adv();
     }
   }
   else {
-    THROWERR("found " << quoteCur() << ", expected digit");
+    THROWERR("found " << quoteCurByte() << ", expected digit");
   }
 
   return sb.str();
@@ -236,12 +258,12 @@ string ParseString::parseCIdentifier()
 {
   stringBuilder sb;
 
-  if (!isCIdentifierCharacter(cur())) {
-    THROWERR("found " << quoteCur() << ", expected C identifier");
+  if (!isCIdentifierCharacter(curByte())) {
+    THROWERR("found " << quoteCurByte() << ", expected C identifier");
   }
 
-  while (!eos() && isCIdentifierCharacter(cur())) {
-    sb << (char)cur();
+  while (!eos() && isCIdentifierCharacter(curByte())) {
+    sb << curByteAsChar();
     adv();
   }
 
