@@ -271,4 +271,44 @@ string ParseString::parseCIdentifier()
 }
 
 
+std::string ParseString::getUpToByte(int c)
+{
+  std::ostringstream res;
+
+  while (!eos()) {
+    res << curByteAsChar();
+
+    // We found, and included, `c`.
+    if (curByte() == c) {
+      adv();
+      break;
+    }
+
+    adv();
+  }
+
+  return res.str();
+}
+
+
+std::string ParseString::getUpToSize(std::size_t size)
+{
+  xassert(m_curOffset <= m_str.size());
+
+  if (m_curOffset + size >= m_str.size()) {
+    // Return entire remainder.
+    std::string ret(m_str.substr(m_curOffset, m_str.size() - m_curOffset));
+    m_curOffset = m_str.size();
+    return ret;
+  }
+
+  else {
+    // Get the next `size` bytes, but some will remain.
+    std::string ret(m_str.substr(m_curOffset, size));
+    m_curOffset += size;
+    return ret;
+  }
+}
+
+
 // EOF

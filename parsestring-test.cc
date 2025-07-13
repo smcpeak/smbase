@@ -74,12 +74,58 @@ static void testParsingCText()
 }
 
 
+static void test_getUpToByte()
+{
+  {
+    ParseString ps("abcdef");
+    EXPECT_EQ(ps.getUpToByte('a'), "a");
+    EXPECT_EQ(ps.getUpToByte('c'), "bc");
+    EXPECT_EQ(ps.getUpToByte('g'), "def");
+    xassert(ps.eos());
+  }
+
+  {
+    ParseString ps("abc");
+    EXPECT_EQ(ps.getUpToByte('c'), "abc");
+    xassert(ps.eos());
+  }
+}
+
+
+static void test_getUpToSize()
+{
+  {
+    ParseString ps("abcdef");
+    EXPECT_EQ(ps.curOffset(), 0);
+    EXPECT_EQ(ps.getUpToSize(0), "");
+    EXPECT_EQ(ps.curOffset(), 0);
+    EXPECT_EQ(ps.getUpToSize(1), "a");
+    EXPECT_EQ(ps.curOffset(), 1);
+    EXPECT_EQ(ps.getUpToSize(2), "bc");
+    EXPECT_EQ(ps.curOffset(), 3);
+    EXPECT_EQ(ps.getUpToSize(999), "def");
+    EXPECT_EQ(ps.curOffset(), 6);
+    xassert(ps.eos());
+  }
+
+  {
+    ParseString ps("abc");
+    EXPECT_EQ(ps.curOffset(), 0);
+    EXPECT_EQ(ps.getUpToSize(3), "abc");
+    EXPECT_EQ(ps.curOffset(), 3);
+    xassert(ps.eos());
+  }
+}
+
+
 void test_parsestring()
 {
   testIter();
   testParse1();
   testFailParse1();
   testParsingCText();
+  test_getUpToByte();
+  test_getUpToSize();
 }
 
 

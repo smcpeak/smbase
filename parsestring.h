@@ -62,6 +62,9 @@ public:      // funcs
   // Throw XParseString for the current offset.
   void throwErr(std::string const &conflict);
 
+  // How many bytes of the string we have read.
+  std::size_t curOffset() const { return m_curOffset; }
+
   // True if we are at (or beyond) the end of the string.
   bool eos() const { return m_curOffset >= m_str.size(); }
 
@@ -111,6 +114,14 @@ public:      // funcs
 
   // Parse a C identifier.
   std::string parseCIdentifier();
+
+  // Read all bytes up to and including the first occurrence of `c`.  If
+  // it does not occur, return all remaining bytes.
+  std::string getUpToByte(int c);
+
+  // Read bytes until we have read `size` of them.  If that is more than
+  // the total, return all remaining bytes.
+  std::string getUpToSize(std::size_t size);
 };
 
 
