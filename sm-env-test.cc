@@ -110,6 +110,25 @@ void testGetXDGConfigHome()
 }
 
 
+void testGetXDGStateHome()
+{
+  testEnvMap = EnvMap{
+    { "XDG_STATE_HOME", "/xdg/state/home" },
+    { "HOME", "/home/user" },
+  };
+
+  EXPECT_EQ(getXDGStateHome(), "/xdg/state/home");
+
+  testEnvMap.erase("XDG_STATE_HOME");
+
+  EXPECT_EQ(getXDGStateHome(), "/home/user/.local/state");
+
+  testEnvMap.erase("HOME");
+
+  EXPECT_EQ(getXDGStateHome(), ".local/state");
+}
+
+
 void testActualEnv()
 {
   // By setting envvar VERBOSE=1, these can be tested interactively.
@@ -118,6 +137,7 @@ void testActualEnv()
   VPVAL(envAsBool("VAR"));
   VPVAL(envOrEmpty("VAR"));
   VPVAL(getXDGConfigHome());
+  VPVAL(getXDGStateHome());
 }
 
 
@@ -133,6 +153,7 @@ void test_sm_env()
     testEnvAsBool();
     testEnvOrEmpty();
     testGetXDGConfigHome();
+    testGetXDGStateHome();
   }
 
   // Run this with the real environment.

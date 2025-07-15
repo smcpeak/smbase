@@ -37,6 +37,9 @@ char const *envOrEmpty(char const *envvar);
 // This is the directory under which user configuration files should go.
 std::string getXDGConfigHome();
 
+// Similarly, get $XDG_STATE_HOME.
+std::string getXDGStateHome();
+
 
 CLOSE_NAMESPACE(smbase)
 

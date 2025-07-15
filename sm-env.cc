@@ -72,6 +72,20 @@ std::string getXDGConfigHome()
 }
 
 
+std::string getXDGStateHome()
+{
+  if (char const *value = sm_getenv("XDG_STATE_HOME")) {
+    return value;
+  }
+
+  if (char const *home = sm_getenv("HOME")) {
+    return stringb(home << "/.local/state");
+  }
+
+  return ".local/state";
+}
+
+
 CLOSE_NAMESPACE(smbase)
 
 
