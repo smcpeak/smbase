@@ -5,6 +5,8 @@
 
 // TODO: All function names should start with "map".
 
+// TODO: Put all functions into `smbase` namespace.
+
 #ifndef SMBASE_MAP_UTIL_H
 #define SMBASE_MAP_UTIL_H
 
