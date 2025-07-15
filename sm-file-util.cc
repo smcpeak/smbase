@@ -703,6 +703,16 @@ void SMFileUtil::createDirectoryAndParents(string const &path_)
 }
 
 
+void SMFileUtil::createParentDirectories(string const &path)
+{
+  string dir = splitPathDir(path);
+
+  if (!dir.empty()) {
+    createDirectoryAndParents(dir);
+  }
+}
+
+
 bool SMFileUtil::isReadOnly(string const &path) NOEXCEPT
 {
 #if SM_FILE_UTIL_USE_WINDOWS_API

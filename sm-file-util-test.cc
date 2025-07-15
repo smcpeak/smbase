@@ -765,6 +765,33 @@ static void testCreateDirectoryAndParents()
 }
 
 
+static void testCreateParentDirectories()
+{
+  SMFileUtil sfu;
+  rm_rf("tmpdir");
+
+  // This will do nothing because "." exists.
+  sfu.createParentDirectories("./a");
+  xassert(!sfu.pathExists("a"));
+
+  // Same.
+  sfu.createParentDirectories("a");
+  xassert(!sfu.pathExists("a"));
+
+  // Now we make "a".
+  sfu.createParentDirectories("a/b");
+  xassert(sfu.directoryExists("a"));
+  xassert(!sfu.pathExists("a/b"));
+
+  // And some more.
+  sfu.createParentDirectories("a/b/c/d");
+  xassert(sfu.directoryExists("a/b/c"));
+  xassert(!sfu.pathExists("a/b/c/d"));
+
+  rm_rf("tmpdir");
+}
+
+
 static void testReadAndWriteFile()
 {
   // All bytes.
@@ -998,6 +1025,7 @@ void test_sm_file_util()
   testGetFileKind();
   testAtomicallyRenameFile();
   testCreateDirectoryAndParents();
+  testCreateParentDirectories();
   testReadAndWriteFile();
   testReadAndWriteFileAsString();
   testArrayOfDirEntry();

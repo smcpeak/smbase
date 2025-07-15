@@ -290,6 +290,10 @@ public:      // funcs
   // separator on 'path' is ignored.
   virtual void createDirectoryAndParents(string const &path);
 
+  // Create any parent directories of `path` that do not already exist,
+  // but do not create `path` itself.
+  void createParentDirectories(string const &path);
+
   // True if 'path' exists, but the current user does not have write
   // permission for it.  This does not throw; it returns false if the
   // file does not exist or we cannot determine whether it is read-only.
