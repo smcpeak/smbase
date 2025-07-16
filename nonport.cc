@@ -58,6 +58,20 @@
 #include "nonport.h"      // this module
 
 
+// Note about `strcpy`:
+//
+// `clang-tidy` rightly complains that this module uses `strcpy` and
+// `strcat` in a few places, as these functions are potentially
+// dangerous.  However, this module is intended to live at the base of
+// the dependency hierarchy, with essentially no dependencies on the
+// rest of `smbase`, and minimal dependencies on the C++ standard
+// library.
+//
+// Each of the uses has been examined and looks safe to me (Scott), so
+// I've chosen to annotate them with NOLINT rather than rewrite them
+// using safer but more dependency-laden APIs.
+
+
 NonportFailFunc nonportFail = defaultNonportFail;
 
 void defaultNonportFail(char const *, char const *)
@@ -357,9 +371,9 @@ void applyToDirContents(char const *dirName,
   #if defined(__WIN32__) && !defined(__BORLANDC__)
     struct _finddata_t fb;
     char* buf = new char[strlen(dirName)+5];
-    strcpy(buf, dirName);
-    if (buf[strlen(buf)-1] != '\\') strcat(buf, "\\");
-    strcat(buf, "*");
+    strcpy(buf, dirName);                                  // NOLINT(clang-analyzer-security.insecureAPI.strcpy); see above Note about `strcpy`.
+    if (buf[strlen(buf)-1] != '\\') strcat(buf, "\\");     // NOLINT(clang-analyzer-security.insecureAPI.strcpy); see above Note about `strcpy`.
+    strcat(buf, "*");                                      // NOLINT(clang-analyzer-security.insecureAPI.strcpy); see above Note about `strcpy`.
     intptr_t handle = _findfirst(buf, &fb);
     delete[] buf;
     int done = (handle == -1);
@@ -451,7 +465,7 @@ bool ensurePath(char const *filename, bool isDirectory)
   // make a temporary buffer so we can modify it safely
   int len = strlen(filename);
   char *temp = new char[len+1];
-  strcpy(temp, filename);
+  strcpy(temp, filename);                                  // NOLINT(clang-analyzer-security.insecureAPI.strcpy); see above Note about `strcpy`.
 
   if (isDirectory) {
     len++;    // also consider final '\0' (strchr returns ptr to it)
