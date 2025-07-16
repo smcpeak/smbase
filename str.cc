@@ -56,7 +56,7 @@ void OldSmbaseString::dup(char const *src)
   else {
     s = new char[ strlen(src) + 1 ];
     xassert(s);
-    strcpy(s, src);
+    strcpy(s, src);                    // NOLINT(clang-analyzer-security.insecureAPI.strcpy)
   }
 }
 
@@ -142,8 +142,8 @@ int OldSmbaseString::compareTo(char const *src) const
 OldSmbaseString OldSmbaseString::operator+(OldSmbaseString const &tail) const
 {
   OldSmbaseString dest(length() + tail.length(), SMBASE_STRING_FUNC);
-  strcpy(dest.s, s);
-  strcat(dest.s, tail.s);
+  strcpy(dest.s, s);                   // NOLINT(clang-analyzer-security.insecureAPI.strcpy)
+  strcat(dest.s, tail.s);              // NOLINT(clang-analyzer-security.insecureAPI.strcpy)
   return dest;
 }
 
@@ -256,7 +256,7 @@ void stringBuilder::dup(char const *str)
 {
   int len = strlen(str);
   init(len);
-  strcpy(s, str);
+  strcpy(s, str);                      // NOLINT(clang-analyzer-security.insecureAPI.strcpy)
   end += len;
 }
 
