@@ -132,7 +132,7 @@ static void testMoveCtor()
   EXPECT_EQ(list1.count(), 2);
 
   ASTList<Integer> list2(std::move(list1));
-  EXPECT_EQ(list1.count(), 0);
+  EXPECT_EQ(list1.count(), 0);         // NOLINT(clang-analyzer-cplusplus.Move)
   EXPECT_EQ(list2.count(), 2);
 }
 
