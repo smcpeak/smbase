@@ -6,10 +6,8 @@
 #ifndef SMBASE_TYPE_NAME_AND_SIZE_H
 #define SMBASE_TYPE_NAME_AND_SIZE_H
 
-#include "smbase/get-type-name.h"      // smbase::GetTypeName
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 
-#include <climits>                     // CHAR_BIT
 #include <string>                      // std::string
 
 
@@ -45,13 +43,9 @@ public:      // methods
 };
 
 
+// Defined in type-name-and-size-ops.h.
 template <typename T>
-TypeNameAndSize makeTypeNameAndSizeForType()
-{
-  return TypeNameAndSize(
-    std::string(GetTypeName<T>::value),
-    sizeof(T) * CHAR_BIT);
-}
+inline TypeNameAndSize makeTypeNameAndSizeForType();
 
 
 CLOSE_NAMESPACE(smbase)

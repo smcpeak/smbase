@@ -3,12 +3,12 @@
 
 // See license.txt for copyright and terms of use.
 
-#include "smbase/type-name-and-size.h" // module under test
+#include "smbase/type-name-and-size-ops.h"       // module under test
 
-#include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
-#include "smbase/sm-test.h"            // EXPECT_EQ
+#include "smbase/sm-macros.h"                    // OPEN_ANONYMOUS_NAMESPACE
+#include "smbase/sm-test.h"                      // EXPECT_EQ
 
-#include <cstdint>                     // std::int8_t
+#include <cstdint>                               // std::int8_t
 
 
 using namespace smbase;
