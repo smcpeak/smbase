@@ -77,7 +77,7 @@ void testCtors()
   xassert(*p4 == 4);
 
   UniquePtr<int> p5(std::move(p4));
-  xassert(!p4.get());
+  xassert(!p4.get());                  // NOLINT(clang-analyzer-cplusplus.Move)
   xassert(*p5 == 4);
 
   UniquePtr<Sub> p6(new Sub);
@@ -95,7 +95,7 @@ void testAssign()
   UniquePtr<int> p2;
   p2 = std::move(p1);
 
-  xassert(!p1.get());
+  xassert(!p1.get());                  // NOLINT(clang-analyzer-cplusplus.Move)
   xassert(*p2 == 1);
 
   UniquePtr<Sub> p3(new Sub);
