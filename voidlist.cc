@@ -6,6 +6,7 @@
 #include "breaker.h"                   // breaker
 #include "pointer-util.h"              // comparePointerAddresses
 #include "str.h"                       // stringb
+#include "xassert.h"                   // xassert
 
 #include <stdio.h>                     // printf
 
@@ -431,6 +432,12 @@ void VoidList::mergeSort(VoidDiff diff, void *extra)
       merged = merged->next = selected;
     }
   }
+
+  // The loop above must have executed at least once since there is a
+  // check at the top for an empty or one-element initial list, so both
+  // `leftHalf` and `rightHaf` must have had at least one element.
+  // (Without this assertion, `clang-tidy` complains.)
+  xassert(merged != NULL);
 
   // one of the halves is exhausted; concat the
   // remaining elements of the other one
