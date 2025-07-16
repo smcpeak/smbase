@@ -554,6 +554,27 @@ void test_postIncrement()
 }
 
 
+void test_preIncrement()
+{
+  int32_t n = 0;
+  EXPECT_EQ(preIncrementWithOverflowCheck(n), 1);
+  EXPECT_EQ(preIncrementWithOverflowCheck(n), 2);
+  EXPECT_EQ(preIncrementWithOverflowCheck(n), 3);
+  EXPECT_EQ(preIncrementWithOverflowCheck(n), 4);
+
+  n = std::numeric_limits<int32_t>::max();
+  EXPECT_EXN(preIncrementWithOverflowCheck(n), XOverflow);
+
+  int32_t const largeNeg = std::numeric_limits<int32_t>::min();
+  n = largeNeg;
+  EXPECT_EQ(preIncrementWithOverflowCheck(n), largeNeg + 1);
+  EXPECT_EQ(preIncrementWithOverflowCheck(n), largeNeg + 2);
+
+  int64_t m = 1;
+  EXPECT_EQ(preIncrementWithOverflowCheck(m), 2);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -572,6 +593,7 @@ void test_overflow()
   RUNTEST(testConvertWithoutLoss);
   RUNTEST(testConvertNumber);
   RUNTEST(test_postIncrement);
+  RUNTEST(test_preIncrement);
 
   #undef RUNTEST
 }
