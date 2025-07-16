@@ -52,7 +52,7 @@ int innerGetTraceLevel(
 {
   // Allow tracing this function by modifying the hardcoded
   // 'traceLevel'.
-  char const * const traceScope = "getTraceLevel";
+  char const * const traceScope = "getTraceLevel";         // NOLINT(clang-analyzer-deadcode.DeadStores)
   int const traceLevel = 0;
 
   // The element (itself a regex) is a sequence of characters that are
