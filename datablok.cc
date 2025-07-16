@@ -113,9 +113,17 @@ void DataBlock::ctor(unsigned char const *srcData, size_t dataLen)
 
 void DataBlock::ctor(unsigned char const *srcData, size_t srcDataLen, size_t allocatedSize)
 {
+  xassert(srcDataLen <= allocatedSize);
+
   init(allocatedSize);
   dataLen = srcDataLen;
-  memcpy(data, srcData, dataLen);
+  if (dataLen > 0) {
+    memcpy(data, srcData, dataLen);
+  }
+  else {
+    // `data` would be null, and it is not legal to call `memcpy` with
+    // a null pointer, even if the size is 0.
+  }
   SELFCHECK();
 }
 
@@ -128,6 +136,9 @@ DataBlock::DataBlock(DataBlock const &obj)
 
 void DataBlock::copyCtorShared(DataBlock const &obj)
 {
+  // Verify this invariant, in part to pacify `clang-tidy`.
+  xassert(obj.dataLen <= obj.allocated);
+
   dataLen = obj.dataLen;
   if (dataLen > 0) {
     memcpy(data, obj.data, dataLen);
@@ -290,9 +301,12 @@ DataBlock& DataBlock::operator= (DataBlock const &obj)
 {
   SELFCHECK();
   if (this != &obj) {
+    xassert(obj.dataLen <= obj.allocated);
     setAllocated(obj.allocated);
     dataLen = obj.dataLen;
-    memcpy(data, obj.data, dataLen);
+    if (dataLen > 0) {
+      memcpy(data, obj.data, dataLen);
+    }
   }
   SELFCHECK();
   return *this;
