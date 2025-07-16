@@ -8,7 +8,7 @@
 #define SMBASE_EXC_H
 
 #include "breaker.h"                   // breaker
-#include "sm-macros.h"                 // OPEN_NAMESPACE
+#include "sm-macros.h"                 // OPEN_NAMESPACE, NORETURN
 #include "sm-pp-util.h"                // SM_PP_MAP, SM_PP_APPLY
 #include "str.h"                       // string
 #include "stringb.h"                   // stringb

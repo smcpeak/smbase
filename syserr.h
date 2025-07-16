@@ -9,7 +9,7 @@
 #define SMBASE_SYSERR_H
 
 #include "exc.h"                       // XBase
-#include "sm-macros.h"                 // OPEN_NAMESPACE
+#include "sm-macros.h"                 // OPEN_NAMESPACE, NORETURN
 #include "str.h"                       // rostring
 
 
@@ -89,23 +89,23 @@ public:    // funcs
     // construct the string we throw as the 'why' of XBase; if ctx is NULL,
     // the string doesn't include it
 
-  static void xsyserror(rostring syscallName, rostring context);
+  static void xsyserror(rostring syscallName, rostring context) NORETURN;
     // does the throw
 };
 
 
 // function that does the throw
-void xsyserror(char const *syscallName);
-void xsyserror(rostring syscallName, rostring context);
+void xsyserror(char const *syscallName) NORETURN;
+void xsyserror(rostring syscallName, rostring context) NORETURN;
 
 
 // get a representative string, for logging etc.
 string sysErrorCodeString(int systemErrorCode,
-                                   rostring syscallName,
-                                   rostring context);
+                          rostring syscallName,
+                          rostring context);
 
 string sysErrorString(char const *syscallName,
-                               char const *context=NULL);
+                      char const *context=NULL);
 
 
 // Issue a "developer warning" about a system call that just failed.
