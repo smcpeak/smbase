@@ -14,14 +14,15 @@
 #ifndef SMBASE_OVERFLOW_H
 #define SMBASE_OVERFLOW_H
 
-#include "exc.h"                       // DEFINE_XBASE_SUBCLASS
-#include "get-type-name.h"             // smbase::GetTypeName
-#include "str.h"                       // stringBuilder, stringb
-#include "xoverflow.h"                 // XBinaryOpOverflow, XNumericConversionLosesInformation, XNumericConversionOutsideRange
+#include "smbase/exc.h"                          // DEFINE_XBASE_SUBCLASS
+#include "smbase/stringb.h"                      // stringb
+#include "smbase/type-name-and-size-ops.h"       // smbase::makeTypeNameAndSizeForType
+#include "smbase/xoverflow.h"                    // XBinaryOpOverflow, XNumericConversionLosesInformation, XNumericConversionOutsideRange
 
-#include <limits>                      // std::numeric_limits
-#include <optional>                    // std::optional
-#include <type_traits>                 // std::is_unsigned
+#include <limits>                                // std::numeric_limits
+#include <optional>                              // std::optional
+#include <string>                                // std::string
+#include <type_traits>                           // std::is_unsigned
 
 
 // Throw an exception when overflow would happen.
@@ -29,7 +30,7 @@ template <class NUM>
 void detectedOverflow(NUM a, NUM b, char op)
 {
   THROW(smbase::XBinaryOpOverflow(
-    std::string(smbase::GetTypeName<NUM>::value),
+    smbase::makeTypeNameAndSizeForType<NUM>(),
 
     // Prefix operands with `+` so they print as integers even if they
     // are a `char` type.
@@ -316,8 +317,8 @@ void convertWithoutLoss(DEST &dest, SRC const &src)
       stringb(+src),
       stringb(+dest),
       stringb(+s2),
-      std::string(smbase::GetTypeName<SRC>::value),
-      std::string(smbase::GetTypeName<DEST>::value)));
+      smbase::makeTypeNameAndSizeForType<SRC>(),
+      smbase::makeTypeNameAndSizeForType<DEST>()));
   }
 
   dest = destOpt.value();
@@ -369,8 +370,8 @@ DEST convertNumber(SRC const &src)
   // Complain.
   THROW(smbase::XNumericConversionOutsideRange(
     stringb(+src),
-    std::string(smbase::GetTypeName<SRC>::value),
-    std::string(smbase::GetTypeName<DEST>::value)));
+    smbase::makeTypeNameAndSizeForType<SRC>(),
+    smbase::makeTypeNameAndSizeForType<DEST>()));
 }
 
 

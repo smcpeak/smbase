@@ -4,7 +4,6 @@
 #include "xoverflow.h"                 // this module
 
 #include "sm-macros.h"                 // DMEMB, CMEMB
-#include "string-util.h"               // doubleQuote
 #include "stringb.h"                   // stringb
 
 
@@ -13,7 +12,7 @@ OPEN_NAMESPACE(smbase)
 
 // create-tuple-class: definitions for XBinaryOpOverflow
 /*AUTO_CTC*/ XBinaryOpOverflow::XBinaryOpOverflow(
-/*AUTO_CTC*/   std::string const &type,
+/*AUTO_CTC*/   TypeNameAndSize const &type,
 /*AUTO_CTC*/   std::string const &lhs,
 /*AUTO_CTC*/   std::string const &rhs,
 /*AUTO_CTC*/   std::string const &op)
@@ -49,7 +48,7 @@ OPEN_NAMESPACE(smbase)
 std::string XBinaryOpOverflow::getConflict() const
 {
   return stringb(
-    "Arithmetic overflow of type " << doubleQuote(m_type) << ": " <<
+    "Arithmetic overflow of type " << m_type.toString() << ": " <<
     m_lhs << ' ' << m_op << ' ' << m_rhs << " would overflow.");
 }
 
@@ -59,8 +58,8 @@ std::string XBinaryOpOverflow::getConflict() const
 /*AUTO_CTC*/   std::string const &sourceValue,
 /*AUTO_CTC*/   std::string const &destValue,
 /*AUTO_CTC*/   std::string const &roundTripValue,
-/*AUTO_CTC*/   std::string const &sourceType,
-/*AUTO_CTC*/   std::string const &destType)
+/*AUTO_CTC*/   TypeNameAndSize const &sourceType,
+/*AUTO_CTC*/   TypeNameAndSize const &destType)
 /*AUTO_CTC*/   : XNumericConversion(),
 /*AUTO_CTC*/     m_sourceValue(sourceValue),
 /*AUTO_CTC*/     m_destValue(destValue),
@@ -97,8 +96,8 @@ std::string XNumericConversionLosesInformation::getConflict() const
 {
   return stringb(
     "Source value " << m_sourceValue <<
-    " of type " << doubleQuote(m_sourceType) <<
-    ", when converted to destination type " << doubleQuote(m_destType) <<
+    " of type " << m_sourceType.toString() <<
+    ", when converted to destination type " << m_destType.toString() <<
     " and back, is " << m_roundTripValue <<
     ", thus losing information.");
 }
@@ -107,8 +106,8 @@ std::string XNumericConversionLosesInformation::getConflict() const
 // create-tuple-class: definitions for XNumericConversionOutsideRange
 /*AUTO_CTC*/ XNumericConversionOutsideRange::XNumericConversionOutsideRange(
 /*AUTO_CTC*/   std::string const &sourceValue,
-/*AUTO_CTC*/   std::string const &sourceType,
-/*AUTO_CTC*/   std::string const &destType)
+/*AUTO_CTC*/   TypeNameAndSize const &sourceType,
+/*AUTO_CTC*/   TypeNameAndSize const &destType)
 /*AUTO_CTC*/   : XNumericConversion(),
 /*AUTO_CTC*/     m_sourceValue(sourceValue),
 /*AUTO_CTC*/     m_sourceType(sourceType),
@@ -139,8 +138,8 @@ std::string XNumericConversionOutsideRange::getConflict() const
 {
   return stringb(
     "convertNumber: Source value " << m_sourceValue <<
-    " of type " << doubleQuote(m_sourceType) <<
-    " cannot be represented with type " << doubleQuote(m_destType) <<
+    " of type " << m_sourceType.toString() <<
+    " cannot be represented with type " << m_destType.toString() <<
     ".");
 }
 

@@ -6,8 +6,11 @@
 #ifndef SMBASE_XOVERFLOW_H
 #define SMBASE_XOVERFLOW_H
 
-#include "sm-macros.h"                 // OPEN_NAMESPACE
-#include "xarithmetic.h"               // XArithmetic
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
+#include "smbase/type-name-and-size.h" // smbase::TypeNameAndSize
+#include "smbase/xarithmetic.h"        // smbase::XArithmetic
+
+#include <string>                      // std::string
 
 
 OPEN_NAMESPACE(smbase)
@@ -23,9 +26,7 @@ class XBinaryOpOverflow : public XOverflow {
 public:      // data
   // The name of the type upon which the operation was performed.  This
   // is the type of both operands and of the intended result.
-  //
-  // TODO: Currently this is `typeid.name()`, which is cryptic.
-  std::string m_type;
+  TypeNameAndSize m_type;
 
   // The involved operand values, as digit strings.
   std::string m_lhs;
@@ -36,7 +37,7 @@ public:      // data
 
 public:      // methods
   // create-tuple-class: declarations for XBinaryOpOverflow
-  /*AUTO_CTC*/ explicit XBinaryOpOverflow(std::string const &type, std::string const &lhs, std::string const &rhs, std::string const &op);
+  /*AUTO_CTC*/ explicit XBinaryOpOverflow(TypeNameAndSize const &type, std::string const &lhs, std::string const &rhs, std::string const &op);
   /*AUTO_CTC*/ XBinaryOpOverflow(XBinaryOpOverflow const &obj) noexcept;
   /*AUTO_CTC*/ XBinaryOpOverflow &operator=(XBinaryOpOverflow const &obj) noexcept;
 
@@ -70,12 +71,12 @@ public:      // data
   std::string m_roundTripValue;
 
   // Types of source and destination.
-  std::string m_sourceType;
-  std::string m_destType;
+  TypeNameAndSize m_sourceType;
+  TypeNameAndSize m_destType;
 
 public:      // methods
   // create-tuple-class: declarations for XNumericConversionLosesInformation
-  /*AUTO_CTC*/ explicit XNumericConversionLosesInformation(std::string const &sourceValue, std::string const &destValue, std::string const &roundTripValue, std::string const &sourceType, std::string const &destType);
+  /*AUTO_CTC*/ explicit XNumericConversionLosesInformation(std::string const &sourceValue, std::string const &destValue, std::string const &roundTripValue, TypeNameAndSize const &sourceType, TypeNameAndSize const &destType);
   /*AUTO_CTC*/ XNumericConversionLosesInformation(XNumericConversionLosesInformation const &obj) noexcept;
   /*AUTO_CTC*/ XNumericConversionLosesInformation &operator=(XNumericConversionLosesInformation const &obj) noexcept;
 
@@ -97,14 +98,14 @@ public:      // data
   std::string m_sourceValue;
 
   // Original type of the source value.
-  std::string m_sourceType;
+  TypeNameAndSize m_sourceType;
 
   // Type to which conversion was attempted.
-  std::string m_destType;
+  TypeNameAndSize m_destType;
 
 public:      // methods
   // create-tuple-class: declarations for XNumericConversionOutsideRange
-  /*AUTO_CTC*/ explicit XNumericConversionOutsideRange(std::string const &sourceValue, std::string const &sourceType, std::string const &destType);
+  /*AUTO_CTC*/ explicit XNumericConversionOutsideRange(std::string const &sourceValue, TypeNameAndSize const &sourceType, TypeNameAndSize const &destType);
   /*AUTO_CTC*/ XNumericConversionOutsideRange(XNumericConversionOutsideRange const &obj) noexcept;
   /*AUTO_CTC*/ XNumericConversionOutsideRange &operator=(XNumericConversionOutsideRange const &obj) noexcept;
 
