@@ -782,4 +782,25 @@ std::string int64ToRadixDigits(
 }
 
 
+// -------------- Conversion between strings and vectors ---------------
+std::vector<unsigned char> stringToVectorOfUChar(std::string const &s)
+{
+  std::vector<unsigned char> ret;
+  for (char c : s) {
+    ret.push_back(static_cast<unsigned char>(c));
+  }
+  return ret;
+}
+
+
+std::string vectorOfUCharToString(std::vector<unsigned char> const &v)
+{
+  std::ostringstream oss;
+  for (unsigned char c : v) {
+    oss << static_cast<char>(c);
+  }
+  return oss.str();
+}
+
+
 // EOF

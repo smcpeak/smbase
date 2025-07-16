@@ -322,4 +322,12 @@ std::string int64ToRadixDigits(
   std::int64_t value, int radix, bool radixIndicator);
 
 
+// -------------- Conversion between strings and vectors ---------------
+// Return the sequence of characters in `s`.
+std::vector<unsigned char> stringToVectorOfUChar(std::string const &s);
+
+// Return `v` as a string.
+std::string vectorOfUCharToString(std::vector<unsigned char> const &v);
+
+
 #endif // SMBASE_STRING_UTIL_H

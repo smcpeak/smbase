@@ -790,6 +790,37 @@ void test_parseDecimalInt_noSign()
 }
 
 
+void testOneConvVectorString(
+  std::string const &str,
+  std::vector<unsigned char> const &vec)
+{
+  EXN_CONTEXT_EXPR(doubleQuote(str));
+
+  std::vector actualVec = stringToVectorOfUChar(str);
+  xassert(actualVec == vec);
+
+  std::string actualStr = vectorOfUCharToString(vec);
+  xassert(actualStr == str);
+}
+
+
+void testConvVectorString()
+{
+  testOneConvVectorString(
+    std::string(),
+    std::vector<unsigned char>()
+  );
+  testOneConvVectorString(
+    std::string("abc"),
+    std::vector<unsigned char>{'a', 'b', 'c'}
+  );
+  testOneConvVectorString(
+    std::string("a\0c", 3),
+    std::vector<unsigned char>{'a', 0, 'c'}
+  );
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -826,6 +857,7 @@ void test_string_util()
   testRemoveTestCaseIndentation();
   testRepeatString();
   test_parseDecimalInt_noSign();
+  testConvVectorString();
 }
 
 
