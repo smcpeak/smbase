@@ -135,8 +135,17 @@ public:      // funcs
     { if (sz-1 < index) { eidLoop(index); } }
 
   // set an element, using the doubler if necessary
+  //
+  // This function keeps triggering the `clang-tidy` null pointer check.
+  // I've had success dealing with that by adding assertions inside
+  // `eidLoop`, but now I've got a report in `pprint.cc` that fires even
+  // with those assertions.  I do not want to add an assertion to this
+  // function because it is often in the inner loop, and the reason
+  // `eidLoop` exists is to optimize that access.  Consequently, I've
+  // resorted to just suppressing the report directly.
+  //
   void setIndexDoubler(int index, T const &value)
-    { ensureIndexDoubler(index); arr[index] = value; }
+    { ensureIndexDoubler(index); arr[index] = value; }     // NOLINT(clang-analyzer-core.NullDereference)
 
   // swap my data with the data in another GrowArray object
   void swapWith(GrowArray<T> &obj) {
