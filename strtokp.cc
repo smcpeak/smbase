@@ -14,7 +14,7 @@ StrtokParse::StrtokParse(rostring origStr, rostring origDelim)
   char const *delim = toCStr(origDelim);
 
   // make local copy
-  strcpy(buf.ptr(), str);
+  strcpy(buf.ptr(), str);              // NOLINT(clang-analyzer-security.insecureAPI.strcpy)
 
   // parse it first time to count # of tokens
   int ct=0;
@@ -25,7 +25,7 @@ StrtokParse::StrtokParse(rostring origStr, rostring origDelim)
   }
 
   // restore buf
-  strcpy(buf.ptr(), str);
+  strcpy(buf.ptr(), str);              // NOLINT(clang-analyzer-security.insecureAPI.strcpy)
 
   // allocate storage
   _tokc = ct;
@@ -41,7 +41,15 @@ StrtokParse::StrtokParse(rostring origStr, rostring origDelim)
   ct=0;
   tok = strtok(buf.ptr(), delim);
   while (tok) {
-    _tokv[ct] = tok;
+    // `clang-tidy` thinks the following line could cause a null deref
+    // because it does not understand that `strtok` will yield the same
+    // sequence of tokens here as in the loop above.  I could assert
+    // `_tokv`, but really that's only a half-measure because the safety
+    // of the `ct` index also depends on `strtok` behaving the same each
+    // time.  So I'm just going to suppress rather than assert.  This
+    // module is obsolete anyway.
+    _tokv[ct] = tok;                   // NOLINT(clang-analyzer-core.NullDereference)
+
     ct++;
     tok = strtok(NULL, delim);
   }
