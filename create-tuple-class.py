@@ -352,7 +352,7 @@ def processHeader(headerFname: str) -> None:
   beginLineRE = re.compile(r".*create-tuple-class: declarations for (\S+)(.*)")
 
   # Match a line containing a field declaration.
-  fieldDeclLineRE = re.compile(r"^ +([a-zA-Z_][^;]+);$")
+  fieldDeclLineRE = re.compile(r"^ +([a-zA-Z_][^();]+);$")
 
   # Match the last line.
   classDeclLastLineRE = re.compile(r"^( *)\};")
