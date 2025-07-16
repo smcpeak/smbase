@@ -470,7 +470,7 @@ void cwlFail(SRC src)
     convertWithoutLoss(dest, src);
     xfailure("should have failed");
   }
-  catch (XOverflow &x) {
+  catch (XNumericConversionLosesInformation &x) {
     DIAG("as expected: " << x);
   }
 }
@@ -521,7 +521,7 @@ void cnFail(SRC src)
     convertNumber<DEST>(src);
     xfailure("should have failed");
   }
-  catch (XOverflow &x) {
+  catch (XNumericConversionOutsideRange &x) {
     DIAG("as expected: " << x);
   }
 }
@@ -531,6 +531,7 @@ void testConvertNumber()
 {
   cnSuccess<int, int>(3);
   cnFail<char, int>(1234);
+  cnFail<char, int>(1134);
   cnFail<unsigned, int>(-1);
   cnFail<int, unsigned>(UINT_MAX);
 }

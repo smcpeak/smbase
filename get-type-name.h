@@ -78,6 +78,11 @@ struct GetTypeName {
     // Pull that name out.
     std::string_view rv = tName.substr(prefix_len, target_len);
 
+    // This code causes "unsigned int" to be turned into "int", which is
+    // really bad for my primary usage, which is to get type names in
+    // the `overflow` module.  So I'll just remove it and wait to see if
+    // anything pops up requiring more adjustment.
+    #if 0
     // If it has a space in it, assume that is separating an elaborated
     // type keyword (e.g., "class") from the actual name.  Evidently,
     // MSVC inserts such keywords.
@@ -96,6 +101,9 @@ struct GetTypeName {
       // Skip keyword.
       return rv.substr(offset+1);
     }
+    #endif
+
+    return rv;
   }
 
   // Make the type argument available to clients if needed.

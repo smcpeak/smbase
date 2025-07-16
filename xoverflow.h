@@ -44,12 +44,20 @@ public:      // methods
 };
 
 
-// Conversion from one type to another loses information.
+// Conversion from one type to another fails.
 class XNumericConversion : public XOverflow {};
 
 
-// Conversion from one type to another loses range.
-class XNumericConversionLosesRange : public XNumericConversion {
+// Conversion from one type to another loses information, in that a
+// conversion back to the original type yields a different value.  The
+// check that throws this tolerates cases where the source and
+// destination values are different, but the conversion to the source
+// type yields the original value, so this exception is *not* thrown for
+// a case like that, such as:
+//
+//   (signed char)-1 -> (unsigned char)255 -> (signed char)-1
+//
+class XNumericConversionLosesInformation : public XNumericConversion {
 public:      // data
   // Starting value.
   std::string m_sourceValue;
@@ -61,24 +69,26 @@ public:      // data
   // is different from `m_sourceValue`, hence the exception.
   std::string m_roundTripValue;
 
-  // Size in bytes of the source type.
-  unsigned m_sourceSizeBytes;
-
-  // Size in bytes of the destination type.
-  unsigned m_destSizeBytes;
+  // Types of source and destination.
+  std::string m_sourceType;
+  std::string m_destType;
 
 public:      // methods
-  // create-tuple-class: declarations for XNumericConversionLosesRange
-  /*AUTO_CTC*/ explicit XNumericConversionLosesRange(std::string const &sourceValue, std::string const &destValue, std::string const &roundTripValue, unsigned sourceSizeBytes, unsigned destSizeBytes);
-  /*AUTO_CTC*/ XNumericConversionLosesRange(XNumericConversionLosesRange const &obj) noexcept;
-  /*AUTO_CTC*/ XNumericConversionLosesRange &operator=(XNumericConversionLosesRange const &obj) noexcept;
+  // create-tuple-class: declarations for XNumericConversionLosesInformation
+  /*AUTO_CTC*/ explicit XNumericConversionLosesInformation(std::string const &sourceValue, std::string const &destValue, std::string const &roundTripValue, std::string const &sourceType, std::string const &destType);
+  /*AUTO_CTC*/ XNumericConversionLosesInformation(XNumericConversionLosesInformation const &obj) noexcept;
+  /*AUTO_CTC*/ XNumericConversionLosesInformation &operator=(XNumericConversionLosesInformation const &obj) noexcept;
 
   virtual std::string getConflict() const override;
 };
 
 
-// Conversion from one type to another changes its sign.
-class XNumericConversionChangesSign : public XNumericConversion {
+// Conversion from one type to another is not possible because the
+// source value is outside the range of the destination value.  The code
+// that throws this exception wants the source and destination values to
+// be exactly the same, so it *will* flag a case like converting
+// `(signed char)-1` to `unsigned char`.
+class XNumericConversionOutsideRange : public XNumericConversion {
 public:      // data
   // TODO: It would be nice if I could add the common fields to the
   // base class and have create-tuple-class handle that properly.
@@ -86,14 +96,17 @@ public:      // data
   // Starting value.
   std::string m_sourceValue;
 
-  // Value after conversion to destination type.
-  std::string m_destValue;
+  // Original type of the source value.
+  std::string m_sourceType;
+
+  // Type to which conversion was attempted.
+  std::string m_destType;
 
 public:      // methods
-  // create-tuple-class: declarations for XNumericConversionChangesSign
-  /*AUTO_CTC*/ explicit XNumericConversionChangesSign(std::string const &sourceValue, std::string const &destValue);
-  /*AUTO_CTC*/ XNumericConversionChangesSign(XNumericConversionChangesSign const &obj) noexcept;
-  /*AUTO_CTC*/ XNumericConversionChangesSign &operator=(XNumericConversionChangesSign const &obj) noexcept;
+  // create-tuple-class: declarations for XNumericConversionOutsideRange
+  /*AUTO_CTC*/ explicit XNumericConversionOutsideRange(std::string const &sourceValue, std::string const &sourceType, std::string const &destType);
+  /*AUTO_CTC*/ XNumericConversionOutsideRange(XNumericConversionOutsideRange const &obj) noexcept;
+  /*AUTO_CTC*/ XNumericConversionOutsideRange &operator=(XNumericConversionOutsideRange const &obj) noexcept;
 
   virtual std::string getConflict() const override;
 };

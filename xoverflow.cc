@@ -54,88 +54,94 @@ std::string XBinaryOpOverflow::getConflict() const
 }
 
 
-// create-tuple-class: definitions for XNumericConversionLosesRange
-/*AUTO_CTC*/ XNumericConversionLosesRange::XNumericConversionLosesRange(
+// create-tuple-class: definitions for XNumericConversionLosesInformation
+/*AUTO_CTC*/ XNumericConversionLosesInformation::XNumericConversionLosesInformation(
 /*AUTO_CTC*/   std::string const &sourceValue,
 /*AUTO_CTC*/   std::string const &destValue,
 /*AUTO_CTC*/   std::string const &roundTripValue,
-/*AUTO_CTC*/   unsigned sourceSizeBytes,
-/*AUTO_CTC*/   unsigned destSizeBytes)
+/*AUTO_CTC*/   std::string const &sourceType,
+/*AUTO_CTC*/   std::string const &destType)
 /*AUTO_CTC*/   : XNumericConversion(),
 /*AUTO_CTC*/     m_sourceValue(sourceValue),
 /*AUTO_CTC*/     m_destValue(destValue),
 /*AUTO_CTC*/     m_roundTripValue(roundTripValue),
-/*AUTO_CTC*/     m_sourceSizeBytes(sourceSizeBytes),
-/*AUTO_CTC*/     m_destSizeBytes(destSizeBytes)
+/*AUTO_CTC*/     m_sourceType(sourceType),
+/*AUTO_CTC*/     m_destType(destType)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ XNumericConversionLosesRange::XNumericConversionLosesRange(XNumericConversionLosesRange const &obj) noexcept
+/*AUTO_CTC*/ XNumericConversionLosesInformation::XNumericConversionLosesInformation(XNumericConversionLosesInformation const &obj) noexcept
 /*AUTO_CTC*/   : XNumericConversion(obj),
 /*AUTO_CTC*/     DMEMB(m_sourceValue),
 /*AUTO_CTC*/     DMEMB(m_destValue),
 /*AUTO_CTC*/     DMEMB(m_roundTripValue),
-/*AUTO_CTC*/     DMEMB(m_sourceSizeBytes),
-/*AUTO_CTC*/     DMEMB(m_destSizeBytes)
+/*AUTO_CTC*/     DMEMB(m_sourceType),
+/*AUTO_CTC*/     DMEMB(m_destType)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ XNumericConversionLosesRange &XNumericConversionLosesRange::operator=(XNumericConversionLosesRange const &obj) noexcept
+/*AUTO_CTC*/ XNumericConversionLosesInformation &XNumericConversionLosesInformation::operator=(XNumericConversionLosesInformation const &obj) noexcept
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   if (this != &obj) {
 /*AUTO_CTC*/     XNumericConversion::operator=(obj);
 /*AUTO_CTC*/     CMEMB(m_sourceValue);
 /*AUTO_CTC*/     CMEMB(m_destValue);
 /*AUTO_CTC*/     CMEMB(m_roundTripValue);
-/*AUTO_CTC*/     CMEMB(m_sourceSizeBytes);
-/*AUTO_CTC*/     CMEMB(m_destSizeBytes);
+/*AUTO_CTC*/     CMEMB(m_sourceType);
+/*AUTO_CTC*/     CMEMB(m_destType);
 /*AUTO_CTC*/   }
 /*AUTO_CTC*/   return *this;
 /*AUTO_CTC*/ }
 /*AUTO_CTC*/
 
 
-std::string XNumericConversionLosesRange::getConflict() const
+std::string XNumericConversionLosesInformation::getConflict() const
 {
   return stringb(
     "Source value " << m_sourceValue <<
-    " converts to destination value " << m_destValue <<
-    " and back to different value " << m_roundTripValue <<
-    " (ss=" << m_sourceSizeBytes << " ds=" << m_destSizeBytes << ").");
+    " of type " << doubleQuote(m_sourceType) <<
+    ", when converted to destination type " << doubleQuote(m_destType) <<
+    " and back, is " << m_roundTripValue <<
+    ", thus losing information.");
 }
 
 
-// create-tuple-class: definitions for XNumericConversionChangesSign
-/*AUTO_CTC*/ XNumericConversionChangesSign::XNumericConversionChangesSign(
+// create-tuple-class: definitions for XNumericConversionOutsideRange
+/*AUTO_CTC*/ XNumericConversionOutsideRange::XNumericConversionOutsideRange(
 /*AUTO_CTC*/   std::string const &sourceValue,
-/*AUTO_CTC*/   std::string const &destValue)
+/*AUTO_CTC*/   std::string const &sourceType,
+/*AUTO_CTC*/   std::string const &destType)
 /*AUTO_CTC*/   : XNumericConversion(),
 /*AUTO_CTC*/     m_sourceValue(sourceValue),
-/*AUTO_CTC*/     m_destValue(destValue)
+/*AUTO_CTC*/     m_sourceType(sourceType),
+/*AUTO_CTC*/     m_destType(destType)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ XNumericConversionChangesSign::XNumericConversionChangesSign(XNumericConversionChangesSign const &obj) noexcept
+/*AUTO_CTC*/ XNumericConversionOutsideRange::XNumericConversionOutsideRange(XNumericConversionOutsideRange const &obj) noexcept
 /*AUTO_CTC*/   : XNumericConversion(obj),
 /*AUTO_CTC*/     DMEMB(m_sourceValue),
-/*AUTO_CTC*/     DMEMB(m_destValue)
+/*AUTO_CTC*/     DMEMB(m_sourceType),
+/*AUTO_CTC*/     DMEMB(m_destType)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ XNumericConversionChangesSign &XNumericConversionChangesSign::operator=(XNumericConversionChangesSign const &obj) noexcept
+/*AUTO_CTC*/ XNumericConversionOutsideRange &XNumericConversionOutsideRange::operator=(XNumericConversionOutsideRange const &obj) noexcept
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   if (this != &obj) {
 /*AUTO_CTC*/     XNumericConversion::operator=(obj);
 /*AUTO_CTC*/     CMEMB(m_sourceValue);
-/*AUTO_CTC*/     CMEMB(m_destValue);
+/*AUTO_CTC*/     CMEMB(m_sourceType);
+/*AUTO_CTC*/     CMEMB(m_destType);
 /*AUTO_CTC*/   }
 /*AUTO_CTC*/   return *this;
 /*AUTO_CTC*/ }
 /*AUTO_CTC*/
 
 
-std::string XNumericConversionChangesSign::getConflict() const
+std::string XNumericConversionOutsideRange::getConflict() const
 {
   return stringb(
     "convertNumber: Source value " << m_sourceValue <<
-    " and destination value " << m_destValue <<
-    " have different signs.");
+    " of type " << doubleQuote(m_sourceType) <<
+    " cannot be represented with type " << doubleQuote(m_destType) <<
+    ".");
 }
 
 

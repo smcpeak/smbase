@@ -29,6 +29,7 @@ void test_get_type_name()
   }
 
   EXPECT_EQ(GetTypeName<int>::value, "int");
+  EXPECT_EQ(GetTypeName<unsigned int>::value, "unsigned int");
   EXPECT_EQ(GetTypeName<GetTypeName<int> >::value, "smbase::GetTypeName<int>");
   VPVAL(GetTypeName<SomeClass>::value);
 }

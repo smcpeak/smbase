@@ -17,7 +17,7 @@
 #include "exc.h"                       // DEFINE_XBASE_SUBCLASS
 #include "get-type-name.h"             // smbase::GetTypeName
 #include "str.h"                       // stringBuilder, stringb
-#include "xoverflow.h"                 // XBinaryOpOverflow, XNumericConversionLosesRange, XNumericConversionChangesSign
+#include "xoverflow.h"                 // XBinaryOpOverflow, XNumericConversionLosesInformation, XNumericConversionOutsideRange
 
 #include <limits>                      // std::numeric_limits
 #include <optional>                    // std::optional
@@ -312,12 +312,12 @@ void convertWithoutLoss(DEST &dest, SRC const &src)
 
     // Printing '+src', etc., ensures that types like 'char' will print
     // as numbers.
-    THROW(smbase::XNumericConversionLosesRange(
+    THROW(smbase::XNumericConversionLosesInformation(
       stringb(+src),
       stringb(+dest),
       stringb(+s2),
-      sizeof(SRC),
-      sizeof(DEST)));
+      std::string(smbase::GetTypeName<SRC>::value),
+      std::string(smbase::GetTypeName<DEST>::value)));
   }
 
   dest = destOpt.value();
@@ -355,16 +355,22 @@ std::optional<DEST> convertNumberOpt(SRC const &src)
 template <class DEST, class SRC>
 DEST convertNumber(SRC const &src)
 {
-  std::optional<DEST> ret(convertNumberOpt<DEST>(src));
-
-  if (!ret.has_value()) {
-    DEST dest = static_cast<DEST>(src);
-    THROW(smbase::XNumericConversionChangesSign(
-      stringb(+src),
-      stringb(+dest)));
+  // Check if the information can be preserved.
+  DEST dest = static_cast<DEST>(src);
+  SRC s2 = static_cast<SRC>(dest);
+  if (s2 == src) {
+    // Then check the signs.
+    if ((dest < 0) == (src < 0)) {
+      // Successful conversion.
+      return dest;
+    }
   }
 
-  return ret.value();
+  // Complain.
+  THROW(smbase::XNumericConversionOutsideRange(
+    stringb(+src),
+    std::string(smbase::GetTypeName<SRC>::value),
+    std::string(smbase::GetTypeName<DEST>::value)));
 }
 
 
