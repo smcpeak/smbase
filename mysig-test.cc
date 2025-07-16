@@ -63,7 +63,7 @@ static void runTest()
     tprintf("about to deliberately cause a segfault ...\n");
     tprintf("(Note: 'gcc -fsanitize=undefined' will report a "
            "\"runtime error\" here too, which can be ignored.)\n");
-    *((int volatile*)0) = 0;    // segfault!
+    *((int volatile*)0) = 0;    // segfault!      // NOLINT(clang-analyzer-core.NullDereference)
 
     tprintf("didn't segfault??\n");
     exit(2);
