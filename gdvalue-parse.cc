@@ -15,6 +15,7 @@
 OPEN_NAMESPACE(gdv)
 
 
+// ------------------- Stand-alone parsing functions -------------------
 void checkGDValueKind(GDValue const &v, GDValueKind kind)
 {
   if (v.getKind() != kind) {
@@ -39,6 +40,13 @@ void checkIsSmallInteger(GDValue const &v)
 void checkIsString(GDValue const &v)
 {
   checkGDValueKind(v, GDVK_STRING);
+}
+
+
+GDVString stringGet_parse(GDValue const &v)
+{
+  checkIsString(v);
+  return v.stringGet();
 }
 
 
@@ -145,11 +153,12 @@ GDValue mapGetSym_parse(GDValue const &v, char const *symName)
 {
   checkIsPOMap(v);
 
-  if (!v.mapContainsSym(symName)) {
-    xformatsb("missing key: " << doubleQuote(symName));
+  GDValue key{GDVSymbol(symName)};
+  if (!v.mapContains(key)) {
+    xformatsb("missing key: " << key.asString());
   }
 
-  return v.mapGetSym(symName);
+  return v.mapGetValueAt(key);
 }
 
 
@@ -157,11 +166,38 @@ GDValue mapGetSym_parseOpt(GDValue const &v, char const *symName)
 {
   checkIsPOMap(v);
 
-  if (!v.mapContainsSym(symName)) {
+  GDValue key{GDVSymbol(symName)};
+  if (!v.mapContains(key)) {
     return GDValue();
   }
 
-  return v.mapGetSym(symName);
+  return v.mapGetValueAt(key);
+}
+
+
+GDValue mapGetValueAtStr_parse(GDValue const &v, char const *str)
+{
+  checkIsPOMap(v);
+
+  GDValue key(str);
+  if (!v.mapContains(key)) {
+    xformatsb("missing key: " << key.asString());
+  }
+
+  return v.mapGetValueAt(key);
+}
+
+
+GDValue mapGetValueAtStr_parseOpt(GDValue const &v, char const *str)
+{
+  checkIsPOMap(v);
+
+  GDValue key(str);
+  if (!v.mapContains(key)) {
+    return GDValue();
+  }
+
+  return v.mapGetValueAt(key);
 }
 
 
@@ -203,6 +239,19 @@ std::string GDVTo<std::string>::f(GDValue const &v)
   checkIsString(v);
 
   return v.stringGet();
+}
+
+
+// ---------------------- Member de/serialization ----------------------
+char const *stripMemberPrefix(char const *name)
+{
+  if (name[0] == 'm' &&
+      name[1] == '_') {
+    return name+2;
+  }
+  else {
+    return name;
+  }
 }
 
 

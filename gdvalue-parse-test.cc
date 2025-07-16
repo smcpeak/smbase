@@ -1,11 +1,13 @@
 // gdvalue-parse-test.cc
 // Code for `gdvalue-parse`.
 
+#include "smbase/gdvalue-list-fwd.h"             // gdv::toGDValue(std::list)
 #include "smbase/gdvalue-map-fwd.h"              // gdv::toGDValue(std::map)
 #include "smbase/gdvalue-set-fwd.h"              // gdv::toGDValue(std::set)
 #include "smbase/gdvalue-unique-ptr-fwd.h"       // gdv::toGDValue(std::unique_ptr)
 #include "smbase/gdvalue-vector-fwd.h"           // gdv::toGDValue(std::vector)
 
+#include "smbase/gdvalue-list.h"                 // module under test
 #include "smbase/gdvalue-map.h"                  // module under test
 #include "smbase/gdvalue-parse-ops.h"            // module under test
 #include "smbase/gdvalue-set.h"                  // module under test
@@ -80,6 +82,10 @@ void test_string()
   EXPECT_EQ(gdvTo<std::string>(GDValue("abc")), "abc");
 
   EXPECT_EXN(gdvTo<std::string>(GDValue(GDVSymbol("abc"))), XFormat);
+
+  EXPECT_EQ(stringGet_parse(GDValue("xyz")), "xyz");
+
+  EXPECT_EXN(stringGet_parse("xyz"_sym), XFormat);
 }
 
 
@@ -199,6 +205,55 @@ void test_gdvOptTo()
 }
 
 
+void test_stripMemberPrefix()
+{
+  EXPECT_EQ(stripMemberPrefix(""), "");
+  EXPECT_EQ(stripMemberPrefix("abc"), "abc");
+  EXPECT_EQ(stripMemberPrefix("m_foo"), "foo");
+}
+
+
+class Data2 {
+public:      // data
+  // Uses a symbol as a key.
+  std::string m_s1;
+
+  // Uses a string as a key.
+  std::list<int> m_intList;
+
+public:      // funcs
+  explicit Data2(GDValue const &m)
+    : GDV_READ_MEMBER(m_s1),
+      GDV_READ_MEMBER_SK(m_intList)
+  {}
+
+  operator GDValue() const
+  {
+    GDValue m(GDVK_MAP);
+
+    GDV_WRITE_MEMBER(m_s1);
+    GDV_WRITE_MEMBER_SK(m_intList);
+
+    // Exercise the non-Opt parser too.
+    xassert(mapGetValueAtStr_parse(m, "intList") == toGDValue(m_intList));
+
+    return m;
+  }
+};
+
+
+void testWithData2()
+{
+  GDValue serialized(GDVMap{
+    { "s1"_sym, "s1value" },
+    { "intList", GDVSequence{1,2,3} },
+  });
+
+  Data2 d(serialized);
+  EXPECT_EQ(toGDValue(d), serialized);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -215,6 +270,8 @@ void test_gdvalue_parse()
   test_map_of_vector_of_unique();
   test_mapGetSym_parseOpt();
   test_gdvOptTo();
+  test_stripMemberPrefix();
+  testWithData2();
 }
 
 

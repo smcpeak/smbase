@@ -22,6 +22,7 @@
 OPEN_NAMESPACE(gdv)
 
 
+// ------------------- Stand-alone parsing functions -------------------
 // Throw if `v` does not have kind `kind`.
 void checkGDValueKind(GDValue const &v, GDValueKind kind);
 
@@ -33,6 +34,9 @@ void checkIsSmallInteger(GDValue const &v);
 
 // Throw if `v` is not a string.
 void checkIsString(GDValue const &v);
+
+// Return `v.stringGet()`; throw if it is not a string.
+GDVString stringGet_parse(GDValue const &v);
 
 // Throw if `v` is not a sequence.
 void checkIsSequence(GDValue const &v);
@@ -79,6 +83,20 @@ GDValue mapGetSym_parse(GDValue const &v, char const *symName);
 // then throw.
 GDValue mapGetSym_parseOpt(GDValue const &v, char const *symName);
 
+// Return `v.mapGetValueAt(str)`; throw if problem.
+GDValue mapGetValueAtStr_parse(GDValue const &v, char const *str);
+
+// Return `v.mapGetValueAt(str)`, i.e., `str` is a string (not the name
+// of a symbol).  If `v` is a map but `str` is not mapped, return a null
+// `GDValue`.  If it is not a map, throw.
+//
+// Regarding naming: The name that would be parallel with
+// "mapGetSym_parseOpt" is "mapGetStr_parseOpt", but for both, I think
+// the type (symbol or string) could be confused with the value
+// *returned*.  So I'm breaking the parallelism for added clarity here.
+// I might rename the other one at some point.
+//
+GDValue mapGetValueAtStr_parseOpt(GDValue const &v, char const *str);
 
 
 // ------------------------------- GDVTo -------------------------------
@@ -186,6 +204,30 @@ T *gdvToNew(GDValue const &v)
 {
   return GDVToNew<T>::f(v);
 }
+
+
+// ---------------------- Member de/serialization ----------------------
+// If `name` begins with "m_", return `name+2`, thus stripping the
+// prefix.  Otherwise return it unchanged.
+char const *stripMemberPrefix(char const *name);
+
+// Write `<memb>` to a field of GDValue `m` that has the same name
+// except without the "m_" prefix (if any).
+#define GDV_WRITE_MEMBER(memb) \
+  m.mapSetSym(gdv::stripMemberPrefix(#memb), gdv::toGDValue(memb)) /* user ; */
+
+// Initialize `<memb>` from an optional field `<memb>` of GDValue `m`
+// that has the same name except without the "m_" prefix.
+#define GDV_READ_MEMBER(memb) \
+  memb(gdv::gdvOptTo<decltype(memb)>(gdv::mapGetSym_parseOpt(m, gdv::stripMemberPrefix(#memb)))) /* user , */
+
+// Same, but the key is a string rather than a symbol.  The suffix "_SK"
+// means "string key".
+#define GDV_WRITE_MEMBER_SK(memb) \
+  m.mapSetValueAt(gdv::stripMemberPrefix(#memb), gdv::toGDValue(memb)) /* user , */
+
+#define GDV_READ_MEMBER_SK(memb) \
+  memb(gdv::gdvTo<decltype(memb)>(gdv::mapGetValueAtStr_parseOpt(m, gdv::stripMemberPrefix(#memb)))) /* user , */
 
 
 CLOSE_NAMESPACE(gdv)
