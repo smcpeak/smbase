@@ -183,8 +183,33 @@ def generatePrimaryCtorParam(type: str, name: str) -> str:
   return f"{type}{name}";
 
 
+def generatePrimaryMoveCtorParam(type: str, name: str) -> str:
+  """Generate the declaration of a primary move constructor parameter
+  corresponding to field `name` of a tuple class."""
+
+  # Pass non-primitives by rvalue reference.
+  if not isPrimitiveType(type):
+    type = f"{type}&&"
+
+  # Remove leading "m_".
+  name = generatePrimaryCtorParamName(name)
+
+  return f"{type}{name}";
+
+
 # A field is a tuple of its type and name.
 Field = tuple[str, str]
+
+
+def hasNonPrimitiveField(fields: list[Field]) -> bool:
+  """True if any element of `fields` is not a primitive type."""
+
+  for field in fields:
+    if not isPrimitiveType(field[0]):
+      return True
+
+  # All fields were primitive.
+  return False
 
 
 def generatePrimaryCtorParams(fields: list[Field]) -> str:
@@ -193,6 +218,14 @@ def generatePrimaryCtorParams(fields: list[Field]) -> str:
 
   return ", ".join(
     [generatePrimaryCtorParam(type, name) for (type, name) in fields])
+
+
+def generatePrimaryMoveCtorParams(fields: list[Field]) -> str:
+  """Generate a string that contains the parameter declarations for the
+  primary move constructor of a tuple class containing `fields`."""
+
+  return ", ".join(
+    [generatePrimaryMoveCtorParam(type, name) for (type, name) in fields])
 
 
 # The options are expressed as a map from option key to bool.  This is
@@ -231,10 +264,20 @@ def generateDeclarations(
   # explicit Foo(int x, float y, std::string const &z);
   out.append(f"explicit {curClass}({generatePrimaryCtorParams(fields)});")
 
+  enableMoveOps: bool = options.get("move", False)
+
+  if enableMoveOps and hasNonPrimitiveField(fields):
+    # The primary move constructor takes all class-typed arguments by
+    # rvalue reference.  This is not ideal since a call site might have
+    # a mix of moveable and non-moveable arguments.  However, the usual
+    # solution is to use a perfectly-forwarding template constructor,
+    # which is a large jump in complexity to solve a minor problem.
+    #
+    # explicit Foo(int x, float y, std::string &&z);
+    out.append(f"explicit {curClass}({generatePrimaryMoveCtorParams(fields)});")
+
   # Foo(Foo const &obj) noexcept;
   out.append(f"{curClass}({curClass} const &obj){noexcept};")
-
-  enableMoveOps: bool = options.get("move", False)
 
   if enableMoveOps:
     # Foo(Foo &&obj) noexcept;
@@ -453,6 +496,21 @@ def generatePrimaryCtorParamsSeparateLines(fields: list[Field]) -> list[str]:
   return out
 
 
+def generatePrimaryMoveCtorParamsSeparateLines(fields: list[Field]) -> list[str]:
+  """Generate a list that contains the parameter declarations for the
+  primary move constructor of a tuple class containing `fields`, where each
+  parameter will go to its own line."""
+
+  out = []
+
+  for i, (type, name) in enumerate(fields):
+    terminator = "," if i+1 < len(fields) else ")"
+
+    out.append("  " + generatePrimaryMoveCtorParam(type, name) + terminator)
+
+  return out
+
+
 def generatePrimaryCtorInit(fieldName: str) -> str:
   """Generate the primary ctor initializer for `fieldName`."""
 
@@ -543,6 +601,27 @@ def generateDefinitions(
     ""
   ]
 
+  enableMoveOps: bool = options.get("move", False)
+
+  if enableMoveOps and hasNonPrimitiveField(fields):
+    # Foo::Foo(
+    #   int x,
+    #   float y,
+    #   std::string &&z)
+    #   : m_x(x),              // insert "Super()" if superclass
+    #     m_y(y),
+    #     m_z(z)
+    # {}
+    out += [
+      f"{curClass}::{curClass}("
+    ] + (
+           generatePrimaryMoveCtorParamsSeparateLines(fields) +
+           generateCtorInits(superclass, fields, "primary")
+        ) + [
+      "{}",
+      ""
+    ]
+
   # Foo::Foo(Foo const &obj) noexcept
   #   : DMEMB(m_x),          // insert "Super(obj)" if superclass
   #     DMEMB(m_y),
@@ -554,8 +633,6 @@ def generateDefinitions(
     "{}",
     ""
   ]
-
-  enableMoveOps: bool = options.get("move", False)
 
   if enableMoveOps:
     # Foo::Foo(Foo &&obj) noexcept

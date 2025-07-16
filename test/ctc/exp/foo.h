@@ -18,6 +18,7 @@ public:
 public:
   // ---- create-tuple-class: declarations for Foo +compare +write +move
   /*AUTO_CTC*/ explicit Foo(int x, float y, std::string const &z);
+  /*AUTO_CTC*/ explicit Foo(int x, float y, std::string &&z);
   /*AUTO_CTC*/ Foo(Foo const &obj) noexcept;
   /*AUTO_CTC*/ Foo(Foo &&obj) noexcept;
   /*AUTO_CTC*/ Foo &operator=(Foo const &obj) noexcept;

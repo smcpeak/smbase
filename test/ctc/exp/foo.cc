@@ -21,6 +21,15 @@
 /*AUTO_CTC*/     m_z(z)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
+/*AUTO_CTC*/ Foo::Foo(
+/*AUTO_CTC*/   int x,
+/*AUTO_CTC*/   float y,
+/*AUTO_CTC*/   std::string &&z)
+/*AUTO_CTC*/   : m_x(x),
+/*AUTO_CTC*/     m_y(y),
+/*AUTO_CTC*/     m_z(z)
+/*AUTO_CTC*/ {}
+/*AUTO_CTC*/
 /*AUTO_CTC*/ Foo::Foo(Foo const &obj) noexcept
 /*AUTO_CTC*/   : DMEMB(m_x),
 /*AUTO_CTC*/     DMEMB(m_y),
