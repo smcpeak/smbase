@@ -147,6 +147,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(sm_unique_ptr);
   RUN_TEST(sobjlist);
   RUN_TEST(srcloc);
+  RUN_TEST(std_list_fwd);
   RUN_TEST(std_map_fwd);
   RUN_TEST(std_optional_fwd);
   RUN_TEST(std_set_fwd);
