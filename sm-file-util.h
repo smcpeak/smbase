@@ -182,6 +182,16 @@ public:      // data
 // I think 3 should be split from 1 and 2, and then something done to
 // resolve the tension between (1,2) and SMFileName.
 //
+// Regardless of the above, the design of this class regarding constness
+// is to say that any function that does not change the underlying file
+// system is `const`, while those that do potentially change it are not.
+// The methods don't generally change any fields within `SMFileUtil`
+// itself (there aren't any, in the base class at least), but this seems
+// more useful than just marking everyting `const`.  Constness of this
+// class rarely matters, but occasionaly I make it a member of another
+// class for convenient use, in which case some `const` compatibility is
+// useful.
+//
 class SMFileUtil {
   NO_OBJECT_COPIES(SMFileUtil);
 
@@ -228,59 +238,59 @@ public:      // funcs
   // True if the target platform uses Windows path semantics, for
   // example using backslash as a possible path separator.  False
   // if using POSIX paths.
-  virtual bool windowsPathSemantics();
+  virtual bool windowsPathSemantics() const;
 
   // Return a string with all path separators as forward slashes.
-  virtual string normalizePathSeparators(string const &s);
+  virtual string normalizePathSeparators(string const &s) const;
 
   // Return the current directory as an absolute path name.
-  virtual string currentDirectory();
+  virtual string currentDirectory() const;
 
   // True if 'c' is considered a directory separator for the platform.
-  virtual bool isDirectorySeparator(char c);
+  virtual bool isDirectorySeparator(char c) const;
 
   // True if 'name' has at least one character, and the last character
   // 'isDirectorySeparator'.
-  bool endsWithDirectorySeparator(string const &name);
+  bool endsWithDirectorySeparator(string const &name) const;
 
   // Given an ostensible directory name, if it does not end with a
   // directory separator, append '/' and return that.
-  string ensureEndsWithDirectorySeparator(string const &dir);
+  string ensureEndsWithDirectorySeparator(string const &dir) const;
 
   // Remove a trailing separator from a directory unless it is "/" or,
   // on Windows, "<letter>:<separator>".
-  string stripTrailingDirectorySeparator(string const &dir);
+  string stripTrailingDirectorySeparator(string const &dir) const;
 
   // True if the given path is absolute.  On unix, an absolute path
   // starts with '/'.  On Windows, it starts with '//' (UNC path) or
   // "<letter>:/", or the equivalent with backslash.
-  virtual bool isAbsolutePath(string const &path);
+  virtual bool isAbsolutePath(string const &path) const;
 
   // Convert 'path' to an absolute path.  If it is relative, we
   // prepend 'currentDirectory()'.
-  virtual string getAbsolutePath(string const &path);
+  virtual string getAbsolutePath(string const &path) const;
 
   // Return true if 'path' is absolute and names an existing entity
   // (file, directory, etc.) on disk.  Throws XSysError on permission
   // errors or the like.
-  virtual bool absolutePathExists(string const &path);
+  virtual bool absolutePathExists(string const &path) const;
 
   // Like above, except it specifically has to be an ordinary file.
   // Throws XSysError on permission errors or the like.
-  virtual bool absoluteFileExists(string const &path);
+  virtual bool absoluteFileExists(string const &path) const;
 
   // True if 'path' names a directory.  Relative paths are relative to
   // the current working directory.  Throws XSysError on permission
   // errors or the like.
-  virtual bool directoryExists(string const &path);
+  virtual bool directoryExists(string const &path) const;
 
   // Get the file kind, or FK_NONE if it does not exist.  Relative paths
   // are relative to the current working directory.  Throws XSysError on
   // permission errors or the like.
-  virtual FileKind getFileKind(string const &path);
+  virtual FileKind getFileKind(string const &path) const;
 
   // True if 'path' exists, i.e., its file kind is not `FK_NONE`.
-  virtual bool pathExists(string const &path);
+  virtual bool pathExists(string const &path) const;
 
   // Create 'path' and any needed parents if it does not already exist.
   // If it, or any parent, already exists but is not a directory, throw
@@ -297,23 +307,23 @@ public:      // funcs
   // True if 'path' exists, but the current user does not have write
   // permission for it.  This does not throw; it returns false if the
   // file does not exist or we cannot determine whether it is read-only.
-  virtual bool isReadOnly(string const &path) NOEXCEPT;
+  virtual bool isReadOnly(string const &path) const NOEXCEPT;
 
   // Return prefix+suffix, except if neither is empty, add a directory
   // separator if none is present, and remove an extra trailing
   // directory separator from 'prefix'.
   virtual string joinFilename(string const &prefix,
-                                       string const &suffix);
+                              string const &suffix) const;
 
   // Like 'joinFilename', except if 'suffix' is absolute, then return it
   // as-is.  The idea is to treat 'suffix' as being relative to 'prefix'
   // unless it is absolute already.
   string joinIfRelativeFilename(string const &prefix,
-                                string const &suffix);
+                                string const &suffix) const;
 
   // Read the contents of 'fname' in binary mode, returning the entire
   // thing as a vector.  Throw XSysError on error.
-  virtual std::vector<unsigned char> readFile(string const &fname);
+  virtual std::vector<unsigned char> readFile(string const &fname) const;
 
   // Write 'bytes' into 'fname' in binary mode.  Throw XSysError on
   // error.
@@ -322,7 +332,7 @@ public:      // funcs
 
   // Read the contents of `fname`, in binary mode, and return the result
   // as a string.
-  virtual string readFileAsString(string const &fname);
+  virtual string readFileAsString(string const &fname) const;
 
   // Write `contents` to `fname` in binary mode.
   virtual void writeFileAsString(string const &fname,
@@ -333,16 +343,16 @@ public:      // funcs
   // guaranteed to be returned in any particular order.  They may
   // include "." and ".." if they exist in the given directory.
   virtual void getDirectoryNames(ArrayStack<string> /*OUT*/ &entries,
-                                 string const &directory);
+                                 string const &directory) const;
 
   // Get names and file kinds.  This may be more expensive than just
   // getting the names.
   virtual void getDirectoryEntries(
-    ArrayStack<DirEntryInfo> /*OUT*/ &entries, string const &directory);
+    ArrayStack<DirEntryInfo> /*OUT*/ &entries, string const &directory) const;
 
   // Same, but return in alphabetical order.
   void getSortedDirectoryEntries(
-    ArrayStack<DirEntryInfo> /*OUT*/ &entries, string const &directory);
+    ArrayStack<DirEntryInfo> /*OUT*/ &entries, string const &directory) const;
 
   // Split 'inputPath' into two strings, 'dir' and 'base', such that:
   //
@@ -352,18 +362,18 @@ public:      // funcs
   //   * 'base' is the longest string such that the above are true.
   //
   void splitPath(string /*OUT*/ &dir, string /*OUT*/ &base,
-                 string const &inputPath);
+                 string const &inputPath) const;
 
   // Get the 'dir' output of 'splitPath'.
-  string splitPathDir(string const &inputPath);
+  string splitPathDir(string const &inputPath) const;
 
   // Get the 'base' output of 'splitPath'.
-  string splitPathBase(string const &inputPath);
+  string splitPathBase(string const &inputPath) const;
 
   // If 'inputPath' has any occurrences of "." or "..", collapse them
   // as much as possible.  The result may have a sequence of "../" at
   // the start, or consist entirely of ".", or have neither.
-  string collapseDots(string const &inputPath);
+  string collapseDots(string const &inputPath) const;
 
   // Atomically rename 'oldPath' to 'newPath', replacing the latter if
   // it exists.  This is meant to act like POSIX 'rename' even on
@@ -371,7 +381,7 @@ public:      // funcs
   void atomicallyRenameFile(string const &oldPath, string const &newPath);
 
   // Return a process ID suitable for use in file name generation.
-  virtual int getProcessID();
+  virtual int getProcessID() const;
 
   // Create a file name like "$dir/$prefix.$pid.$n.tmp" and does not
   // already exist.
@@ -441,15 +451,15 @@ public:      // funcs
 
   // If `m_windowsPathSemantics` is set, returns that.  Otherwise, calls
   // the superclass function.
-  virtual bool windowsPathSemantics() OVERRIDE;
+  virtual bool windowsPathSemantics() const OVERRIDE;
 
   // If `m_existingPaths` is set, return true iff `path` is in it.
   // Otherwise, call the superclass function.
-  virtual bool pathExists(string const &path) OVERRIDE;
+  virtual bool pathExists(string const &path) const OVERRIDE;
 
   // If `m_pid` is set, return it.  Otherwise, call the superclass
   // function.
-  virtual int getProcessID() OVERRIDE;
+  virtual int getProcessID() const OVERRIDE;
 
   // If `m_injectFailureAfterNBytes` is set, and `bytes` is that size or
   // larger, then write that size, then throw `XFatal`, simulating a

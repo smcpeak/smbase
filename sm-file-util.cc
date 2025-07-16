@@ -393,7 +393,7 @@ string SMFileUtil::DirEntryInfo::asString() const
 
 
 // ----------------------- SMFileUtil ------------------------
-bool SMFileUtil::windowsPathSemantics()
+bool SMFileUtil::windowsPathSemantics() const
 {
   return PLATFORM_IS_WINDOWS;
 }
@@ -406,7 +406,7 @@ SMFileUtil::~SMFileUtil()
 {}
 
 
-string SMFileUtil::normalizePathSeparators(string const &s)
+string SMFileUtil::normalizePathSeparators(string const &s) const
 {
   if (!windowsPathSemantics()) {
     return s;
@@ -427,7 +427,7 @@ string SMFileUtil::normalizePathSeparators(string const &s)
 }
 
 
-string SMFileUtil::currentDirectory()
+string SMFileUtil::currentDirectory() const
 {
 #if SM_FILE_UTIL_USE_WINDOWS_API
   // Get length of current directory, in characters.
@@ -484,7 +484,7 @@ string SMFileUtil::currentDirectory()
 }
 
 
-bool SMFileUtil::isDirectorySeparator(char c)
+bool SMFileUtil::isDirectorySeparator(char c) const
 {
   if (c == '/') {
     return true;
@@ -496,7 +496,7 @@ bool SMFileUtil::isDirectorySeparator(char c)
 }
 
 
-bool SMFileUtil::endsWithDirectorySeparator(string const &name)
+bool SMFileUtil::endsWithDirectorySeparator(string const &name) const
 {
   if (name.empty() || !isDirectorySeparator(name[name.length()-1])) {
     return false;
@@ -507,7 +507,7 @@ bool SMFileUtil::endsWithDirectorySeparator(string const &name)
 }
 
 
-string SMFileUtil::ensureEndsWithDirectorySeparator(string const &dir)
+string SMFileUtil::ensureEndsWithDirectorySeparator(string const &dir) const
 {
   if (!endsWithDirectorySeparator(dir)) {
     return stringb(dir << '/');
@@ -518,7 +518,7 @@ string SMFileUtil::ensureEndsWithDirectorySeparator(string const &dir)
 }
 
 
-string SMFileUtil::stripTrailingDirectorySeparator(string const &dir)
+string SMFileUtil::stripTrailingDirectorySeparator(string const &dir) const
 {
   int len = dir.length();
   if (len <= 1) {
@@ -543,7 +543,7 @@ string SMFileUtil::stripTrailingDirectorySeparator(string const &dir)
 }
 
 
-bool SMFileUtil::isAbsolutePath(string const &path)
+bool SMFileUtil::isAbsolutePath(string const &path) const
 {
   if (path[0] == 0) {
     return false;
@@ -570,7 +570,7 @@ bool SMFileUtil::isAbsolutePath(string const &path)
 }
 
 
-string SMFileUtil::getAbsolutePath(string const &path)
+string SMFileUtil::getAbsolutePath(string const &path) const
 {
   if (isAbsolutePath(path)) {
     return path;
@@ -613,7 +613,7 @@ string SMFileUtil::getAbsolutePath(string const &path)
 }
 
 
-bool SMFileUtil::absolutePathExists(string const &path)
+bool SMFileUtil::absolutePathExists(string const &path) const
 {
   if (!isAbsolutePath(path)) {
     return false;
@@ -623,7 +623,7 @@ bool SMFileUtil::absolutePathExists(string const &path)
 }
 
 
-bool SMFileUtil::absoluteFileExists(string const &path)
+bool SMFileUtil::absoluteFileExists(string const &path) const
 {
   if (!isAbsolutePath(path)) {
     return false;
@@ -633,13 +633,13 @@ bool SMFileUtil::absoluteFileExists(string const &path)
 }
 
 
-bool SMFileUtil::directoryExists(string const &path)
+bool SMFileUtil::directoryExists(string const &path) const
 {
   return this->getFileKind(path) == FK_DIRECTORY;
 }
 
 
-SMFileUtil::FileKind SMFileUtil::getFileKind(string const &path)
+SMFileUtil::FileKind SMFileUtil::getFileKind(string const &path) const
 {
   if (path.empty()) {
     return FK_NONE;
@@ -671,7 +671,7 @@ SMFileUtil::FileKind SMFileUtil::getFileKind(string const &path)
 }
 
 
-bool SMFileUtil::pathExists(string const &path)
+bool SMFileUtil::pathExists(string const &path) const
 {
   return getFileKind(path) != FK_NONE;
 }
@@ -713,7 +713,7 @@ void SMFileUtil::createParentDirectories(string const &path)
 }
 
 
-bool SMFileUtil::isReadOnly(string const &path) NOEXCEPT
+bool SMFileUtil::isReadOnly(string const &path) const NOEXCEPT
 {
 #if SM_FILE_UTIL_USE_WINDOWS_API
   FileKind fileKind = getFileKind(path);
@@ -933,7 +933,7 @@ bool SMFileUtil::isReadOnly(string const &path) NOEXCEPT
 
 
 string SMFileUtil::joinFilename(string const &prefix,
-                                         string const &suffix)
+                                string const &suffix) const
 {
   if (prefix.empty()) {
     return suffix;
@@ -959,7 +959,7 @@ string SMFileUtil::joinFilename(string const &prefix,
 
 
 string SMFileUtil::joinIfRelativeFilename(string const &prefix,
-                                                   string const &suffix)
+                                          string const &suffix) const
 {
   if (isAbsolutePath(suffix)) {
     return suffix;
@@ -970,7 +970,7 @@ string SMFileUtil::joinIfRelativeFilename(string const &prefix,
 }
 
 
-std::vector<unsigned char> SMFileUtil::readFile(string const &fname)
+std::vector<unsigned char> SMFileUtil::readFile(string const &fname) const
 {
   std::vector<unsigned char> bytes;
 
@@ -1009,7 +1009,7 @@ void SMFileUtil::writeFile(string const &fname,
 }
 
 
-string SMFileUtil::readFileAsString(string const &fname)
+string SMFileUtil::readFileAsString(string const &fname) const
 {
   std::vector<unsigned char> vec = readFile(fname);
   return std::string(reinterpret_cast<char const *>(vec.data()),
@@ -1055,7 +1055,7 @@ struct CallCloseDir {
 // that this module's interface be free of system-specific assumptions.
 // Filtering those two names would consistitute such an assumption.
 void SMFileUtil::getDirectoryNames(ArrayStack<string> /*OUT*/ &entries,
-                                   string const &directory)
+                                   string const &directory) const
 {
   entries.clear();
 
@@ -1115,7 +1115,7 @@ void getDirectoryEntries_scanThenStat(SMFileUtil &sfu,
 
 
 void SMFileUtil::getDirectoryEntries(
-  ArrayStack<DirEntryInfo> /*OUT*/ &entries, string const &directory)
+  ArrayStack<DirEntryInfo> /*OUT*/ &entries, string const &directory) const
 {
 #if SM_FILE_UTIL_USE_WINDOWS_API
   struct CallFindClose {
@@ -1180,7 +1180,7 @@ void SMFileUtil::getDirectoryEntries(
 
 
 void SMFileUtil::getSortedDirectoryEntries(
-  ArrayStack<DirEntryInfo> /*OUT*/ &entries, string const &directory)
+  ArrayStack<DirEntryInfo> /*OUT*/ &entries, string const &directory) const
 {
   this->getDirectoryEntries(entries, directory);
   entries.sort(&DirEntryInfo::compare);
@@ -1188,7 +1188,7 @@ void SMFileUtil::getSortedDirectoryEntries(
 
 
 void SMFileUtil::splitPath(string /*OUT*/ &dir, string /*OUT*/ &base,
-                           string const &inputPath)
+                           string const &inputPath) const
 {
   if (inputPath.empty()) {
     dir = "";
@@ -1208,14 +1208,14 @@ void SMFileUtil::splitPath(string /*OUT*/ &dir, string /*OUT*/ &base,
 }
 
 
-string SMFileUtil::splitPathDir(string const &inputPath)
+string SMFileUtil::splitPathDir(string const &inputPath) const
 {
   string dir, base;
   splitPath(dir, base, inputPath);
   return dir;
 }
 
-string SMFileUtil::splitPathBase(string const &inputPath)
+string SMFileUtil::splitPathBase(string const &inputPath) const
 {
   string dir, base;
   splitPath(dir, base, inputPath);
@@ -1223,7 +1223,7 @@ string SMFileUtil::splitPathBase(string const &inputPath)
 }
 
 
-string SMFileUtil::collapseDots(string const &inputPath)
+string SMFileUtil::collapseDots(string const &inputPath) const
 {
   // Parse into components.  Use S_WINDOWS since it should work fine in
   // practice, for this purpose, on all platforms, and ensures this
@@ -1299,7 +1299,7 @@ void SMFileUtil::atomicallyRenameFile(string const &oldPath,
 }
 
 
-int SMFileUtil::getProcessID()
+int SMFileUtil::getProcessID() const
 {
   return ::getProcessId();
 }
@@ -1416,7 +1416,7 @@ void TestSMFileUtil::resetAll()
 }
 
 
-bool TestSMFileUtil::windowsPathSemantics()
+bool TestSMFileUtil::windowsPathSemantics() const
 {
   if (m_windowsPathSemantics.has_value()) {
     return m_windowsPathSemantics.value();
@@ -1427,7 +1427,7 @@ bool TestSMFileUtil::windowsPathSemantics()
 }
 
 
-bool TestSMFileUtil::pathExists(string const &path)
+bool TestSMFileUtil::pathExists(string const &path) const
 {
   if (m_existingPaths.has_value()) {
     return m_existingPaths->contains(path);
@@ -1438,7 +1438,7 @@ bool TestSMFileUtil::pathExists(string const &path)
 }
 
 
-int TestSMFileUtil::getProcessID()
+int TestSMFileUtil::getProcessID() const
 {
   if (m_pid.has_value()) {
     return m_pid.value();
