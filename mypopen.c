@@ -192,7 +192,6 @@ int mypopenModuleWorks()
 
 static int unsupported()
 {
-  errno = ENOSYS;
   return -1;
 }
 
