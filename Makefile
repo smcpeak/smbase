@@ -340,6 +340,7 @@ SRCS += temporary-file.cc
 SRCS += trace.cc
 SRCS += trdelete.cc
 SRCS += tree-print.cc
+SRCS += type-name-and-size.cc
 SRCS += utf8-reader.cc
 SRCS += utf8-writer.cc
 SRCS += vdtllist.cc
@@ -469,6 +470,7 @@ UNIT_TEST_OBJS += taillist-test.o
 UNIT_TEST_OBJS += temporary-file-test.o
 UNIT_TEST_OBJS += trdelete-test.o
 UNIT_TEST_OBJS += tree-print-test.o
+UNIT_TEST_OBJS += type-name-and-size-test.o
 UNIT_TEST_OBJS += utf8-test.o
 UNIT_TEST_OBJS += vdtllist-test.o
 UNIT_TEST_OBJS += vector-push-pop-test.o
@@ -805,6 +807,7 @@ check: check-ctc
 # -------------- check create-tuple-class.py outputs -------------------
 # Set of header files that use create-tuple-class.py.
 CTC_HEADERS :=
+CTC_HEADERS += type-name-and-size.h
 CTC_HEADERS += xarithmetic.h
 CTC_HEADERS += xoverflow.h
 
