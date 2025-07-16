@@ -245,6 +245,18 @@ void GrowArray<T>::eidLoop(int index)
     xassert(newSz > prevSz);        // otherwise overflow -> infinite loop
   }
 
+  // The loop condition implies:
+  //   !(newSz-1 < index)
+  // which implies:
+  //   newSz-1 >= index
+  // which implies:
+  //   newSz > index
+  // which, combined with `index >= 0`, implies:
+  //   newSz > 0
+  // but it seems `clang-tidy` cannot deduce this, and thus thinks that
+  // the call to `setAllocatedSize` might set `arr` to null.
+  xassert(newSz > 0);
+
   setAllocatedSize(newSz);
 }
 
