@@ -169,7 +169,7 @@ void performanceTest(int numPerfRuns) {
     }
   }
   long stopTime = getMilliseconds();
-  long duration = stopTime - startTime;
+  long duration = stopTime - startTime;    // NOLINT(clang-analyzer-deadcode.DeadStores): It is confused by `silent` being `const`.
   if (!silent) {
     cout << "milliseconds to hash: " << duration << endl;
   }
