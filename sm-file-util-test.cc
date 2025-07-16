@@ -768,27 +768,27 @@ static void testCreateDirectoryAndParents()
 static void testCreateParentDirectories()
 {
   SMFileUtil sfu;
-  rm_rf("tmpdir");
+  rm_rf("tcpd-tmpdir");
 
   // This will do nothing because "." exists.
-  sfu.createParentDirectories("./a");
-  xassert(!sfu.pathExists("a"));
+  sfu.createParentDirectories("./tcpd-tmpdir");
+  xassert(!sfu.pathExists("tcpd-tmpdir"));
 
   // Same.
-  sfu.createParentDirectories("a");
-  xassert(!sfu.pathExists("a"));
+  sfu.createParentDirectories("tcpd-tmpdir");
+  xassert(!sfu.pathExists("tcpd-tmpdir"));
 
-  // Now we make "a".
-  sfu.createParentDirectories("a/b");
-  xassert(sfu.directoryExists("a"));
-  xassert(!sfu.pathExists("a/b"));
+  // Now we make "tcpd-tmpdir".
+  sfu.createParentDirectories("tcpd-tmpdir/b");
+  xassert(sfu.directoryExists("tcpd-tmpdir"));
+  xassert(!sfu.pathExists("tcpd-tmpdir/b"));
 
   // And some more.
-  sfu.createParentDirectories("a/b/c/d");
-  xassert(sfu.directoryExists("a/b/c"));
-  xassert(!sfu.pathExists("a/b/c/d"));
+  sfu.createParentDirectories("tcpd-tmpdir/b/c/d");
+  xassert(sfu.directoryExists("tcpd-tmpdir/b/c"));
+  xassert(!sfu.pathExists("tcpd-tmpdir/b/c/d"));
 
-  rm_rf("tmpdir");
+  rm_rf("tcpd-tmpdir");
 }
 
 
