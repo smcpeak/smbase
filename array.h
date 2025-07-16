@@ -224,6 +224,11 @@ void GrowArray<T>::setAllocatedSize(int newSz)
 template <class T>
 void GrowArray<T>::eidLoop(int index)
 {
+  // Precondition for array access.  (Interestingly, this is enough
+  // for `clang-tidy` to prune a false path that would suggest a null
+  // dereference is possible elsewhere.)
+  xassert(index >= 0);
+
   if (sz-1 >= index) {
     return;
   }
