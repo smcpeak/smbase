@@ -143,8 +143,8 @@ def main(argv: List[str]) -> None:
   # Output as five lines.
   print("{")
   print(f'  "directory": {json.dumps(fragment["directory"])},')
-  print(f'  "file": {json.dumps(fragment["file"])}')
-  print(f'  "arguments": {json.dumps(fragment["arguments"])},')
+  print(f'  "file": {json.dumps(fragment["file"])},')
+  print(f'  "arguments": {json.dumps(fragment["arguments"])}')
   print("},")
 
 
