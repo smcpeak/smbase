@@ -116,8 +116,8 @@ GDValue mapGetValueAtStr_parseOpt(GDValue const &v, char const *str);
 // things like ASTList<>, but partial specialization of function
 // templates is not allowed.
 //
-// Hmmm, what was the problem with overloading?  I can't remember, and
-// may have been mistaken.
+// And ordinary overloading does not work because I need to be able to
+// supply explict template arguments to select the conversion I want.
 //
 template <typename T, typename Enable = void>
 struct GDVTo {};
@@ -206,26 +206,13 @@ T *gdvToNew(GDValue const &v)
 }
 
 
-// ---------------------- Member de/serialization ----------------------
-// If `name` begins with "m_", return `name+2`, thus stripping the
-// prefix.  Otherwise return it unchanged.
-char const *stripMemberPrefix(char const *name);
-
-// Write `<memb>` to a field of GDValue `m` that has the same name
-// except without the "m_" prefix (if any).
-#define GDV_WRITE_MEMBER(memb) \
-  m.mapSetSym(gdv::stripMemberPrefix(#memb), gdv::toGDValue(memb)) /* user ; */
-
+// ---------------------- Member deserialization -----------------------
 // Initialize `<memb>` from an optional field `<memb>` of GDValue `m`
 // that has the same name except without the "m_" prefix.
 #define GDV_READ_MEMBER(memb) \
   memb(gdv::gdvOptTo<decltype(memb)>(gdv::mapGetSym_parseOpt(m, gdv::stripMemberPrefix(#memb)))) /* user , */
 
-// Same, but the key is a string rather than a symbol.  The suffix "_SK"
-// means "string key".
-#define GDV_WRITE_MEMBER_SK(memb) \
-  m.mapSetValueAt(gdv::stripMemberPrefix(#memb), gdv::toGDValue(memb)) /* user , */
-
+// TODO: This call is missing an "Opt".
 #define GDV_READ_MEMBER_SK(memb) \
   memb(gdv::gdvTo<decltype(memb)>(gdv::mapGetValueAtStr_parseOpt(m, gdv::stripMemberPrefix(#memb)))) /* user , */
 

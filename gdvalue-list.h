@@ -10,6 +10,7 @@
 
 #include "smbase/gdvalue.h"            // gdv::GDValue
 #include "smbase/gdvalue-parse.h"      // gdv::GDVTo
+#include "smbase/gdvalue-parser.h"     // gdv::GDVPTo
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 
 #include <list>                        // std::list
@@ -37,13 +38,31 @@ struct GDVTo<std::list<T,A>> {
   {
     checkIsSequence(v);
 
-    std::list<T,A> vec;
+    std::list<T,A> lst;
 
     for (GDValue const &element : v.sequenceGet()) {
-      vec.push_back(gdvTo<T>(element));
+      lst.push_back(gdvTo<T>(element));
     }
 
-    return vec;
+    return lst;
+  }
+};
+
+
+template <typename T, typename A>
+struct GDVPTo<std::list<T,A>> {
+  static std::list<T,A> f(GDValueParser const &p)
+  {
+    p.checkIsSequence();
+
+    std::list<T,A> lst;
+
+    // Iterate with an index so we can keep track of the path.
+    for (GDVIndex i=0; i < p.containerSize(); ++i) {
+      lst.push_back(gdvpTo<T>(p.sequenceGetValueAt(i)));
+    }
+
+    return lst;
   }
 };
 

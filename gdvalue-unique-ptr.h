@@ -8,6 +8,7 @@
 
 #include "smbase/gdvalue.h"            // gdv::GDValue
 #include "smbase/gdvalue-parse.h"      // gdv::GDVTo
+#include "smbase/gdvalue-parser.h"     // gdv::GDVPTo
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 
 #include <memory>                      // std::unique_ptr
@@ -29,6 +30,16 @@ struct GDVTo<std::unique_ptr<T,D>> {
   static std::unique_ptr<T,D> f(GDValue const &v)
   {
     return std::unique_ptr<T,D>(gdvToNew<T>(v));
+  }
+};
+
+
+template <typename T, typename D>
+struct GDVPTo<std::unique_ptr<T,D>> {
+  // This simply wraps the result of `gdvpToNew` as a `unique_ptr`.
+  static std::unique_ptr<T,D> f(GDValueParser const &p)
+  {
+    return std::unique_ptr<T,D>(gdvpToNew<T>(p));
   }
 };
 

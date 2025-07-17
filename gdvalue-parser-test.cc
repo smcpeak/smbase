@@ -1,5 +1,5 @@
-// gdvalue-parse-test.cc
-// Code for `gdvalue-parse`.
+// gdvalue-parser-test.cc
+// Code for `gdvaluer-parse`.
 
 #include "smbase/gdvalue-list-fwd.h"             // gdv::toGDValue(std::list)
 #include "smbase/gdvalue-map-fwd.h"              // gdv::toGDValue(std::map)
@@ -9,7 +9,7 @@
 
 #include "smbase/gdvalue-list.h"                 // module under test
 #include "smbase/gdvalue-map.h"                  // module under test
-#include "smbase/gdvalue-parse-ops.h"            // module under test
+#include "smbase/gdvalue-parser-ops.h"           // module under test
 #include "smbase/gdvalue-set.h"                  // module under test
 #include "smbase/gdvalue-unique-ptr.h"           // module under test
 #include "smbase/gdvalue-vector.h"               // module under test
@@ -19,9 +19,14 @@
 #include "smbase/sm-test.h"                      // EXPECT_EQ
 
 #include <limits>                                // std::numeric_limits
+#include <list>                                  // std::list
+#include <optional>                              // std::optional
 
 using namespace gdv;
 using namespace smbase;
+
+
+// TODO: Write more tests that exercise reporting paths in containers.
 
 
 OPEN_ANONYMOUS_NAMESPACE
@@ -45,47 +50,62 @@ public:      // funcs
     return m;
   }
 
-  explicit Data(GDValue const &m)
-    : m_x(gdvTo<int>(mapGetSym_parse(m, "x"))),
-      m_y(gdvTo<int>(mapGetSym_parse(m, "y")))
+  explicit Data(GDValueParser const &p)
+    : m_x(gdvpTo<int>(p.mapGetValueAtSym("x"))),
+      m_y(gdvpTo<int>(p.mapGetValueAtSym("y")))
   {
-    checkTaggedMapTag(m, "Data");
+    p.checkTaggedMapTag("Data");
   }
 };
 
 
+// Convert `GDValue srcValue` to `destType` using `GDValueParser`.
+#define GDVP_TO(destType, srcValue) \
+  gdvpTo<destType>(GDValueParser(srcValue))
+
+
+// Expect an `XGDValueError` with a certain substring in the message.
+#define EXPECT_ERROR_SUBSTR(expr, substr) \
+  EXPECT_EXN_SUBSTR(expr, XGDValueError, substr)
+
+
 void test_bool()
 {
-  EXPECT_EQ(gdvTo<bool>(GDValue(true)), true);
-  EXPECT_EQ(gdvTo<bool>(GDValue(false)), false);
-  EXPECT_EXN(gdvTo<bool>(GDValue()), XFormat);
+  EXPECT_EQ(GDVP_TO(bool, GDValue(true)), true);
+  EXPECT_EQ(GDVP_TO(bool, GDValue(false)), false);
+  EXPECT_ERROR_SUBSTR(GDVP_TO(bool, GDValue()),
+    "expected symbol `true` or `false`, not null");
 }
 
 
 void test_int()
 {
-  EXPECT_EQ(gdvTo<int>(GDValue(3)), 3);
+  EXPECT_EQ(GDVP_TO(int, GDValue(3)), 3);
 
   if (sizeof(int) < sizeof(GDVSmallInteger)) {
     // Too big.
     GDVSmallInteger maxGSI = std::numeric_limits<GDVSmallInteger>::max();
-    EXPECT_EXN(gdvTo<int>(GDValue(maxGSI)), XFormat);
+    EXPECT_ERROR_SUBSTR(GDVP_TO(int, GDValue(maxGSI)),
+      "number too large");
   }
 
   // Not an integer.
-  EXPECT_EXN(gdvTo<int>(GDValue()), XFormat);
+  EXPECT_ERROR_SUBSTR(GDVP_TO(int, GDValue()),
+    "expected small integer, not symbol");
 }
 
 
 void test_string()
 {
-  EXPECT_EQ(gdvTo<std::string>(GDValue("abc")), "abc");
+  EXPECT_EQ(GDVP_TO(std::string, GDValue("abc")), "abc");
 
-  EXPECT_EXN(gdvTo<std::string>(GDValue(GDVSymbol("abc"))), XFormat);
+  EXPECT_ERROR_SUBSTR(GDVP_TO(std::string, GDValue(GDVSymbol("abc"))),
+    "expected string, not symbol");
 
-  EXPECT_EQ(stringGet_parse(GDValue("xyz")), "xyz");
+  EXPECT_EQ(GDValueParser(GDValue("xyz")).stringGet(), "xyz");
 
-  EXPECT_EXN(stringGet_parse("xyz"_sym), XFormat);
+  EXPECT_ERROR_SUBSTR(GDValueParser("xyz"_sym).stringGet(),
+    "expected string, not symbol");
 }
 
 
@@ -95,8 +115,24 @@ void test_unique_ptr()
   GDValue v(toGDValue(d1));
   EXPECT_EQ(v.asString(), "Data{x:3 y:4}");
 
-  std::unique_ptr<Data> d2(gdvTo<std::unique_ptr<Data>>(v));
+  std::unique_ptr<Data> d2(GDVP_TO(std::unique_ptr<Data>, v));
   EXPECT_EQ(toGDValue(d2), v);
+
+  // Test some GDValueParser error cases now that we have a container to
+  // work with.
+  GDValueParser p(v);
+
+  // Non-existent key.
+  EXPECT_ERROR_SUBSTR(p.mapGetValueAtSym("z"),
+    "key z, but it does not");
+
+  // Wrong container type.
+  EXPECT_ERROR_SUBSTR(p.tupleGetValueAt(0),
+    "tuple, not tagged map");
+
+  // Wrong scalar kind at a key; demonstrates showing the path.
+  EXPECT_ERROR_SUBSTR(p.mapGetValueAtSym("x").symbolGet(),
+    "<top>.x: expected symbol, not small integer");
 }
 
 
@@ -106,8 +142,20 @@ void test_vector()
   GDValue v(toGDValue(vec1));
   EXPECT_EQ(v.asString(), "[Data{x:1 y:2} Data{x:3 y:4}]");
 
-  std::vector<Data> vec2(gdvTo<std::vector<Data>>(v));
+  std::vector<Data> vec2(GDVP_TO(std::vector<Data>, v));
   EXPECT_EQ(toGDValue(vec2), v);
+
+  // Test some parser error cases.
+  GDValueParser p(v);
+
+  EXPECT_ERROR_SUBSTR(p.sequenceGetValueAt(2),
+    "index 2, but it only has 2 elements");
+
+  EXPECT_ERROR_SUBSTR(p.sequenceGetValueAt(1).sequenceGetValueAt(0),
+    "<top>[1]: expected sequence, not tagged map");
+
+  EXPECT_ERROR_SUBSTR(p.sequenceGetValueAt(1).mapGetValueAtSym("x").symbolGet(),
+    "<top>[1].x: expected symbol, not small integer");
 }
 
 
@@ -120,8 +168,12 @@ void test_vector_of_unique()
   EXPECT_EQ(v.asString(), "[Data{x:1 y:2} Data{x:3 y:4}]");
 
   std::vector<std::unique_ptr<Data>> vec2(
-    gdvTo<std::vector<std::unique_ptr<Data>>>(v));
+    GDVP_TO(std::vector<std::unique_ptr<Data>>, v));
   EXPECT_EQ(toGDValue(vec2), v);
+
+  GDValueParser p(v);
+  EXPECT_ERROR_SUBSTR(p.sequenceGetValueAt(1).mapGetValueAtSym("x").symbolGet(),
+    "<top>[1].x: expected symbol, not small integer");
 }
 
 
@@ -131,7 +183,11 @@ void test_map()
   GDValue v(toGDValue(m1));
   EXPECT_EQ(v.asString(), "{1:2 3:4}");
 
-  std::map<int, int> m2(gdvTo<std::map<int, int>>(v));
+  // Work around the problem of passing a template specialization to a
+  // macro and getting unwanted argument splitting at the comma.
+  typedef std::map<int, int> map_int_int;
+
+  std::map<int, int> m2(GDVP_TO(map_int_int, v));
   EXPECT_EQ(toGDValue(m2), v);
 }
 
@@ -142,7 +198,7 @@ void test_set()
   GDValue v(toGDValue(s1));
   EXPECT_EQ(v.asString(), "{2 3 5 7}");
 
-  std::set<int> m2(gdvTo<std::set<int>>(v));
+  std::set<int> m2(GDVP_TO(std::set<int>, v));
   EXPECT_EQ(toGDValue(m2), v);
 }
 
@@ -173,35 +229,36 @@ void test_map_of_vector_of_unique()
     "{\"bar\":[Data{x:5 y:6}] "
      "\"foo\":[Data{x:1 y:2} Data{x:3 y:4}]}");
 
-  DataVecMap m2(gdvTo<DataVecMap>(v));
+  DataVecMap m2(GDVP_TO(DataVecMap, v));
   EXPECT_EQ(toGDValue(m2), v);
 }
 
 
-void test_mapGetSym_parseOpt()
+void test_mapGetValueAtSymOpt()
 {
   // Trying to get a value from a non-map.
   {
     GDValue v;
-    EXPECT_EXN(mapGetSym_parseOpt(v, "foo"), XFormat);
+    EXPECT_ERROR_SUBSTR(GDValueParser(v).mapGetValueAtSymOpt("foo"),
+      "expected map, not symbol");
   }
 
   {
     // Trying to get a value from an unmapped key.
     GDValue v(GDVK_MAP);
-    EXPECT_EQ(mapGetSym_parseOpt(v, "foo"), GDValue());
+    xassert(GDValueParser(v).mapGetValueAtSymOpt("foo") == std::nullopt);
 
     // And a mapped key.
     v.mapSetSym("foo", GDValue(3));
-    EXPECT_EQ(mapGetSym_parseOpt(v, "foo"), GDValue(3));
+    EXPECT_EQ(GDValueParser(v).mapGetValueAtSymOpt("foo").value().getValue(), GDValue(3));
   }
 }
 
 
-void test_gdvOptTo()
+void test_gdvpOptTo()
 {
-  EXPECT_EQ(gdvOptTo<int>(GDValue(3)), 3);
-  EXPECT_EQ(gdvOptTo<int>(GDValue()), 0);
+  EXPECT_EQ(gdvpOptTo<int>(GDValueParser(GDValue(3))), 3);
+  EXPECT_EQ(gdvpOptTo<int>(std::nullopt), 0);
 }
 
 
@@ -214,9 +271,9 @@ public:      // data
   std::list<int> m_intList;
 
 public:      // funcs
-  explicit Data2(GDValue const &m)
-    : GDV_READ_MEMBER(m_s1),
-      GDV_READ_MEMBER_SK(m_intList)
+  explicit Data2(GDValueParser const &p)
+    : GDVP_READ_OPT_MEMBER_SYM(m_s1),
+      GDVP_READ_OPT_MEMBER_STR(m_intList)
   {}
 
   operator GDValue() const
@@ -227,7 +284,7 @@ public:      // funcs
     GDV_WRITE_MEMBER_SK(m_intList);
 
     // Exercise the non-Opt parser too.
-    xassert(mapGetValueAtStr_parse(m, "intList") == toGDValue(m_intList));
+    xassert(GDValueParser(m).mapGetValueAtStr("intList").getValue() == toGDValue(m_intList));
 
     return m;
   }
@@ -241,7 +298,7 @@ void testWithData2()
     { "intList", GDVSequence{1,2,3} },
   });
 
-  Data2 d(serialized);
+  Data2 d{GDValueParser(serialized)};
   EXPECT_EQ(toGDValue(d), serialized);
 }
 
@@ -249,7 +306,7 @@ void testWithData2()
 CLOSE_ANONYMOUS_NAMESPACE
 
 
-void test_gdvalue_parse()
+void test_gdvalue_parser()
 {
   test_bool();
   test_int();
@@ -260,8 +317,8 @@ void test_gdvalue_parse()
   test_map();
   test_set();
   test_map_of_vector_of_unique();
-  test_mapGetSym_parseOpt();
-  test_gdvOptTo();
+  test_mapGetValueAtSymOpt();
+  test_gdvpOptTo();
   testWithData2();
 }
 

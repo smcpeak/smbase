@@ -46,6 +46,23 @@ struct GDVTo<std::set<V,C,A>> {
 };
 
 
+template <typename V, typename C, typename A>
+struct GDVPTo<std::set<V,C,A>> {
+  static std::set<V,C,A> f(GDValueParser const &p)
+  {
+    p.checkIsSet();
+
+    std::set<V,C,A> dest;
+
+    for (GDValue const &v : p.setGet()) {
+      dest.insert(gdvpTo<V>(p.setGetValue(v)));
+    }
+
+    return dest;
+  }
+};
+
+
 CLOSE_NAMESPACE(gdv)
 
 

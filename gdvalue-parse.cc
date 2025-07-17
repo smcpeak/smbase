@@ -242,19 +242,6 @@ std::string GDVTo<std::string>::f(GDValue const &v)
 }
 
 
-// ---------------------- Member de/serialization ----------------------
-char const *stripMemberPrefix(char const *name)
-{
-  if (name[0] == 'm' &&
-      name[1] == '_') {
-    return name+2;
-  }
-  else {
-    return name;
-  }
-}
-
-
 CLOSE_NAMESPACE(gdv)
 
 

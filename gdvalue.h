@@ -17,6 +17,7 @@
 
 // this dir
 #include "smbase/compare-util.h"                 // DEFINE_FRIEND_RELATIONAL_OPERATORS
+#include "smbase/gdvalue-kind.h"                 // GDValueKind
 #include "smbase/gdvalue-types.h"                // GDVSize, GDVIndex, GDVInteger, GDVSmallInteger, GDVString, GDVSequence, GDVSet, GDVMap, GDVOrderedMap, GDVMapEntry
 #include "smbase/gdvalue-write-options.h"        // gdv::GDValueWriteOptions
 #include "smbase/gdvsymbol.h"                    // gdv::GDVSymbol
@@ -105,84 +106,6 @@ using GDVTaggedOrderedMap = GDVTaggedContainer<GDVOrderedMap>;
   macro(SET,         Set,        set       ) \
   macro(MAP,         Map,        map       ) \
   macro(ORDERED_MAP, OrderedMap, orderedMap)
-
-
-// --------------------------- GDValueKind -----------------------------
-/* Possible kinds of GDValues.
-
-   The order of the enumerators is also the order into which the kinds
-   sort, *except* that Integer and SmallInteger sort with respect to
-   each other according to their numerical value, regardless of the
-   classification as "small" or not.  That is, we have:
-
-     large neg < small neg < 0 < small pos < large pos
-
-   (Zero is actually a small non-negative integer.)
-*/
-enum GDValueKind : unsigned char {
-  // ---- Scalars ----
-  // Scalars are tree "leaves" in that they do not contain other
-  // GDValues.
-
-  // Symbol: An identifier-like string that acts as a name of something
-  // defined elsewhere.  This includes the special symbols `null`,
-  // `false`, and `true`.
-  GDVK_SYMBOL,
-
-  // Integer: Unbounded mathematical integer.
-  GDVK_INTEGER,
-
-  // Small integer: A logical subclass of Integer that fits into the
-  // `GDVSmallInteger` type.
-  GDVK_SMALL_INTEGER,
-
-  // String: Sequence of Unicode characters encoded as UTF-8.
-  GDVK_STRING,
-
-  // ---- Containers ----
-  // Containers are potential interior tree "nodes" in that they can
-  // contain other GDValues.
-
-  // Sequence: Ordered sequence of values.
-  GDVK_SEQUENCE,
-
-  // Tagged sequence: A symbol and a sequence.
-  GDVK_TAGGED_SEQUENCE,
-
-  // Tuple: Another kind of sequence, at least from a representation
-  // perspective.  (See gdvalue-design.txt, "Tuples versus sequences".)
-  GDVK_TUPLE,
-  GDVK_TAGGED_TUPLE,
-
-  // Set: Unordered set of (unique) values.
-  GDVK_SET,
-
-  // Tagged set: A symbol and a set.
-  GDVK_TAGGED_SET,
-
-  // Map: Set of (key, value) pairs that are indexed by key.
-  GDVK_MAP,
-
-  // Tagged map: A symbol and a map.
-  GDVK_TAGGED_MAP,
-
-  // Ordered Map: A map where the entries have an externally-imposed
-  // order, typically the insertion order.
-  GDVK_ORDERED_MAP,
-
-  // Tagged ordered map: A symbol and an ordered map.
-  GDVK_TAGGED_ORDERED_MAP,
-
-  NUM_GDVALUE_KINDS
-};
-
-// Return a string like "GDVK_SYMBOL", or "GDVK_invalid" if 'gdvk' is
-// invalid.
-char const *toString(GDValueKind gdvk);
-
-// Return a string like "symbol" that is how the data type would be
-// described in prose.
-char const *kindCommonName(GDValueKind gdvk);
 
 
 // ----------------------------- GDValue -------------------------------
@@ -746,6 +669,16 @@ public:      // methods
 
   bool setContains(GDValue const &elt) const;
 
+  // Return a reference to the physical `GDValue` that is stored in this
+  // set, which will typically be a different object than `elt`, but
+  // will compare as structurally equal.  Requires that `elt` be in the
+  // set.
+  //
+  // This reference is of course invalidated if this object is destroyed
+  // or the element is removed from the set (like for other references
+  // returned from container queries).
+  GDValue const &setGetValue(GDValue const &elt) const;
+
   // True if the element was inserted, false if it was already there.
   bool setInsert(GDValue const &elt);
   bool setInsert(GDValue      &&elt);
@@ -770,6 +703,13 @@ public:      // methods
   DECLARE_GDV_KIND_ITERATORS(GDVMap, map)
 
   bool mapContains(GDValue const &key) const;
+
+  // Return a reference to the entry object for the key, which must be
+  // mapped.
+  GDVMapEntry const &mapGetEntryAt(GDValue const &key) const;
+
+  // Return a reference to the key stored in this map.
+  GDValue const &mapGetKeyAt(GDValue const &key) const;
 
   // Requires that the key be mapped.
   GDValue const &mapGetValueAt(GDValue const &key) const;
@@ -807,6 +747,10 @@ public:      // methods
   DECLARE_GDV_KIND_ITERATORS(GDVOrderedMap, orderedMap)
 
   bool orderedMapContains(GDValue const &key) const;
+
+  GDVMapEntry const &orderedMapGetEntryAt(GDValue const &key) const;
+
+  GDValue const &orderedMapGetKeyAt(GDValue const &key) const;
 
   // Requires that the key be mapped.
   GDValue const &orderedMapGetValueAt(GDValue const &key) const;
@@ -1087,6 +1031,29 @@ GDValue nullablePtrToGDValue(T const * NULLABLE ptr)
     return GDValue();
   }
 }
+
+
+// ----------------------- Member serialization ------------------------
+// If `name` begins with "m_", return `name+2`, thus stripping the
+// prefix.  Otherwise return it unchanged.
+char const *stripMemberPrefix(char const *name);
+
+// Write `<memb>` to a field of GDValue `m` that has the same name
+// except without the "m_" prefix (if any).
+#define GDV_WRITE_MEMBER(memb) \
+  m.mapSetSym(gdv::stripMemberPrefix(#memb), gdv::toGDValue(memb)) /* user ; */
+
+// Same, but the key is a string rather than a symbol.  The suffix "_SK"
+// means "string key".
+#define GDV_WRITE_MEMBER_SK(memb) \
+  m.mapSetValueAt(gdv::stripMemberPrefix(#memb), gdv::toGDValue(memb)) /* user , */
+
+
+// TODO: Rename the above to use "_SYM" and "_STR".
+
+
+// Note: There are corresponding deserialization macros in
+// `gdvalue-parser.h`.
 
 
 CLOSE_NAMESPACE(gdv)

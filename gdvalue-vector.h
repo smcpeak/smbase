@@ -8,6 +8,7 @@
 
 #include "smbase/gdvalue.h"            // gdv::GDValue
 #include "smbase/gdvalue-parse.h"      // gdv::GDVTo
+#include "smbase/gdvalue-parser.h"     // gdv::GDVPTo
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 
 #include <vector>                      // std::vector
@@ -39,6 +40,24 @@ struct GDVTo<std::vector<T,A>> {
 
     for (GDValue const &element : v.sequenceGet()) {
       vec.push_back(gdvTo<T>(element));
+    }
+
+    return vec;
+  }
+};
+
+
+template <typename T, typename A>
+struct GDVPTo<std::vector<T,A>> {
+  static std::vector<T,A> f(GDValueParser const &p)
+  {
+    p.checkIsSequence();
+
+    std::vector<T,A> vec;
+
+    // Iterate with an index so we can keep track of the path.
+    for (GDVIndex i=0; i < p.containerSize(); ++i) {
+      vec.push_back(gdvpTo<T>(p.sequenceGetValueAt(i)));
     }
 
     return vec;

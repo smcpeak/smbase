@@ -583,6 +583,18 @@ void testSet()
   xassert(v2.asString() == "{1 2}");
   testSerializeRoundtrip(v2);
 
+  // Test `setGetValue`.
+  {
+    GDValue localTwo(2);
+    GDValue const &storedTwo = v2.setGetValue(localTwo);
+
+    // The two objects are structurally equal.
+    EXPECT_EQ(localTwo, storedTwo);
+
+    // But they are physically distinct.
+    xassert(&localTwo != &storedTwo);
+  }
+
   v2.setRemove(GDValue(1));
   xassert(v2.asString() == "{2}");
 
@@ -662,6 +674,14 @@ void testMap()
   xassert(v2.mapContains(GDValue("one")));
   xassert(v2 > v1);
   testSerializeRoundtrip(v2);
+
+  {
+    auto const &e = v2.mapGetEntryAt("one");
+    EXPECT_EQ(e.first, "one");
+    EXPECT_EQ(e.second, 1);
+
+    EXPECT_EQ(v2.mapGetKeyAt("one"), "one");
+  }
 
   v2.mapSetValueAt(GDValue("one"), GDValue(2));
   xassert(v2.asString() == R"({"one":2})");
@@ -948,6 +968,14 @@ void testOrderedMap()
   xassert(v2.orderedMapContains(GDValue("one")));
   xassert(v2 > v1);
   testSerializeRoundtrip(v2);
+
+  {
+    auto const &e = v2.orderedMapGetEntryAt("one");
+    EXPECT_EQ(e.first, "one");
+    EXPECT_EQ(e.second, 1);
+
+    EXPECT_EQ(v2.orderedMapGetKeyAt("one"), "one");
+  }
 
   // The normal "map" functions work too.
   v2.mapSetValueAt(GDValue("one"), GDValue(2));
@@ -2417,6 +2445,14 @@ void testNullablePtrToGDValue()
 }
 
 
+void test_stripMemberPrefix()
+{
+  EXPECT_EQ(stripMemberPrefix(""), "");
+  EXPECT_EQ(stripMemberPrefix("abc"), "abc");
+  EXPECT_EQ(stripMemberPrefix("m_foo"), "foo");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -2468,6 +2504,7 @@ void test_gdvalue()
     testGDV_SKV();
     testValueKindCategories();
     testNullablePtrToGDValue();
+    test_stripMemberPrefix();
 
     // Some interesting values for the particular data used.
     testPrettyPrint(0);

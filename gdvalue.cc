@@ -12,6 +12,7 @@
 #include "smbase/gdvalue-writer.h"     // gdv::GDValueWriter
 #include "smbase/gdvsymbol.h"          // gdv::GDVSymbol
 #include "smbase/ordered-map-ops.h"    // smbase::OrderedMap::size, etc.
+#include "smbase/sm-trace.h"           // INIT_TRACE, etc.
 #include "smbase/syserr.h"             // smbase::xsyserror
 #include "smbase/xassert.h"            // xassert
 
@@ -24,6 +25,9 @@
 #include <utility>                     // std::move, std::swap, std::make_pair
 
 using namespace smbase;
+
+
+INIT_TRACE("gdvalue");
 
 
 OPEN_NAMESPACE(gdv)
@@ -1281,6 +1285,15 @@ bool GDValue::setContains(GDValue const &elt) const
 }
 
 
+GDValue const &GDValue::setGetValue(GDValue const &elt) const
+{
+  GDVSet const &set = setGet();
+  auto it = set.find(elt);
+  xassert(it != set.end());
+  return *it;
+}
+
+
 bool GDValue::setInsert(GDValue const &elt)
 {
   xassertPrecondition(isSet());
@@ -1328,16 +1341,33 @@ bool GDValue::mapContains(GDValue const &key) const
 }
 
 
-GDValue const &GDValue::mapGetValueAt(GDValue const &key) const
+GDVMapEntry const &GDValue::mapGetEntryAt(GDValue const &key) const
 {
   if (isOrderedMap()) {
-    return orderedMapGetValueAt(key);
+    return orderedMapGetEntryAt(key);
   }
 
   xassertPrecondition(isMap());
-  auto it = mapGet().find(key);
-  xassertPrecondition(it != mapGet().end());
-  return (*it).second;
+  auto const &m = mapGet();
+  auto it = m.find(key);
+  if (it == m.end()) {
+    TRACE1("mapGetValueAt: Tried to get value for key " << key <<
+           " but it is not present in map " << *this << ".");
+  }
+  xassertPrecondition(it != m.end());
+  return *it;
+}
+
+
+GDValue const &GDValue::mapGetKeyAt(GDValue const &key) const
+{
+  return mapGetEntryAt(key).first;
+}
+
+
+GDValue const &GDValue::mapGetValueAt(GDValue const &key) const
+{
+  return mapGetEntryAt(key).second;
 }
 
 
@@ -1465,10 +1495,22 @@ bool GDValue::orderedMapContains(GDValue const &key) const
 }
 
 
-GDValue const &GDValue::orderedMapGetValueAt(GDValue const &key) const
+GDVMapEntry const &GDValue::orderedMapGetEntryAt(GDValue const &key) const
 {
   xassertPrecondition(isOrderedMap());
-  return orderedMapGet().valueAtKey(key);
+  return orderedMapGet().entryAtKey(key);
+}
+
+
+GDValue const &GDValue::orderedMapGetKeyAt(GDValue const &key) const
+{
+  return orderedMapGetEntryAt(key).first;
+}
+
+
+GDValue const &GDValue::orderedMapGetValueAt(GDValue const &key) const
+{
+  return orderedMapGetEntryAt(key).second;
 }
 
 
@@ -1670,6 +1712,19 @@ FOR_EACH_GDV_CONTAINER(DEFINE_TAGGED_CONTAINER_METHODS)
   template class GDVTaggedContainer<GDV##Kind>;
 
 FOR_EACH_GDV_CONTAINER(EXPLICITLY_INSTANTIATE)
+
+
+// ----------------------- Member serialization ------------------------
+char const *stripMemberPrefix(char const *name)
+{
+  if (name[0] == 'm' &&
+      name[1] == '_') {
+    return name+2;
+  }
+  else {
+    return name;
+  }
+}
 
 
 CLOSE_NAMESPACE(gdv)

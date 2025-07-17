@@ -8,6 +8,7 @@
 
 #include "smbase/gdvalue.h"            // gdv::GDValue
 #include "smbase/gdvalue-parse.h"      // gdv::GDVTo
+#include "smbase/gdvalue-parser.h"     // gdv::GDVPTo
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 
 #include <map>                         // std::map
@@ -44,6 +45,32 @@ struct GDVTo<std::map<K,V,C,A>> {
       dest.insert(std::make_pair(
         gdvTo<K>(k),
         gdvTo<V>(v)
+      ));
+    }
+
+    return dest;
+  }
+};
+
+
+template <typename K, typename V, typename C, typename A>
+struct GDVPTo<std::map<K,V,C,A>> {
+  static std::map<K,V,C,A> f(GDValueParser const &p)
+  {
+    p.checkIsMap();
+
+    std::map<K,V,C,A> dest;
+
+    for (auto const &kv : p.mapGet()) {
+      GDValue const &k = kv.first;
+
+      // It is intentional to not use `kv.second` here.  In both cases
+      // we are forming a *path* to the desired location, and `k` is
+      // part of the step.  In one case the step uses the key to go to
+      // the stored key, and in the other it goes to the stored value.
+      dest.insert(std::make_pair(
+        gdvpTo<K>(p.mapGetKeyAt(k)),
+        gdvpTo<V>(p.mapGetValueAt(k))
       ));
     }
 
