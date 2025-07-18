@@ -161,7 +161,14 @@ bool GDValueParser::s_selfCheckCtors = false;
 
 
 GDValueParser::~GDValueParser()
-{}
+{
+  // There is at least one place in client code (in the Editor repo)
+  // where I std::move a top-level `GDValue` while a parser object still
+  // exists (but is not being used).  That code first calls
+  // `clearParserPointers`, but I think it should be ok for client code
+  // to not do that, and just let the parser be destoryed.  Thus, we can
+  // get here with invalid pointers.
+}
 
 
 GDValueParser::GDValueParser(GDValueParser const &obj)
@@ -231,6 +238,14 @@ void GDValueParser::selfCheck() const
 
   // We should end up at the current value.
   xassert(m_value == v);
+}
+
+
+void GDValueParser::clearParserPointers()
+{
+  m_topLevel = nullptr;
+  m_value = nullptr;
+  m_path.clear();
 }
 
 

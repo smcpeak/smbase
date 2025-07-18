@@ -130,6 +130,12 @@ public:      // class data
 private:     // instance data
   // The entire `GDValue` we are parsing.  This object, and all if its
   // children, must not be changed while the parser object is active.
+  //
+  // This (and `m_value`) is set to null by `clearParserPointers`, but
+  // that is a mostly invalid state, so I do not annotate these with
+  // `NULLABLE`; all methods aside from the destructor should assume
+  // these pointers are valid.
+  //
   GDValue const *m_topLevel;
 
   // The value to be parsed by the code receiving this parser.  It is
@@ -165,6 +171,12 @@ public:      // methods
 
   // Assert that the path is accurate.
   void selfCheck() const;
+
+  // The object to which this parser refers is about to be modified, so
+  // nullify all of our pointers.  If anything is done with this parser
+  // object (other than destroying it), we will crash; but that is
+  // better than use after free.
+  void clearParserPointers();
 
   // Queries on the current value, with same semantics as the same-named
   // methods on `GDValue`.

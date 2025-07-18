@@ -535,12 +535,52 @@ void test_parserPaths()
 }
 
 
-
 void test_copy_XGDValueError()
 {
   XGDValueError e1("p", "m");
   XGDValueError e2(e1);
   EXPECT_EQ(e2.getConflict(), "At GDV path p: m");
+}
+
+
+// Replicate a scenario where we move an object being parsed.
+void test_move_parsedObject()
+{
+  // No clearing.
+  {
+    GDValue dest;
+
+    {
+      GDValue src(GDVMap{{1,2}});
+      GDValueParser p(src);
+
+      p.checkIsMap();
+
+      // Having examined `p`, we decide to move the value, despite the
+      // parser object still existing.  For now at least, I want to regard
+      // this as valid.
+      dest = std::move(src);
+    }
+  }
+
+  // Clear the pointers.
+  {
+    GDValue dest;
+
+    {
+      GDValue src(GDVMap{{1,2}});
+      GDValueParser p(src);
+
+      p.checkIsMap();
+
+      // Proactive safety measure: clear the parser.  This leaves the
+      // parser in an invalid but somewhat safer state than when we just
+      // move the source object out from under it.
+      p.clearParserPointers();
+
+      dest = std::move(src);
+    }
+  }
 }
 
 
@@ -566,6 +606,7 @@ void test_gdvalue_parser()
   testWithData2();
   test_parserPaths();
   test_copy_XGDValueError();
+  test_move_parsedObject();
 }
 
 
