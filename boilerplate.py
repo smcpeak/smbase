@@ -67,7 +67,18 @@ def die(message: str) -> NoReturn:
 def exceptionMessage(e: BaseException) -> str:
   """Turn exception 'e' into a human-readable message."""
 
-  t = type(e).__name__
+  # If the exception comes from another module, get its name followed
+  # by a dot.  Otherwise get the empty string.
+  m = type(e).__module__
+  if m == "__main__" or m == "boilerplate":
+    m = ""
+  else:
+    m += "."
+
+  # The qualified name will include outer classes.
+  t = m + type(e).__qualname__
+
+  # Exception message.
   s = str(e)
 
   if s:
@@ -85,7 +96,7 @@ def exceptionMessage(e: BaseException) -> str:
 
     else:
       # All we have is the exception class name.
-      return f"{t}"
+      return t
 
 
 def call_main(main: Callable[[], None]) -> None:
