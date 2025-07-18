@@ -52,7 +52,7 @@ public:
   /*AUTO_CTC*/ friend std::ostream &operator<<(std::ostream &os, Bar const &obj);
 };
 
-struct Baz {
+struct Baz final {
   int *m_p;
 
   // ---- create-tuple-class: declarations for Baz

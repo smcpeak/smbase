@@ -336,11 +336,26 @@ def processHeader(headerFname: str) -> None:
   newHeaderLines = []
 
   # Match a `class` or `struct` declaration first line.
-  classDeclFirstLineRE = re.compile(
-    r"^( *)(?:class|struct) +(\S+)" +
-    #  ^ indent              ^ class name
-    r"(?:\s*:\s*(?:(?:public|private|protected)\s*)(\S+))?\s*\{")
-    #                                              ^ superclass name
+  classDeclFirstLineRE = re.compile(r"""
+    ^(\s*)                             # 1: indentation
+    (?:class|struct)\s+                # `class` or `struct` keyword
+    (\S+)                              # 2: class name
+
+    (?:
+      \s+final                         # optional `final`
+    )?
+
+    (?:                                # optional superclass specifier
+      \s*:\s*                            # colon with optional surrounding whitespace
+      (?:
+        (?:public|private|protected)\s*    # optional access specifier
+      )
+      (\S+)                              # 3: superclass name
+    )?
+
+    \s*                                # optional trailing whitespace
+    \{                                 # opening brace
+    """, re.VERBOSE)
 
   # Match a line that indicates where to insert code and its options.
   beginLineRE = re.compile(r".*create-tuple-class: declarations for (\S+)(.*)")

@@ -29,7 +29,7 @@ public:
   // ---- create-tuple-class: declarations for Bar +compare +write
 };
 
-struct Baz {
+struct Baz final {
   int *m_p;
 
   // ---- create-tuple-class: declarations for Baz
