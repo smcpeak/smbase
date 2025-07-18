@@ -4,6 +4,7 @@
 
 #include "astlist-gdvalue.h"           // module under test
 
+#include "smbase/gdvalue-parser.h"     // gdv::GDValueParser
 #include "smbase/sm-macros.h"          // {OPEN,CLOSE}_ANONYMOUS_NAMESPACE
 #include "smbase/sm-test.h"            // EXPECT_EQ
 
@@ -30,10 +31,10 @@ public:      // funcs
     }));
   }
 
-  explicit Data(GDValue const &v)
-    : m_x(gdvTo<int>(mapGetSym_parse(v, "x")))
+  explicit Data(GDValueParser const &p)
+    : GDVP_READ_MEMBER_SYM(m_x)
   {
-    checkTaggedMapTag(v, "Data");
+    p.checkTaggedMapTag("Data");
   }
 };
 
@@ -44,10 +45,10 @@ CLOSE_ANONYMOUS_NAMESPACE
 // Annoyingly, I can't specialize this from inside the anonymous
 // namespace, so have to temporarily close it.
 template <>
-struct gdv::GDVToNew<Data> {
-  static Data *f(GDValue const &v)
+struct gdv::GDVPToNew<Data> {
+  static Data *f(GDValueParser const &p)
   {
-    return new Data(v);
+    return new Data(p);
   }
 };
 
@@ -64,7 +65,7 @@ void testOne(ASTList<Data> const &orig, char const *expectGDVN)
   std::string actualGDVN = v.asString();
   EXPECT_EQ(actualGDVN, expectGDVN);
 
-  ASTList<Data> after(gdv::gdvTo<ASTList<Data>>(v));
+  ASTList<Data> after(gdv::gdvpTo<ASTList<Data>>(GDValueParser(v)));
 
   EXPECT_EQ(after.count(), orig.count());
 

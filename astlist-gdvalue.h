@@ -11,7 +11,7 @@
 
 #include "smbase/astlist.h"            // ASTList
 #include "smbase/gdvalue.h"            // gdv::GDValue
-#include "smbase/gdvalue-parse.h"      // gdv::gdvTo
+#include "smbase/gdvalue-parser.h"     // gdv::GDValueParser
 
 
 // Convert `lst` to a GDV sequence.
@@ -31,15 +31,16 @@ gdv::GDValue toGDValue(ASTList<T> const &lst)
 
 
 template <typename T>
-struct gdv::GDVTo<ASTList<T> > {
-  static ASTList<T> f(GDValue const &s)
+struct gdv::GDVPTo<ASTList<T> > {
+  static ASTList<T> f(GDValueParser const &p)
   {
-    checkIsSequence(s);
+    p.checkIsSequence();
 
     ASTList<T> ret;
 
-    for (auto const &element : s.sequenceGet()) {
-      ret.append(gdv::gdvToNew<T>(element));
+    // Iterate with an index so we can keep track of the path.
+    for (GDVIndex i=0; i < p.containerSize(); ++i) {
+      ret.append(gdv::gdvpToNew<T>(p.sequenceGetValueAt(i)));
     }
 
     return ret;
