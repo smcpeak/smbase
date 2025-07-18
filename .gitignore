@@ -24,6 +24,7 @@
 .vscode
 Makefile.base.mk
 TAGS
+__pycache__
 changes
 compile_commands.json
 config.mk

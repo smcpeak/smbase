@@ -833,6 +833,7 @@ out/%.mypy.ok: %
 	touch $@
 
 .PHONY: check-mypy
+check-mypy: out/boilerplate.py.mypy.ok
 check-mypy: out/create-tuple-class.py.mypy.ok
 check-mypy: out/find-extra-deps.py.mypy.ok
 check-mypy: out/get-file-descriptions.py.mypy.ok
