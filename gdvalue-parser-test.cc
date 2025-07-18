@@ -308,6 +308,9 @@ CLOSE_ANONYMOUS_NAMESPACE
 
 void test_gdvalue_parser()
 {
+  // Activate extensive self-checking.
+  GDValueParser::s_selfCheckCtors = true;
+
   test_bool();
   test_int();
   test_string();

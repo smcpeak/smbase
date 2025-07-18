@@ -115,7 +115,16 @@ public:      // methods
 // Methods in this class throw `XGDValueError`.
 //
 class GDValueParser {
-private:     // data
+public:      // class data
+  // When true, every constructor calls `selfCheck()`.  (There are no
+  // non-const member functions, so checking during construction is
+  // sufficient.)
+  //
+  // This is meant for use during unit testing, as it has signficant
+  // performance cost.  Default is false.
+  static bool s_selfCheckCtors;
+
+private:     // instance data
   // The entire `GDValue` we are parsing.  This object, and all if its
   // children, must not be changed while the parser object is active.
   GDValue const *m_topLevel;

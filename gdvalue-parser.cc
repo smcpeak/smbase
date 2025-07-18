@@ -145,6 +145,17 @@ GDValue const *GDVNavStep::getSpecifiedChild(GDValue const *parent) const
 
 
 // --------------------------- GDValueParser ---------------------------
+bool GDValueParser::s_selfCheckCtors = false;
+
+
+#define POSSIBLY_SELFCHECK_THIS() \
+  if (s_selfCheckCtors) {         \
+    selfCheck();                  \
+  }                               \
+  else                            \
+    (void)0 /* user ; */
+
+
 GDValueParser::~GDValueParser()
 {}
 
@@ -153,21 +164,27 @@ GDValueParser::GDValueParser(GDValueParser const &obj)
   : DMEMB(m_topLevel),
     DMEMB(m_value),
     DMEMB(m_path)
-{}
+{
+  POSSIBLY_SELFCHECK_THIS();
+}
 
 
 GDValueParser::GDValueParser(GDValueParser      &&obj)
   : MDMEMB(m_topLevel),
     MDMEMB(m_value),
     MDMEMB(m_path)
-{}
+{
+  POSSIBLY_SELFCHECK_THIS();
+}
 
 
 GDValueParser::GDValueParser(GDValue const &topLevel)
   : m_topLevel(&topLevel),
     m_value(&topLevel),
     m_path()
-{}
+{
+  POSSIBLY_SELFCHECK_THIS();
+}
 
 
 GDValueParser::GDValueParser(GDValueParser const &parent, GDVNavStep step)
@@ -176,6 +193,7 @@ GDValueParser::GDValueParser(GDValueParser const &parent, GDVNavStep step)
     m_path(parent.m_path)
 {
   m_path.push_back(step);
+  POSSIBLY_SELFCHECK_THIS();
 }
 
 
