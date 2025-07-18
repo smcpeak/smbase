@@ -85,7 +85,10 @@ public:      // methods
   explicit GDVNavStep(StepIsValue, GDValue const *value);
 
   GDVNavStep(GDVNavStep const &obj);
-  GDVNavStep &operator=(GDVNavStep const &obj);
+
+  // I currently have no need of this.  There is an implementation in
+  // the .cc file but it is commented out due to being untested.
+  GDVNavStep &operator=(GDVNavStep const &obj) = delete;
 
   // For the index case, return "[n]".  For the value case, return the
   // value as GDVN, preceded by ".".
@@ -288,9 +291,13 @@ public:      // methods
 // Thrown when a `GDValue` differs from what was expected.
 class XGDValueError : public smbase::XBase {
 public:      // data
-  // The parsing state: the top-level object, the offending object, and
-  // the navigation path from one to the other.
-  GDValueParser m_parser;
+  // Note: It is not possible to carry the `GDValueParser` here, nor any
+  // of its elements, because they all point into the toplevel `GDValue`
+  // being parsed, but that object's lifetime may end before this
+  // exception is caught.
+
+  // GDV navigation path to the offending object.
+  std::string m_path;
 
   // The conflict between what was expected and what was actually found
   // in the primary value in `m_parser`.
@@ -300,7 +307,7 @@ public:      // methods
   ~XGDValueError();
 
   explicit XGDValueError(
-    GDValueParser const &parser,
+    std::string &&path,
     std::string &&message);
 
   XGDValueError(XGDValueError const &obj);

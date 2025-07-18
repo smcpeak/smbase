@@ -310,7 +310,7 @@ void test_parserPaths()
   GDValue v(GDVMap{
     { 1, 2 },
     { "three"_sym, "four" },
-    { bigInt, 17 },
+    { bigInt, -17 },
     { "seq"_sym,
       GDVSequence{
         "one",
@@ -330,6 +330,24 @@ void test_parserPaths()
       },
     },
     { GDVSequence{1,2,3}, 4 },
+    { "omap"_sym,
+      GDVOrderedMap{
+        { 3, "three" },
+        { 2, "two" },
+        { 1, "one" },
+        { "zero"_sym, 0 },
+      },
+    },
+    { "tmap"_sym,
+      GDVTaggedMap{"tmaptag"_sym, {
+        { "a", "b" },
+      }},
+    },
+    { "tomap"_sym,
+      GDVTaggedOrderedMap{"tomaptag"_sym, {
+        { "c", "d" },
+      }},
+    },
   });
 
   GDValueParser p(v);
@@ -399,6 +417,130 @@ void test_parserPaths()
      .setGetValue(GDVOrderedMap{{8,"nine"}}).orderedMapGetValueAt(8)
      .checkIsSymbol(),
     "path <top>.seq[3][2]@[8:\"nine\"].8: expected symbol, not string");
+
+  EXPECT_EQ(p.mapGetValueAt(1).integerGet(), 2);
+  EXPECT_ERROR_SUBSTR(p.mapGetValueAtSym("three").integerGet(),
+    "<top>.three: expected integer, not string");
+  EXPECT_EQ(p.mapGetValueAt(1).integerIsNegative(), false);
+  EXPECT_EQ(p.mapGetValueAt(bigInt).integerIsNegative(), true);
+  EXPECT_EQ(p.mapGetKeyAt(bigInt).integerIsNegative(), false);
+  EXPECT_EQ(p.mapGetKeyAt(bigInt).largeIntegerGet(), bigInt);
+
+  xassert(p.mapGetValueAtSym("seq").sequenceGetValueAt(3).tupleGet()[0] == 4);
+  EXPECT_ERROR_SUBSTR(
+    p.mapGetValueAtSym("seq").sequenceGetValueAt(2).tupleGet()[0],
+    "<top>.seq[2]: expected tuple, not small integer");
+
+  xassert(p.mapGetValueAtSym("seq").sequenceGetValueAt(3)
+           .tupleGetValueAt(2).isSet());
+  EXPECT_ERROR_SUBSTR(
+    p.mapGetValueAtSym("seq").sequenceGetValueAt(3).tupleGetValueAt(3),
+    "<top>.seq[3]: expected tuple to have element at index 3, but it only has 3 elements");
+
+  EXPECT_EQ(
+    p.mapGetValueAtSym("seq").sequenceGetValueAt(3)
+     .tupleGetValueAt(2).setGetValue(6).smallIntegerGet(),
+    6);
+  EXPECT_ERROR_SUBSTR(
+    p.mapGetValueAtSym("seq").sequenceGetValueAt(3)
+     .tupleGetValueAt(2).setGetValue(66).smallIntegerGet(),
+    "<top>.seq[3][2]: expected set to have element 66, but it does not");
+
+  EXPECT_ERROR_SUBSTR(
+    p.mapGetKeyAt("nonexist"_sym),
+    "<top>: expected map to have key nonexist, but it does not");
+
+  xassert(p.mapContainsSym("seq"));
+  xassert(!p.mapContainsSym("nonexist"));
+
+  EXPECT_EQ(p.mapGetValueAtSym("omap").orderedMapGet().valueAtKey(1), "one");
+  EXPECT_EQ(p.mapGetValueAtSym("omap").orderedMapGet().valueAtIndex(0), "three");
+  p.mapGetValueAtSym("omap").checkIsPOMap();
+  EXPECT_ERROR_SUBSTR(
+    p.mapGetValueAtSym("seq").checkIsPOMap(),
+    "<top>.seq: expected (possibly ordered) map, not sequence");
+  EXPECT_EQ(
+    p.mapGetValueAtSym("omap").orderedMapGetKeyAt(1).getValue(),
+    GDValue(1));
+  EXPECT_ERROR_SUBSTR(
+    p.mapGetValueAtSym("omap").orderedMapGetKeyAt(4).getValue(),
+    "<top>.omap: expected ordered map to have key 4, but it does not");
+  EXPECT_EQ(
+    p.mapGetValueAtSym("omap").orderedMapGetValueAt(1).getValue(),
+    GDValue("one"));
+  EXPECT_ERROR_SUBSTR(
+    p.mapGetValueAtSym("omap").orderedMapGetValueAt(4).getValue(),
+    "<top>.omap: expected ordered map to have key 4, but it does not");
+  xassert(!p.mapGetValueAtSym("omap").orderedMapContainsSym("x"));
+  EXPECT_EQ(
+    p.mapGetValueAtSym("omap").orderedMapGetValueAtSym("zero").getValue(),
+    GDValue(0));
+
+  EXPECT_EQ(
+    p.mapGetValueAtSym("tmap").taggedContainerGetTag(),
+    "tmaptag"_sym);
+  EXPECT_ERROR_SUBSTR(
+    p.mapGetValueAtSym("tmap").checkContainerTag("z"),
+    "<top>.tmap: expected container to have tag z, but it instead has tag tmaptag");
+
+  EXPECT_ERROR_SUBSTR(
+    p.mapGetValueAtSym("tmap").checkTaggedOrderedMapTag("tomaptag"),
+    "<top>.tmap: expected tagged ordered map, not tagged map");
+  p.mapGetValueAtSym("tomap").checkTaggedOrderedMapTag("tomaptag");
+
+  // Do a test using a temporary object and parser to exercise the case
+  // where we catch the exception after both have been destroyed.  This
+  // would have been a problem with the original `XGDValueError` design,
+  // which carried a copy of the `GDValueParser` object.
+  EXPECT_ERROR_SUBSTR(
+    GDValueParser(GDVMap{{1,2}}).mapGetValueAt(1).checkIsTaggedOrderedMap(),
+    "<top>.1: expected tagged ordered map, not small integer");
+
+  EXPECT_ERROR_SUBSTR(
+    p.mapGetValueAtSym("tmap").checkTaggedOrderedMapTag("tomaptag"),
+    "<top>.tmap: expected tagged ordered map, not tagged map");
+
+  // Exercise some simple queries.
+  EXPECT_EQ(p.getKindName(), "GDVK_MAP");
+  xassert(p.getSuperKind() == GDVK_MAP);
+  xassert(p.mapGetKeyAt(1).getSuperKind() == GDVK_INTEGER);
+  xassert(!p.isSymbol());
+  xassert(!p.isTaggedSequence());
+  xassert(!p.isTaggedTuple());
+  xassert(!p.isTaggedSet());
+  xassert(!p.isTaggedOrderedMap());
+  xassert(!p.isTaggedPOMap());
+  xassert(p.isPOMap());
+  xassert(!p.isOrderedContainer());
+  xassert(p.isUnorderedContainer());
+  xassert(!p.isNull());
+  xassert(!p.isBool());
+  xassert(GDValueParser(GDValue()).isNull());
+  xassert(GDValueParser(GDValue(true)).isBool());
+  xassert(!p.containerIsEmpty());
+  xassert(p.mapGetKeyAt(GDVSequence{1,2,3}).sequenceGet() ==
+          (GDVSequence{1,2,3}));
+
+  // Test copying the parser.
+  {
+    GDValueParser p2(p.mapGetValueAtSym("seq"));
+    xassert(p2.isSequence());
+    EXPECT_EQ(p2.sequenceGetValueAt(0).getValue(), GDValue("one"));
+
+    // Copy using lvalue reference.
+    GDValueParser p3(p2);
+    xassert(p3.isSequence());
+    EXPECT_EQ(p3.sequenceGetValueAt(0).getValue(), GDValue("one"));
+  }
+}
+
+
+
+void test_copy_XGDValueError()
+{
+  XGDValueError e1("p", "m");
+  XGDValueError e2(e1);
+  EXPECT_EQ(e2.getConflict(), "At GDV path p: m");
 }
 
 
@@ -423,6 +565,7 @@ void test_gdvalue_parser()
   test_gdvpOptTo();
   testWithData2();
   test_parserPaths();
+  test_copy_XGDValueError();
 }
 
 

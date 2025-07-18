@@ -66,6 +66,7 @@ GDVNavStep::GDVNavStep(GDVNavStep const &obj)
 }
 
 
+#if 0    // Not needed, untested, but might be needed in the future.
 GDVNavStep &GDVNavStep::operator=(GDVNavStep const &obj)
 {
   if (this != &obj) {
@@ -74,6 +75,7 @@ GDVNavStep &GDVNavStep::operator=(GDVNavStep const &obj)
   }
   return *this;
 }
+#endif // 0
 
 
 std::string GDVNavStep::asString() const
@@ -263,7 +265,7 @@ RELAY_QUERY(bool, isUnorderedContainer)
 
 void GDValueParser::throwError(std::string &&msg) const
 {
-  THROW(XGDValueError(*this, std::move(msg)));
+  THROW(XGDValueError(pathString(), std::move(msg)));
 }
 
 
@@ -458,7 +460,8 @@ GDValueParser GDValueParser::mapGetValueAt(GDValue const &key) const
   // As the code is currently written, including the `mapContains` call
   // at the start of this function, we perform three map lookups (all
   // in the same map, with the same or equivalent keys).  That could be
-  // optimized later.
+  // optimized later.  (The lookup in step 3 is inside an assertion, so
+  // is in a sense already optimized out under NDEBUG.)
   //
   return GDValueParser(*this,
     GDVNavStep(GDVNavStep::STEP_IS_VALUE,
@@ -549,7 +552,7 @@ bool GDValueParser::orderedMapContainsSym(char const *symName) const
 
 GDValueParser GDValueParser::orderedMapGetValueAtSym(char const *symName) const
 {
-  return orderedMapGetValueAt(symName);
+  return orderedMapGetValueAt(GDVSymbol(symName));
 }
 
 
@@ -598,15 +601,15 @@ XGDValueError::~XGDValueError()
 
 
 XGDValueError::XGDValueError(
-  GDValueParser const &parser,
+  std::string &&path,
   std::string &&message)
-  : m_parser(parser),
+  : m_path(std::move(path)),
     m_message(std::move(message))
 {}
 
 
 XGDValueError::XGDValueError(XGDValueError const &obj)
-  : DMEMB(m_parser),
+  : DMEMB(m_path),
     DMEMB(m_message)
 {}
 
@@ -614,7 +617,7 @@ XGDValueError::XGDValueError(XGDValueError const &obj)
 std::string XGDValueError::getConflict() const
 {
   return stringb(
-    "At GDV path " << m_parser.pathString() << ": " << m_message);
+    "At GDV path " << m_path << ": " << m_message);
 }
 
 
