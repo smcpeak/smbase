@@ -8,6 +8,7 @@
 
 #include "smbase/gdvalue.h"            // gdv::GDValue
 #include "smbase/gdvalue-parse.h"      // gdv::GDVTo
+#include "smbase/gdvalue-parser.h"     // gdv::GDVPTo
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 
 #include <set>                         // std::set
