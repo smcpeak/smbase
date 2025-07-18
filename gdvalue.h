@@ -732,6 +732,11 @@ public:      // methods
   void mapSetSym(char const *symName, GDValue      &&value);
   bool mapRemoveSym(char const *symName);
 
+  // TODO: Rename:
+  //   mapGetSym -> mapGetValueAtSym
+  //   mapSetSym -> mapSetValueAtSym
+  //   mapRemoveSym -> mapRemoveKeySym
+
 
   // ---- OrderedMap ----
   /*implicit*/ GDValue(GDVOrderedMap const &map);

@@ -435,7 +435,8 @@ GDValueParser GDValueParser::setGetValue(GDValue const &elt) const
 DEFINE_CHECK_IS_KIND(Map, "map")
 
 RELAY_KIND_SPECIFIC_QUERY0(Map, GDVMap const &, mapGet)
-RELAY_KIND_SPECIFIC_QUERY1(Map, bool, mapContains, GDValue const &, key)
+
+RELAY_KIND_SPECIFIC_QUERY1(POMap, bool, mapContains, GDValue const &, key)
 
 
 GDValueParser GDValueParser::mapGetKeyAt(GDValue const &key) const
@@ -484,7 +485,7 @@ GDValueParser GDValueParser::mapGetValueAt(GDValue const &key) const
 }
 
 
-RELAY_KIND_SPECIFIC_QUERY1(Map, bool, mapContainsSym, char const *, symName)
+RELAY_KIND_SPECIFIC_QUERY1(POMap, bool, mapContainsSym, char const *, symName)
 
 
 GDValueParser GDValueParser::mapGetValueAtSym(char const *symName) const

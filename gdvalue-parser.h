@@ -256,8 +256,13 @@ public:      // methods
   GDValueParser setGetValue(GDValue const &elt) const;
 
   // ---- Map ----
+  // False for an ordered map.  Use `checkIsPOMap()` to allow both.
   void checkIsMap() const;
+
+  // Does not work for ordered map.
   GDVMap const &mapGet() const;
+
+  // The rest of these *do* work for ordered maps.
   bool mapContains(GDValue const &key) const;
   GDValueParser mapGetKeyAt(GDValue const &key) const;
   GDValueParser mapGetValueAt(GDValue const &key) const;

@@ -240,7 +240,7 @@ void test_mapGetValueAtSymOpt()
   {
     GDValue v;
     EXPECT_ERROR_SUBSTR(GDValueParser(v).mapGetValueAtSymOpt("foo"),
-      "expected map, not symbol");
+      "expected (possibly ordered) map, not symbol");
   }
 
   {
@@ -618,6 +618,30 @@ void test_optional()
 }
 
 
+// Make sure an ordered map can be treated like a map.
+void test_orderedMapAsMap()
+{
+  GDValue v{GDVOrderedMap{
+    { 1, 2 },
+    { "x"_sym, "exs" },
+  }};
+  GDValueParser p(v);
+
+  p.checkIsPOMap();
+  EXPECT_ERROR_SUBSTR(p.checkIsMap(),
+    "expected map, not ordered map");
+
+  xassert(p.mapContains(1));
+  xassert(!p.mapContains(2));
+
+  EXPECT_EQ(p.mapGetKeyAt(1).getValue().smallIntegerGet(), 1);
+  EXPECT_EQ(p.mapGetValueAt(1).getValue().smallIntegerGet(), 2);
+
+  xassert(p.mapContainsSym("x"));
+  EXPECT_EQ(p.mapGetValueAtSym("x").getValue().stringGet(), "exs");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -642,6 +666,7 @@ void test_gdvalue_parser()
   test_copy_XGDValueError();
   test_move_parsedObject();
   test_optional();
+  test_orderedMapAsMap();
 }
 
 
