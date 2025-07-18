@@ -31,12 +31,14 @@ other programs, rather than raising an exception (which is often
 ineffective at stopping the program).
 """
 
-import os                    # getenv
+import os                    # getenv, path
+import re                    # error
 import signal                # signal
 import sys                   # argv, stderr, stdin, exc_info
-import traceback             # print_exc
+import traceback             # extract_tb, print_exc
 
-from typing import Callable, NoReturn
+from types import TracebackType
+from typing import Callable, Optional, NoReturn, Tuple
 
 
 # Positive if debug is enabled, with higher values enabling more printing.
@@ -64,13 +66,44 @@ def die(message: str) -> NoReturn:
   raise Error(message)
 
 
+def findCallsiteForCompile(e: re.error) -> Optional[Tuple[str, int]]:
+  """
+  Given regex error `e`, search its traceback to find the likely
+  location of the offending regex in the source code.  The algorithm
+  looks for the first (outermost) frame for which the *next* frame is
+  a call to `compile` in the file `re.py`.  It then returns the
+  file name and line number of that frame.
+  """
+
+  tb: Optional[TracebackType] = e.__traceback__
+  if tb is None:
+    return None
+
+  # Collect frames in order: outermost -> innermost.
+  frames = []
+  while tb is not None:
+    frames.append(tb.tb_frame)
+    tb = tb.tb_next
+
+  # Now look for a frame where the next one is re.compile.
+  for i in range(len(frames) - 1):
+    next_frame = frames[i + 1]
+    if (next_frame.f_code.co_name == "compile" and
+        next_frame.f_code.co_filename.endswith("re.py")):
+      # Return the outer frame's source location.
+      outer_frame = frames[i]
+      return (outer_frame.f_code.co_filename, outer_frame.f_lineno)
+
+  return None
+
+
 def exceptionMessage(e: BaseException) -> str:
   """Turn exception 'e' into a human-readable message."""
 
   # If the exception comes from another module, get its name followed
   # by a dot.  Otherwise get the empty string.
   m = type(e).__module__
-  if m == "__main__" or m == "boilerplate":
+  if m == "__main__" or m == "boilerplate" or m == "builtins":
     m = ""
   else:
     m += "."
@@ -82,15 +115,23 @@ def exceptionMessage(e: BaseException) -> str:
   s = str(e)
 
   if s:
+    if isinstance(e, re.error):
+      # See if we can get a source location for a regex compile error.
+      srcLoc = findCallsiteForCompile(e)
+      if srcLoc is not None:
+        file, line = srcLoc
+        file = os.path.basename(file)
+        s = f"{file}:{line}: {s}"
+
     return f"{t}: {s}"
 
   else:
     # If no extra info, try to get the location of the `raise`.  This is
     # needed for AssertionError, for example.
-    _, _, exc_traceback = sys.exc_info()
-    if exc_traceback:
+    tb: Optional[TracebackType] = e.__traceback__
+    if tb:
       # Get the last frame.
-      frame = traceback.extract_tb(exc_traceback)[-1]
+      frame = traceback.extract_tb(tb)[-1]
       fname = os.path.basename(frame.filename)
       return f"{t} at {fname}:{frame.lineno}"
 
