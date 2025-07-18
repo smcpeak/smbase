@@ -22,7 +22,7 @@
 #include "smbase/gdvalue-types.h"                // gdv::GDVIndex
 #include "smbase/gdvsymbol-fwd.h"                // gdv::GDVSymbol
 #include "smbase/gdvtuple-fwd.h"                 // gdv::GDVTuple
-#include "smbase/sm-macros.h"                    // OPEN_NAMESPACE
+#include "smbase/sm-macros.h"                    // OPEN_NAMESPACE, NORETURN
 
 #include "smbase/std-optional-fwd.h"             // std::optional
 #include "smbase/std-string-view-fwd.h"          // std::string_view
@@ -206,7 +206,7 @@ public:      // methods
   bool isUnorderedContainer() const;
 
   // Throw `XGDValueError` with this parser as context.
-  void throwError(std::string &&msg) const;
+  void throwError(std::string &&msg) const NORETURN;
 
   // Throw `XGDValueError` if the current value does not have kind
   // `kind`.
