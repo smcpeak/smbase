@@ -9,7 +9,6 @@
 #include "smbase/gdvalue-list-fwd.h"   // fwds for this module
 
 #include "smbase/gdvalue.h"            // gdv::GDValue
-#include "smbase/gdvalue-parse.h"      // gdv::GDVTo
 #include "smbase/gdvalue-parser.h"     // gdv::GDVPTo
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 
@@ -30,23 +29,6 @@ GDValue toGDValue(std::list<T,A> const &v)
 
   return ret;
 }
-
-
-template <typename T, typename A>
-struct GDVTo<std::list<T,A>> {
-  static std::list<T,A> f(GDValue const &v)
-  {
-    checkIsSequence(v);
-
-    std::list<T,A> lst;
-
-    for (GDValue const &element : v.sequenceGet()) {
-      lst.push_back(gdvTo<T>(element));
-    }
-
-    return lst;
-  }
-};
 
 
 template <typename T, typename A>

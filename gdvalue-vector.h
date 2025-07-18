@@ -7,7 +7,6 @@
 #include "smbase/gdvalue-vector-fwd.h" // fwds for this module
 
 #include "smbase/gdvalue.h"            // gdv::GDValue
-#include "smbase/gdvalue-parse.h"      // gdv::GDVTo
 #include "smbase/gdvalue-parser.h"     // gdv::GDVPTo
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 
@@ -28,23 +27,6 @@ GDValue toGDValue(std::vector<T,A> const &v)
 
   return ret;
 }
-
-
-template <typename T, typename A>
-struct GDVTo<std::vector<T,A>> {
-  static std::vector<T,A> f(GDValue const &v)
-  {
-    checkIsSequence(v);
-
-    std::vector<T,A> vec;
-
-    for (GDValue const &element : v.sequenceGet()) {
-      vec.push_back(gdvTo<T>(element));
-    }
-
-    return vec;
-  }
-};
 
 
 template <typename T, typename A>

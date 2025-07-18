@@ -7,7 +7,6 @@
 #include "smbase/gdvalue-set-fwd.h"    // fwds for this module
 
 #include "smbase/gdvalue.h"            // gdv::GDValue
-#include "smbase/gdvalue-parse.h"      // gdv::GDVTo
 #include "smbase/gdvalue-parser.h"     // gdv::GDVPTo
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 
@@ -28,23 +27,6 @@ GDValue toGDValue(std::set<V,C,A> const &s)
 
   return ret;
 }
-
-
-template <typename V, typename C, typename A>
-struct GDVTo<std::set<V,C,A>> {
-  static std::set<V,C,A> f(GDValue const &src)
-  {
-    checkIsSet(src);
-
-    std::set<V,C,A> dest;
-
-    for (GDValue const &v : src.setGet()) {
-      dest.insert(gdvTo<V>(v));
-    }
-
-    return dest;
-  }
-};
 
 
 template <typename V, typename C, typename A>

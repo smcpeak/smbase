@@ -7,7 +7,6 @@
 #include "gdvalue-unique-ptr-fwd.h"    // fwds for this module
 
 #include "smbase/gdvalue.h"            // gdv::GDValue
-#include "smbase/gdvalue-parse.h"      // gdv::GDVTo
 #include "smbase/gdvalue-parser.h"     // gdv::GDVPTo
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 
@@ -22,16 +21,6 @@ GDValue toGDValue(std::unique_ptr<T,D> const &p)
 {
   return toGDValue(*p);
 }
-
-
-template <typename T, typename D>
-struct GDVTo<std::unique_ptr<T,D>> {
-  // This simply wraps the result of `gdvToNew` as a `unique_ptr`.
-  static std::unique_ptr<T,D> f(GDValue const &v)
-  {
-    return std::unique_ptr<T,D>(gdvToNew<T>(v));
-  }
-};
 
 
 template <typename T, typename D>

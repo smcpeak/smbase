@@ -107,7 +107,6 @@ static void entry(int argc, char **argv)
   RUN_TEST(gcc_options);
   RUN_TEST(gdvalue);
   RUN_TEST(gdvalue_json);
-  RUN_TEST(gdvalue_parse);
   RUN_TEST(gdvalue_parser);
   RUN_TEST(gdvsymbol);
   RUN_TEST(gdvtuple);
