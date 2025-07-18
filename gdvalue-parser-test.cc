@@ -3,12 +3,14 @@
 
 #include "smbase/gdvalue-list-fwd.h"             // gdv::toGDValue(std::list)
 #include "smbase/gdvalue-map-fwd.h"              // gdv::toGDValue(std::map)
+#include "smbase/gdvalue-optional-fwd.h"         // gdv::toGDValue(std::optional)
 #include "smbase/gdvalue-set-fwd.h"              // gdv::toGDValue(std::set)
 #include "smbase/gdvalue-unique-ptr-fwd.h"       // gdv::toGDValue(std::unique_ptr)
 #include "smbase/gdvalue-vector-fwd.h"           // gdv::toGDValue(std::vector)
 
 #include "smbase/gdvalue-list.h"                 // module under test
 #include "smbase/gdvalue-map.h"                  // module under test
+#include "smbase/gdvalue-optional.h"             // module under test
 #include "smbase/gdvalue-parser-ops.h"           // module under test
 #include "smbase/gdvalue-set.h"                  // module under test
 #include "smbase/gdvalue-unique-ptr.h"           // module under test
@@ -590,6 +592,32 @@ void test_move_parsedObject()
 }
 
 
+// I should have been using this function above too ...
+template <typename T>
+void testRoundtrip(T const &orig, GDValue expectGDV)
+{
+  // Check that serialization gets what we expect.
+  EXPECT_EQ(toGDValue(orig), expectGDV);
+
+  // Deserialize.
+  T deserialized(gdvpTo<T>(GDValueParser(expectGDV)));
+
+  // Essentially I want to check that `deserialized==orig`, but I may be
+  // working with a type that does not have `operator==`.  Since I know
+  // it can serialize to GDV, do that and compare to `expectGDV` again.
+  EXPECT_EQ(toGDValue(deserialized), expectGDV);
+}
+
+
+void test_optional()
+{
+  testRoundtrip(std::optional<int>(),
+                GDValue());
+  testRoundtrip(std::optional<int>(3),
+                GDValue(3));
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -613,6 +641,7 @@ void test_gdvalue_parser()
   test_parserPaths();
   test_copy_XGDValueError();
   test_move_parsedObject();
+  test_optional();
 }
 
 
