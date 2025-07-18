@@ -439,6 +439,16 @@ T *gdvpToNew(GDValueParser const &p)
 
 
 // ---------------------- Member deserialization -----------------------
+// Initialize `<memb>` from a field `<memb>` of GDValueParser `p` that
+// has the same name except without the "m_" prefix.
+#define GDVP_READ_MEMBER_SYM(memb) \
+  memb(gdv::gdvpTo<decltype(memb)>(p.mapGetValueAtSym(gdv::stripMemberPrefix(#memb)))) /* user , */
+
+// Same, but using a string as a key.
+#define GDVP_READ_MEMBER_STR(memb) \
+  memb(gdv::gdvpTo<decltype(memb)>(p.mapGetValueAtStr(gdv::stripMemberPrefix(#memb)))) /* user , */
+
+
 // Initialize `<memb>` from an optional field `<memb>` of GDValueParser
 // `p` that has the same name except without the "m_" prefix.
 #define GDVP_READ_OPT_MEMBER_SYM(memb) \

@@ -49,8 +49,8 @@ public:      // funcs
   }
 
   explicit Data(GDValueParser const &p)
-    : m_x(gdvpTo<int>(p.mapGetValueAtSym("x"))),
-      m_y(gdvpTo<int>(p.mapGetValueAtSym("y")))
+    : GDVP_READ_MEMBER_SYM(m_x),
+      GDVP_READ_MEMBER_SYM(m_y)
   {
     p.checkTaggedMapTag("Data");
   }
@@ -268,10 +268,14 @@ public:      // data
   // Uses a string as a key.
   std::list<int> m_intList;
 
+  // String as key, not optional.
+  std::string m_s2;
+
 public:      // funcs
   explicit Data2(GDValueParser const &p)
     : GDVP_READ_OPT_MEMBER_SYM(m_s1),
-      GDVP_READ_OPT_MEMBER_STR(m_intList)
+      GDVP_READ_OPT_MEMBER_STR(m_intList),
+      GDVP_READ_MEMBER_STR(m_s2)
   {}
 
   operator GDValue() const
@@ -280,6 +284,7 @@ public:      // funcs
 
     GDV_WRITE_MEMBER(m_s1);
     GDV_WRITE_MEMBER_SK(m_intList);
+    GDV_WRITE_MEMBER_SK(m_s2);
 
     // Exercise the non-Opt parser too.
     xassert(GDValueParser(m).mapGetValueAtStr("intList").getValue() == toGDValue(m_intList));
@@ -294,6 +299,7 @@ void testWithData2()
   GDValue serialized(GDVMap{
     { "s1"_sym, "s1value" },
     { "intList", GDVSequence{1,2,3} },
+    { "s2", "s2value" },
   });
 
   Data2 d{GDValueParser(serialized)};
