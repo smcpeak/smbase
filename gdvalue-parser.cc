@@ -78,6 +78,12 @@ GDVNavStep &GDVNavStep::operator=(GDVNavStep const &obj)
 
 std::string GDVNavStep::asString() const
 {
+  // When we're printing an access path, the performance cost of
+  // decimalization is not important, and the integers are probably more
+  // meaningful to the user in decimal.
+  static GDValueWriteOptions const options =
+    GDValueWriteOptions().setWriteLargeIntegersAsDecimal(true);
+
   switch (m_kind) {
     default:
       xfailure("bad kind");
@@ -88,10 +94,10 @@ std::string GDVNavStep::asString() const
     case SK_KEY:
       // The notation perhaps suggests we are "at" the indicated value,
       // rather than using it to traverse to something else.
-      return stringb("@" << *m_key);
+      return stringb("@" << m_key->asString(options));
 
     case SK_VALUE:
-      return stringb("." << *m_value);
+      return stringb("." << m_value->asString(options));
   }
 }
 

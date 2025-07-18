@@ -15,6 +15,7 @@
 #include "smbase/gdvalue-vector.h"               // module under test
 
 #include "smbase/gdvalue.h"                      // gdv::GDValue
+#include "smbase/ordered-map-ops.h"              // smbase::OrderedMap ctor, etc.
 #include "smbase/sm-macros.h"                    // {OPEN,CLOSE}_ANONYMOUS_NAMESPACE
 #include "smbase/sm-test.h"                      // EXPECT_EQ
 
@@ -24,9 +25,6 @@
 
 using namespace gdv;
 using namespace smbase;
-
-
-// TODO: Write more tests that exercise reporting paths in containers.
 
 
 OPEN_ANONYMOUS_NAMESPACE
@@ -303,6 +301,107 @@ void testWithData2()
 }
 
 
+// Exercise some more cases of paths in GDValueParser.
+void test_parserPaths()
+{
+  GDVInteger bigInt =
+    Integer::fromDigits("1234567890123456789012345678901234567890");
+
+  GDValue v(GDVMap{
+    { 1, 2 },
+    { "three"_sym, "four" },
+    { bigInt, 17 },
+    { "seq"_sym,
+      GDVSequence{
+        "one",
+        "two"_sym,
+        3,
+        GDVTuple{
+          4,
+          "five",
+          GDVSet{
+            6,
+            "seven",
+            GDVOrderedMap{
+              { 8, "nine" },
+            },
+          },
+        },
+      },
+    },
+    { GDVSequence{1,2,3}, 4 },
+  });
+
+  GDValueParser p(v);
+
+  // It's a little silly to complain about the internals of a key, since
+  // the client typically knows the key's entire structure beforehand,
+  // but this might happen if we are enumerating all keys.
+  EXPECT_ERROR_SUBSTR(
+    p.mapGetKeyAt(1).checkIsSymbol(),
+    "path <top>@1: expected symbol, not small integer");
+
+  EXPECT_ERROR_SUBSTR(
+    p.mapGetKeyAt(GDVSequence{1,2,3}).sequenceGetValueAt(0).checkIsSymbol(),
+    "path <top>@[1 2 3][0]: expected symbol, not small integer");
+
+  EXPECT_ERROR_SUBSTR(
+    p.mapGetValueAt(1).checkIsSymbol(),
+    "path <top>.1: expected symbol, not small integer");
+
+  EXPECT_ERROR_SUBSTR(
+    p.mapGetKeyAt("three"_sym).checkIsInteger(),
+    "path <top>@three: expected integer, not symbol");
+
+  EXPECT_ERROR_SUBSTR(
+    p.mapGetValueAt("three"_sym).checkIsInteger(),
+    "path <top>.three: expected integer, not string");
+
+  EXPECT_ERROR_SUBSTR(
+    p.mapGetValueAt(bigInt).checkIsMap(),
+    "path <top>.1234567890123456789012345678901234567890: expected map, not small integer");
+
+  EXPECT_ERROR_SUBSTR(
+    p.mapGetValueAtSym("seq").sequenceGetValueAt(1).checkIsInteger(),
+    "path <top>.seq[1]: expected integer, not symbol");
+
+  EXPECT_ERROR_SUBSTR(
+    p.mapGetValueAtSym("seq").sequenceGetValueAt(3).checkIsInteger(),
+    "path <top>.seq[3]: expected integer, not tuple");
+
+  EXPECT_ERROR_SUBSTR(
+    p.mapGetValueAtSym("seq").sequenceGetValueAt(3).tupleGetValueAt(0)
+     .checkIsSymbol(),
+    "path <top>.seq[3][0]: expected symbol, not small integer");
+
+  EXPECT_ERROR_SUBSTR(
+    p.mapGetValueAtSym("seq").sequenceGetValueAt(3).tupleGetValueAt(0)
+     .checkIsSymbol(),
+    "path <top>.seq[3][0]: expected symbol, not small integer");
+
+  EXPECT_ERROR_SUBSTR(
+    p.mapGetValueAtSym("seq").sequenceGetValueAt(3).tupleGetValueAt(2)
+     .checkIsSymbol(),
+    "path <top>.seq[3][2]: expected symbol, not set");
+
+  EXPECT_ERROR_SUBSTR(
+    p.mapGetValueAtSym("seq").sequenceGetValueAt(3).tupleGetValueAt(2)
+     .setGetValue(6).checkIsSymbol(),
+    "path <top>.seq[3][2]@6: expected symbol, not small integer");
+
+  EXPECT_ERROR_SUBSTR(
+    p.mapGetValueAtSym("seq").sequenceGetValueAt(3).tupleGetValueAt(2)
+     .setGetValue(GDVOrderedMap{{8,"nine"}}).checkIsSymbol(),
+    "path <top>.seq[3][2]@[8:\"nine\"]: expected symbol, not ordered map");
+
+  EXPECT_ERROR_SUBSTR(
+    p.mapGetValueAtSym("seq").sequenceGetValueAt(3).tupleGetValueAt(2)
+     .setGetValue(GDVOrderedMap{{8,"nine"}}).orderedMapGetValueAt(8)
+     .checkIsSymbol(),
+    "path <top>.seq[3][2]@[8:\"nine\"].8: expected symbol, not string");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -323,6 +422,7 @@ void test_gdvalue_parser()
   test_mapGetValueAtSymOpt();
   test_gdvpOptTo();
   testWithData2();
+  test_parserPaths();
 }
 
 
