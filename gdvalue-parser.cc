@@ -117,20 +117,16 @@ GDValue const *GDVNavStep::getSpecifiedChild(GDValue const *parent) const
     case GDVK_SET:
     case GDVK_TAGGED_SET:
       xassert(m_kind == SK_KEY);
-
-      // I expect `setGetValue` to return the same object that `m_key`
-      // points at, but I do this for uniformity and to validate that
-      // the key is in fact present in the set.
-      return &( parent->setGetValue(*m_key) );
+      xassert( &( parent->setGetValue(*m_key) ) == m_key );
+      return m_key;
 
     case GDVK_MAP:
     case GDVK_TAGGED_MAP:
     case GDVK_ORDERED_MAP:
     case GDVK_TAGGED_ORDERED_MAP:
       if (m_kind == SK_KEY) {
-        // As in the case of sets, I'm expecting `mapGetKeyAt` to return
-        // the same thing that `m_key` points at.
-        return &( parent->mapGetKeyAt(*m_key) );
+        xassert( &( parent->mapGetKeyAt(*m_key) ) == m_key );
+        return m_key;
       }
       else {
         xassert(m_kind == SK_VALUE);
