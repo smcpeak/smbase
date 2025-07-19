@@ -1038,18 +1038,14 @@ GDValue nullablePtrToGDValue(T const * NULLABLE ptr)
 // prefix.  Otherwise return it unchanged.
 char const *stripMemberPrefix(char const *name);
 
-// Write `<memb>` to a field of GDValue `m` that has the same name
-// except without the "m_" prefix (if any).
-#define GDV_WRITE_MEMBER(memb) \
+// Write `<memb>` to a field of GDValue `m` that is a symbol with the
+// same name except without the "m_" prefix (if any).
+#define GDV_WRITE_MEMBER_SYM(memb) \
   m.mapSetValueAtSym(gdv::stripMemberPrefix(#memb), gdv::toGDValue(memb)) /* user ; */
 
-// Same, but the key is a string rather than a symbol.  The suffix "_SK"
-// means "string key".
-#define GDV_WRITE_MEMBER_SK(memb) \
+// Same, but the key is a string rather than a symbol.
+#define GDV_WRITE_MEMBER_STR(memb) \
   m.mapSetValueAt(gdv::stripMemberPrefix(#memb), gdv::toGDValue(memb)) /* user , */
-
-
-// TODO: Rename the above to use "_SYM" and "_STR".
 
 
 // Note: There are corresponding deserialization macros in

@@ -284,9 +284,9 @@ public:      // funcs
   {
     GDValue m(GDVK_MAP);
 
-    GDV_WRITE_MEMBER(m_s1);
-    GDV_WRITE_MEMBER_SK(m_intList);
-    GDV_WRITE_MEMBER_SK(m_s2);
+    GDV_WRITE_MEMBER_SYM(m_s1);
+    GDV_WRITE_MEMBER_STR(m_intList);
+    GDV_WRITE_MEMBER_STR(m_s2);
 
     // Exercise the non-Opt parser too.
     xassert(GDValueParser(m).mapGetValueAtStr("intList").getValue() == toGDValue(m_intList));
