@@ -1,22 +1,24 @@
 // vector-util-test.cc
 // Test code for vector-util.h.
 
-#include "vector-util.h"               // module under test
+#include "smbase/vector-util.h"        // module under test
 
-#include "optional-util.h"             // operator<<(std::optional)
-#include "sm-test.h"                   // EXPECT_EQ
-#include "string-util.h"               // doubleQuote
+#include "smbase/optional-util.h"      // operator<<(std::optional)
+#include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
+#include "smbase/sm-test.h"            // EXPECT_EQ
+#include "smbase/string-util.h"        // doubleQuote
 
 #include <string>                      // std::string
 #include <optional>                    // std::nullopt
 
+
 using std::string;
 
 
-// TODO: Use an anonymous namespace.
+OPEN_ANONYMOUS_NAMESPACE
 
 
-static void testVecAccumulateWith()
+void testVecAccumulateWith()
 {
   std::vector<string> v;
   EXPECT_EQ(vecAccumulateWith(v, string("-")), "");
@@ -30,7 +32,7 @@ static void testVecAccumulateWith()
 
 
 // Test 'vecEraseAll', 'vecToElementSet', and `vecFindIndex`.
-static void testVecEraseAll()
+void testVecEraseAll()
 {
   std::vector<int> v{1,2,3,2,1};
 
@@ -60,7 +62,7 @@ static void testVecEraseAll()
 }
 
 
-static void testVecMapElements()
+void testVecMapElements()
 {
   std::vector<string> src {"a", "b"};
   std::vector<string> dest(vecMapElements<string>(src,
@@ -74,7 +76,7 @@ static void testVecMapElements()
 }
 
 
-static void testVecConvertElements()
+void testVecConvertElements()
 {
   std::vector<string> src {"a", "b", "c"};
 
@@ -84,7 +86,7 @@ static void testVecConvertElements()
 }
 
 
-static void testVecCommonPrefixLength()
+void testVecCommonPrefixLength()
 {
   std::vector<int> v0{};
   std::vector<int> v1{1};
@@ -100,7 +102,7 @@ static void testVecCommonPrefixLength()
 }
 
 
-static void testVecFindIndex()
+void testVecFindIndex()
 {
   std::vector<int> v0{};
   std::vector<int> v1{1};
@@ -116,7 +118,7 @@ static void testVecFindIndex()
 }
 
 
-static void test_vecAppendByMoving()
+void test_vecAppendByMoving()
 {
   std::vector<std::string> a{"a", "b", "c"};
   std::vector<std::string> b{"d", "e", "f"};
@@ -126,6 +128,9 @@ static void test_vecAppendByMoving()
   EXPECT_EQ(stringb(a), R"(["a", "b", "c", "d", "e", "f"])");
   EXPECT_EQ(b.size(), 0);
 }
+
+
+CLOSE_ANONYMOUS_NAMESPACE
 
 
 void test_vector_util()
