@@ -66,7 +66,7 @@ bool GDValueWriter::writeContainer(
   // This function is a template so this iteration is generic w.r.t.
   // the container type.
   for (auto const &val : container) {
-    if (m_options.m_writeJSON && (curIndex > 0)) {
+    if (m_options.m_writeCommas && (curIndex > 0)) {
       os() << ',';
     }
 

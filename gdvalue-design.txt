@@ -837,13 +837,20 @@ Specific GDV kinds are handled as follows:
 
     GDVN: 123
 
-    If small enough to represent exactly as a 64-bit float:
+    If the value is small enough to represent exactly as a 64-bit float,
+    i.e., it is in the range [- 2^53, 2^53 - 1]:
 
       JSON: 123
 
-    If too large:
+    Otherwise:
 
-      JSON: { "_type": "integer", "value": "123" }
+      JSON: { "_type": "integer", "value": "<digits>" }
+
+    where <digits> is either:
+
+      * A sequence of decimal digits.
+
+      * The prefix "0x" followed by a sequence of hexadecimal digits.
 
   String: Usual JSON representation.
 

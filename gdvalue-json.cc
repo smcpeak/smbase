@@ -244,8 +244,8 @@ std::string jsoToJSON(GDValue const &v, GDValueWriteOptions opts)
   // JSON only has "\u1234", not "\u{1234}".
   opts.m_useUndelimitedHexEscapes = true;
 
-  // TODO: Rename this to reflect it is just about commas.
-  opts.m_writeJSON = true;
+  // JSON likes its commas.
+  opts.m_writeCommas = true;
 
   return v.asString(opts);
 }

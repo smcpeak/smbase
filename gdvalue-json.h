@@ -45,10 +45,17 @@ GDValue gdvToJSO(GDValue const &src);
 
 // The next step is to serialize the JSO using JSON syntactc
 // conventions, most notably adding commas between values.  Internally,
-// this enables `opts.m_writeJSON`.
+// this sets the options in `opts` required for JSON compatibility, but
+// otherwise respects the values passed in.
 std::string jsoToJSON(GDValue const &v, GDValueWriteOptions opts = {});
 
 // These two steps can be combined into one.
+//
+// Note: Setting `opts.m_writeLargeIntegersAsDecimal` is ineffective
+// here because the translation of large integers happens inside
+// `gdvToJSO`, which does not accept options.  However, as noted above,
+// setting the global default *is* effective.
+//
 std::string gdvToJSON(GDValue const &v, GDValueWriteOptions opts = {});
 
 

@@ -36,14 +36,9 @@ public:      // instance data
   // the delimited form "\u{0}".  Initially false.
   bool m_useUndelimitedHexEscapes;
 
-  // Write the value as JSON rather than GDVN.  Initially false.
-  //
-  // The only effect of this flag is to put commas between values in
-  // sequences, etc.  The rest of the JSON-related transformations are
-  // done at the GDValue level by the `gdvalue-json` module.  Typically,
-  // you want to call `gdvToJSON` in that module rather than directly
-  // setting this flag.
-  bool m_writeJSON;
+  // Put commas between values in sequences, etc.  GDVN normally omits
+  // them, but JSON requires them.
+  bool m_writeCommas;
 
   // Current indentation level.  When we start a new line, we indent
   // 'm_indentLevel * SPACES_PER_INDENT_LEVEL' spaces.  Initially 0.
@@ -63,7 +58,7 @@ public:      // methods
     : m_enableIndentation(false),
       m_writeLargeIntegersAsDecimal(false),
       m_useUndelimitedHexEscapes(false),
-      m_writeJSON(false),
+      m_writeCommas(false),
       m_indentLevel(0),
       m_spacesPerIndentLevel(s_defaultSpacesPerIndentLevel),
       m_targetLineWidth(s_defaultTargetLineWidth)
@@ -80,7 +75,7 @@ public:      // methods
   GDValueWriteOptions &setUseUndelimitedHexEscapes(bool b)
     { m_useUndelimitedHexEscapes = b; return *this; }
   GDValueWriteOptions &setWriteJSON(bool b)
-    { m_writeJSON = b; return *this; }
+    { m_writeCommas = b; return *this; }
   GDValueWriteOptions &setIndentLevel(int newLevel)
     { m_indentLevel = newLevel; return *this; }
   GDValueWriteOptions &setSpacesPerIndentLevel(int newSpacesPer)
