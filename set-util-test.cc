@@ -204,6 +204,41 @@ void testSetWriter()
 }
 
 
+void test_setUnion()
+{
+  EXPECT_EQ(
+    stringb(setUnion(
+      std::set<int>{1,2,3},
+      std::set<int>{3,4,5}
+    )),
+    "{1, 2, 3, 4, 5}");
+}
+
+
+void test_setRemoveMany()
+{
+  std::set<int> s1{1,2,3,4};
+  EXPECT_EQ(setRemoveMany(s1, std::set<int>{3,4,5,6}), 2);
+  EXPECT_EQ(stringb(s1), "{1, 2}");
+}
+
+
+void test_setInsertMany()
+{
+  // Use strings to at least motivate the use of element moves, but I'm
+  // not actually measuring it.
+  std::set<std::string> s1{"a","b","c","d"};
+  std::set<std::string> s2{"c","d","e","f"};
+
+  setInsertMany(s1, std::move(s2));
+
+  EXPECT_EQ(stringb(s1), "{a, b, c, d, e, f}");
+
+  // Although not guaranteed, I expect `s2` to retain two elements.
+  EXPECT_EQ(stringb(s2), "{c, d}");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -224,6 +259,9 @@ void test_set_util()
   test_setRemove();
   testOstreamInsert();
   testSetWriter();
+  test_setUnion();
+  test_setRemoveMany();
+  test_setInsertMany();
 }
 
 

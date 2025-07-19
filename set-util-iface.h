@@ -18,6 +18,7 @@
 #include "smbase/std-set-fwd.h"        // stdfwd::set
 #include "smbase/std-vector-fwd.h"     // stdfwd::vector
 
+#include <cstddef>                     // std::size_t
 #include <iosfwd>                      // std::ostream [n]
 
 
@@ -83,6 +84,26 @@ template <class T>
 std::optional<T> setHasElementNotIn(
   stdfwd::set<T> const &smaller,
   stdfwd::set<T> const &larger);
+
+
+// Return a set containing the union of `a` and `b`.
+template <typename K, typename C, typename A>
+std::set<K,C,A> setUnion(std::set<K,C,A> const &a,
+                         std::set<K,C,A> const &b);
+
+
+// Remove from `larger` all elements in `smaller`.  Return the number of
+// elements removed.
+template <typename K, typename C, typename A>
+std::size_t setRemoveMany(std::set<K,C,A> &larger,
+                          std::set<K,C,A> const &smaller);
+
+
+// Insert all elements of `src` into `dest`, moving from `src` where
+// possible.
+template <typename K, typename C, typename A>
+void setInsertMany(std::set<K,C,A> &dest,
+                   std::set<K,C,A> &&src);
 
 
 // Call 'func' on every element in 'input' and return the set of all of

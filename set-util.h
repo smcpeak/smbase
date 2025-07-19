@@ -109,6 +109,49 @@ std::optional<T> setHasElementNotIn(
 }
 
 
+template <typename K, typename C, typename A>
+std::set<K,C,A> setUnion(std::set<K,C,A> const &a,
+                         std::set<K,C,A> const &b)
+{
+  std::set<K,C,A> ret;
+
+  for (K const &k : a) {
+    ret.insert(k);
+  }
+  for (K const &k : b) {
+    ret.insert(k);
+  }
+
+  return ret;
+}
+
+
+template <typename K, typename C, typename A>
+std::size_t setRemoveMany(std::set<K,C,A> &larger,
+                          std::set<K,C,A> const &smaller)
+{
+  std::size_t ret = 0;
+
+  for (K const &k : smaller) {
+    ret += larger.erase(k);
+  }
+
+  return ret;
+}
+
+
+template <typename K, typename C, typename A>
+void setInsertMany(std::set<K,C,A> &dest,
+                   std::set<K,C,A> &&src)
+{
+  // C++17 has a method to do this in one step.  But I can't get a count
+  // of inserted elements this way.  If I decide I want the count, I'll
+  // need to resort to either using node handles or performing a count
+  // before and after.
+  dest.merge(std::move(src));
+}
+
+
 template <typename OELT, typename IELT, typename FUNC>
 std::set<OELT> setMapElements(std::set<IELT> const &input,
                               FUNC const &func)
