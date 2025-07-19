@@ -5,6 +5,7 @@
 
 #include "smbase/gdvalue.h"            // gdv::GDValue
 #include "smbase/ordered-map-ops.h"    // smbase::OrderedMap
+#include "smbase/save-restore.h"       // SET_RESTORE
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
 #include "smbase/sm-test.h"            // EXPECT_EQ
 
@@ -47,13 +48,29 @@ void testInteger()
   testCycle(GDValue(10), "10");
   testCycle(GDValue(-1), "-1");
 
-  testCycle(GDValue(MOST_POSITIVE_JSON_INT),   "999999999");
-  testCycle(GDValue(MOST_NEGATIVE_JSON_INT), "-1000000000");
+  testCycle(GDValue(MOST_POSITIVE_JSON_INT),  "9007199254740991");
+  testCycle(GDValue(MOST_NEGATIVE_JSON_INT), "-9007199254740992");
 
   testCycle(GDValue(MOST_POSITIVE_JSON_INT+1),
-    R"({"_type":"integer", "value":"1000000000"})");
+    R"({"_type":"integer", "value":"9007199254740992"})");
   testCycle(GDValue(MOST_NEGATIVE_JSON_INT-1),
-    R"({"_type":"integer", "value":"-1000000001"})");
+    R"({"_type":"integer", "value":"-9007199254740993"})");
+
+  // Test very large values written as decimal.
+  {
+    SET_RESTORE(GDValue::s_defaultWriteOptions.m_writeLargeIntegersAsDecimal, true);
+
+    testCycle(GDValue(GDVInteger::fromDigits("1234567890123456789012345678901234567890")),
+      R"({"_type":"integer", "value":"1234567890123456789012345678901234567890"})");
+    testCycle(GDValue(GDVInteger::fromDigits("-1234567890123456789012345678901234567890")),
+      R"({"_type":"integer", "value":"-1234567890123456789012345678901234567890"})");
+  }
+
+  // Also test with default hex digits.
+  testCycle(GDValue(GDVInteger::fromDigits("1234567890123456789012345678901234567890")),
+    R"({"_type":"integer", "value":"0x3A0C92075C0DBF3B8ACBC5F96CE3F0AD2"})");
+  testCycle(GDValue(GDVInteger::fromDigits("-1234567890123456789012345678901234567890")),
+    R"({"_type":"integer", "value":"-0x3A0C92075C0DBF3B8ACBC5F96CE3F0AD2"})");
 }
 
 

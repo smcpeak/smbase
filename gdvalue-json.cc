@@ -145,6 +145,9 @@ GDValue gdvToJSO(GDValue const &src)
         return src;
       }
       else {
+        // Note: By default this writes hex digits for sufficiently
+        // large values, but that can be controlled by changing
+        // `GDValue::s_defaultWriteOptions.m_writeLargeIntegersAsDecimal`.
         return GDValue(GDVMap{
           { "_type", "integer" },
           { "value", GDVString(src.asString()) },
