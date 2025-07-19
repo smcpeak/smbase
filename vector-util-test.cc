@@ -18,7 +18,7 @@ using std::string;
 OPEN_ANONYMOUS_NAMESPACE
 
 
-void testVecAccumulateWith()
+void test_vecAccumulateWith()
 {
   std::vector<string> v;
   EXPECT_EQ(vecAccumulateWith(v, string("-")), "");
@@ -32,7 +32,7 @@ void testVecAccumulateWith()
 
 
 // Test 'vecEraseAll', 'vecToElementSet', and `vecFindIndex`.
-void testVecEraseAll()
+void test_vecEraseAll()
 {
   std::vector<int> v{1,2,3,2,1};
 
@@ -62,7 +62,7 @@ void testVecEraseAll()
 }
 
 
-void testVecMapElements()
+void test_vecMapElements()
 {
   std::vector<string> src {"a", "b"};
   std::vector<string> dest(vecMapElements<string>(src,
@@ -76,7 +76,7 @@ void testVecMapElements()
 }
 
 
-void testVecConvertElements()
+void test_vecConvertElements()
 {
   std::vector<string> src {"a", "b", "c"};
 
@@ -86,7 +86,7 @@ void testVecConvertElements()
 }
 
 
-void testVecCommonPrefixLength()
+void test_vecCommonPrefixLength()
 {
   std::vector<int> v0{};
   std::vector<int> v1{1};
@@ -102,7 +102,7 @@ void testVecCommonPrefixLength()
 }
 
 
-void testVecFindIndex()
+void test_vecFindIndex()
 {
   std::vector<int> v0{};
   std::vector<int> v1{1};
@@ -135,12 +135,12 @@ CLOSE_ANONYMOUS_NAMESPACE
 
 void test_vector_util()
 {
-  testVecAccumulateWith();
-  testVecEraseAll();
-  testVecMapElements();
-  testVecConvertElements();
-  testVecCommonPrefixLength();
-  testVecFindIndex();
+  test_vecAccumulateWith();
+  test_vecEraseAll();
+  test_vecMapElements();
+  test_vecConvertElements();
+  test_vecCommonPrefixLength();
+  test_vecFindIndex();
   test_vecAppendByMoving();
 }
 
