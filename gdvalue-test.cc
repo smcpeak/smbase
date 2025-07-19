@@ -2294,21 +2294,21 @@ void testMapSymbolOps()
 
   xassert(!m.mapContainsSym("x"));
 
-  m.mapSetSym("x", 1);
+  m.mapSetValueAtSym("x", 1);
   xassert(m.mapContainsSym("x"));
-  EXPECT_EQ(m.mapGetSym("x"), GDValue(1));
+  EXPECT_EQ(m.mapGetValueAtSym("x"), GDValue(1));
 
   {
     GDValue const &cm = m;
-    EXPECT_EQ(cm.mapGetSym("x"), GDValue(1));
+    EXPECT_EQ(cm.mapGetValueAtSym("x"), GDValue(1));
   }
 
   GDValue two(2);
-  m.mapSetSym("x", two);
-  EXPECT_EQ(m.mapGetSym("x"), GDValue(2));
+  m.mapSetValueAtSym("x", two);
+  EXPECT_EQ(m.mapGetValueAtSym("x"), GDValue(2));
 
-  xassert(!m.mapRemoveSym("y"));
-  xassert(m.mapRemoveSym("x"));
+  xassert(!m.mapRemoveKeySym("y"));
+  xassert(m.mapRemoveKeySym("x"));
   xassert(!m.mapContainsSym("x"));
 }
 
@@ -2320,21 +2320,21 @@ void testOrderedMapSymbolOps()
 
   xassert(!m.orderedMapContainsSym("x"));
 
-  m.orderedMapSetSym("x", 1);
+  m.orderedMapSetValueAtSym("x", 1);
   xassert(m.orderedMapContainsSym("x"));
-  EXPECT_EQ(m.orderedMapGetSym("x"), GDValue(1));
+  EXPECT_EQ(m.orderedMapGetValueAtSym("x"), GDValue(1));
 
   {
     GDValue const &cm = m;
-    EXPECT_EQ(cm.orderedMapGetSym("x"), GDValue(1));
+    EXPECT_EQ(cm.orderedMapGetValueAtSym("x"), GDValue(1));
   }
 
   GDValue two(2);
-  m.orderedMapSetSym("x", two);
-  EXPECT_EQ(m.orderedMapGetSym("x"), GDValue(2));
+  m.orderedMapSetValueAtSym("x", two);
+  EXPECT_EQ(m.orderedMapGetValueAtSym("x"), GDValue(2));
 
-  xassert(!m.orderedMapRemoveSym("y"));
-  xassert(m.orderedMapRemoveSym("x"));
+  xassert(!m.orderedMapRemoveKeySym("y"));
+  xassert(m.orderedMapRemoveKeySym("x"));
   xassert(!m.orderedMapContainsSym("x"));
 }
 

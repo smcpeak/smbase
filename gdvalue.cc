@@ -1452,31 +1452,31 @@ bool GDValue::mapContainsSym(char const *symName) const
 }
 
 
-GDValue const &GDValue::mapGetSym(char const *symName) const
+GDValue const &GDValue::mapGetValueAtSym(char const *symName) const
 {
   return mapGetValueAt(GDVSymbol(symName));
 }
 
 
-GDValue &GDValue::mapGetSym(char const *symName)
+GDValue &GDValue::mapGetValueAtSym(char const *symName)
 {
   return mapGetValueAt(GDVSymbol(symName));
 }
 
 
-void GDValue::mapSetSym(char const *symName, GDValue const &value)
+void GDValue::mapSetValueAtSym(char const *symName, GDValue const &value)
 {
   mapSetValueAt(GDVSymbol(symName), value);
 }
 
 
-void GDValue::mapSetSym(char const *symName, GDValue &&value)
+void GDValue::mapSetValueAtSym(char const *symName, GDValue &&value)
 {
   mapSetValueAt(GDVSymbol(symName), std::move(value));
 }
 
 
-bool GDValue::mapRemoveSym(char const *symName)
+bool GDValue::mapRemoveKeySym(char const *symName)
 {
   return mapRemoveKey(GDVSymbol(symName));
 }
@@ -1558,31 +1558,31 @@ bool GDValue::orderedMapContainsSym(char const *symName) const
 }
 
 
-GDValue const &GDValue::orderedMapGetSym(char const *symName) const
+GDValue const &GDValue::orderedMapGetValueAtSym(char const *symName) const
 {
   return orderedMapGetValueAt(GDVSymbol(symName));
 }
 
 
-GDValue &GDValue::orderedMapGetSym(char const *symName)
+GDValue &GDValue::orderedMapGetValueAtSym(char const *symName)
 {
   return orderedMapGetValueAt(GDVSymbol(symName));
 }
 
 
-void GDValue::orderedMapSetSym(char const *symName, GDValue const &value)
+void GDValue::orderedMapSetValueAtSym(char const *symName, GDValue const &value)
 {
   orderedMapSetValueAt(GDVSymbol(symName), value);
 }
 
 
-void GDValue::orderedMapSetSym(char const *symName, GDValue &&value)
+void GDValue::orderedMapSetValueAtSym(char const *symName, GDValue &&value)
 {
   orderedMapSetValueAt(GDVSymbol(symName), std::move(value));
 }
 
 
-bool GDValue::orderedMapRemoveSym(char const *symName)
+bool GDValue::orderedMapRemoveKeySym(char const *symName)
 {
   return orderedMapRemoveKey(GDVSymbol(symName));
 }

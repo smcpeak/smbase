@@ -726,16 +726,11 @@ public:      // methods
   // Operations that use symbols, named using `char*`, as keys.  These
   // are provided for syntactic convenience.
   bool mapContainsSym(char const *symName) const;
-  GDValue const &mapGetSym(char const *symName) const;
-  GDValue       &mapGetSym(char const *symName)      ;
-  void mapSetSym(char const *symName, GDValue const &value);
-  void mapSetSym(char const *symName, GDValue      &&value);
-  bool mapRemoveSym(char const *symName);
-
-  // TODO: Rename:
-  //   mapGetSym -> mapGetValueAtSym
-  //   mapSetSym -> mapSetValueAtSym
-  //   mapRemoveSym -> mapRemoveKeySym
+  GDValue const &mapGetValueAtSym(char const *symName) const;
+  GDValue       &mapGetValueAtSym(char const *symName)      ;
+  void mapSetValueAtSym(char const *symName, GDValue const &value);
+  void mapSetValueAtSym(char const *symName, GDValue      &&value);
+  bool mapRemoveKeySym(char const *symName);
 
 
   // ---- OrderedMap ----
@@ -775,11 +770,11 @@ public:      // methods
   // Operations that use symbols, named using `char*`, as keys.  These
   // are provided for syntactic convenience.
   bool orderedMapContainsSym(char const *symName) const;
-  GDValue const &orderedMapGetSym(char const *symName) const;
-  GDValue       &orderedMapGetSym(char const *symName)      ;
-  void orderedMapSetSym(char const *symName, GDValue const &value);
-  void orderedMapSetSym(char const *symName, GDValue      &&value);
-  bool orderedMapRemoveSym(char const *symName);
+  GDValue const &orderedMapGetValueAtSym(char const *symName) const;
+  GDValue       &orderedMapGetValueAtSym(char const *symName)      ;
+  void orderedMapSetValueAtSym(char const *symName, GDValue const &value);
+  void orderedMapSetValueAtSym(char const *symName, GDValue      &&value);
+  bool orderedMapRemoveKeySym(char const *symName);
 
   // In addition to the dedicated "orderedMap" functions, the following
   // "map" functions also work on ordered maps:
@@ -1046,7 +1041,7 @@ char const *stripMemberPrefix(char const *name);
 // Write `<memb>` to a field of GDValue `m` that has the same name
 // except without the "m_" prefix (if any).
 #define GDV_WRITE_MEMBER(memb) \
-  m.mapSetSym(gdv::stripMemberPrefix(#memb), gdv::toGDValue(memb)) /* user ; */
+  m.mapSetValueAtSym(gdv::stripMemberPrefix(#memb), gdv::toGDValue(memb)) /* user ; */
 
 // Same, but the key is a string rather than a symbol.  The suffix "_SK"
 // means "string key".

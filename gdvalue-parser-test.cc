@@ -44,8 +44,8 @@ public:      // funcs
   {
     GDValue m(GDVK_TAGGED_MAP, "Data"_sym);
 
-    m.mapSetSym("x", m_x);
-    m.mapSetSym("y", m_y);
+    m.mapSetValueAtSym("x", m_x);
+    m.mapSetValueAtSym("y", m_y);
 
     return m;
   }
@@ -249,7 +249,7 @@ void test_mapGetValueAtSymOpt()
     xassert(GDValueParser(v).mapGetValueAtSymOpt("foo") == std::nullopt);
 
     // And a mapped key.
-    v.mapSetSym("foo", GDValue(3));
+    v.mapSetValueAtSym("foo", GDValue(3));
     EXPECT_EQ(GDValueParser(v).mapGetValueAtSymOpt("foo").value().getValue(), GDValue(3));
   }
 }
