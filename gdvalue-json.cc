@@ -241,7 +241,12 @@ GDValue gdvToJSO(GDValue const &src)
 
 std::string jsoToJSON(GDValue const &v, GDValueWriteOptions opts)
 {
+  // JSON only has "\u1234", not "\u{1234}".
+  opts.m_useUndelimitedHexEscapes = true;
+
+  // TODO: Rename this to reflect it is just about commas.
   opts.m_writeJSON = true;
+
   return v.asString(opts);
 }
 

@@ -79,7 +79,36 @@ void testString()
   testCycle(GDValue(""), R"("")");
   testCycle(GDValue("some string"), R"("some string")");
 
-  // TODO: What about my syntactic extensions to string notation?
+  // GDVN permits single quote and backtick to be prefixed with a
+  // backslash for uniformity, but JSON does not.  However, the code
+  // that writes GDVN does not use a backslash for those characters
+  // within double-quoted strings, so the result is valid JSON.
+  testCycle(GDValue("single ' quote"), R"("single ' quote")");
+  testCycle(GDValue("back ` tick"), R"("back ` tick")");
+
+  // NUL character in string.
+  testCycle(GDValue(std::string("a\0b", 3)), R"("a\u0000b")");
+
+  // Characters with values in [0x00,0x0f].
+  testCycle(
+    GDValue(std::string("\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f", 16)),
+    R"("\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000B\f\r\u000E\u000F")");
+
+  // Characters with values in [0x10,0x1f].
+  testCycle(
+    GDValue(std::string("\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f", 16)),
+    R"("\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001A\u001B\u001C\u001D\u001E\u001F")");
+
+  // All byte values greater than or equal to 0x20 are simply encoded as
+  // themselves.  That means code points greater than 255, assumed to be
+  // expressed as UTF-8 inside this program, will likewise be emitted as
+  // UTF-8 in the JSON output.  Thus, there's not much to test.
+
+  // An example with UTF-8: the code point 0x010000 is encoded in UTF-8
+  // as 0xF0, 0x90, 0x80, 0x80.
+  testCycle(
+    GDValue("\xF0\x90\x80\x80"),
+    "\"\xF0\x90\x80\x80\"");
 }
 
 
