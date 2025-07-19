@@ -13,6 +13,9 @@
 using std::string;
 
 
+// TODO: Use an anonymous namespace.
+
+
 static void testVecAccumulateWith()
 {
   std::vector<string> v;
@@ -113,6 +116,18 @@ static void testVecFindIndex()
 }
 
 
+static void test_vecAppendByMoving()
+{
+  std::vector<std::string> a{"a", "b", "c"};
+  std::vector<std::string> b{"d", "e", "f"};
+
+  vecAppendByMoving(a, std::move(b));
+
+  EXPECT_EQ(stringb(a), R"(["a", "b", "c", "d", "e", "f"])");
+  EXPECT_EQ(b.size(), 0);
+}
+
+
 void test_vector_util()
 {
   testVecAccumulateWith();
@@ -121,6 +136,7 @@ void test_vector_util()
   testVecConvertElements();
   testVecCommonPrefixLength();
   testVecFindIndex();
+  test_vecAppendByMoving();
 }
 
 

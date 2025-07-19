@@ -14,6 +14,7 @@
 #include <algorithm>                   // std::remove
 #include <cstddef>                     // std::size_t
 #include <iostream>                    // std::ostream
+#include <iterator>                    // std::make_move_iterator
 #include <optional>                    // std::optional
 #include <set>                         // std::set
 #include <sstream>                     // std::ostringstream
@@ -421,6 +422,22 @@ std::size_t commonPrefixLength(std::vector<T> const &a,
                                std::vector<T> const &b)
 {
   return vecCommonPrefixLength(a, b);
+}
+
+
+// Append all the elements from `src` to `dest` by moving them.  `src`
+// is cleared in the process.
+template <typename T, typename A>
+void vecAppendByMoving(std::vector<T,A> &dest,
+                       std::vector<T,A> &&src)
+{
+  dest.insert(
+    dest.end(),
+    std::make_move_iterator(src.begin()),
+    std::make_move_iterator(src.end()));
+
+  // Remove the now indeterminate-state elements.
+  src.clear();
 }
 
 
