@@ -727,11 +727,13 @@ STATICDEF GDValue GDValue::readFromString(std::string const &str)
 
 STATICDEF GDValue GDValue::readFromStringView(std::string_view sv)
 {
-  // It appears there is no way to construct an `istringstream` from a
-  // `string_view`, so I have to use a temporary string.
-  //
-  // TODO: Confirm this when I have internet again!  AT&T!
-  //
+  // There is no way to directly construct an `istringstream` from a
+  // `string_view`, which seems a bit broken to me.  (Obviously, a copy
+  // has to be made, but `istringstream` internally carries a `string`
+  // so could do so itself.)  In C++20, `istringstream` has a
+  // constructor that will move a `string` argument into its internal
+  // buffer, thus fixing the problem, but I'm using C++17 for now so
+  // this does an extra copy.
   return readFromString(std::string(sv));
 }
 
