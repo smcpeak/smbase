@@ -33,7 +33,7 @@
 #include <set>                                   // std::set
 #include <string>                                // std::string
 #include <type_traits>                           // std::{enable_if, is_convertible, ...}
-#include <utility>                               // std::pair
+#include <utility>                               // std::{pair, declval}
 #include <vector>                                // std::vector
 
 // Note: For the containers we depend on, a forward declaration is not
@@ -1031,6 +1031,71 @@ GDValue nullablePtrToGDValue(T const * NULLABLE ptr)
     return GDValue();
   }
 }
+
+
+// -------------------- Automatic ostream inserter ---------------------
+// This works in simple cases, but in more complicated translation
+// units, it can fail because this declaration must be visible when the
+// usage is seen, but the usage might be in a template defined in some
+// unrelated header file (such as `expectEq` in `sm-test.h`, mentioned
+// below regarding `EXPECT_EQ`).  The usual fix would be to put this
+// into a "-fwd.h" file so it can be put first among the #includes, but
+// this definition is itself very dependency-laden.  So, at least for
+// now, I'm giving up on this idea.
+#if 0
+// `allows_toGDValue<T>::value` is true if we can do `toGDValue(T)`.
+template <typename T, typename = void>
+struct allows_toGDValue : std::false_type {};
+
+template <typename T>
+struct allows_toGDValue<
+  T,
+  std::void_t<decltype(toGDValue(std::declval<T>()))>
+> : std::true_type {};
+
+
+// As an additional convenience, if `T` can be converted to `GDValue`,
+// then use that for printing.
+//
+// One place this helps is my `EXPECT_EQ` macro, which first compares
+// the objects, then prints them if not equal, for which there isn't an
+// easy place to insert a `toGDValue` call (without changing the
+// semantics of the comparison).
+//
+// This is tricky because there are a lot of potential ambiguities to
+// avoid.
+template <
+  typename T,
+  std::enable_if_t<
+    // Must allow `toGDValue`.
+    allows_toGDValue<T>::value &&
+
+    // Must not be a primitive, since then it would already have a
+    // better `operator<<`.
+    !std::is_fundamental_v<std::decay_t<T>> &&
+
+    // Exclude string literals, character pointers, etc.
+    !std::is_pointer_v<std::decay_t<T>> &&
+
+    // This is somewhat of a special case.  There isn't already a way to
+    // print these, but converting to `GDValue` simply makes a `GDValue`
+    // of that kind, rather than, say, a symbol with the kind's name.
+    // So, if I want to print `GDValueKind`, I need to use `toString`.
+    !std::is_same_v<std::decay_t<T>, GDValueKind> &&
+
+    // Exclude all of the other things for which there is a `GDValue`
+    // constructor but direct printing is preferable.
+    !std::is_same_v<std::decay_t<T>, GDVSymbol> &&
+    !std::is_same_v<std::decay_t<T>, GDVInteger> &&
+    !std::is_same_v<std::decay_t<T>, GDVString> &&
+    !std::is_same_v<std::decay_t<T>, std::string_view>,
+  int> = 0
+>
+std::ostream &operator<<(std::ostream &os, T const &t) {
+  toGDValue(t).write(os);
+  return os;
+}
+#endif // 0
 
 
 // ----------------------- Member serialization ------------------------

@@ -2453,6 +2453,31 @@ void test_stripMemberPrefix()
 }
 
 
+#if 0
+struct Data {
+  int m_x;
+  Data(int x) : m_x(x) {}
+
+  operator GDValue() const
+  {
+    return GDValue(GDVTaggedTuple{"Data"_sym, {m_x}});
+  }
+};
+
+
+void test_ostreamPrint()
+{
+  // This works without explicitly converting to GDV because there is a
+  // template `operator<<` that will accept anything for which
+  // `toGDValue` works.
+  EXPECT_EQ(stringb(Data(34)), "Data(34)");
+
+  // But then this one doesn't work, so I give up.
+  //EXPECT_EQ((std::set<int>{1,2,3}), "{1 2 3}");
+}
+#endif
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -2505,6 +2530,7 @@ void test_gdvalue()
     testValueKindCategories();
     testNullablePtrToGDValue();
     test_stripMemberPrefix();
+    //test_ostreamPrint();
 
     // Some interesting values for the particular data used.
     testPrettyPrint(0);
