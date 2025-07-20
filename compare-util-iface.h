@@ -5,6 +5,9 @@
 #define SMBASE_COMPARE_UTIL_IFACE_H
 
 
+// TODO: Move these methods into `smbase` namespace.
+
+
 // Return -1 if a<b, +1 if a>b, and 0 otherwise.
 template <class NUM>
 int compare(NUM const &a, NUM const &b);
@@ -15,11 +18,15 @@ template <class CONTAINER>
 int compareSequences(CONTAINER const &a, CONTAINER const &b);
 
 
-// Compare 'a' to 'b' and return if they are unequal.
-#define RET_IF_COMPARE(a, b)         \
-  if (int ret = compare((a), (b))) { \
-    return ret;                      \
+// Return the value of `expr` if it is nonzero.
+#define RET_IF_NONZERO(expr) \
+  if (int ret = (expr)) {    \
+    return ret;              \
   }
+
+
+// Compare 'a' to 'b' and return if they are unequal.
+#define RET_IF_COMPARE(a, b) RET_IF_NONZERO(compare((a), (b)))
 
 
 // Compare member 'memb' from objects 'a' and 'b' (assumed to be in
@@ -34,7 +41,11 @@ int compareSequences(CONTAINER const &a, CONTAINER const &b);
 
 // If two members are not equal, return the comparison result.  This is
 // meant to be used as part of a comparison chain.
-#define RET_IF_COMPARE_MEMBERS(memb) RET_IF_COMPARE(a.memb, b.memb)
+#define RET_IF_COMPARE_MEMBERS(memb) \
+  RET_IF_NONZERO(COMPARE_MEMBERS(memb))
+
+#define RET_IF_DEEP_COMPARE_PTR_MEMBERS(memb) \
+  RET_IF_NONZERO(DEEP_COMPARE_PTR_MEMBERS(memb))
 
 
 /* Compare a base class subobjects of objects 'a' and 'b'.
@@ -83,6 +94,25 @@ int compareSequences(CONTAINER const &a, CONTAINER const &b);
   DEFINE_ONE_FRIEND_RELATIONAL_OPERATOR(Class, ==)       \
   DEFINE_ONE_FRIEND_RELATIONAL_OPERATOR(Class, !=)       \
   DEFINE_FRIEND_NON_EQUALITY_RELATIONAL_OPERATORS(Class)
+
+
+/* Declare a `compareTo` method that must be implemented elsewhere.
+   Then, define a friend `compare` in terms of it, and friend relational
+   operators in terms of that.
+
+   Why not just define `compare` instead?  Well, it turns out that does
+   not work for private (nested) classes because friends of private
+   classes cannot be defined outside their class since the access
+   control rules prevent even naming them, which is a prerequisite to
+   defining such a friend function.  (I think this is a bug in the
+   design of C++.)  So, in order to allow the comparison function to be
+   defined outside its class body, it has to be a method, not a friend.
+*/
+#define DECLARE_COMPARETO_AND_DEFINE_RELATIONALS(Class) \
+  int compareTo(Class const &b) const;                  \
+  friend int compare(Class const &a, Class const &b)    \
+    { return a.compareTo(b); }                          \
+  DEFINE_FRIEND_RELATIONAL_OPERATORS(Class)
 
 
 #endif // SMBASE_COMPARE_UTIL_IFACE_H
