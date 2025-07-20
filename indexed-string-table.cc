@@ -3,7 +3,7 @@
 
 #include "indexed-string-table.h"      // this module
 
-#include "compare-util.h"              // compare
+#include "compare-util.h"              // smbase::compare
 #include "exc.h"                       // GENERIC_CATCH_{BEGIN,END}
 #include "overflow.h"                  // convertNumber
 #include "sm-macros.h"                 // OPEN_NAMESPACE
@@ -129,7 +129,7 @@ int IndexedStringTable::compareIndexedStrings(Index a, Index b) const
   std::string_view svA = get(a);
   std::string_view svB = get(b);
 
-  using ::compare;
+  using smbase::compare;
   return compare(svA, svB);
 }
 

@@ -4,7 +4,7 @@
 #include "array.h"                     // module under test
 
 // this dir
-#include "compare-util.h"              // compare
+#include "compare-util.h"              // smbase::compare
 #include "exc.h"                       // XBase
 #include "objlist.h"                   // ObjList
 #include "sm-iostream.h"               // ostream

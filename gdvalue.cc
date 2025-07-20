@@ -6,7 +6,7 @@
 #include "gdvalue.h"                   // this module
 
 // this dir
-#include "smbase/compare-util.h"       // compare, RET_IF_COMPARE
+#include "smbase/compare-util.h"       // smbase::compare, RET_IF_COMPARE
 #include "smbase/exc.h"                // GENERIC_CATCH_{BEGIN,END}
 #include "smbase/gdvalue-reader.h"     // gdv::GDValueReader
 #include "smbase/gdvalue-writer.h"     // gdv::GDValueWriter

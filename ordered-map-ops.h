@@ -6,7 +6,7 @@
 
 #include "ordered-map.h"               // interface for this module
 
-#include "smbase/compare-util.h"       // compareSequences
+#include "smbase/compare-util.h"       // smbase::compareSequences
 #include "smbase/map-util.h"           // keySet
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE, DMEMB, MDMEMB, CMEMB, MCMEMB
 #include "smbase/vector-util.h"        // vecEraseAt, vecInsertAt, vecToElementSet

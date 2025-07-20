@@ -8,7 +8,7 @@
 #include "autofile.h"                  // AutoFILE
 #include "c-string-reader.h"           // decodeCStringEscapesToString, parseQuotedCString
 #include "codepoint.h"                 // isPrintableASCII, isShellMetacharacter
-#include "compare-util.h"              // compare
+#include "compare-util.h"              // smbase::compare
 #include "exc.h"                       // smbase::xformat
 #include "nonport.h"                   // vnprintf
 #include "sm-stristr.h"                // findSubstring_insens_ascii

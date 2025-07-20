@@ -6,7 +6,12 @@
 
 #include "compare-util-iface.h"        // interface for this module
 
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
+
 #include <functional>                  // std::less
+
+
+OPEN_NAMESPACE(smbase)
 
 
 template <class NUM>
@@ -53,6 +58,9 @@ int compareSequences(CONTAINER const &a, CONTAINER const &b)
 
   return 0;
 }
+
+
+CLOSE_NAMESPACE(smbase)
 
 
 #endif // SMBASE_COMPARE_UTIL_H

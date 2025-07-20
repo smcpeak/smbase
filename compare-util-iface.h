@@ -4,8 +4,16 @@
 #ifndef SMBASE_COMPARE_UTIL_IFACE_H
 #define SMBASE_COMPARE_UTIL_IFACE_H
 
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 
-// TODO: Move these methods into `smbase` namespace.
+
+// Although `compare` and `compareSequences` are in `smbase`, the
+// intention is that additional overloads will be put into other
+// namespaces.  Consequently, the macros below do not use `smbase::` as
+// a qualifier when invoking `compare`.  Instead, client code should use
+// a `using` declaration or directive to make `smbase::compare` visible
+// if desired.
+OPEN_NAMESPACE(smbase)
 
 
 // Return -1 if a<b, +1 if a>b, and 0 otherwise.
@@ -113,6 +121,9 @@ int compareSequences(CONTAINER const &a, CONTAINER const &b);
   friend int compare(Class const &a, Class const &b)    \
     { return a.compareTo(b); }                          \
   DEFINE_FRIEND_RELATIONAL_OPERATORS(Class)
+
+
+CLOSE_NAMESPACE(smbase)
 
 
 #endif // SMBASE_COMPARE_UTIL_IFACE_H

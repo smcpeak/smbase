@@ -10,6 +10,8 @@
 #include <memory>                      // std::{make_unique, unique_ptr}
 #include <string>                      // std::string
 
+using namespace smbase;
+
 
 OPEN_ANONYMOUS_NAMESPACE
 
