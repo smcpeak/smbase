@@ -34,6 +34,39 @@ char const *test_getenv(char const *var)
 }
 
 
+void testOneEnvAsIntOr(int dv, char const *name, int expect)
+{
+  EXN_CONTEXT("testOneEnvAsIntOr");
+  EXN_CONTEXT_EXPR(dv);
+  EXN_CONTEXT_EXPR(name);
+
+  EXPECT_EQ(envAsIntOr(dv, name), expect);
+}
+
+
+void testEnvAsIntOr()
+{
+  testEnvMap = EnvMap{
+    { "zero", "0" },
+    { "one", "1" },
+    { "two", "2" },
+    { "zero_one", "01" },
+    { "ten", "10" },
+    { "alpha", "alpha" },
+    { "empty", "" },
+  };
+
+  testOneEnvAsIntOr(99, "zero", 0);
+  testOneEnvAsIntOr(99, "one", 1);
+  testOneEnvAsIntOr(99, "two", 2);
+  testOneEnvAsIntOr(99, "zero_one", 1);
+  testOneEnvAsIntOr(99, "ten", 10);
+  testOneEnvAsIntOr(99, "alpha", 0);
+  testOneEnvAsIntOr(99, "empty", 0);
+  testOneEnvAsIntOr(99, "unset", 99);
+}
+
+
 void testOneEnvAsBool(char const *name, bool expect)
 {
   EXN_CONTEXT("testOneEnvAsBool");
@@ -48,7 +81,7 @@ void testEnvAsBool()
   testEnvMap = EnvMap{
     { "zero", "0" },
     { "one", "1" },
-    { "two", "1" },
+    { "two", "2" },
     { "zero_one", "01" },
     { "ten", "10" },
     { "alpha", "alpha" },
@@ -150,6 +183,7 @@ void test_sm_env()
   {
     SET_RESTORE(sm_getenv_func, &test_getenv);
 
+    testEnvAsIntOr();
     testEnvAsBool();
     testEnvOrEmpty();
     testGetXDGConfigHome();

@@ -28,14 +28,20 @@ char const *sm_getenv(char const *var)
 
 
 
-bool envAsBool(char const *envvar)
+int envAsIntOr(int defaultValue, char const *envvar)
 {
   if (char const *value = sm_getenv(envvar)) {
-    return std::atoi(value) != 0;
+    return std::atoi(value);
   }
   else {
-    return false;
+    return defaultValue;
   }
+}
+
+
+bool envAsBool(char const *envvar)
+{
+  return envAsIntOr(0, envvar) != 0;
 }
 
 

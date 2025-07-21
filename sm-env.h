@@ -25,6 +25,10 @@ extern GetenvFunc *sm_getenv_func;
 char const *sm_getenv(char const *var);
 
 
+// If `envvar` is set, return the value that `atoi` interprets it as.
+// Otherwise, return `defaultValue`.
+int envAsIntOr(int defaultValue, char const *envvar);
+
 // True if `envvar` is set to a value that `atoi` regards as non-zero.
 bool envAsBool(char const *envvar);
 
