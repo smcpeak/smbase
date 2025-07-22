@@ -5,6 +5,7 @@
 #include "refct-serf.h"                // module to test
 
 #include "array.h"                     // ArrayStack
+#include "compare-util.h"              // DECLARE_COMPARETO_AND_DEFINE_RELATIONALS
 #include "exc.h"                       // smbase::XBase
 #include "objlist.h"                   // ObjList
 #include "owner.h"                     // Owner
@@ -16,6 +17,7 @@
 using namespace smbase;
 
 
+// TODO: Remove `static` since everything is already in the anon ns.
 OPEN_ANONYMOUS_NAMESPACE
 
 
@@ -35,11 +37,15 @@ public:      // funcs
     return *this;
   }
 
-  bool operator== (Integer const &obj)
-  {
-    return m_i == obj.m_i;
-  }
+  DECLARE_COMPARETO_AND_DEFINE_RELATIONALS(Integer);
 };
+
+int Integer::compareTo(Integer const &b) const
+{
+  auto const &a = *this;
+  RET_IF_COMPARE_MEMBERS(m_i);
+  return 0;
+}
 
 
 // Another placeholder data class, explicitly calling SerfRefCount.
@@ -172,6 +178,7 @@ static void testOperatorsInteger()
 
   // Use operator T* as part of conversion to bool.
   EXPECT_EQ(!!s1, true);
+  EXPECT_EQ(s1.has_value(), true);
 
   // operator->
   EXPECT_EQ(s1->m_i, 3);
@@ -252,8 +259,10 @@ static void testOwnerPointerSuccess()
 {
   Owner<Integer> i(new Integer(9));
   RCSerf<Integer> s;
+  EXPECT_EQ(s.has_value(), false);
   s = i;
   EXPECT_EQ(s->m_i, 9);
+  EXPECT_EQ(s.has_value(), true);
 }
 
 static void testOwnerPointerFailure()
@@ -724,6 +733,48 @@ static void testMultipleInheritance(int failure)
 }
 
 
+void oneCompareRCSerf(
+  RCSerf<Integer> const &a, RCSerf<Integer> const &b, int expect)
+{
+  EXPECT_EQ(deepCompare(a, b), expect);
+  EXPECT_EQ(deepCompare(b, a), -expect);
+
+  EXPECT_EQ(deepCompare(a, a), 0);
+  EXPECT_EQ(deepCompare(b, b), 0);
+}
+
+
+void test_RCSerf_compare()
+{
+  // Define these in an order that likely ensures if we compare by
+  // pointer value, it won't work.
+  Integer i2(2);
+  Integer i1(1);
+  Integer i3(3);
+  Integer i4(4);
+
+  RCSerf<Integer> pAbsent;
+  RCSerf<Integer> p1(&i1);
+  RCSerf<Integer> p2(&i2);
+  RCSerf<Integer> p3(&i3);
+  RCSerf<Integer> p4(&i4);
+
+  oneCompareRCSerf(pAbsent, p1, -1);
+  oneCompareRCSerf(pAbsent, p2, -1);
+  oneCompareRCSerf(pAbsent, p3, -1);
+  oneCompareRCSerf(pAbsent, p4, -1);
+
+  oneCompareRCSerf(p1, p2, -1);
+  oneCompareRCSerf(p1, p3, -1);
+  oneCompareRCSerf(p1, p4, -1);
+
+  oneCompareRCSerf(p2, p3, -1);
+  oneCompareRCSerf(p2, p4, -1);
+
+  oneCompareRCSerf(p3, p4, -1);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -756,6 +807,7 @@ void test_refct_serf()
   testLongList(LL_FAILURE);
   testMultipleInheritance(false /*failure*/);
   testMultipleInheritance(true /*failure*/);
+  test_RCSerf_compare();
 }
 
 

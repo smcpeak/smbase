@@ -45,6 +45,7 @@
 #ifndef REFCT_SERF_H
 #define REFCT_SERF_H
 
+#include "compare-util-iface.h"        // smbase::compare
 #include "sm-noexcept.h"               // NOEXCEPT
 
 #include <stddef.h>                    // NULL
@@ -220,6 +221,12 @@ public:      // funcs
     return this->ptr();
   }
 
+  // True if the pointer points at something.
+  bool has_value() const
+  {
+    return m_ptr != nullptr;
+  }
+
   // Set m_ptr to NULL, decrementing refct if not already NULL.
   // Return the value m_ptr had before the call, which may be NULL.
   //
@@ -244,6 +251,44 @@ void swap(RCSerf<T> &a, RCSerf<T> &b) NOEXCEPT
 {
   a.swapWith(b);
 }
+
+
+// Compare two `RCSerf` by first saying that absent==absent and
+// absent<present, then call `compare` on the pointed-to objects.
+template <typename T>
+int deepCompare(RCSerf<T> const &a, RCSerf<T> const &b)
+{
+  // Make this accessible without insisting it be the only one we use.
+  using smbase::compare;
+
+  if (a.has_value()) {
+    if (b.has_value()) {
+      return compare(*a, *b);
+    }
+    else {
+      // `a` is present and `b` is absent, so `a > b`.
+      return +1;
+    }
+  }
+  else /* `a` is absent */ {
+    if (b.has_value()) {
+      // `a` is absent and `b` is present, so `a < b`.
+      return -1;
+    }
+    else {
+      // Both are absent.
+      return 0;
+    }
+  }
+}
+
+
+// Meanwhile, doing an ordinary `compare` is dangerous.  First, without
+// further intervention, it would compare pointer values.  Second,
+// automatically doing `deepCompare` is dangerous because serf pointers
+// can have cycles, etc., so recursion should be explicitly requested.
+template <typename T>
+int compare(RCSerf<T> const &a, RCSerf<T> const &b) = delete;
 
 
 #endif // REFCT_SERF_H
