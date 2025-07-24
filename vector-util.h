@@ -16,6 +16,7 @@
 #include <iostream>                    // std::ostream
 #include <iterator>                    // std::make_move_iterator
 #include <optional>                    // std::optional
+#include <numeric>                     // std::accumulate
 #include <set>                         // std::set
 #include <sstream>                     // std::ostringstream
 #include <vector>                      // std::vector
@@ -438,6 +439,14 @@ void vecAppendByMoving(std::vector<T,A> &dest,
 
   // Remove the now indeterminate-state elements.
   src.clear();
+}
+
+
+// Return the sum of all elements in `vec`.
+template <typename T, typename A>
+T vecSum(std::vector<T,A> const &vec)
+{
+  return std::accumulate(vec.begin(), vec.end(), T());
 }
 
 

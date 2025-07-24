@@ -130,6 +130,15 @@ void test_vecAppendByMoving()
 }
 
 
+void test_vecSum()
+{
+  EXPECT_EQ(vecSum(std::vector<int>{}), 0);
+  EXPECT_EQ(vecSum(std::vector<int>{0}), 0);
+  EXPECT_EQ(vecSum(std::vector<int>{1, 2, 3, 4, 5}), 15);
+  EXPECT_EQ(vecSum(std::vector<float>{1.5, 2.5, 3.5}), 7.5);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -142,6 +151,7 @@ void test_vector_util()
   test_vecCommonPrefixLength();
   test_vecFindIndex();
   test_vecAppendByMoving();
+  test_vecSum();
 }
 
 
