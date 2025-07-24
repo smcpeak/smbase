@@ -44,6 +44,13 @@
 // Member comparison in operator ==.
 #define EMEMB(var) (var == obj.var)
 
+// Initialize a member whose name starts with "m_" from the
+// corresponding constructor parameter without that prefix.
+#define IMEMBFP(param) m_##param(param)
+
+// Same, but moving the parameter.
+#define IMEMBMFP(param) m_##param(std::move(param))
+
 
 // Within a method that is writing the fields of an object, this will
 // write one such field
