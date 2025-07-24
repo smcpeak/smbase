@@ -116,9 +116,26 @@ static void checkAdd(
 #undef DECL_PARAM
 
 
-static void test_comma_map()
+static void test_comma_map_apply_list()
 {
   checkAdd(2, 3);
+}
+
+
+static int add4Args(int a, int b, int c, int d)
+{
+  return a+b+c+d;
+}
+
+
+static void test_comma_map()
+{
+  #define ADDONE(n) (1+(n))
+
+  // The expansion must put commas between the invocations of `ADDONE`.
+  shouldBe(14, add4Args(SM_PP_COMMA_MAP(ADDONE, 1, 2, 3, 4)));
+
+  #undef ADDONE
 }
 
 
@@ -273,6 +290,7 @@ void test_sm_pp_util()
   test_nonempty_args();
   test_map();
   test_map_parend_args();
+  test_comma_map_apply_list();
   test_comma_map();
   test_getEName();
   test_getAEName();

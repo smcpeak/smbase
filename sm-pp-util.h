@@ -161,6 +161,22 @@
 #define SM_PP_MAP(macro, ...) SM_PP_EVAL(SM_PP_PRIVATE_MAP_IMPL(macro, __VA_ARGS__))
 
 
+// -------------------------- SM_PP_COMMA_MAP --------------------------
+#define SM_PP_PRIVATE_COMMA_MAP_IMPL(macro, first, ...)                            \
+  SM_PP_IF_ELSE(SM_PP_PRIVATE_FIRST_IS_EMPTY(first))                               \
+    ()                                                                             \
+    (macro(first) __VA_OPT__(,)                                                    \
+       SM_PP_PRIVATE_DEFER2(SM_PP_PRIVATE_COMMA_MAP_HELPER)()(macro, __VA_ARGS__))
+
+#define SM_PP_PRIVATE_COMMA_MAP_HELPER() SM_PP_PRIVATE_COMMA_MAP_IMPL
+
+// Like `SM_PP_MAP`, but inserting commas between elements:
+//
+//   SM_PP_COMMA_MAP(foo, 1, 2, 3) -> foo(1) , foo(2) , foo(3)
+//
+#define SM_PP_COMMA_MAP(macro, ...) SM_PP_EVAL(SM_PP_PRIVATE_COMMA_MAP_IMPL(macro, __VA_ARGS__))
+
+
 // ------------------------- SM_PP_MAP_APPLY ---------------------------
 #define SM_PP_PRIVATE_MAP_APPLY_IMPL(macro, first, ...)                                       \
   SM_PP_IF_ELSE(SM_PP_PRIVATE_FIRST_IS_EMPTY(first))                                          \
