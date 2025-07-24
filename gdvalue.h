@@ -1105,6 +1105,10 @@ char const *stripMemberPrefix(char const *name);
 
 // Write `<memb>` to a field of GDValue `m` that is a symbol with the
 // same name except without the "m_" prefix (if any).
+//
+// TODO: I think it is a mistake to use `gdv::` in front of `toGDValue`
+// since that means all such functions have to be placed into the `gdv`
+// namespace.
 #define GDV_WRITE_MEMBER_SYM(memb) \
   m.mapSetValueAtSym(gdv::stripMemberPrefix(#memb), gdv::toGDValue(memb)) /* user ; */
 
