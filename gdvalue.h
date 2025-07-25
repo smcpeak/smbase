@@ -1106,15 +1106,15 @@ char const *stripMemberPrefix(char const *name);
 // Write `<memb>` to a field of GDValue `m` that is a symbol with the
 // same name except without the "m_" prefix (if any).
 //
-// TODO: I think it is a mistake to use `gdv::` in front of `toGDValue`
-// since that means all such functions have to be placed into the `gdv`
-// namespace.
+// In this macro, it is intentional that `toGDValue` is not qualified
+// with `gdv::`, since it should work functions defined in other
+// namespaces and/or found by argument-dependent lookup.
 #define GDV_WRITE_MEMBER_SYM(memb) \
-  m.mapSetValueAtSym(gdv::stripMemberPrefix(#memb), gdv::toGDValue(memb)) /* user ; */
+  m.mapSetValueAtSym(gdv::stripMemberPrefix(#memb), toGDValue(memb)) /* user ; */
 
 // Same, but the key is a string rather than a symbol.
 #define GDV_WRITE_MEMBER_STR(memb) \
-  m.mapSetValueAt(gdv::stripMemberPrefix(#memb), gdv::toGDValue(memb)) /* user , */
+  m.mapSetValueAt(gdv::stripMemberPrefix(#memb), toGDValue(memb)) /* user , */
 
 
 // Note: There are corresponding deserialization macros in
