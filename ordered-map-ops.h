@@ -7,7 +7,7 @@
 #include "ordered-map.h"               // interface for this module
 
 #include "smbase/compare-util.h"       // smbase::compareSequences
-#include "smbase/map-util.h"           // smbase::keySet
+#include "smbase/map-util.h"           // smbase::mapKeySet
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE, DMEMB, MDMEMB, CMEMB, MCMEMB
 #include "smbase/vector-util.h"        // vecEraseAt, vecInsertAt, vecToElementSet
 #include "smbase/xassert.h"            // xassert, xassertPrecondition, xassertdb, xfailurePrecondition
@@ -177,7 +177,7 @@ template <typename KEY, typename VALUE>
 inline auto OrderedMap<KEY, VALUE>::selfCheck() const -> void
 {
   // Same elements.
-  xassertdb(vecToElementSet(m_keyVector) == keySet(m_map));
+  xassertdb(vecToElementSet(m_keyVector) == mapKeySet(m_map));
 
   // Same size.
   xassert(m_keyVector.size() == m_map.size());

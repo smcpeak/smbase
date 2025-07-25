@@ -3,8 +3,6 @@
 
 // This file is in the public domain.
 
-// TODO: All function names should start with "map".
-
 #ifndef SMBASE_MAP_UTIL_H
 #define SMBASE_MAP_UTIL_H
 
@@ -26,7 +24,7 @@ OPEN_NAMESPACE(smbase)
 // ----------------------------- Map->Set ------------------------------
 // Return the set of keys in 'm'.
 template <class K, class V>
-std::set<K> keySet(std::map<K,V> const &m)
+std::set<K> mapKeySet(std::map<K,V> const &m)
 {
   std::set<K> ret;
   for (auto it = m.begin(); it != m.end(); ++it) {
@@ -36,9 +34,20 @@ std::set<K> keySet(std::map<K,V> const &m)
 }
 
 
+template <class K, class V>
+std::set<K> keySet(std::map<K,V> const &m)
+  DEPRECATED("Use `mapKeySet` instead.");        // 2025-07-25
+
+template <class K, class V>
+std::set<K> keySet(std::map<K,V> const &m)
+{
+  return mapKeySet(m);
+}
+
+
 // Return the set of values in 'm'.
 template <class K, class V>
-std::set<V> rangeSet(std::map<K,V> const &m)
+std::set<V> mapRangeSet(std::map<K,V> const &m)
 {
   std::set<V> ret;
   for (auto it = m.begin(); it != m.end(); ++it) {
@@ -48,11 +57,22 @@ std::set<V> rangeSet(std::map<K,V> const &m)
 }
 
 
+template <class K, class V>
+std::set<V> rangeSet(std::map<K,V> const &m)
+  DEPRECATED("Use `mapRangeSet` instead.");      // 2025-07-25
+
+template <class K, class V>
+std::set<V> rangeSet(std::map<K,V> const &m)
+{
+  return mapRangeSet(m);
+}
+
+
 // Insert all keys from 'src', presumably a map, into 'dest', presumably
 // a set.
 //
-// TODO: I think I should remove this in favor of `keySet`.  Or, change
-// `keySet` to call this function.
+// TODO: I think I should remove this in favor of `mapKeySet`.  Or,
+// change `mapKeySet` to call this function.
 template <class DestSet, class SrcMap>
 void mapInsertAllKeys(DestSet &dest, SrcMap const &src)
 {
@@ -80,7 +100,7 @@ V mapFindOrNull(std::map<K,V> const &m, K const &k)
 
 template <class K, class V>
 V atOrNull(std::map<K,V> const &m, K const &k)
-  DEPRECATED("Use `mapFindOrNull` instead.");
+  DEPRECATED("Use `mapFindOrNull` instead.");    // 2024-06-07
 
 template <class K, class V>
 V atOrNull(std::map<K,V> const &m, K const &k)
