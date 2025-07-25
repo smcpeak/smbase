@@ -139,6 +139,31 @@ void test_vecSum()
 }
 
 
+void test_vecSumSlice()
+{
+  std::vector<int> v{0,1,2,3,4};
+  EXPECT_EQ(vecSumSlice(v, 0, 0), 0);
+  EXPECT_EQ(vecSumSlice(v, 5, 0), 0);
+  EXPECT_EQ(vecSumSlice(v, 0, 3), 3);
+  EXPECT_EQ(vecSumSlice(v, 3, 2), 7);
+  EXPECT_EQ(vecSumSlice(v, 0, 5), 10);
+}
+
+
+void test_vecSlice()
+{
+  std::vector<int> v{0,1,2,3,4};
+
+  xassert(vecSlice(v, 0, 0) == (std::vector<int>{}));
+  xassert(vecSlice(v, 2, 2) == (std::vector<int>{2,3}));
+  xassert(vecSlice(v, 0, 5) == (std::vector<int>{0,1,2,3,4}));
+
+  xassert(vecSlice(v, 0) == (std::vector<int>{0,1,2,3,4}));
+  xassert(vecSlice(v, 3) == (std::vector<int>{3,4}));
+  xassert(vecSlice(v, 5) == (std::vector<int>{}));
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -152,6 +177,8 @@ void test_vector_util()
   test_vecFindIndex();
   test_vecAppendByMoving();
   test_vecSum();
+  test_vecSumSlice();
+  test_vecSlice();
 }
 
 
