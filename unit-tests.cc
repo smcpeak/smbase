@@ -6,6 +6,7 @@
 // test_$MOD(), which is declared and called below by the 'RUN_TEST'
 // macro.
 
+#include "smbase/dev-warning.h"        // g_abortUponDevWarning
 #include "smbase/exc.h"                // xfatal
 #include "smbase/nonport.h"            // getMilliseconds
 #include "smbase/sm-test.h"            // g_argv0
@@ -144,6 +145,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(sm_rc_ptr);
   RUN_TEST(sm_regex);
   RUN_TEST(sm_stristr);
+  RUN_TEST(sm_test);
   RUN_TEST(sm_trace);
   RUN_TEST(sm_unique_ptr);
   RUN_TEST(sobjlist);

@@ -11,6 +11,7 @@
 #include "sm-iostream.h"               // cout
 #include "sm-is-equal.h"               // smbase::is_equal
 #include "sm-macros.h"                 // SM_PRINTF_ANNOTATION, NULLABLE
+#include "sm-pp-util.h"                // SM_PP_MAP
 #include "str.h"                       // string
 #include "string-util.h"               // doubleQuote
 #include "stringb.h"                   // stringb
@@ -233,6 +234,44 @@ void expectMatchesRegex(
       cout << "As expected: " << w << "\n";                        \
     }                                                              \
   }
+
+
+/*
+  Print `stuff` in verbose mode, and push it onto the exception context
+  stack.
+
+  When combined with the `gdvalue` module, it can be used like this:
+
+    TEST_CASE("resizeAll: " << GDValue(GDVOrderedMap{
+      GDV_SKV_EXPR(rules),
+      GDV_SKV_EXPR(initSizes),
+      GDV_SKV_EXPR(newTotalSize),
+    }).asIndentedString());
+
+  to nicely format several pieces of structured data.
+*/
+#define TEST_CASE(stuff) \
+  DIAG(stuff);           \
+  EXN_CONTEXT(stuff) /* user ; */
+
+
+/*
+  Print/context each of several argument expressions.
+
+  Use it like:
+
+    TEST_CASE_EXPRS("resizeAll", rules, initSizes, newTotalSize);
+
+  which expands to what is shown in the example above.
+
+  To use this macro, you have to #include "gdvalue.h" and
+  "ordered-map-ops.h", and possibly other headers that know how to
+  convert various types to `GDValue`.
+*/
+#define TEST_CASE_EXPRS(label, ...)                        \
+  TEST_CASE(label ": " << gdv::GDValue(gdv::GDVOrderedMap{ \
+    SM_PP_COMMA_MAP(GDV_SKV_EXPR, __VA_ARGS__)             \
+  }).asIndentedString()) /* user ; */
 
 
 #endif // SMBASE_SM_TEST_H

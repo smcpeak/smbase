@@ -3,14 +3,16 @@
 
 #include "sm-test.h"                   // this module
 
+#include "exc.h"                       // smbase::xmessage
 #include "counting-ostream.h"          // nullOStream
 #include "stringb.h"                   // stringbc
 #include "strutil.h"                   // hasSubstring
 #include "string-util.h"               // doubleQuote, matchesRegex
-#include "xassert.h"                   // xfailure
 
 #include <cstdlib>                     // std::getenv
 #include <iostream>                    // std::cout
+
+using namespace smbase;
 
 
 int verbose = !!std::getenv("VERBOSE");
@@ -37,7 +39,7 @@ void expectHasSubstring(
   char const *expectSubstring)
 {
   if (!hasSubstring(actual, expectSubstring)) {
-    xfailure(stringbc(
+    xmessage(stringbc(
       "While checking " << label <<
       ": actual value is " << doubleQuote(actual) <<
       " but expected it to have substring " << doubleQuote(expectSubstring) <<
@@ -52,7 +54,7 @@ void expectMatchesRegex(
   char const *expectRegex)
 {
   if (!matchesRegex(actual, expectRegex)) {
-    xfailure(stringbc(
+    xmessage(stringbc(
       "While checking " << label <<
       ": actual value is " << doubleQuote(actual) <<
       " but expected it to match regex " << doubleQuote(expectRegex) <<

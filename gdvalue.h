@@ -915,7 +915,7 @@ FOR_EACH_GDV_CONTAINER(DEFER_INSTANTIATE)
 
 // Create a key/value pair that uses a symbol as a key.
 #define GDV_SKV(name, value) \
-  GDVMapEntry(GDVSymbol(name), toGDValue(value))
+  gdv::GDVMapEntry(gdv::GDVSymbol(name), toGDValue(value))
 
 // Stringify an expression to name the symbol.
 #define GDV_SKV_EXPR(expr) \
@@ -931,6 +931,19 @@ FOR_EACH_GDV_CONTAINER(DEFER_INSTANTIATE)
 
    As an alternative to `operator GDValue()`, one can implement the
    `asGDValue()` method, which `toGDValue()` can also call.
+
+   Generally, to call `toGDValue`, use a pattern like this:
+
+     using gdv::toGDValue;      // or "using namespace gdv;"
+     toGDValue(...)
+
+   so that the definitions in `gdv` are accessible, but so are those in
+   other namespaces, including what is findable by argument-dependent
+   lookup.
+
+   For this reason, the macros in this file invoke `toGDValue` without
+   qualification, so often require a using declaration or directive to
+   work.
 */
 
 // `has_asGDValue_method<T>::value` is true iff `T` has an `asGDValue`
@@ -1105,10 +1118,6 @@ char const *stripMemberPrefix(char const *name);
 
 // Write `<memb>` to a field of GDValue `m` that is a symbol with the
 // same name except without the "m_" prefix (if any).
-//
-// In this macro, it is intentional that `toGDValue` is not qualified
-// with `gdv::`, since it should work functions defined in other
-// namespaces and/or found by argument-dependent lookup.
 #define GDV_WRITE_MEMBER_SYM(memb) \
   m.mapSetValueAtSym(gdv::stripMemberPrefix(#memb), toGDValue(memb)) /* user ; */
 
