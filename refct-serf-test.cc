@@ -17,7 +17,6 @@
 using namespace smbase;
 
 
-// TODO: Remove `static` since everything is already in the anon ns.
 OPEN_ANONYMOUS_NAMESPACE
 
 
@@ -105,21 +104,21 @@ public:
 
 // Number of times we have "aborted".  This gets cleared during each
 // test's setup phase to ensure independence of tests.
-static int failCount = 0;
+int failCount = 0;
 
 // Set of outstanding serf pointer objects that need to be cleared when
 // we detect a failure.
-static ArrayStack<RCSerf<Integer>*> failingIntegerSerfs;
+ArrayStack<RCSerf<Integer>*> failingIntegerSerfs;
 
 // Similar for other RCSerf types.  (It is not possible, or at least
 // not easy, to make a single structure that works for all of them
 // because the location of the SerfRefCount within the containing type
 // depends on that type.)
-static ArrayStack<RCSerf<Float>*> failingFloatSerfs;
-static ArrayStack<RCSerf<Integer const>*> failingIntegerConstSerfs;
-static ArrayStack<RCSerf<Super1>*> failingSuper1Serfs;
-static ArrayStack<RCSerf<Super2>*> failingSuper2Serfs;
-static ArrayStack<RCSerf<Sub>*> failingSubSerfs;
+ArrayStack<RCSerf<Float>*> failingFloatSerfs;
+ArrayStack<RCSerf<Integer const>*> failingIntegerConstSerfs;
+ArrayStack<RCSerf<Super1>*> failingSuper1Serfs;
+ArrayStack<RCSerf<Super2>*> failingSuper2Serfs;
+ArrayStack<RCSerf<Sub>*> failingSubSerfs;
 
 
 template <class T>
@@ -136,7 +135,7 @@ void emptyFailingSerfs(ArrayStack<RCSerf<T>*> &failingSerfs)
 
 // Called when an expected failure happens.  It has to repair the
 // condition causing the failure so we don't actually abort.
-static void incFailCount()
+void incFailCount()
 {
   failCount++;
 
@@ -165,7 +164,7 @@ static void incFailCount()
 
 
 // Exercise the operators.
-static void testOperatorsInteger()
+void testOperatorsInteger()
 {
   Owner<Integer> o1(new Integer(3));
   RCSerf<Integer> s1(o1);
@@ -208,7 +207,7 @@ static void testOperatorsInteger()
 }
 
 // Same thing but using Float.
-static void testOperatorsFloat(bool failure)
+void testOperatorsFloat(bool failure)
 {
   Owner<Float> o1(new Float(3.75));
   RCSerf<Float> s1(o1);
@@ -255,7 +254,7 @@ static void testOperatorsFloat(bool failure)
 
 
 // Test RCSerf referring to Owner.
-static void testOwnerPointerSuccess()
+void testOwnerPointerSuccess()
 {
   Owner<Integer> i(new Integer(9));
   RCSerf<Integer> s;
@@ -265,7 +264,7 @@ static void testOwnerPointerSuccess()
   EXPECT_EQ(s.has_value(), true);
 }
 
-static void testOwnerPointerFailure()
+void testOwnerPointerFailure()
 {
   {
     RCSerf<Integer> s;
@@ -285,14 +284,14 @@ static void testOwnerPointerFailure()
 
 
 // Test RCSerf pointing at a local.
-static void testLocalObjSuccess()
+void testLocalObjSuccess()
 {
   Integer i(5);
   RCSerf<Integer> s(&i);
   EXPECT_EQ(s->m_i, 5);
 }
 
-static void testLocalObjFailure()
+void testLocalObjFailure()
 {
   {
     RCSerf<Integer> s;
@@ -311,14 +310,14 @@ static void testLocalObjFailure()
 }
 
 
-static void deallocate(Integer *i)
+void deallocate(Integer *i)
 {
   delete i;
 }
 
 // Test RCSerf pointing at something allocate with 'new' and
 // deallocated with 'delete' in a callee.
-static void testPlainPointerSuccess()
+void testPlainPointerSuccess()
 {
   Integer *i = new Integer(12);
   {
@@ -328,7 +327,7 @@ static void testPlainPointerSuccess()
   deallocate(i);
 }
 
-static void testPlainPointerFailure()
+void testPlainPointerFailure()
 {
   {
     Integer *i = new Integer(12);
@@ -344,7 +343,7 @@ static void testPlainPointerFailure()
 
 
 // Test nullifying a serf.
-static void testNullify()
+void testNullify()
 {
   Integer i(7);
   RCSerf<Integer> s1(&i);
@@ -357,13 +356,13 @@ static void testNullify()
 }
 
 
-static void paramCallee(RCSerf<Integer> s)
+void paramCallee(RCSerf<Integer> s)
 {
   EXPECT_EQ(s->m_i, 8);
 }
 
 // Test passing RCSerf as a parameter.
-static void testParam()
+void testParam()
 {
   Integer i(8);
   paramCallee(&i);
@@ -374,7 +373,7 @@ static void testParam()
 
 
 // Test storing RCSerfs in a container.
-static void testManyPointersSuccess()
+void testManyPointersSuccess()
 {
   Integer obj(14);
   ArrayStack<RCSerf<Integer> > arr;
@@ -383,7 +382,7 @@ static void testManyPointersSuccess()
   }
 }
 
-static void testManyPointersFailure()
+void testManyPointersFailure()
 {
   Integer *obj = new Integer(14);
   ArrayStack<RCSerf<Integer> > arr;
@@ -404,7 +403,7 @@ static void testManyPointersFailure()
 
 
 // Exercise both 'swapWith' method and 'swap' global function.
-static void testSwapWithSuccess()
+void testSwapWithSuccess()
 {
   Integer *o1 = new Integer(16);
   Integer *o2 = new Integer(17);
@@ -437,7 +436,7 @@ static void testSwapWithSuccess()
   delete o1;
 }
 
-static void testSwapWithFailure()
+void testSwapWithFailure()
 {
   Integer *o1 = new Integer(16);
   Integer *o2 = new Integer(17);
@@ -475,7 +474,7 @@ static void testSwapWithFailure()
 }
 
 
-static void testRelease()
+void testRelease()
 {
   RCSerf<Integer> i = new Integer(18);
   EXPECT_EQ(!!i, true);
@@ -484,7 +483,7 @@ static void testRelease()
 }
 
 
-static void testConstVersionSuccess()
+void testConstVersionSuccess()
 {
   Owner<Integer> o(new Integer(23));
   RCSerf<Integer const> s(o);
@@ -494,7 +493,7 @@ static void testConstVersionSuccess()
   //s->m_i = 44;
 }
 
-static void testConstVersionFailure()
+void testConstVersionFailure()
 {
   Owner<Integer> o(new Integer(23));
   RCSerf<Integer const> s(o);
@@ -508,7 +507,7 @@ static void testConstVersionFailure()
 }
 
 
-static void expectSum(RCSerfList<Integer> const &list, int expect)
+void expectSum(RCSerfList<Integer> const &list, int expect)
 {
   int sum=0;
   FOREACH_RCSERFLIST(Integer, list, iter) {
@@ -517,7 +516,7 @@ static void expectSum(RCSerfList<Integer> const &list, int expect)
   EXPECT_EQ(sum, expect);
 }
 
-static void expectSumNC(RCSerfList<Integer> &list, int expect)
+void expectSumNC(RCSerfList<Integer> &list, int expect)
 {
   int sum=0;
   FOREACH_RCSERFLIST_NC(Integer, list, iter) {
@@ -527,7 +526,7 @@ static void expectSumNC(RCSerfList<Integer> &list, int expect)
 }
 
 // Basic test of RCSerfList.
-static void testListSuccess()
+void testListSuccess()
 {
   Integer o1(1);
   Integer o2(2);
@@ -599,7 +598,7 @@ static void testListSuccess()
   {}
 }
 
-static void testListFailure()
+void testListFailure()
 {
   RCSerfList<Integer> list;
   PREPARE_TO_FAIL();
@@ -629,7 +628,7 @@ enum LLMode {
   LL_FAILURE,      // Use removeItem but forget one.
 };
 
-static void testLongList(LLMode mode)
+void testLongList(LLMode mode)
 {
   PREPARE_TO_FAIL();      // ok even if not LL_FAILURE
   int isFailure = (mode==LL_FAILURE? 1 : 0);
@@ -688,7 +687,7 @@ static void testLongList(LLMode mode)
 }
 
 
-static void testMultipleInheritance(int failure)
+void testMultipleInheritance(int failure)
 {
   Owner<Super1> s1(new Super1);
   s1->x = 1;
