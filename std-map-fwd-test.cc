@@ -7,11 +7,13 @@
 static stdfwd::map<int, int> getAMap();
 
 // This must come before sm-test.h.
-#include "map-util.h"                  // operator<<(map)
+#include "map-util.h"                  // smbase::operator<<(map)
+using smbase::operator<<;
 
 #include "sm-test.h"                   // EXPECT_EQ
 
 #include <map>                         // std::map
+
 
 // Define it using the usual name.
 static std::map<int, int> getAMap()

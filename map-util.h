@@ -5,13 +5,11 @@
 
 // TODO: All function names should start with "map".
 
-// TODO: Put all functions into `smbase` namespace.
-
 #ifndef SMBASE_MAP_UTIL_H
 #define SMBASE_MAP_UTIL_H
 
 // smbase
-#include "sm-macros.h"                 // DEPRECATED
+#include "sm-macros.h"                 // DEPRECATED, OPEN_NAMESPACE
 #include "xassert.h"                   // xassert
 
 // libc++
@@ -20,6 +18,9 @@
 #include <optional>                    // std::optional
 #include <set>                         // set::set
 #include <utility>                     // std::make_pair, std::move
+
+
+OPEN_NAMESPACE(smbase)
 
 
 // ----------------------------- Map->Set ------------------------------
@@ -271,6 +272,9 @@ std::ostream& operator<< (std::ostream &os, std::map<K,V> const &m)
 
   return os;
 }
+
+
+CLOSE_NAMESPACE(smbase)
 
 
 #endif // SMBASE_MAP_UTIL_H
