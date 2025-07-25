@@ -144,6 +144,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(sm_pp_util);
   RUN_TEST(sm_rc_ptr);
   RUN_TEST(sm_regex);
+  RUN_TEST(sm_span);
   RUN_TEST(sm_stristr);
   RUN_TEST(sm_test);
   RUN_TEST(sm_trace);
