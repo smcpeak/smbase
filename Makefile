@@ -318,7 +318,6 @@ SRCS += sm-file-util.cc
 SRCS += sm-integer.cc
 SRCS += sm-rc-obj.cc
 SRCS += sm-regex.cc
-SRCS += sm-span.cc
 SRCS += sm-stristr.cc
 SRCS += sm-test.cc
 SRCS += sm-trace.cc
