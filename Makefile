@@ -446,6 +446,7 @@ UNIT_TEST_OBJS += sm-pp-util-test.o
 UNIT_TEST_OBJS += sm-rc-ptr-test.o
 UNIT_TEST_OBJS += sm-regex-test.o
 UNIT_TEST_OBJS += sm-span-test.o
+UNIT_TEST_OBJS += sm-span-util-test.o
 UNIT_TEST_OBJS += sm-stristr-test.o
 UNIT_TEST_OBJS += sm-test-test.o
 UNIT_TEST_OBJS += sm-trace-test.o
