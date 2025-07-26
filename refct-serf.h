@@ -89,6 +89,7 @@ public:      // funcs
   // this, but it exists in case it wants to do so for uniformity.
   // This also ensures the class works with std::swap.
   SerfRefCount(SerfRefCount const &);
+  SerfRefCount(SerfRefCount &&);
 
   // Aborts the program if the reference count is not zero, since the
   // alternative is to risk memory corruption.
@@ -96,6 +97,7 @@ public:      // funcs
 
   // Same rationale as for the copy constructor.
   SerfRefCount& operator= (SerfRefCount const &) { return *this; }
+  SerfRefCount& operator= (SerfRefCount &&) { return *this; }
 
   // Possibly useful for testing or debugging.  Correct programs should
   // *not* change their behavior based on this value.

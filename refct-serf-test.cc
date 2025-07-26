@@ -36,6 +36,10 @@ public:      // funcs
     return *this;
   }
 
+  // Make sure these can be generated.
+  Integer(Integer &&) = default;
+  Integer& operator= (Integer &&obj) = default;
+
   DECLARE_COMPARETO_AND_DEFINE_RELATIONALS(Integer);
 };
 

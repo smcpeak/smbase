@@ -44,6 +44,13 @@ SerfRefCount::SerfRefCount(SerfRefCount const &)
 }
 
 
+SerfRefCount::SerfRefCount(SerfRefCount &&)
+  : m_serfRefCount(0)
+{
+  s_objectCount++;
+}
+
+
 SerfRefCount::~SerfRefCount()
 {
   s_objectCount--;
