@@ -88,6 +88,28 @@ void testOstreamInsert()
 }
 
 
+void test_mapGetValueAt()
+{
+  std::map<int, int> m = {
+    { 1, 2 },
+    { 3, 4 },
+  };
+  EXPECT_EQ(mapGetValueAtC(m, 1), 2);
+  EXPECT_EQ(mapGetValueAtC(m, 3), 4);
+  EXPECT_EXN(mapGetValueAtC(m, 5), XAssert);
+
+  EXPECT_EQ(mapGetValueAt(m, 3), 4);
+
+  // When passed non-const, result is mutable.
+  mapGetValueAt(m, 3) = 44;
+
+  std::map<int, int> const &cm = m;
+
+  EXPECT_EQ(mapGetValueAt(cm, 3), 44);
+  EXPECT_EQ(mapGetValueAtC(cm, 3), 44);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -97,6 +119,7 @@ void test_map_util()
   testMapFindOrNull();
   testMapMoveValueAt();
   testOstreamInsert();
+  test_mapGetValueAt();
 }
 
 

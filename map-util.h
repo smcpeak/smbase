@@ -125,6 +125,30 @@ std::optional<typename std::map<K,V>::const_iterator> mapFindOpt(
 }
 
 
+// Return a reference to the value for `k`, which must exist.
+template <typename K, typename V, typename C, typename A>
+V const &mapGetValueAtC(std::map<K,V,C,A> const &m, K const &k)
+{
+  auto it = m.find(k);
+  xassert(it != m.end());
+  return (*it).second;
+}
+
+template <typename K, typename V, typename C, typename A>
+V const &mapGetValueAt(std::map<K,V,C,A> const &m, K const &k)
+{
+  return mapGetValueAtC(m, k);
+}
+
+template <typename K, typename V, typename C, typename A>
+V &mapGetValueAt(std::map<K,V,C,A> &m, K const &k)
+{
+  auto it = m.find(k);
+  xassert(it != m.end());
+  return (*it).second;
+}
+
+
 // ---------------------------- Insertion ------------------------------
 // I don't like to have to say 'make_pair' all the time, and I'm
 // ambivalent about using the initializer list syntax, so this function
