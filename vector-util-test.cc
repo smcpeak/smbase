@@ -164,6 +164,18 @@ void test_vecSlice()
 }
 
 
+void test_vecContains()
+{
+  std::vector<int> v{0,1,2,3,4};
+  xassert(vecContains(v, 0));
+  xassert(vecContains(v, 4));
+  xassert(!vecContains(v, -1));
+  xassert(!vecContains(v, 5));
+
+  xassert(!vecContains(std::vector<int>{}, 0));
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -179,6 +191,7 @@ void test_vector_util()
   test_vecSum();
   test_vecSumSlice();
   test_vecSlice();
+  test_vecContains();
 }
 
 

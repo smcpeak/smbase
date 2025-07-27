@@ -6,7 +6,6 @@
 #ifndef SMBASE_VECTOR_UTIL_H
 #define SMBASE_VECTOR_UTIL_H
 
-#include "container-util.h"            // CONTAINER_FOREACH
 #include "overflow.h"                  // convertNumber
 #include "sm-macros.h"                 // NO_OBJECT_COPIES
 #include "xassert.h"                   // xfailure
@@ -249,8 +248,8 @@ void pop_check(std::vector<T> &vec, T const &value)
 template <class T>
 bool vecContains(std::vector<T> const &vec, T const &value)
 {
-  CONTAINER_FOREACH(vec, it) {
-    if (*it == value) {
+  for (T const &t : vec) {
+    if (t == value) {
       return true;
     }
   }
