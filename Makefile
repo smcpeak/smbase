@@ -394,6 +394,7 @@ UNIT_TEST_OBJS += boxprint-test.o
 UNIT_TEST_OBJS += c-string-reader-test.o
 UNIT_TEST_OBJS += codepoint-test.o
 UNIT_TEST_OBJS += compare-util-test.o
+UNIT_TEST_OBJS += container-util-test.o
 UNIT_TEST_OBJS += counting-ostream-test.o
 UNIT_TEST_OBJS += crc-test.o
 UNIT_TEST_OBJS += cycles-test.o

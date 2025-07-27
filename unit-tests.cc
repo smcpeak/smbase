@@ -95,6 +95,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(c_string_reader);
   RUN_TEST(codepoint);
   RUN_TEST(compare_util);
+  RUN_TEST(container_util);
   RUN_TEST(counting_ostream);
   RUN_TEST(crc);
   RUN_TEST_NO_DECL(cycles);
