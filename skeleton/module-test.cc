@@ -22,7 +22,7 @@ CLOSE_ANONYMOUS_NAMESPACE
 
 
 // Called from unit-tests.cc.
-void test_sm_span_util()
+void test_{module_with_underscores}()
 {
   test_one();
 }
