@@ -10,8 +10,8 @@
 
 // this dir
 #include "smbase/counting-ostream.h"   // nullOStream
+#include "smbase/gdv-ordered-map.h"    // gdv::GDVOrderedMap
 #include "smbase/gdvsymbol.h"          // gdv::GDVSymbol
-#include "smbase/ordered-map-ops.h"    // smbase::OrderedMap ctor, etc.
 #include "smbase/reader.h"             // smbase::ReaderException
 #include "smbase/save-restore.h"       // SAVE_RESTORE
 #include "smbase/sm-file-util.h"       // SMFileUtil

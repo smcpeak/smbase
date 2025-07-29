@@ -6,8 +6,8 @@
 #include "smbase/sm-test.h"            // module under test; and test harness to use
 
 #include "smbase/exc.h"                // xmessage, smbase::XMessage
+#include "smbase/gdv-ordered-map.h"    // gdv::GDVOrderedMap (for TEST_CASE_EXPRS)
 #include "smbase/gdvalue.h"            // gdv::GDValue
-#include "smbase/ordered-map-ops.h"    // gdv::GDVOrderedMap (for TEST_CASE_EXPRS)
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
 
 using namespace gdv;

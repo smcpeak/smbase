@@ -265,7 +265,7 @@ void expectMatchesRegex(
   which expands to what is shown in the example above.
 
   To use this macro, you have to #include "gdvalue.h" and
-  "ordered-map-ops.h", and possibly other headers that know how to
+  "gdv-ordered-map.h", and possibly other headers that know how to
   convert various types to `GDValue`.
 */
 #define TEST_CASE_EXPRS(label, ...)                        \

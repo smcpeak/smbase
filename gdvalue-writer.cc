@@ -7,9 +7,9 @@
 
 // this dir
 #include "smbase/counting-ostream.h"   // CountingOStream
+#include "smbase/gdv-ordered-map.h"    // gdv::GDVOrderedMap
 #include "smbase/gdvalue.h"            // gdv::GDValue
 #include "smbase/gdvsymbol.h"          // gdv::GDVSymbol
-#include "smbase/ordered-map-ops.h"    // smbase::OrderedMap::begin, etc.
 #include "smbase/overflow.h"           // safeToInt
 #include "smbase/save-restore.h"       // SAVE_RESTORE, SET_RESTORE
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE

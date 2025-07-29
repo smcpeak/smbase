@@ -8,10 +8,10 @@
 // this dir
 #include "smbase/compare-util.h"       // smbase::compare, RET_IF_COMPARE
 #include "smbase/exc.h"                // GENERIC_CATCH_{BEGIN,END}
+#include "smbase/gdv-ordered-map.h"    // gdv::GDVOrderedMap
 #include "smbase/gdvalue-reader.h"     // gdv::GDValueReader
 #include "smbase/gdvalue-writer.h"     // gdv::GDValueWriter
 #include "smbase/gdvsymbol.h"          // gdv::GDVSymbol
-#include "smbase/ordered-map-ops.h"    // smbase::OrderedMap::size, etc.
 #include "smbase/sm-trace.h"           // INIT_TRACE, etc.
 #include "smbase/syserr.h"             // smbase::xsyserror
 #include "smbase/xassert.h"            // xassert

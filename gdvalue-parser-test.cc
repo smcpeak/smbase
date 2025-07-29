@@ -16,8 +16,8 @@
 #include "smbase/gdvalue-unique-ptr.h"           // module under test
 #include "smbase/gdvalue-vector.h"               // module under test
 
+#include "smbase/gdv-ordered-map.h"              // gdv::GDVOrderedMap
 #include "smbase/gdvalue.h"                      // gdv::GDValue
-#include "smbase/ordered-map-ops.h"              // smbase::OrderedMap ctor, etc.
 #include "smbase/sm-macros.h"                    // {OPEN,CLOSE}_ANONYMOUS_NAMESPACE
 #include "smbase/sm-test.h"                      // EXPECT_EQ
 

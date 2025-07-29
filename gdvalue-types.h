@@ -7,18 +7,18 @@
 #ifndef SMBASE_GDVALUE_TYPES_H
 #define SMBASE_GDVALUE_TYPES_H
 
-#include "smbase/gdvalue-fwd.h"        // gdv::GDValue
-#include "smbase/ordered-map-fwd.h"    // smbase::OrderedMap
-#include "smbase/sm-integer-fwd.h"     // smbase::Integer
-#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
-#include "smbase/std-map-fwd.h"        // stdfwd::map
-#include "smbase/std-set-fwd.h"        // stdfwd::set
-#include "smbase/std-string-fwd.h"     // std::string
-#include "smbase/std-vector-fwd.h"     // stdfwd::vector
-#include "smbase/std-utility-fwd.h"    // std::pair
+#include "smbase/gdv-ordered-map-fwd.h"          // gdv::GDVOrderedMap (for clients)
+#include "smbase/gdvalue-fwd.h"                  // gdv::GDValue
+#include "smbase/sm-integer-fwd.h"               // smbase::Integer
+#include "smbase/sm-macros.h"                    // OPEN_NAMESPACE
+#include "smbase/std-map-fwd.h"                  // stdfwd::map
+#include "smbase/std-set-fwd.h"                  // stdfwd::set
+#include "smbase/std-string-fwd.h"               // std::string
+#include "smbase/std-vector-fwd.h"               // stdfwd::vector
+#include "smbase/std-utility-fwd.h"              // std::pair
 
-#include <cstddef>                     // std::size_t
-#include <cstdint>                     // std::int64_t
+#include <cstddef>                               // std::size_t
+#include <cstdint>                               // std::int64_t
 
 
 OPEN_NAMESPACE(gdv)
@@ -53,8 +53,7 @@ using GDVSet = stdfwd::set<GDValue>;
 // GDValue(GDVK_MAP) holds this.
 using GDVMap = stdfwd::map<GDValue, GDValue>;
 
-// GDValue(GDVK_ORDERED_MAP) holds this.
-using GDVOrderedMap = smbase::OrderedMap<GDValue, GDValue>;
+// `GDVOrderedMap` is declared in `gdv-ordered-map-fwd.h`.
 
 // The entry type for GDVMap and GDVOrderedMap.
 using GDVMapEntry = std::pair<GDValue const, GDValue>;

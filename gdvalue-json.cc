@@ -3,8 +3,8 @@
 
 #include "smbase/gdvalue-json.h"       // this module
 
+#include "smbase/gdv-ordered-map.h"    // gdv::GDVOrderedMap
 #include "smbase/gdvalue.h"            // gdv::GDValue
-#include "smbase/ordered-map-ops.h"    // smbase::OrderedMap method definitions
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE, NULLABLE
 
 #include <optional>                    // std::optional

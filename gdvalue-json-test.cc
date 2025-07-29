@@ -3,8 +3,8 @@
 
 #include "smbase/gdvalue-json.h"       // module under test
 
+#include "smbase/gdv-ordered-map.h"    // gdv::GDVOrderedMap
 #include "smbase/gdvalue.h"            // gdv::GDValue
-#include "smbase/ordered-map-ops.h"    // smbase::OrderedMap
 #include "smbase/save-restore.h"       // SET_RESTORE
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
 #include "smbase/sm-test.h"            // EXPECT_EQ

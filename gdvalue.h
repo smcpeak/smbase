@@ -22,7 +22,7 @@
 #include "smbase/gdvalue-write-options.h"        // gdv::GDValueWriteOptions
 #include "smbase/gdvsymbol.h"                    // gdv::GDVSymbol
 #include "smbase/gdvtuple.h"                     // gdv::GDVTuple
-#include "smbase/ordered-map.h"                  // smbase::OrderedMap
+#include "smbase/gdv-ordered-map-iface.h"        // gdv::GDVOrderedMap
 #include "smbase/sm-integer.h"                   // smbase::Integer
 #include "smbase/sm-macros.h"                    // OPEN_NAMESPACE, NULLABLE
 #include "smbase/std-string-view-fwd.h"          // std::string_view
