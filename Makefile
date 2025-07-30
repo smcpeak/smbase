@@ -24,7 +24,8 @@ CXX = g++
 DEBUG_FLAGS = -g
 
 # Flags to enable dependency generation of .d files.
-GENDEPS_FLAGS = -MMD
+# The -MP modifier adds phony targets to deal with removed headers.
+GENDEPS_FLAGS = -MMD -MP
 
 # Flags to control optimization.
 OPTIMIZATION_FLAGS = -O2
