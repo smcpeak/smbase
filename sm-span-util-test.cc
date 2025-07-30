@@ -1,7 +1,7 @@
 // sm-span-util-test.cc
 // Tests for `sm-span-util` module.
 
-#include "smbase/sm-span-util-ops.h"   // module under test
+#include "smbase/sm-span-util.h"       // module under test
 
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
 #include "smbase/sm-span.h"            // smbase::Span

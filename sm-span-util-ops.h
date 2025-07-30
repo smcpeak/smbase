@@ -3,12 +3,12 @@
 
 // See license.txt for copyright and terms of use.
 
-// See comments in `sm-span-util.h` for function specifications.
+// See comments in `sm-span-util-iface.h` for function specifications.
 
 #ifndef SMBASE_SM_SPAN_UTIL_OPS_H
 #define SMBASE_SM_SPAN_UTIL_OPS_H
 
-#include "sm-span-util.h"              // decls for this module
+#include "sm-span-util-iface.h"        // interface for this module
 
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 
