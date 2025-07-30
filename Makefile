@@ -801,7 +801,11 @@ out/test/ctc/in/%.ok: test/ctc/in/%.h test/ctc/in/%.cc create-tuple-class.py
 	  --expect test/ctc/exp/$*.cc \
 	  --no-separators --no-stderr \
 	  cat out/test/ctc/in/$*.cc
-	$(CXX) -c -o out/test/ctc/in/$*.o -I. out/test/ctc/in/$*.cc
+	@#
+	@# We need both -I. and -I.. since the file gets compiled while
+	@# it is in some other directory, but the #includes name files
+	@# in smbase both with and without the "smbase/" prefix.
+	$(CXX) -c -o out/test/ctc/in/$*.o -I. -I.. out/test/ctc/in/$*.cc
 	touch $@
 
 .PHONY: check-ctc

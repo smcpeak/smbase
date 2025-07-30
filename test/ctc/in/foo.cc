@@ -10,6 +10,9 @@
 #include <sstream>                     // std::ostringstream
 #include <utility>                     // std::move
 
+// For `smbase::compare`.
+using namespace smbase;
+
 
 // ---- create-tuple-class: definitions for Foo
 
