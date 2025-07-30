@@ -1,6 +1,5 @@
 // sm-span-iface.h
-// `Span` class, a view onto a contiguous in memory sequence of
-// elements, similar to C++20 `std::span`.
+// Interface declarations for `sm-span` module.
 
 // See license.txt for copyright and terms of use.
 

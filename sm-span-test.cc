@@ -1,7 +1,7 @@
 // sm-span-test.cc
 // Tests for `sm-span`.
 
-#include "sm-span-ops.h"               // module under test
+#include "sm-span.h"                   // module under test
 
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE, TABLESIZE
 #include "smbase/sm-test.h"            // EXPECT_EQ, TEST_CASE

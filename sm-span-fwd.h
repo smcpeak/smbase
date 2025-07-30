@@ -1,5 +1,5 @@
 // sm-span-fwd.h
-// Forward decls for `sm-span.h`.
+// Forward decls for `sm-span` module.
 
 // See license.txt for copyright and terms of use.
 

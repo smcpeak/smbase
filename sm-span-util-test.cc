@@ -4,7 +4,7 @@
 #include "smbase/sm-span-util-ops.h"   // module under test
 
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
-#include "smbase/sm-span-ops.h"        // smbase::Span
+#include "smbase/sm-span.h"            // smbase::Span
 #include "smbase/sm-test.h"            // EXPECT_EQ
 
 #include <string>                      // std::string
