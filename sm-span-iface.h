@@ -1,11 +1,14 @@
-// sm-span.h
+// sm-span-iface.h
 // `Span` class, a view onto a contiguous in memory sequence of
 // elements, similar to C++20 `std::span`.
 
 // See license.txt for copyright and terms of use.
 
-#ifndef SMBASE_SM_SPAN_H
-#define SMBASE_SM_SPAN_H
+// This is the interface definition.  The implementation is in
+// `sm-span-ops.h`.
+
+#ifndef SMBASE_SM_SPAN_IFACE_H
+#define SMBASE_SM_SPAN_IFACE_H
 
 #include "sm-span-fwd.h"               // fwds for this module
 
@@ -129,4 +132,4 @@ public:      // methods
 CLOSE_NAMESPACE(smbase)
 
 
-#endif // SMBASE_SM_SPAN_H
+#endif // SMBASE_SM_SPAN_IFACE_H

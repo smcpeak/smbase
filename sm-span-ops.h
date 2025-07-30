@@ -6,7 +6,7 @@
 #ifndef SMBASE_SM_SPAN_OPS_H
 #define SMBASE_SM_SPAN_OPS_H
 
-#include "sm-span.h"                   // decls for this module
+#include "sm-span-iface.h"             // decls for this module
 
 #include "smbase/compare-util.h"       // RET_IF_COMPARE_MEMBERS
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE, IMEMBFP
