@@ -3,23 +3,29 @@
 
 #include "sm-file-util.h"              // module to test
 
-#include "exc.h"                       // smbase::{XBase, XFatal}
-#include "nonport.h"                   // GetMillisecondsAccumulator, getFileModificationTime
-#include "run-process.h"               // RunProcess
-#include "sm-test.h"                   // VPVAL, DIAG, verbose, EXPECT_EQ
-#include "strutil.h"                   // compareStringPtrs
-#include "syserr.h"                    // XSysError
+#include "smbase/exc.h"                // smbase::{XBase, XFatal}
+#include "smbase/nonport.h"            // GetMillisecondsAccumulator, getFileModificationTime
+#include "smbase/run-process.h"        // RunProcess
+#include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
+#include "smbase/sm-test.h"            // VPVAL, DIAG, verbose, EXPECT_EQ
+#include "smbase/strutil.h"            // compareStringPtrs
+#include "smbase/syserr.h"             // XSysError
 
 #include <optional>                    // std::optional
 
 using namespace smbase;
 
 
-// TODO: Use anonymous namespace.
+// Defined in sm-file-util.cc.
+void getDirectoryEntries_scanThenStat(SMFileUtil &sfu,
+  ArrayStack<SMFileUtil::DirEntryInfo> /*OUT*/ &entries, string const &directory);
+
+
+OPEN_ANONYMOUS_NAMESPACE
 
 
 // Run some checks on the 'fn' object directly.
-static void checkFNObject(SMFileName const &fn, SMFileName::Syntax syntax)
+void checkFNObject(SMFileName const &fn, SMFileName::Syntax syntax)
 {
   // Round trip through string should produce an equal object.
   {
@@ -45,7 +51,7 @@ static void checkFNObject(SMFileName const &fn, SMFileName::Syntax syntax)
 
 
 // Check that 'sfu' reports the same properties as 'fn' on 'input'.
-static void checkAgainstSFU(
+void checkAgainstSFU(
   SMFileUtil &sfu,
   string const &input,
   SMFileName const &fn)
@@ -57,7 +63,7 @@ static void checkAgainstSFU(
 
 
 // Test file name parsing with S_POSIX.
-static void expectFNp(
+void expectFNp(
   string const &input,
   bool expectIsAbsolute,
   string const &expectPathComponents,
@@ -79,7 +85,7 @@ static void expectFNp(
 
 
 // Test file name parsing with S_WINDOWS.
-static void expectFNw(
+void expectFNw(
   string const &input,
   string const &expectFileSystem,
   bool expectIsAbsolute,
@@ -102,7 +108,7 @@ static void expectFNw(
 
 
 // Test file name parsing with S_NATIVE.
-static void expectFNn(
+void expectFNn(
   string const &input,
   string const &expectFileSystem,
   bool expectIsAbsolute,
@@ -124,7 +130,7 @@ static void expectFNn(
 
 
 // Test with both, expecting the same result.
-static void expectFNsame(
+void expectFNsame(
   string const &input,
   bool expectIsAbsolute,
   string const &expectPathComponents,
@@ -136,7 +142,7 @@ static void expectFNsame(
 
 
 // Test with both, expecting different results.
-static void expectFNpw(
+void expectFNpw(
   string const &input,
   bool expectPosixIsAbsolute,
   string const &expectPosixPathComponents,
@@ -153,7 +159,7 @@ static void expectFNpw(
 }
 
 
-static void testFileName()
+void testFileName()
 {
   expectFNsame("", false, "", false);
   expectFNsame("/", true, "", false);
@@ -247,7 +253,7 @@ static void testFileName()
 }
 
 
-static void printSomeStuff()
+void printSomeStuff()
 {
   SMFileUtil sfu;
 
@@ -286,7 +292,7 @@ static void printSomeStuff()
 }
 
 
-static void test_hasNormalizedPathSeparators()
+void test_hasNormalizedPathSeparators()
 {
   SMFileUtil sfu;
   EXPECT_EQ(sfu.hasNormalizedPathSeparators(""), true);
@@ -297,7 +303,7 @@ static void test_hasNormalizedPathSeparators()
 }
 
 
-static void test_normalizePathSeparators()
+void test_normalizePathSeparators()
 {
   SMFileUtil sfu;
   EXPECT_EQ(sfu.normalizePathSeparators(""), "");
@@ -309,7 +315,7 @@ static void test_normalizePathSeparators()
 }
 
 
-static void testGetSortedDirectoryEntries()
+void testGetSortedDirectoryEntries()
 {
   SMFileUtil sfu;
 
@@ -379,7 +385,7 @@ static void testGetSortedDirectoryEntries()
 }
 
 
-static void testGetDirectoryEntries()
+void testGetDirectoryEntries()
 {
   SMFileUtil sfu;
   ArrayStack<SMFileUtil::DirEntryInfo> entries;
@@ -395,14 +401,14 @@ static void testGetDirectoryEntries()
 }
 
 
-static void expectJoin(char const *a, char const *b, char const *expect)
+void expectJoin(char const *a, char const *b, char const *expect)
 {
   SMFileUtil sfu;
   EXPECT_EQ(sfu.joinFilename(a, b), string(expect));
 }
 
 
-static void testJoinFilename()
+void testJoinFilename()
 {
   expectJoin("", "", "");
   expectJoin("a", "", "a");
@@ -423,14 +429,14 @@ static void testJoinFilename()
 }
 
 
-static void expectJoinIRF(char const *a, char const *b, char const *expect)
+void expectJoinIRF(char const *a, char const *b, char const *expect)
 {
   SMFileUtil sfu;
   EXPECT_EQ(sfu.joinIfRelativeFilename(a, b), string(expect));
 }
 
 
-static void testJoinIfRelativeFilename()
+void testJoinIfRelativeFilename()
 {
   expectJoinIRF("", "", "");
   expectJoinIRF("a", "", "a");
@@ -451,7 +457,7 @@ static void testJoinIfRelativeFilename()
 }
 
 
-static void expectRelExists(char const *fname, bool expect)
+void expectRelExists(char const *fname, bool expect)
 {
   SMFileUtil sfu;
   string wd = sfu.currentDirectory();
@@ -459,7 +465,7 @@ static void expectRelExists(char const *fname, bool expect)
 }
 
 
-static void testAbsolutePathExists()
+void testAbsolutePathExists()
 {
   expectRelExists("sm-file-util-test.cc", true);
   expectRelExists("something-else-random.cc", false);
@@ -475,7 +481,7 @@ static void testAbsolutePathExists()
 }
 
 
-static void testTestSMFileUtil()
+void testTestSMFileUtil()
 {
   TestSMFileUtil sfu;
   xassert(!sfu.windowsPathSemantics());
@@ -489,7 +495,7 @@ static void testTestSMFileUtil()
 }
 
 
-static void expectSplit(SMFileUtil &sfu,
+void expectSplit(SMFileUtil &sfu,
   char const *expectDir,
   char const *expectBase,
   char const *inputPath)
@@ -510,7 +516,7 @@ static void expectSplit(SMFileUtil &sfu,
 }
 
 
-static void testSplitPath()
+void testSplitPath()
 {
   TestSMFileUtil sfu;
 
@@ -526,13 +532,13 @@ static void testSplitPath()
 }
 
 
-static void expectEEWDS(SMFileUtil &sfu, char const *dir, char const *expect)
+void expectEEWDS(SMFileUtil &sfu, char const *dir, char const *expect)
 {
   string actual = sfu.ensureEndsWithDirectorySeparator(dir);
   EXPECT_EQ(actual, string(expect));
 }
 
-static void testEnsureEndsWith()
+void testEnsureEndsWith()
 {
   TestSMFileUtil sfu;
 
@@ -559,13 +565,13 @@ static void testEnsureEndsWith()
 }
 
 
-static void expectSTDS(SMFileUtil &sfu, char const *dir, char const *expect)
+void expectSTDS(SMFileUtil &sfu, char const *dir, char const *expect)
 {
   string actual = sfu.stripTrailingDirectorySeparator(dir);
   EXPECT_EQ(actual, string(expect));
 }
 
-static void testStripTrailing()
+void testStripTrailing()
 {
   TestSMFileUtil sfu;
 
@@ -594,14 +600,14 @@ static void testStripTrailing()
 }
 
 
-static void expectDE(SMFileUtil &sfu, string const &path, bool expect)
+void expectDE(SMFileUtil &sfu, string const &path, bool expect)
 {
   VPVAL(path);
   bool actual = sfu.directoryExists(path);
   EXPECT_EQ(actual, expect);
 }
 
-static void testDirectoryExists()
+void testDirectoryExists()
 {
   SMFileUtil sfu;
 
@@ -625,7 +631,7 @@ static void testDirectoryExists()
 }
 
 
-static void testIsReadOnly()
+void testIsReadOnly()
 {
   SMFileUtil sfu;
   EXPECT_EQ(sfu.isReadOnly("test-sm-file-util.cc"), false);
@@ -634,13 +640,13 @@ static void testIsReadOnly()
 }
 
 
-static void expectCD(SMFileUtil &sfu, string const &input, string const &expect)
+void expectCD(SMFileUtil &sfu, string const &input, string const &expect)
 {
   string actual = sfu.collapseDots(input);
   EXPECT_EQ(actual, expect);
 }
 
-static void testCollapseDots()
+void testCollapseDots()
 {
   // normalize path separators
 
@@ -676,7 +682,7 @@ static void testCollapseDots()
 }
 
 
-static void expectGFK(SMFileUtil &sfu,
+void expectGFK(SMFileUtil &sfu,
                       string fname, SMFileUtil::FileKind expect)
 {
   DIAG("expectGFK: " << fname);
@@ -684,7 +690,7 @@ static void expectGFK(SMFileUtil &sfu,
   EXPECT_EQ(actual, expect);
 }
 
-static void testGetFileKind()
+void testGetFileKind()
 {
   SMFileUtil sfu;
 
@@ -707,7 +713,7 @@ static void testGetFileKind()
 }
 
 
-static void testAtomicallyRenameFile()
+void testAtomicallyRenameFile()
 {
   string content("test content\n");
   string srcFname("tarf.src.tmp");
@@ -745,13 +751,13 @@ static void testAtomicallyRenameFile()
 
 
 // Run 'rm -rf path'.
-static void rm_rf(char const *path)
+void rm_rf(char const *path)
 {
   RunProcess::check_run(std::vector<string>{"rm", "-rf", path});
 }
 
 
-static void testCreateDirectoryAndParents()
+void testCreateDirectoryAndParents()
 {
   SMFileUtil sfu;
 
@@ -791,7 +797,7 @@ static void testCreateDirectoryAndParents()
 }
 
 
-static void testCreateParentDirectories()
+void testCreateParentDirectories()
 {
   SMFileUtil sfu;
   rm_rf("tcpd-tmpdir");
@@ -818,7 +824,7 @@ static void testCreateParentDirectories()
 }
 
 
-static void testReadAndWriteFile()
+void testReadAndWriteFile()
 {
   // All bytes.
   std::vector<unsigned char> bytes;
@@ -836,7 +842,7 @@ static void testReadAndWriteFile()
 }
 
 
-static void testReadAndWriteFileAsString()
+void testReadAndWriteFileAsString()
 {
   string fname = "test.dir/rw-as-string.txt";
   string expect("this is the string");
@@ -850,7 +856,7 @@ static void testReadAndWriteFileAsString()
 }
 
 
-static void testTouchFile()
+void testTouchFile()
 {
   SMFileUtil sfu;
 
@@ -895,14 +901,9 @@ static void testTouchFile()
 }
 
 
-// Defined in sm-file-util.cc.
-void getDirectoryEntries_scanThenStat(SMFileUtil &sfu,
-  ArrayStack<SMFileUtil::DirEntryInfo> /*OUT*/ &entries, string const &directory);
-
-
 // Check that we can manipulate arrays of DirEntryInfo properly.  This
 // previously caused a crash due to a bug in ArrayStack::sort.
-static void testArrayOfDirEntry()
+void testArrayOfDirEntry()
 {
   for (int j=0; j < 10; ++j) {
     ArrayStack<SMFileUtil::DirEntryInfo> entries;
@@ -915,7 +916,7 @@ static void testArrayOfDirEntry()
 }
 
 
-static void testCreateUniqueTemporaryFname()
+void testCreateUniqueTemporaryFname()
 {
   TestSMFileUtil sfu;
   sfu.m_existingPaths->add("/tmp/d1/foo.123.0.tmp");
@@ -945,7 +946,7 @@ static void testCreateUniqueTemporaryFname()
 }
 
 
-static void testAtomicallyWriteFileAsString()
+void testAtomicallyWriteFileAsString()
 {
   TestSMFileUtil sfu;
   sfu.resetAll();
@@ -994,6 +995,9 @@ static void testAtomicallyWriteFileAsString()
 
   sfu.removeFile(fname);
 }
+
+
+CLOSE_ANONYMOUS_NAMESPACE
 
 
 // Called from unit-tests.cc.
