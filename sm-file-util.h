@@ -240,6 +240,10 @@ public:      // funcs
   // if using POSIX paths.
   virtual bool windowsPathSemantics() const;
 
+  // True if `path` exclusively uses forward slashes, i.e., it does not
+  // contain any backslashes.
+  bool hasNormalizedPathSeparators(string const &path) const;
+
   // Return a string with all path separators as forward slashes.
   virtual string normalizePathSeparators(string const &s) const;
 

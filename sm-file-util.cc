@@ -406,6 +406,18 @@ SMFileUtil::~SMFileUtil()
 {}
 
 
+bool SMFileUtil::hasNormalizedPathSeparators(string const &path) const
+{
+  for (char c : path) {
+    if (c == '\\') {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+
 string SMFileUtil::normalizePathSeparators(string const &s) const
 {
   if (!windowsPathSemantics()) {

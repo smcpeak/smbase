@@ -15,6 +15,9 @@
 using namespace smbase;
 
 
+// TODO: Use anonymous namespace.
+
+
 // Run some checks on the 'fn' object directly.
 static void checkFNObject(SMFileName const &fn, SMFileName::Syntax syntax)
 {
@@ -280,6 +283,29 @@ static void printSomeStuff()
   VPVAL(sfu.absoluteFileExists("d:/wrk/editor"));
   VPVAL(sfu.absolutePathExists("d:/wrk/editor/main.h"));
   VPVAL(sfu.absoluteFileExists("d:/wrk/editor/main.h"));
+}
+
+
+static void test_hasNormalizedPathSeparators()
+{
+  SMFileUtil sfu;
+  EXPECT_EQ(sfu.hasNormalizedPathSeparators(""), true);
+  EXPECT_EQ(sfu.hasNormalizedPathSeparators("/"), true);
+  EXPECT_EQ(sfu.hasNormalizedPathSeparators("\\"), false);
+  EXPECT_EQ(sfu.hasNormalizedPathSeparators("\\/"), false);
+  EXPECT_EQ(sfu.hasNormalizedPathSeparators("/a/b/c"), true);
+}
+
+
+static void test_normalizePathSeparators()
+{
+  SMFileUtil sfu;
+  EXPECT_EQ(sfu.normalizePathSeparators(""), "");
+  EXPECT_EQ(sfu.normalizePathSeparators("/"), "/");
+  EXPECT_EQ(sfu.normalizePathSeparators("\\"), "/");
+  EXPECT_EQ(sfu.normalizePathSeparators("\\/"), "//");
+  EXPECT_EQ(sfu.normalizePathSeparators("/a/b/c"), "/a/b/c");
+  EXPECT_EQ(sfu.normalizePathSeparators("\\a\\b\\c"), "/a/b/c");
 }
 
 
@@ -1010,6 +1036,8 @@ void test_sm_file_util()
 
   testFileName();
   printSomeStuff();
+  test_hasNormalizedPathSeparators();
+  test_normalizePathSeparators();
   testGetSortedDirectoryEntries();
   testGetDirectoryEntries();
   testJoinFilename();
