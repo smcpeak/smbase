@@ -115,6 +115,15 @@ void test_arrayOfConst()
 }
 
 
+void test_defaultCtor()
+{
+  Span<int> sp;
+  EXPECT_EQ(sp.empty(), true);
+  EXPECT_EQ(sp.size(), 0);
+  xassert(sp.data() == nullptr);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -127,6 +136,7 @@ void test_sm_span()
   test_readOnlyVector();
   test_subspan();
   test_arrayOfConst();
+  test_defaultCtor();
 }
 
 

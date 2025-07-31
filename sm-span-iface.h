@@ -81,6 +81,9 @@ private:     // data
   size_type m_size;
 
 public:      // methods
+  // Empty span.
+  inline Span();
+
   // Pointer and size.
   inline Span(T *data, size_type size);
 

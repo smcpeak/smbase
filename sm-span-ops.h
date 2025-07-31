@@ -51,6 +51,13 @@ int Span<T>::iterator::compareTo(iterator const &b) const
 
 // ----------------------------- Span -----------------------------
 template <typename T>
+Span<T>::Span()
+  : m_data(nullptr),
+    m_size(0)
+{}
+
+
+template <typename T>
 Span<T>::Span(T *data, size_type size)
   : IMEMBFP(data),
     IMEMBFP(size)
