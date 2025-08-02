@@ -107,6 +107,12 @@ void test_mapGetValueAt()
 
   EXPECT_EQ(mapGetValueAt(cm, 3), 44);
   EXPECT_EQ(mapGetValueAtC(cm, 3), 44);
+
+  // Also test `mapContains`.
+  EXPECT_EQ(mapContains(m, 1), true);
+  EXPECT_EQ(mapContains(m, 5), false);
+  EXPECT_EQ(mapContains(cm, 1), true);
+  EXPECT_EQ(mapContains(cm, 5), false);
 }
 
 

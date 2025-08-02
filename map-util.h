@@ -83,6 +83,19 @@ void mapInsertAllKeys(DestSet &dest, SrcMap const &src)
 
 
 // ------------------------------ Lookup -------------------------------
+// True if `m` contains `k`.
+//
+// Rationale: There is a `contains` in `container-util.h`, but I
+// sometimes like to be more explicit about the intended type of the
+// container.
+//
+template <typename K, typename V, typename C, typename A>
+bool mapContains(std::map<K,V,C,A> const &m, K const &k)
+{
+  return m.find(k) != m.end();
+}
+
+
 // Look up 'k' in 'm'.  If found, return its value.  Otherwise return
 // 'V(0)', which for a pointer type is NULL.
 template <class K, class V>
