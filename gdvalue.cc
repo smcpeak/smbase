@@ -1729,6 +1729,25 @@ char const *stripMemberPrefix(char const *name)
 }
 
 
+// ----------------------------- fromGDVN ------------------------------
+GDValue fromGDVN(std::string const &str)
+{
+  return GDValue::readFromString(str);
+}
+
+
+GDValue fromGDVN(std::string_view sv)
+{
+  return GDValue::readFromStringView(sv);
+}
+
+
+GDValue fromGDVN(char const *str)
+{
+  return fromGDVN(std::string_view(str));
+}
+
+
 CLOSE_NAMESPACE(gdv)
 
 

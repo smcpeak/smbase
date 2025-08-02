@@ -2478,6 +2478,15 @@ void test_ostreamPrint()
 #endif
 
 
+void test_fromGDVN()
+{
+  GDVSequence const expect{1, 2, 3};
+  EXPECT_EQ(fromGDVN("[1 2 3]"), expect);
+  EXPECT_EQ(fromGDVN(std::string_view("[1 2 3]")), expect);
+  EXPECT_EQ(fromGDVN(std::string("[1 2 3]")), expect);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -2531,6 +2540,7 @@ void test_gdvalue()
     testNullablePtrToGDValue();
     test_stripMemberPrefix();
     //test_ostreamPrint();
+    test_fromGDVN();
 
     // Some interesting values for the particular data used.
     testPrettyPrint(0);

@@ -436,7 +436,7 @@ public:      // methods
   static GDValue readFromStream(std::istream &is);
 
   // Read the single serialized value in 'str', throwing an exception if
-  // there is not exactly one value orit is malformed.
+  // there is not exactly one value or it is malformed.
   static GDValue readFromString(std::string const &str);
 
   // Semantically the same as `readFromString`.
@@ -1128,6 +1128,17 @@ char const *stripMemberPrefix(char const *name);
 
 // Note: There are corresponding deserialization macros in
 // `gdvalue-parser.h`.
+
+
+// ----------------------------- fromGDVN ------------------------------
+// Convenience alias for `GDValue::readFromString`.
+GDValue fromGDVN(std::string const &str);
+
+// Convenience alias for `GDValue::readFromStringView`.
+GDValue fromGDVN(std::string_view sv);
+
+// Resolve overload ambiguity.
+GDValue fromGDVN(char const *str);
 
 
 CLOSE_NAMESPACE(gdv)
