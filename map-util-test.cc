@@ -8,6 +8,8 @@
 #include "sm-test.h"                   // EXPECT_EQ
 #include "stringb.h"                   // stringb
 
+#include <memory>                      // std::unique_ptr
+
 using namespace smbase;
 
 
@@ -116,6 +118,18 @@ void test_mapGetValueAt()
 }
 
 
+void test_mapInsertMove_unique_ptr()
+{
+  std::map<int, std::unique_ptr<int>> m;
+
+  // For reasons I don't understand, Clang accepts this even without the
+  // "Move" part.  GCC requires "Move", which seems more correct.
+  mapInsertMove(m, 1, std::make_unique<int>(2));
+
+  EXPECT_EQ(mapGetValueAt(m, 1).get()[0], 2);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -126,6 +140,7 @@ void test_map_util()
   testMapMoveValueAt();
   testOstreamInsert();
   test_mapGetValueAt();
+  test_mapInsertMove_unique_ptr();
 }
 
 

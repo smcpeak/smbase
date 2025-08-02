@@ -177,6 +177,15 @@ bool mapInsert(std::map<K,V> &m, K const &k, V const &v)
 }
 
 
+// Accept an rvalue reference to the value.
+template <class K, class V>
+bool mapInsertMove(std::map<K,V> &m, K const &k, V &&v)
+{
+  auto res = m.insert(std::make_pair(k, std::move(v)));
+  return res.second;
+}
+
+
 // Insert '(k,v)' into 'm'.  Throw if 'k' is already mapped.
 template <class K, class V>
 void mapInsertUnique(std::map<K,V> &map, K const &k, V const &v)
