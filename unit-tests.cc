@@ -143,6 +143,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(sm_integer);
   RUN_TEST(sm_is_equal);
   RUN_TEST(sm_pp_util);
+  RUN_TEST(sm_random);
   RUN_TEST(sm_rc_ptr);
   RUN_TEST(sm_regex);
   RUN_TEST(sm_span);
