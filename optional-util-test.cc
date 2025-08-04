@@ -3,9 +3,9 @@
 
 #include "optional-util.h"             // module under test
 
+#include "smbase/optional-opll.h"      // operator<<(std::optional)
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
 #include "smbase/sm-test.h"            // EXPECT_EQ
-#include "smbase/stringb.h"            // stringb
 
 #include <algorithm>                   // std::{min, max}
 #include <optional>                    // std::optional
@@ -23,9 +23,6 @@ void testOptionalToString()
 
   EXPECT_EQ(optionalToString(none, "NONE"), "NONE");
   EXPECT_EQ(optionalToString(one, "NONE"), "1");
-
-  EXPECT_EQ(stringb(none), "null");
-  EXPECT_EQ(stringb(one), "1");
 }
 
 

@@ -6,11 +6,12 @@
 static std::optional<int> getAnOptInt();
 
 // Must come before sm-test.h.
-#include "optional-util.h"             // operator<<(optional)
+#include "smbase/optional-opll.h"      // operator<<(optional)
 
-#include "sm-test.h"                   // EXPECT_EQ
+#include "smbase/sm-test.h"            // EXPECT_EQ
 
 #include <optional>                    // std::optional
+
 
 static std::optional<int> getAnOptInt()
 {

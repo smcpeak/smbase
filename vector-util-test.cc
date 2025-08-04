@@ -1,11 +1,11 @@
 // vector-util-test.cc
 // Test code for vector-util.h.
 
-#include "smbase/optional-util-iface.h"          // operator<<(std::optional)
+#include "smbase/optional-opll-iface.h"          // operator<<(std::optional)
 
 #include "smbase/vector-util.h"                  // module under test
 
-#include "smbase/optional-util.h"                // operator<<(std::optional)
+#include "smbase/optional-opll.h"                // operator<<(std::optional)
 #include "smbase/sm-macros.h"                    // OPEN_ANONYMOUS_NAMESPACE
 #include "smbase/sm-test.h"                      // EXPECT_EQ
 #include "smbase/string-util.h"                  // doubleQuote

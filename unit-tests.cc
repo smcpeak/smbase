@@ -125,6 +125,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(nonport);
   RUN_TEST(objlist);
   RUN_TEST(objpool);
+  RUN_TEST(optional_opll);
   RUN_TEST(optional_util);
   RUN_TEST(ordered_map);
   RUN_TEST(overflow);

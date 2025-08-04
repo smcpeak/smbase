@@ -14,6 +14,10 @@
 OPEN_NAMESPACE(smbase)
 
 
+// 2025-08-03: `operator<<(std::ostream, std::optional)` has been moved
+// to the `optional-opll` module.
+
+
 // Convert 'o' to a string using its insert operator, or 'ifNone' if 'o'
 // does not contain a value.
 template <class T>
@@ -37,19 +41,6 @@ void optAccumulateMax(std::optional<T> &opt, T const &t);
 
 
 CLOSE_NAMESPACE(smbase)
-
-
-// Write `*opt`, or "null" if it is nullopt.
-//
-// I tried putting this into the `smbase` namespace, but then I have to
-// add "using smbase::operator<<;" right after the #include (which has
-// to be near the top of any .cc file) to find it.  And as if that was
-// not bad enough, `clangd` complains, saying that declaration is
-// unused, even though both GCC and Clang (as a compiler) require it.
-template <class T>
-inline std::ostream& operator<< (std::ostream &os, std::optional<T> const &opt);
-
-inline std::ostream& operator<< (std::ostream &os, std::nullopt_t const &);
 
 
 #endif // SMBASE_OPTIONAL_UTIL_IFACE_H
