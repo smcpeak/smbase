@@ -3,6 +3,7 @@
 
 #include "sm-random.h"                 // this module
 
+#include "smbase/chained-cond.h"       // smbase::cc::z_le_lt
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 #include "smbase/sm-sized-int.h"       // SM_FOREACH_SIZED_INT
 #include "smbase/xassert.h"            // xassertPrecondition
@@ -74,10 +75,8 @@ RandomChoice::RandomChoice(int rangeSize)
 void RandomChoice::selfCheck() const
 {
   xassert(m_rangeSize > 0);
-  xassert(0 <= m_checkLimit &&
-               m_checkLimit <= m_rangeSize);
-  xassert(0 <= m_choice &&
-               m_choice < m_rangeSize);
+  xassert(cc::z_le_lt(m_checkLimit, m_rangeSize));
+  xassert(cc::z_le_lt(m_choice, m_rangeSize));
 }
 
 

@@ -3,6 +3,7 @@
 
 #include "smbase/sm-random.h"          // module under test
 
+#include "smbase/chained-cond.h"       // smbase::cc::le_lt
 #include "smbase/gdv-ordered-map.h"    // gdv::GDVOrderedMap
 #include "smbase/gdvalue.h"            // gdv::GDValue
 #include "smbase/get-type-name.h"      // smbase::GetTypeName
@@ -239,8 +240,7 @@ int testInterceptorFunction(int n)
 {
   // Here, it's up to the interceptor user to ensure the value is within
   // range.
-  xassert(0 <= testInterceptorValue &&
-               testInterceptorValue < n);
+  xassert(cc::z_le_lt(testInterceptorValue, n));
 
   return testInterceptorValue;
 }

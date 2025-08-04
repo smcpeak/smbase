@@ -93,6 +93,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(bitarray);
   RUN_TEST(boxprint);
   RUN_TEST(c_string_reader);
+  RUN_TEST(chained_cond);
   RUN_TEST(codepoint);
   RUN_TEST(compare_util);
   RUN_TEST(container_util);
