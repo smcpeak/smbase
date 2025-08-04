@@ -3,11 +3,14 @@
 
 #include "optional-util.h"             // module under test
 
-#include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
-#include "sm-test.h"                   // EXPECT_EQ
+#include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
+#include "smbase/sm-test.h"            // EXPECT_EQ
+#include "smbase/stringb.h"            // stringb
 
 #include <algorithm>                   // std::{min, max}
 #include <optional>                    // std::optional
+
+using namespace smbase;
 
 
 OPEN_ANONYMOUS_NAMESPACE

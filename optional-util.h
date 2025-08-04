@@ -6,11 +6,16 @@
 
 #include "optional-util-iface.h"       // interface for this module
 
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
+
 #include <algorithm>                   // std::max
 #include <iostream>                    // std::ostream
 #include <optional>                    // std::optional
 #include <string>                      // std::string
 #include <sstream>                     // std::ostringstream
+
+
+OPEN_NAMESPACE(smbase)
 
 
 template <class T>
@@ -24,28 +29,6 @@ std::string optionalToString(std::optional<T> const &o, char const *ifNone)
   else {
     return ifNone;
   }
-}
-
-
-template <class T>
-std::ostream& operator<< (std::ostream &os, std::optional<T> const &opt)
-{
-  if (opt.has_value()) {
-    os << opt.value();
-  }
-  else {
-    // This assumes 'null' will not be confused with whatever 'T' is.
-    // That's not true in every possible case, but in practice it almost
-    // always is, and I can handle exceptions separately.
-    os << "null";
-  }
-  return os;
-}
-
-
-inline std::ostream& operator<< (std::ostream &os, std::nullopt_t const &)
-{
-  return os << "null";
 }
 
 
@@ -75,6 +58,31 @@ void optAccumulateMax(std::optional<T> &opt, T const &t)
   else {
     opt = t;
   }
+}
+
+
+CLOSE_NAMESPACE(smbase)
+
+
+template <class T>
+std::ostream& operator<< (std::ostream &os, std::optional<T> const &opt)
+{
+  if (opt.has_value()) {
+    os << opt.value();
+  }
+  else {
+    // This assumes 'null' will not be confused with whatever 'T' is.
+    // That's not true in every possible case, but in practice it almost
+    // always is, and I can handle exceptions separately.
+    os << "null";
+  }
+  return os;
+}
+
+
+inline std::ostream& operator<< (std::ostream &os, std::nullopt_t const &)
+{
+  return os << "null";
 }
 
 
