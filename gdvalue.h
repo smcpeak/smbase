@@ -386,7 +386,7 @@ public:      // methods
 
 
   // ---- Write as text ----
-  // Write as text to 'os'.  By default this does not use any
+  // Write as text (GDVN) to 'os'.  By default this does not use any
   // indentation.
   void write(std::ostream &os,
              GDValueWriteOptions options = s_defaultWriteOptions) const;
@@ -394,13 +394,19 @@ public:      // methods
   friend std::ostream &operator<<(std::ostream &os, GDValue const &v)
     { v.write(os); return os; }
 
-  // Use 'write' to create a string.
+  // Use 'write' to create a GDVN string.
   std::string asString(
     GDValueWriteOptions options = s_defaultWriteOptions) const;
 
-  // Same as `asString` but enable indendation in `options`.  This will
+  // Same as `asString` but enable indentation in `options`.  This will
   // not print a final newline.
   std::string asIndentedString(
+    GDValueWriteOptions options = s_defaultWriteOptions) const;
+
+  // Same as `asIndentedString`, but specify the indentation level,
+  // which will override what is in `options`.
+  std::string asIndentedStringLevel(
+    int indentLevel,
     GDValueWriteOptions options = s_defaultWriteOptions) const;
 
   // Enable indentation in the write options, then write to 'os', then

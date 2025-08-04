@@ -672,6 +672,15 @@ std::string GDValue::asIndentedString(GDValueWriteOptions options) const
 }
 
 
+std::string GDValue::asIndentedStringLevel(
+  int indentLevel,
+  GDValueWriteOptions options) const
+{
+  options.m_indentLevel = indentLevel;
+  return asIndentedString(options);
+}
+
+
 void GDValue::writeLines(std::ostream &os,
                          GDValueWriteOptions options) const
 {

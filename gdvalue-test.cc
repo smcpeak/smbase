@@ -2210,6 +2210,19 @@ void testAsIndentedString()
 
   // In contrast:
   EXPECT_EQ(v.asLinesString(options), "[\n  1\n  2\n]\n");
+
+  // With specified indentation.
+  EXPECT_EQ(
+    GDValue(
+      GDVSequence{
+        "long string to ensure wrapping takes place here",
+        "long string to ensure wrapping takes place here"
+      }).asIndentedStringLevel(2),
+    R"([
+      "long string to ensure wrapping takes place here"
+      "long string to ensure wrapping takes place here"
+    ])"
+  );
 }
 
 
