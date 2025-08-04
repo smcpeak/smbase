@@ -134,6 +134,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(reader);
   RUN_TEST(refct_serf);
   RUN_TEST(run_process);
+  RUN_TEST(safe_int_conv);
   RUN_TEST(save_restore);
   RUN_TEST(set_util);
   RUN_TEST(sm_ap_int);
