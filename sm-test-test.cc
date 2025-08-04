@@ -179,6 +179,21 @@ public:      // methods
 };
 
 
+struct A {
+  bool operator==(A const &a) const
+    { return true; }
+};
+
+struct B : A {
+  // Possible ambiguity between superclass and subclass operators?
+  bool operator==(B const &b) const
+    { return true; }
+
+  operator GDValue() const
+    { return GDValue(); }
+};
+
+
 void test_EXPECT_EQ_GDVSER()
 {
   EXPECT_EQ_GDVSER(1, 1);
@@ -201,6 +216,11 @@ void test_EXPECT_EQ_GDVSER()
     EXPECT_EQ_GDVSER(WrongGDV(10), WrongGDV(15)),
     XMessage,
     "the original values compared as unequal, but the GDValues were equal");
+
+  // This was an unsuccessful attempt to replicate a problem from
+  // elsewhere, but still useful to check.
+  B b1, b2;
+  EXPECT_EQ_GDVSER(b1, b2);
 }
 
 

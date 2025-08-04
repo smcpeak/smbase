@@ -7,15 +7,19 @@
 
 // Note: This test does not include `sm-test.h` because my intention is
 // that `sm-test` depends on this module and not vice-versa.
-#include "xassert.h"                   // xassert
+#include "smbase/xassert.h"            // xassert
+
+#include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
 
 #include <string>                      // std::string
 
 using namespace smbase;
 
 
-// Called by unit-tests.cc.
-void test_sm_is_equal()
+OPEN_ANONYMOUS_NAMESPACE
+
+
+void test_basics()
 {
   // Same type, equal.
   xassert(is_equal(0, 0));
@@ -47,6 +51,38 @@ void test_sm_is_equal()
   // Not numeric.
   xassert(is_equal(std::string("x"), std::string("x")));
   xassert(!is_equal(std::string("x"), std::string("y")));
+}
+
+
+struct A {
+  bool operator==(A const &a) const
+    { return true; }
+};
+
+struct B : A {
+  // Possible ambiguity between superclass and subclass operators?
+  bool operator==(B const &b) const
+    { return true; }
+};
+
+
+void test_subclass()
+{
+  // I had a problem with something similar to this elsewhere, but this
+  // did not reproduce it.
+  B b1, b2;
+  xassert(is_equal(b1, b2));
+}
+
+
+CLOSE_ANONYMOUS_NAMESPACE
+
+
+// Called by unit-tests.cc.
+void test_sm_is_equal()
+{
+  test_basics();
+  test_subclass();
 }
 
 
