@@ -36,6 +36,13 @@ inline bool le_le(T const &a, T const &b, T const &c)
 }
 
 
+template <typename T>
+inline bool z_le_le(T const &b, T const &c)
+{
+  return le_le(T(), b, c);
+}
+
+
 CLOSE_NAMESPACE(cc)
 CLOSE_NAMESPACE(smbase)
 

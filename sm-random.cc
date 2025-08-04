@@ -75,7 +75,7 @@ RandomChoice::RandomChoice(int rangeSize)
 void RandomChoice::selfCheck() const
 {
   xassert(m_rangeSize > 0);
-  xassert(cc::z_le_lt(m_checkLimit, m_rangeSize));
+  xassert(cc::z_le_le(m_checkLimit, m_rangeSize));
   xassert(cc::z_le_lt(m_choice, m_rangeSize));
 }
 

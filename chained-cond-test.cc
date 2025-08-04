@@ -45,6 +45,19 @@ void test_le_le()
 }
 
 
+void test_z_le_le()
+{
+  EXPECT_EQ(cc::z_le_le(1, 2), true);
+  EXPECT_EQ(cc::z_le_le(0, 2), true);
+  EXPECT_EQ(cc::z_le_le(1, 1), true);
+  EXPECT_EQ(cc::z_le_le(0, 0), true);
+
+  EXPECT_EQ(cc::z_le_le(-1, 2), false);
+  EXPECT_EQ(cc::z_le_le(3, 2), false);
+  EXPECT_EQ(cc::z_le_le(3, 0), false);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -54,6 +67,7 @@ void test_chained_cond()
   test_le_lt();
   test_z_le_lt();
   test_le_le();
+  test_z_le_le();
 }
 
 

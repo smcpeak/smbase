@@ -268,7 +268,7 @@ void test_RandomChoice()
     // the fourth is active.
     testInterceptorValue = 3;
 
-    RandomChoice choice(100);
+    RandomChoice choice(5);
     xassert(choice.remains());
 
     // The first 3 do not hit.
@@ -281,7 +281,8 @@ void test_RandomChoice()
     xassert(choice.check(1));
     xassert(!choice.remains());
 
-    // And no more after that.
+    // And no more after that.  But note that it is legal to go right to
+    // the cumulative limit, here 5.
     xassert(!choice.check(1));
     xassert(!choice.remains());
   }
