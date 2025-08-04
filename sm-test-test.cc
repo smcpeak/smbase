@@ -6,9 +6,10 @@
 #include "smbase/sm-test.h"            // module under test; and test harness to use
 
 #include "smbase/exc.h"                // xmessage, smbase::XMessage
+#include "smbase/chained-cond.h"       // smbase::cc::le_le
 #include "smbase/gdv-ordered-map.h"    // gdv::GDVOrderedMap (for TEST_CASE_EXPRS)
 #include "smbase/gdvalue.h"            // gdv::GDValue
-#include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
+#include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE, EMEMB
 
 using namespace gdv;
 using namespace smbase;
@@ -142,6 +143,67 @@ void test_EXPECT_EQ_GDV()
 }
 
 
+// A class that exports to GDV in a way that is incompatible with its
+// `operator==`, just to exercise the cases of `EXPECT_EQ_GDVSER`.
+class WrongGDV {
+public:      // data
+  int m_n;
+
+public:      // methods
+  explicit WrongGDV(int n)
+    : m_n(n)
+  {}
+
+  bool operator==(WrongGDV const &obj) const
+  {
+    // If both are in [30,40], claim they are equal, even though they
+    // will have different GDVs.
+    if (cc::le_le(30, m_n, 40) &&
+        cc::le_le(30, obj.m_n, 40)) {
+      return true;
+    }
+
+    return EMEMB(m_n);
+  }
+
+  operator GDValue() const
+  {
+    if (cc::le_le(10, m_n, 20)) {
+      // Map multiple distinct `WrongGDV` to one GDV.
+      return GDValue("[10,20]");
+    }
+    else {
+      return GDValue(m_n);
+    }
+  }
+};
+
+
+void test_EXPECT_EQ_GDVSER()
+{
+  EXPECT_EQ_GDVSER(1, 1);
+
+  EXPECT_EQ_GDVSER(WrongGDV(2), WrongGDV(2));
+
+  EXPECT_EXN_SUBSTR(
+    EXPECT_EQ_GDVSER(WrongGDV(2), WrongGDV(3)),
+    XMessage,
+    "values are not equal");
+
+  // Objects are equal but GDV is not.
+  EXPECT_EXN_SUBSTR(
+    EXPECT_EQ_GDVSER(WrongGDV(30), WrongGDV(35)),
+    XMessage,
+    "original values compared as equal, the GDValues compared unequal");
+
+  // Objects are unequal but GDV is equal.
+  EXPECT_EXN_SUBSTR(
+    EXPECT_EQ_GDVSER(WrongGDV(10), WrongGDV(15)),
+    XMessage,
+    "the original values compared as unequal, but the GDValues were equal");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -154,6 +216,7 @@ void test_sm_test()
   test_EXPECT_HAS_SUBSTRING();
   test_EXPECT_MATCHES_REGEX();
   test_EXPECT_EQ_GDV();
+  test_EXPECT_EQ_GDVSER();
 }
 
 

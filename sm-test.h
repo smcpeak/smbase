@@ -220,6 +220,42 @@ void expectEqGDV(
   expectEqGDV(#actual, toGDValue(actual), toGDValue(expect)) /* user ; */
 
 
+// If `origCompare`, check that `actualGDV==expectGDV` and return.  If
+// the latter do not match, throw XMessage.  If `origCompare==false`,
+// throw XMessage due to the originals being different.
+void expectEqGDVSer_inner(
+  bool origCompare,
+  char const *label,
+  gdv::GDValue const &actualGDV,
+  gdv::GDValue const &expectGDV);
+
+// Check that `actualOrig==expectOrig`, but using `actualGDV` and
+// `expectGDV` for the error message rather than trying to serialize the
+// originals.
+template <typename TA, typename TE>
+void expectEqGDVSer(
+  char const *label,
+  TA const &actualOrig,
+  TE const &expectOrig,
+  gdv::GDValue const &actualGDV,
+  gdv::GDValue const &expectGDV)
+{
+  expectEqGDVSer_inner(
+    smbase::is_equal(expectOrig, actualOrig),
+    label, actualGDV, expectGDV);
+}
+
+// Check that `actual==expect`, but use GDV for serialization for the
+// error message.  We serialize unconditionally both so we can check
+// that GDV equality agrees and so that the requirement to have a
+// suitable `toGDValue` in scope is imposed at the call site, not here
+// where the function template is defined.
+#define EXPECT_EQ_GDVSER(actual, expect)                            \
+  expectEqGDVSer(#actual,                                           \
+                 actual, expect,                                    \
+                 toGDValue(actual), toGDValue(expect)) /* user ; */
+
+
 // Check that evaluating `expr` throws an exception of type `ExnType`.
 #define EXPECT_EXN(expr, ExnType)                            \
   try {                                                      \
