@@ -525,11 +525,25 @@ public:      // methods
 
 
   // ---- SmallInteger ----
-  // This overload is needed to allow `GDValue(0)` to work because
-  // otherwise it is ambiguous between the ctor accepting `GDVInteger`
-  // and the ones accepting `GDVString`.
-  /*implicit*/ GDValue(GDVSmallInteger i);
+  // GDValue does not have a character type, so constructing one with a
+  // `char` is probably a mistake.
+  /*implicit*/ GDValue(char i) = delete;
+  /*implicit*/ GDValue(signed char i) = delete;
+  /*implicit*/ GDValue(unsigned char i) = delete;
 
+  // All of these yield small integers if the value fits, and otherwise
+  // a full-size (arbitrary precision) integer.
+  /*implicit*/ GDValue(short i);
+  /*implicit*/ GDValue(unsigned short i);
+  /*implicit*/ GDValue(int i);
+  /*implicit*/ GDValue(unsigned int i);
+  /*implicit*/ GDValue(long i);
+  /*implicit*/ GDValue(unsigned long i);
+  /*implicit*/ GDValue(long long i);
+  /*implicit*/ GDValue(unsigned long long i);
+
+  // Callers must be careful not to pass a type that will be implicitly
+  // converted and truncated, such as `uint64_t`.
   void smallIntegerSet(GDVSmallInteger i);
 
   // Requires `isSmallInteger()`.

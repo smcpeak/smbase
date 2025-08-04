@@ -12,6 +12,7 @@
 #include "smbase/gdvalue-reader.h"     // gdv::GDValueReader
 #include "smbase/gdvalue-writer.h"     // gdv::GDValueWriter
 #include "smbase/gdvsymbol.h"          // gdv::GDVSymbol
+#include "smbase/safe-int-conv.h"      // smbase::IsSafelyConvertible_v
 #include "smbase/sm-trace.h"           // INIT_TRACE, etc.
 #include "smbase/syserr.h"             // smbase::xsyserror
 #include "smbase/xassert.h"            // xassert
@@ -940,12 +941,30 @@ GDVInteger const &GDValue::largeIntegerGet() const
 
 
 // --------------------------- SmallInteger ----------------------------
-GDValue::GDValue(GDVSmallInteger i)
-  : INIT_AS_NULL()
-{
-  smallIntegerSet(i);
-  ++s_ct_integerSmallIntCtor;
-}
+#define DEFINE_PRIMITIVE_INT_CTOR(NUMBER)                           \
+  GDValue::GDValue(NUMBER i)                                        \
+    : INIT_AS_NULL()                                                \
+  {                                                                 \
+    if constexpr (IsSafelyConvertible_v<NUMBER, GDVSmallInteger>) { \
+      smallIntegerSet(static_cast<GDVSmallInteger>(i));             \
+      ++s_ct_integerSmallIntCtor;                                   \
+    }                                                               \
+    else {                                                          \
+      integerSet(GDVInteger(i));                                    \
+      ++s_ct_integerCtorMove;                                       \
+    }                                                               \
+  }
+
+DEFINE_PRIMITIVE_INT_CTOR(short)
+DEFINE_PRIMITIVE_INT_CTOR(unsigned short)
+DEFINE_PRIMITIVE_INT_CTOR(int)
+DEFINE_PRIMITIVE_INT_CTOR(unsigned int)
+DEFINE_PRIMITIVE_INT_CTOR(long)
+DEFINE_PRIMITIVE_INT_CTOR(unsigned long)
+DEFINE_PRIMITIVE_INT_CTOR(long long)
+DEFINE_PRIMITIVE_INT_CTOR(unsigned long long)
+
+#undef DEFINE_PRIMITIVE_INT_CTOR
 
 
 void GDValue::smallIntegerSet(GDVSmallInteger i)

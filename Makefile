@@ -682,6 +682,7 @@ endef # EXPECT_COMPILE_TEST_FAIL
 # gdvalue-test errors
 $(eval $(call EXPECT_COMPILE_TEST_FAIL,gdvalue,1))
 $(eval $(call EXPECT_COMPILE_TEST_FAIL,gdvalue,2))
+$(eval $(call EXPECT_COMPILE_TEST_FAIL,gdvalue,3))
 check-compile-errs: check-gdvalue-errs
 
 

@@ -2487,6 +2487,52 @@ void test_fromGDVN()
 }
 
 
+void test_uint64()
+{
+  {
+    // The main point is this should *not* yield a small integer.
+    uint64_t maxUValue = UINT64_C(0xFFFFffffFFFFffff);
+    GDValue n(maxUValue);
+    EXPECT_EQ(n.isSmallInteger(), false);
+    EXPECT_EQ(n.isInteger(), true);
+    EXPECT_EQ(stringb(n), "0xFFFFFFFFFFFFFFFF");
+  }
+
+  {
+    // But this should be small.
+    int64_t maxSValue = INT64_C(0x7FFFffffFFFFffff);
+    GDValue n(maxSValue);
+    EXPECT_EQ(n.isSmallInteger(), true);
+    EXPECT_EQ(n.isInteger(), true);
+    EXPECT_EQ(stringb(n), stringb(maxSValue));
+  }
+
+  {
+    // As should much smaller integers.
+    uint32_t maxUValue = UINT32_C(0xFFFFffff);
+    GDValue n(maxUValue);
+    EXPECT_EQ(n.isSmallInteger(), true);
+    EXPECT_EQ(n.isInteger(), true);
+    EXPECT_EQ(stringb(n), stringb(maxUValue));
+  }
+
+  {
+    int32_t maxSValue = INT32_C(0x7FFFffff);
+    GDValue n(maxSValue);
+    EXPECT_EQ(n.isSmallInteger(), true);
+    EXPECT_EQ(n.isInteger(), true);
+    EXPECT_EQ(stringb(n), stringb(maxSValue));
+  }
+
+  // Does not work, ctor is deleted.
+  {
+    #if ERRNUM == 3
+      GDValue n('x');
+    #endif
+  }
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -2541,6 +2587,7 @@ void test_gdvalue()
     test_stripMemberPrefix();
     //test_ostreamPrint();
     test_fromGDVN();
+    test_uint64();
 
     // Some interesting values for the particular data used.
     testPrettyPrint(0);
