@@ -104,6 +104,44 @@ void test_EXPECT_MATCHES_REGEX()
 }
 
 
+void test_EXPECT_EQ_GDV()
+{
+  EXPECT_EQ_GDV(1, 1);
+  EXPECT_EQ_GDV(GDVSet{3}, GDVSet{3});
+
+  EXPECT_EXN_SUBSTR(EXPECT_EQ_GDV(1, 2),
+    XMessage,
+    "1: values are not equal:\n  actual: 1\n  expect: 2");
+
+  EXPECT_EXN_SUBSTR(EXPECT_EQ_GDV(GDVSet{3}, (GDVSet{4,5})),
+    XMessage,
+    "GDVSet{3}: values are not equal:\n  actual: {3}\n  expect: {4 5}");
+
+  // Make sure the indentation applied to the GDValues meshes properly
+  // with the framing message.
+  EXPECT_EXN_SUBSTR(
+    EXPECT_EQ_GDV(
+      (GDVSequence{
+        "a long string to ensure the line has to be wrapped here1",
+        "a long string to ensure the line has to be wrapped here2",
+        "a long string to ensure the line has to be wrapped here3"}),
+      (GDVMap{
+        { 4, "a long string to ensure the line has to be wrapped here4"},
+        { 5, "a long string to ensure the line has to be wrapped here5"},
+      })),
+    XMessage,
+    "not equal:\n"
+    "  actual: [\n"
+    "    \"a long string to ensure the line has to be wrapped here1\"\n"
+    "    \"a long string to ensure the line has to be wrapped here2\"\n"
+    "    \"a long string to ensure the line has to be wrapped here3\"\n  ]\n"
+    "  expect: {\n"
+    "    4: \"a long string to ensure the line has to be wrapped here4\"\n"
+    "    5: \"a long string to ensure the line has to be wrapped here5\"\n"
+    "  }");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -115,6 +153,7 @@ void test_sm_test()
   test_EXPECT_EQ();
   test_EXPECT_HAS_SUBSTRING();
   test_EXPECT_MATCHES_REGEX();
+  test_EXPECT_EQ_GDV();
 }
 
 

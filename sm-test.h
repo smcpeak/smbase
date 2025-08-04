@@ -5,17 +5,18 @@
 #ifndef SMBASE_SM_TEST_H
 #define SMBASE_SM_TEST_H
 
-#include "dev-warning.h"               // g_abortUponDevWarning
-#include "dummy-printf.h"              // dummy_printf
-#include "exc.h"                       // smbase::XBase
-#include "sm-iostream.h"               // cout
-#include "sm-is-equal.h"               // smbase::is_equal
-#include "sm-macros.h"                 // SM_PRINTF_ANNOTATION, NULLABLE
-#include "sm-pp-util.h"                // SM_PP_MAP
-#include "str.h"                       // string
-#include "string-util.h"               // doubleQuote
-#include "stringb.h"                   // stringb
-#include "xassert.h"                   // xassert, xfailure
+#include "smbase/dev-warning.h"        // g_abortUponDevWarning
+#include "smbase/dummy-printf.h"       // dummy_printf
+#include "smbase/exc.h"                // smbase::XBase
+#include "smbase/gdvalue-fwd.h"        // gdv::GDValue
+#include "smbase/sm-iostream.h"        // cout
+#include "smbase/sm-is-equal.h"        // smbase::is_equal
+#include "smbase/sm-macros.h"          // SM_PRINTF_ANNOTATION, NULLABLE
+#include "smbase/sm-pp-util.h"         // SM_PP_MAP
+#include "smbase/str.h"                // string
+#include "smbase/string-util.h"        // doubleQuote
+#include "smbase/stringb.h"            // stringb
+#include "smbase/xassert.h"            // xassert, xfailure
 
 #include <cstring>                     // std::strstr
 #include <iomanip>                     // std::hex, std::dec
@@ -200,6 +201,23 @@ void expectMatchesRegex(
 
 #define EXPECT_MATCHES_REGEX(actual, expectRegex) \
   expectMatchesRegex(#actual, actual, expectRegex) /* user ; */
+
+
+// Check that `actual` equals `expect`.
+void expectEqGDV(
+  char const *label,
+  gdv::GDValue const &actual,
+  gdv::GDValue const &expect);
+
+// Convert both `actual` and `expect` to `GDValue` before comparing.
+// The main advantage is we can always serialize `GDValue` in the error
+// message, whereas the original types might not be easily serializable.
+//
+// Using this macro often requires including additional headers to get
+// the right `toGDValue`.  And it is intentional that `toGDValue` is not
+// qualified because we want to allow argument-dependent lookup.
+#define EXPECT_EQ_GDV(actual, expect) \
+  expectEqGDV(#actual, toGDValue(actual), toGDValue(expect)) /* user ; */
 
 
 // Check that evaluating `expr` throws an exception of type `ExnType`.

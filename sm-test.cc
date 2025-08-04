@@ -3,11 +3,12 @@
 
 #include "sm-test.h"                   // this module
 
-#include "exc.h"                       // smbase::xmessage
-#include "counting-ostream.h"          // nullOStream
-#include "stringb.h"                   // stringbc
-#include "strutil.h"                   // hasSubstring
-#include "string-util.h"               // doubleQuote, matchesRegex
+#include "smbase/counting-ostream.h"   // nullOStream
+#include "smbase/exc.h"                // smbase::xmessage
+#include "smbase/gdvalue.h"            // gdv::GDValue
+#include "smbase/string-util.h"        // doubleQuote, matchesRegex
+#include "smbase/stringb.h"            // stringbc
+#include "smbase/strutil.h"            // hasSubstring
 
 #include <cstdlib>                     // std::getenv
 #include <iostream>                    // std::cout
@@ -59,6 +60,22 @@ void expectMatchesRegex(
       ": actual value is " << doubleQuote(actual) <<
       " but expected it to match regex " << doubleQuote(expectRegex) <<
       "."));
+  }
+}
+
+
+void expectEqGDV(
+  char const *label,
+  gdv::GDValue const &actual,
+  gdv::GDValue const &expect)
+{
+  if (expect != actual) {
+    gdv::GDValueWriteOptions opts;
+    opts.m_indentLevel = 1;
+    smbase::xmessage(stringb(
+      label << ": values are not equal:\n"
+      "  actual: " << actual.asIndentedString(opts) << "\n"
+      "  expect: " << expect.asIndentedString(opts)));
   }
 }
 
