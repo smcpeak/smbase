@@ -7,6 +7,7 @@
 #include "smbase/xassert.h"            // xassertPrecondition
 
 #include <cstdint>                     // std::uint64_t
+#include <limits>                      // std::numeric_limits
 
 #if defined(_MSC_VER)
   #include <intrin.h>                  // _BitScanReverse64
@@ -48,6 +49,17 @@ int mostSignificantBit(std::uint64_t n)
     return mostSignificantBit_fallback(n);
 
   #endif
+}
+
+
+int mostSignificantBitOfArgPlusOne(std::uint64_t n)
+{
+  if (n == std::numeric_limits<std::uint64_t>::max()) {
+    return 64;
+  }
+  else {
+    return mostSignificantBit(n+1);
+  }
 }
 
 

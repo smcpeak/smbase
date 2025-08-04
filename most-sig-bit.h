@@ -27,6 +27,10 @@ int mostSignificantBit(std::uint64_t n);
 // benefit of the unit test.
 int mostSignificantBit_fallback(std::uint64_t n);
 
+// `mostSignificantBit(n+1)`, except if `n` is the largest possible
+// value, then this returns 64 instead of failing a precondition.
+int mostSignificantBitOfArgPlusOne(std::uint64_t n);
+
 
 CLOSE_NAMESPACE(smbase)
 

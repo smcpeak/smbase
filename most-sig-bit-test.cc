@@ -23,7 +23,7 @@ int msb(std::uint64_t n)
 }
 
 
-void test_basics()
+void test_msb()
 {
   EXPECT_EXN_SUBSTR(msb(0), XAssert, "n > 0");
   EXPECT_EQ(msb(1), 0);
@@ -38,13 +38,25 @@ void test_basics()
 }
 
 
+void test_msboapo()
+{
+  EXPECT_EQ(mostSignificantBitOfArgPlusOne(0), 0);
+  EXPECT_EQ(mostSignificantBitOfArgPlusOne(1), 1);
+  EXPECT_EQ(mostSignificantBitOfArgPlusOne(2), 1);
+  EXPECT_EQ(mostSignificantBitOfArgPlusOne(3), 2);
+  EXPECT_EQ(mostSignificantBitOfArgPlusOne(UINT64_C(0xFFFFffffFFFFfffe)), 63);
+  EXPECT_EQ(mostSignificantBitOfArgPlusOne(UINT64_C(0xFFFFffffFFFFffff)), 64);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
 // Called from unit-tests.cc.
 void test_most_sig_bit()
 {
-  test_basics();
+  test_msb();
+  test_msboapo();
 }
 
 
