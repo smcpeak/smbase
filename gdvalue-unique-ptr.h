@@ -19,7 +19,12 @@ OPEN_NAMESPACE(gdv)
 template <typename T, typename D>
 GDValue toGDValue(std::unique_ptr<T,D> const &p)
 {
-  return toGDValue(*p);
+  if (p) {
+    return toGDValue(*p);
+  }
+  else {
+    return GDValue();
+  }
 }
 
 
@@ -28,7 +33,12 @@ struct GDVPTo<std::unique_ptr<T,D>> {
   // This simply wraps the result of `gdvpToNew` as a `unique_ptr`.
   static std::unique_ptr<T,D> f(GDValueParser const &p)
   {
-    return std::unique_ptr<T,D>(gdvpToNew<T>(p));
+    if (p.isNull()) {
+      return std::unique_ptr<T,D>();
+    }
+    else {
+      return std::unique_ptr<T,D>(gdvpToNew<T>(p));
+    }
   }
 };
 

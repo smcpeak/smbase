@@ -136,6 +136,21 @@ void test_unique_ptr()
 }
 
 
+// De/serialization should handle a null unique pointer.
+void test_null_unique_ptr()
+{
+  std::unique_ptr<Data> d1;
+  GDValue const v(toGDValue(d1));
+  EXPECT_EQ(v, GDValue());
+
+  std::unique_ptr<Data> d2(GDVP_TO(std::unique_ptr<Data>, v));
+  EXPECT_EQ(toGDValue(d2), v);
+
+  // Both are nullptr.
+  xassert(d1 == d2);
+}
+
+
 void test_vector()
 {
   std::vector<Data> vec1{{1,2}, {3,4}};
@@ -654,6 +669,7 @@ void test_gdvalue_parser()
   test_int();
   test_string();
   test_unique_ptr();
+  test_null_unique_ptr();
   test_vector();
   test_vector_of_unique();
   test_map();
