@@ -119,6 +119,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(hashline);
   RUN_TEST(indexed_string_table);
   RUN_TEST(map_util);
+  RUN_TEST(most_sig_bit);
   RUN_TEST_NO_DECL(mypopen);
   RUN_TEST(mysig);
   RUN_TEST(nonport);
