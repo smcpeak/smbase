@@ -6,9 +6,8 @@
 #ifndef SMBASE_SM_RANDOM_H
 #define SMBASE_SM_RANDOM_H
 
-#include "sm-macros.h"                 // OPEN_NAMESPACE
-
-#include <cstdlib>                     // std::rand
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
+#include "smbase/sm-sized-int.h"       // SM_FOREACH_SIZED_INT
 
 
 OPEN_NAMESPACE(smbase)
@@ -16,35 +15,30 @@ OPEN_NAMESPACE(smbase)
 
 /* Return a random number in [0,n-1].
 
-   This isn't particularly good, it's just simple.
+   The generated sequence is the same for every program invocation.
+
+   Requires n > 0.
 */
-inline int sm_random(int n)
-{
-  return std::rand() % n;
-}
+int sm_random(int n);
 
 
-/* Return a random value of type `PRIM`, approximately uniformly
-   distributed.
+/* Return a random value of type `PRIM`, uniformly distributed across
+   its entire range, including negatives if `PRIM` is a signed type.
 
-   This is sort of a placeholder until I can decipher the RNG facilities
-   in libc++.
+   The generated sequence is the same for every program invocation.
+
+   Only a specific set of template instantiations are provided.
 */
 template <typename PRIM>
-PRIM sm_randomPrim()
-{
-  PRIM v = sm_random(256);
+PRIM sm_randomPrim();
 
-  // This test is needed to avoid Clang complaining about the shift.
-  if (sizeof(PRIM) > 1) {
-    for (int i=1; i < (int)sizeof(PRIM); ++i) {
-      v <<= 8;
-      v |= sm_random(256);
-    }
-  }
 
-  return v;
-}
+#define DECLARE_RANDOM_PRIM(type) \
+  extern template type sm_randomPrim<type>();
+
+SM_FOREACH_SIZED_INT(DECLARE_RANDOM_PRIM)
+
+#undef DECLARE_RANDOM_PRIM
 
 
 CLOSE_NAMESPACE(smbase)

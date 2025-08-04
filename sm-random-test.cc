@@ -5,16 +5,20 @@
 
 #include "smbase/gdv-ordered-map.h"    // gdv::GDVOrderedMap
 #include "smbase/gdvalue.h"            // gdv::GDValue
+#include "smbase/get-type-name.h"      // smbase::GetTypeName
 #include "smbase/most-sig-bit.h"       // smbase::mostSignificantBitOfArgPlusOne
 #include "smbase/optional-util.h"      // optAccumulateMax
 #include "smbase/sm-env.h"             // smbase::envAsIntOr
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
+#include "smbase/sm-sized-int.h"       // SM_FOREACH_SIZED_INT
 #include "smbase/sm-test.h"            // EXPECT_EQ, TEST_CASE_EXPRS
 
 #include <algorithm>                   // std::min
 #include <cstdint>                     // std::uint64_t
+#include <cstdlib>                     // std::rand
 #include <iomanip>                     // std::setw
 #include <limits>                      // std::numeric_limits
+#include <string_view>                 // std::string_view
 #include <vector>                      // std::vector
 
 using namespace gdv;
@@ -142,24 +146,49 @@ public:      // methods
 };
 
 
-int numIters = envAsIntOr(2000, "RANDOM_TEST_ITERS");
+int const numIters = envAsIntOr(2000, "RANDOM_TEST_ITERS");
+int const testSize = envAsIntOr(10, "RANDOM_TEST_SIZE");
 
 
 // Test `sm_random` for range and distribution bias.
-//
-// For the naive definition of `rand() % n`, the maximum useful range is
-// 32768, as the maximum possible output value is 32767.
+void test_smRandomDistributionBias()
+{
+  SMRandomRng64 rng;
+  measureBias(rng, testSize-1, numIters);
+}
+
+
+// This is how `sm_random` was previously defined.  I keep it here to be
+// able to do bias comparisons.
+int old_sm_random(int n)
+{
+  return std::rand() % n;
+}
+
+
+class OldSMRandomRng64 : public Rng64 {
+public:      // methods
+  virtual uint64_t generate(uint64_t maxValue) override
+  {
+    maxValue = std::min(maxValue,
+      static_cast<uint64_t>(std::numeric_limits<int>::max() - 1));
+    return old_sm_random(static_cast<int>(maxValue + 1));
+  }
+};
+
+
+// This tests the naive definition of `rand() % n`, for which the
+// maximum useful range is 32768, as the maximum possible output value
+// is 32767.
 //
 // Furthermore, within that range, there is strong bias toward lower
 // values when using a range like 20000 that does not evenly divide
 // 32768.
 //
-void test_smRandomDistributionBias()
+void test_oldSMRandomDistributionBias()
 {
-  SMRandomRng64 rng;
-  int size = envAsIntOr(10, "RANDOM_TEST_SIZE");
-
-  measureBias(rng, size-1, numIters);
+  OldSMRandomRng64 rng;
+  measureBias(rng, testSize-1, numIters);
 }
 
 
@@ -180,6 +209,28 @@ void test_randomPrimDistributionBias()
 }
 
 
+template <typename PRIM>
+void exerciseRandomPrim()
+{
+  std::string_view typeName = GetTypeName<PRIM>::value;
+  TEST_CASE_EXPRS("exerciseRandomPrim", typeName);
+  for (int i=0; i < 10; ++i) {
+    DIAG("  " << i << ": " << +sm_randomPrim<PRIM>());
+  }
+}
+
+
+void test_sm_randomPrim()
+{
+  #define CALL_EXERCISE(type) \
+    exerciseRandomPrim<type>();
+
+  SM_FOREACH_SIZED_INT(CALL_EXERCISE)
+
+  #undef CALL_EXERCISE
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -187,7 +238,9 @@ CLOSE_ANONYMOUS_NAMESPACE
 void test_sm_random()
 {
   test_smRandomDistributionBias();
+  test_oldSMRandomDistributionBias();
   test_randomPrimDistributionBias();
+  test_sm_randomPrim();
 }
 
 

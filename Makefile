@@ -318,6 +318,7 @@ SRCS += sm-compare.cc
 SRCS += sm-env.cc
 SRCS += sm-file-util.cc
 SRCS += sm-integer.cc
+SRCS += sm-random.cc
 SRCS += sm-rc-obj.cc
 SRCS += sm-regex.cc
 SRCS += sm-stristr.cc
