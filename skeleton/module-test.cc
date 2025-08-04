@@ -12,7 +12,7 @@ using namespace smbase;
 OPEN_ANONYMOUS_NAMESPACE
 
 
-void test_one()
+void test_basics()
 {
   // ...
 }
@@ -24,7 +24,7 @@ CLOSE_ANONYMOUS_NAMESPACE
 // Called from unit-tests.cc.
 void test_{module_with_underscores}()
 {
-  test_one();
+  test_basics();
 }
 
 
