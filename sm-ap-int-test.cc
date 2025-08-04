@@ -5,12 +5,13 @@
 
 #include "sm-ap-int.h"                 // module under test
 
-#include "exc.h"                       // EXN_CONTEXT_CALL
-#include "get-type-name.h"             // smbase::GetTypeName
-#include "overflow.h"                  // addWithOverflowCheck, etc.
-#include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE, smbase_loopi
-#include "sm-random.h"                 // sm_randomPrim
-#include "sm-test.h"                   // VPVAL, EXPECT_EQ, verbose
+#include "smbase/exc.h"                // EXN_CONTEXT_CALL
+#include "smbase/get-type-name.h"      // smbase::GetTypeName
+#include "smbase/overflow.h"           // addWithOverflowCheck, etc.
+#include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE, smbase_loopi
+#include "smbase/sm-random.h"          // sm_randomPrim
+#include "smbase/sm-sized-int.h"       // SM_FOREACH_SIZED_INT
+#include "smbase/sm-test.h"            // VPVAL, EXPECT_EQ, verbose
 
 #include <cstdint>                     // std::uint8_t, etc.
 #include <cstdlib>                     // std::{atoi, getenv}
@@ -258,14 +259,12 @@ public:      // methods
     }
 
     smbase_loopi(iters) {
-      testOneRandomArithmetic<std::int8_t>();
-      testOneRandomArithmetic<std::uint8_t>();
-      testOneRandomArithmetic<std::int16_t>();
-      testOneRandomArithmetic<std::uint16_t>();
-      testOneRandomArithmetic<std::int32_t>();
-      testOneRandomArithmetic<std::uint32_t>();
-      testOneRandomArithmetic<std::int64_t>();
-      testOneRandomArithmetic<std::uint64_t>();
+      #define CALL_TEST_ONE(type) \
+        testOneRandomArithmetic<type>();
+
+      SM_FOREACH_SIZED_INT(CALL_TEST_ONE)
+
+      #undef CALL_TEST_ONE
     }
   }
 

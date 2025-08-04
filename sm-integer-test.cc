@@ -5,11 +5,12 @@
 
 #include "sm-integer.h"                // module under test
 
-#include "overflow.h"                  // addWithOverflowCheck, etc.
-#include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
-#include "sm-random.h"                 // sm_randomPrim
-#include "sm-test.h"                   // VPVAL
-#include "xoverflow.h"                 // XOverflow
+#include "smbase/overflow.h"           // addWithOverflowCheck, etc.
+#include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
+#include "smbase/sm-random.h"          // sm_randomPrim
+#include "smbase/sm-sized-int.h"       // SM_FOREACH_SIZED_INT
+#include "smbase/sm-test.h"            // VPVAL
+#include "smbase/xoverflow.h"          // XOverflow
 
 #include <cstdint>                     // std::[u]int{8,16,32}_t
 
@@ -249,14 +250,12 @@ void testRandomArithmetic()
   }
 
   smbase_loopi(iters) {
-    testOneRandomArithmetic<std::int8_t>();
-    testOneRandomArithmetic<std::uint8_t>();
-    testOneRandomArithmetic<std::int16_t>();
-    testOneRandomArithmetic<std::uint16_t>();
-    testOneRandomArithmetic<std::int32_t>();
-    testOneRandomArithmetic<std::uint32_t>();
-    testOneRandomArithmetic<std::int64_t>();
-    testOneRandomArithmetic<std::uint64_t>();
+    #define CALL_TEST_ONE(type) \
+      testOneRandomArithmetic<type>();
+
+    SM_FOREACH_SIZED_INT(CALL_TEST_ONE)
+
+    #undef CALL_TEST_ONE
   }
 }
 
@@ -295,34 +294,34 @@ void testOneGetAsFail(Integer i)
 
 void testGetAs()
 {
-  testOneGetAs<int8_t>(127, 127);
-  testOneGetAsFail<int8_t>(128);
+  testOneGetAs<std::int8_t>(127, 127);
+  testOneGetAsFail<std::int8_t>(128);
 
-  testOneGetAs<int8_t>(-127, -127);
-  testOneGetAs<int8_t>(-128, -128);
-  testOneGetAsFail<int8_t>(-129);
+  testOneGetAs<std::int8_t>(-127, -127);
+  testOneGetAs<std::int8_t>(-128, -128);
+  testOneGetAsFail<std::int8_t>(-129);
 
-  testOneGetAs<uint8_t>(255, 255);
-  testOneGetAsFail<uint8_t>(256);
+  testOneGetAs<std::uint8_t>(255, 255);
+  testOneGetAsFail<std::uint8_t>(256);
 
-  testOneGetAs<uint8_t>(0, 0);
-  testOneGetAsFail<uint8_t>(-1);
+  testOneGetAs<std::uint8_t>(0, 0);
+  testOneGetAsFail<std::uint8_t>(-1);
 
-  testOneGetAs<int16_t>(0x7FFE, 0x7FFE);
-  testOneGetAs<int16_t>(0x7FFF, 0x7FFF);
-  testOneGetAsFail<int16_t>(0x8000);
+  testOneGetAs<std::int16_t>(0x7FFE, 0x7FFE);
+  testOneGetAs<std::int16_t>(0x7FFF, 0x7FFF);
+  testOneGetAsFail<std::int16_t>(0x8000);
 
-  testOneGetAs<int16_t>(-0x7FFE, -0x7FFE);
-  testOneGetAs<int16_t>(-0x7FFF, -0x7FFF);
-  testOneGetAs<int16_t>(-0x8000, -0x8000);
-  testOneGetAsFail<int16_t>(-0x8001);
+  testOneGetAs<std::int16_t>(-0x7FFE, -0x7FFE);
+  testOneGetAs<std::int16_t>(-0x7FFF, -0x7FFF);
+  testOneGetAs<std::int16_t>(-0x8000, -0x8000);
+  testOneGetAsFail<std::int16_t>(-0x8001);
 
-  testOneGetAs<uint16_t>(0, 0);
-  testOneGetAsFail<uint16_t>(-1);
+  testOneGetAs<std::uint16_t>(0, 0);
+  testOneGetAsFail<std::uint16_t>(-1);
 
-  testOneGetAs<uint16_t>(0xFFFE, 0xFFFE);
-  testOneGetAs<uint16_t>(0xFFFF, 0xFFFF);
-  testOneGetAsFail<uint16_t>(0x10000);
+  testOneGetAs<std::uint16_t>(0xFFFE, 0xFFFE);
+  testOneGetAs<std::uint16_t>(0xFFFF, 0xFFFF);
+  testOneGetAsFail<std::uint16_t>(0x10000);
 }
 
 
