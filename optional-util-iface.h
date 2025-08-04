@@ -10,6 +10,9 @@
 #include <iosfwd>                      // std::ostream [n]
 
 
+// TODO: Put this into namespace `smbase`.
+
+
 // Convert 'o' to a string using its insert operator, or 'ifNone' if 'o'
 // does not contain a value.
 template <class T>
@@ -31,6 +34,12 @@ std::optional<T> liftToOptional(
   std::optional<T> const &a,
   std::optional<T> const &b,
   FUNC func);
+
+
+// If `opt` has no value, set it to `t`.  Otherwise, set it to the
+// larger of `t` and the value it contains.
+template <typename T>
+void optAccumulateMax(std::optional<T> &opt, T const &t);
 
 
 #endif // SMBASE_OPTIONAL_UTIL_IFACE_H

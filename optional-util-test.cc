@@ -66,6 +66,18 @@ void testLiftToOptional()
 }
 
 
+void test_optAccumulateMax()
+{
+  std::optional<int> n;
+  optAccumulateMax(n, 2);
+  EXPECT_EQ(*n, 2);
+  optAccumulateMax(n, 3);
+  EXPECT_EQ(*n, 3);
+  optAccumulateMax(n, 1);
+  EXPECT_EQ(*n, 3);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -74,6 +86,7 @@ void test_optional_util()
 {
   testOptionalToString();
   testLiftToOptional();
+  test_optAccumulateMax();
 }
 
 

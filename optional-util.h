@@ -6,6 +6,7 @@
 
 #include "optional-util-iface.h"       // interface for this module
 
+#include <algorithm>                   // std::max
 #include <iostream>                    // std::ostream
 #include <optional>                    // std::optional
 #include <string>                      // std::string
@@ -62,6 +63,18 @@ std::optional<T> liftToOptional(
   }
 
   return std::optional<T>(func(*a, *b));
+}
+
+
+template <typename T>
+void optAccumulateMax(std::optional<T> &opt, T const &t)
+{
+  if (opt.has_value()) {
+    opt = std::max(*opt, t);
+  }
+  else {
+    opt = t;
+  }
 }
 
 
