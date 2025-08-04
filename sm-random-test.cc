@@ -8,6 +8,7 @@
 #include "smbase/get-type-name.h"      // smbase::GetTypeName
 #include "smbase/most-sig-bit.h"       // smbase::mostSignificantBitOfArgPlusOne
 #include "smbase/optional-util.h"      // optAccumulateMax
+#include "smbase/save-restore.h"       // SET_RESTORE
 #include "smbase/sm-env.h"             // smbase::envAsIntOr
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
 #include "smbase/sm-sized-int.h"       // SM_FOREACH_SIZED_INT
@@ -231,6 +232,84 @@ void test_sm_randomPrim()
 }
 
 
+// Value for the interceptor to return.
+int testInterceptorValue = 0;
+
+int testInterceptorFunction(int n)
+{
+  // Here, it's up to the interceptor user to ensure the value is within
+  // range.
+  xassert(0 <= testInterceptorValue &&
+               testInterceptorValue < n);
+
+  return testInterceptorValue;
+}
+
+
+void test_sm_random_intercept()
+{
+  xassert(sm_random_intercept == nullptr);
+  SET_RESTORE(sm_random_intercept, &testInterceptorFunction);
+
+  testInterceptorValue = 10;
+  EXPECT_EQ(sm_random(1000), 10);
+
+  testInterceptorValue = 20;
+  EXPECT_EQ(sm_random(1000), 20);
+}
+
+
+void test_RandomChoice()
+{
+  SET_RESTORE(sm_random_intercept, &testInterceptorFunction);
+
+  {
+    // When checking one at a time, the first 3 options are skipped, and
+    // the fourth is active.
+    testInterceptorValue = 3;
+
+    RandomChoice choice(100);
+    xassert(choice.remains());
+
+    // The first 3 do not hit.
+    xassert(!choice.check(1));
+    xassert(!choice.check(1));
+    xassert(!choice.check(1));
+    xassert(choice.remains());
+
+    // The 4th does.
+    xassert(choice.check(1));
+    xassert(!choice.remains());
+
+    // And no more after that.
+    xassert(!choice.check(1));
+    xassert(!choice.remains());
+  }
+
+  {
+    // Now do somewhat larger sections.
+    testInterceptorValue = 20;
+
+    RandomChoice choice(100);
+    xassert(choice.remains());
+
+    // Consume the first 18, no hit.
+    xassert(!choice.check(7));
+    xassert(!choice.check(10));
+    xassert(!choice.check(1));
+
+    // Hit on the next 5.
+    xassert(choice.remains());
+    xassert(choice.check(5));
+    xassert(!choice.remains());
+
+    // No more hits.
+    xassert(!choice.check(5));
+    xassert(!choice.remains());
+  }
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -241,6 +320,8 @@ void test_sm_random()
   test_oldSMRandomDistributionBias();
   test_randomPrimDistributionBias();
   test_sm_randomPrim();
+  test_sm_random_intercept();
+  test_RandomChoice();
 }
 
 

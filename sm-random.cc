@@ -14,9 +14,17 @@
 OPEN_NAMESPACE(smbase)
 
 
+// ----------------------------- functions -----------------------------
+int (*sm_random_intercept)(int n) = nullptr;
+
+
 int sm_random(int n)
 {
   xassertPrecondition(n > 0);
+
+  if (sm_random_intercept) {
+    return (*sm_random_intercept)(n);
+  }
 
   // Generates a fixed sequence.
   static std::mt19937 rng;
@@ -51,6 +59,43 @@ PRIM sm_randomPrim()
 SM_FOREACH_SIZED_INT(DEFINE_RANDOM_PRIM)
 
 #undef DEFINE_RANDOM_PRIM
+
+
+// --------------------------- RandomChoice ----------------------------
+RandomChoice::RandomChoice(int rangeSize)
+  : m_rangeSize(rangeSize),
+    m_checkLimit(0),
+    m_choice(sm_random(rangeSize))
+{
+  selfCheck();
+}
+
+
+void RandomChoice::selfCheck() const
+{
+  xassert(m_rangeSize > 0);
+  xassert(0 <= m_checkLimit &&
+               m_checkLimit <= m_rangeSize);
+  xassert(0 <= m_choice &&
+               m_choice < m_rangeSize);
+}
+
+
+bool RandomChoice::check(int n)
+{
+  int oldLimit = m_checkLimit;
+  m_checkLimit += n;
+  selfCheck();
+
+  return oldLimit <= m_choice &&
+                     m_choice < m_checkLimit;
+}
+
+
+bool RandomChoice::remains() const
+{
+  return m_choice >= m_checkLimit;
+}
 
 
 CLOSE_NAMESPACE(smbase)
