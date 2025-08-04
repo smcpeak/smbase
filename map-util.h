@@ -162,6 +162,26 @@ V &mapGetValueAt(std::map<K,V,C,A> &m, K const &k)
 }
 
 
+// If `m` is not empty, return a copy of its first key.
+//
+// Since the key is stored in the map, it would be possible to instead
+// return an optional pointer or reference_wrapper (optional reference
+// not being allowed), but both of those add a bit of potential
+// complication to the consumer.  Right now, all I need is a copy, so
+// that is what I'm providing here.
+template <typename K, typename V, typename C, typename A>
+std::optional<K> mapFirstKeyOpt(std::map<K,V,C,A> const &m)
+{
+  auto it = m.begin();
+  if (it == m.end()) {
+    return std::nullopt;
+  }
+  else {
+    return std::make_optional<K>((*it).first);
+  }
+}
+
+
 // ---------------------------- Insertion ------------------------------
 // I don't like to have to say 'make_pair' all the time, and I'm
 // ambivalent about using the initializer list syntax, so this function

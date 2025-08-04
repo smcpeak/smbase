@@ -3,13 +3,15 @@
 
 #include "map-util.h"                  // module under test
 
-#include "exc.h"                       // smbase::XBase
-#include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
-#include "sm-test.h"                   // EXPECT_EQ
-#include "stringb.h"                   // stringb
+#include "smbase/gdvalue-optional.h"   // gdv::toGDValue(std::optional)
+#include "smbase/exc.h"                // smbase::XBase
+#include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
+#include "smbase/sm-test.h"            // EXPECT_EQ
+#include "smbase/stringb.h"            // stringb
 
 #include <memory>                      // std::unique_ptr
 
+using namespace gdv;
 using namespace smbase;
 
 
@@ -130,6 +132,22 @@ void test_mapInsertMove_unique_ptr()
 }
 
 
+void test_mapFirstKeyOpt()
+{
+  std::map<int, int> m;
+  EXPECT_EQ_GDVSER(mapFirstKeyOpt(m), std::optional<int>());
+
+  mapInsert(m, 3, 33);
+  EXPECT_EQ_GDVSER(mapFirstKeyOpt(m), std::optional<int>(3));
+
+  mapInsert(m, 2, 22);
+  EXPECT_EQ_GDVSER(mapFirstKeyOpt(m), std::optional<int>(2));
+
+  mapInsert(m, 4, 44);
+  EXPECT_EQ_GDVSER(mapFirstKeyOpt(m), std::optional<int>(2));
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -141,6 +159,7 @@ void test_map_util()
   testOstreamInsert();
   test_mapGetValueAt();
   test_mapInsertMove_unique_ptr();
+  test_mapFirstKeyOpt();
 }
 
 
