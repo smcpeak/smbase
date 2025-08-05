@@ -328,4 +328,55 @@ void expectEqGDVSer(
   }).asIndentedString()) /* user ; */
 
 
+// If `name` is set as an environment variable, return its value as
+// interpreted by `atoi`, otherwise return `defaultValue`.
+//
+// But, independently, if "RANDOMIZED_TEST_MULTIPLIER" is set, then
+// multiply the previously specified value by the result of `atoi`
+// applied to the latter before returning.
+//
+// Finally, if `power` is not 1, then the multiplier is adjusted by
+// taking its `power`th root, which is appropriate when the result will
+// be used as the number of iterations in a nested loop with nesting
+// equal to `power`, and we want the multiplier to have the overall
+// effect of linearly increasing the time spent testing.
+//
+// The idea is to provide a single envvar that can be used to linearly
+// scale up all randomized testing, which is useful after making a major
+// change.
+//
+// If the return value is not `defaultValue`, print to stdout the value
+// we will use, thus providing feedback on the effectiveness of the
+// envvar setting.  But only print this once (per process) so as not to
+// spam the output if it is queried multiple time.
+int envRandomizedTestIters(
+  int defaultValue, char const *name, int power = 1);
+
+
+/* Allow a call to the above function to be prepared in advance (such as
+   at file scope) but its activation delayed until actually needed in
+   some function.  In particular, it will not print anything if it is at
+   file scope in one test but we only run some other test.
+
+   Use it like:
+
+     EnvRandomizedTestIters const numIters{2000, "RANDOM_TEST_ITERS"};
+
+   and then use `numIters` when needed.
+*/
+struct EnvRandomizedTestIters {
+  // Arguments to the function.
+  int m_defaultValue;
+  char const *m_name;
+  int m_power = 1;
+
+  // Memoized value.
+  mutable int m_value = -1;
+
+  // Equivalent to
+  // `envRandomizedTestIters(m_defaultValue, m_name, power)`.
+  operator int() const;
+};
+
+
 #endif // SMBASE_SM_TEST_H

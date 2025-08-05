@@ -10,10 +10,9 @@
 #include "smbase/most-sig-bit.h"       // smbase::mostSignificantBitOfArgPlusOne
 #include "smbase/optional-util.h"      // optAccumulateMax
 #include "smbase/save-restore.h"       // SET_RESTORE
-#include "smbase/sm-env.h"             // smbase::envAsIntOr
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
 #include "smbase/sm-sized-int.h"       // SM_FOREACH_SIZED_INT
-#include "smbase/sm-test.h"            // EXPECT_EQ, TEST_CASE_EXPRS
+#include "smbase/sm-test.h"            // EXPECT_EQ, TEST_CASE_EXPRS, envRandomizedTestIters
 
 #include <algorithm>                   // std::min
 #include <cstdint>                     // std::uint64_t
@@ -148,8 +147,9 @@ public:      // methods
 };
 
 
-int const numIters = envAsIntOr(2000, "RANDOM_TEST_ITERS");
-int const testSize = envAsIntOr(10, "RANDOM_TEST_SIZE");
+
+EnvRandomizedTestIters const numIters{2000, "RANDOM_TEST_ITERS"};
+EnvRandomizedTestIters const testSize{10, "RANDOM_TEST_SIZE"};
 
 
 // Test `sm_random` for range and distribution bias.

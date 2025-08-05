@@ -9,7 +9,7 @@
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
 #include "smbase/sm-random.h"          // sm_randomPrim
 #include "smbase/sm-sized-int.h"       // SM_FOREACH_SIZED_INT
-#include "smbase/sm-test.h"            // VPVAL
+#include "smbase/sm-test.h"            // VPVAL, envRandomizedTestIters
 #include "smbase/xoverflow.h"          // XOverflow
 
 #include <cstdint>                     // std::[u]int{8,16,32}_t
@@ -243,11 +243,8 @@ void testUnaryOps()
 
 void testRandomArithmetic()
 {
-  int iters = 100;
-  if (char const *itersStr = std::getenv("SM_INTEGER_TEST_ITERS")) {
-    iters = std::atoi(itersStr);
-    PVAL(iters);
-  }
+  int const iters =
+    envRandomizedTestIters(100, "SM_INTEGER_TEST_ITERS");
 
   smbase_loopi(iters) {
     #define CALL_TEST_ONE(type) \

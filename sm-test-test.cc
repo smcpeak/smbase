@@ -224,6 +224,41 @@ void test_EXPECT_EQ_GDVSER()
 }
 
 
+// Test `EnvRandomizedTestIters`.
+EnvRandomizedTestIters const fileScopeIters{200, "FILE_SCOPE_ITERS"};
+
+// Test it with a power other than 1.
+EnvRandomizedTestIters const outerLoopIters{50, "OUTER_LOOP_ITERS", 2};
+EnvRandomizedTestIters const innerLoopIters{50, "INNER_LOOP_ITERS", 2};
+
+
+// This test is primarily validated manually by looking at the output in
+// verbose mode.
+void test_envRandomizedTestIters()
+{
+  TEST_CASE("test_envRandomizedTestIters");
+
+  int fileScope = fileScopeIters;
+  VPVAL(fileScope);
+
+  int outer = outerLoopIters;
+  int inner = innerLoopIters;
+  VPVAL(outer);
+  VPVAL(inner);
+
+  // The idea is this should be about 50*50 (the default product) times
+  // the multiplier, whereas with power=1, it would have been multiplied
+  // twice.
+  VPVAL(outer * inner);
+
+  int iters = envRandomizedTestIters(100, "SM_TEST_TEST_ITERS");
+  VPVAL(iters);
+
+  // A second call should not cause a printout.
+  envRandomizedTestIters(100, "SM_TEST_TEST_ITERS");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -237,6 +272,7 @@ void test_sm_test()
   test_EXPECT_MATCHES_REGEX();
   test_EXPECT_EQ_GDV();
   test_EXPECT_EQ_GDVSER();
+  test_envRandomizedTestIters();
 }
 
 

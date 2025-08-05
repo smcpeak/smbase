@@ -5,9 +5,8 @@
 
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE, smbase_loopi, smbase_loopj
 #include "sm-random.h"                 // sm_random
-#include "sm-test.h"                   // EXPECT_EQ, DIAG, tout
+#include "sm-test.h"                   // EXPECT_EQ, DIAG, tout, envRandomizedTestIters
 
-#include <cstdlib>                     // std::{atoi, getenv}
 #include <map>                         // std::map
 #include <vector>                      // std::vector
 
@@ -148,11 +147,8 @@ void testRandom()
 
   using Index = IndexedStringTable::Index;
 
-  int iters = 100;
-  if (char const *itersStr = std::getenv("INDEXED_STRING_TABLE_ITERS")) {
-    iters = std::atoi(itersStr);
-    PVAL(iters);
-  }
+  int const iters =
+    envRandomizedTestIters(100, "INDEXED_STRING_TABLE_ITERS");
 
   smbase_loopi(iters) {
     IndexedStringTable st;
