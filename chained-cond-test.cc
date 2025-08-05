@@ -58,6 +58,37 @@ void test_z_le_le()
 }
 
 
+void test_le_le_le()
+{
+  EXPECT_EQ(cc::le_le_le(1, 2, 3, 4), true);
+  EXPECT_EQ(cc::le_le_le(1, 1, 3, 4), true);
+  EXPECT_EQ(cc::le_le_le(1, 1, 1, 4), true);
+  EXPECT_EQ(cc::le_le_le(1, 1, 1, 1), true);
+
+  EXPECT_EQ(cc::le_le_le(2, 1, 1, 1), false);
+  EXPECT_EQ(cc::le_le_le(1, 2, 1, 1), false);
+  EXPECT_EQ(cc::le_le_le(1, 1, 2, 1), false);
+  EXPECT_EQ(cc::le_le_le(1, 1, 1, 0), false);
+}
+
+
+void test_z_le_le_le()
+{
+  EXPECT_EQ(cc::z_le_le_le(1, 2, 3), true);
+  EXPECT_EQ(cc::z_le_le_le(0, 2, 3), true);
+  EXPECT_EQ(cc::z_le_le_le(0, 0, 3), true);
+  EXPECT_EQ(cc::z_le_le_le(0, 0, 0), true);
+
+  EXPECT_EQ(cc::z_le_le_le(-1, 0, 0), false);
+  EXPECT_EQ(cc::z_le_le_le(0, -1, 0), false);
+  EXPECT_EQ(cc::z_le_le_le(0, 0, -1), false);
+
+  EXPECT_EQ(cc::z_le_le_le(1, 0, 0), false);
+  EXPECT_EQ(cc::z_le_le_le(0, 1, 0), false);
+  EXPECT_EQ(cc::z_le_le_le(1, 1, 0), false);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -68,6 +99,8 @@ void test_chained_cond()
   test_z_le_lt();
   test_le_le();
   test_z_le_le();
+  test_le_le_le();
+  test_z_le_le_le();
 }
 
 
