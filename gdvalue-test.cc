@@ -1109,6 +1109,14 @@ void testOrderedMap()
   };
   EXPECT_EQ(v2.asString(), "[(1):one]");
   testSerializeRoundtrip(v2);
+
+  // Test `createOrderedMap`.
+  {
+    GDValue v3 = GDValue::createOrderedMap({
+      { GDVTuple{1}, GDVSymbol("one") }
+    });
+    EXPECT_EQ(v3, v2);
+  }
 }
 
 

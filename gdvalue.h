@@ -28,6 +28,7 @@
 #include "smbase/std-string-view-fwd.h"          // std::string_view
 
 // libc++
+#include <initializer_list>                      // std::initializer_list
 #include <iosfwd>                                // std::ostream
 #include <map>                                   // std::map
 #include <set>                                   // std::set
@@ -756,6 +757,12 @@ public:      // methods
   // ---- OrderedMap ----
   /*implicit*/ GDValue(GDVOrderedMap const &map);
   /*implicit*/ GDValue(GDVOrderedMap      &&map);
+
+  // The compile-time dependencies to create a `GDVOrderedMap` directly
+  // are a little heavy, so this provides a way to make a `GDValue` that
+  // carries an ordered map without going through `GDVOrderedMap`.
+  static GDValue createOrderedMap(
+    std::initializer_list<GDVMapEntry> ilist);
 
   // If the current value is a tagged ordered map, these retain the tag.
   void orderedMapSet(GDVOrderedMap const &map);

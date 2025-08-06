@@ -1518,6 +1518,13 @@ DEFINE_CONTAINER_CTOR_SET_GET(ORDERED_MAP, OrderedMap, orderedMap)
 DEFINE_GDV_KIND_BEGIN_END(OrderedMap, orderedMap)
 
 
+/*static*/ GDValue GDValue::createOrderedMap(
+  std::initializer_list<GDVMapEntry> ilist)
+{
+  return GDValue(GDVOrderedMap(ilist));
+}
+
+
 bool GDValue::orderedMapContains(GDValue const &key) const
 {
   xassertPrecondition(isOrderedMap());
