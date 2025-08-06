@@ -293,16 +293,6 @@ void expectEqGDVSer(
 /*
   Print `stuff` in verbose mode, and push it onto the exception context
   stack.
-
-  When combined with the `gdvalue` module, it can be used like this:
-
-    TEST_CASE("resizeAll: " << GDValue(GDVOrderedMap{
-      GDV_SKV_EXPR(rules),
-      GDV_SKV_EXPR(initSizes),
-      GDV_SKV_EXPR(newTotalSize),
-    }).asIndentedString());
-
-  to nicely format several pieces of structured data.
 */
 #define TEST_CASE(stuff) \
   DIAG(stuff);           \
@@ -314,18 +304,16 @@ void expectEqGDVSer(
 
   Use it like:
 
-    TEST_CASE_EXPRS("resizeAll", rules, initSizes, newTotalSize);
+    TEST_CASE_EXPRS("someFunction", expr1, expr2, expr3)
 
-  which expands to what is shown in the example above.
+  which will print (in verbose mode) and add as context a string that
+  includes the names and values of all expressions.
 
-  To use this macro, you have to #include "gdvalue.h" and
-  "gdv-ordered-map.h", and possibly other headers that know how to
-  convert various types to `GDValue`.
+  To use this macro, you have to #include "gdvalue.h" and possibly other
+  headers that know how to convert various types to `GDValue`.
 */
-#define TEST_CASE_EXPRS(label, ...)                        \
-  TEST_CASE(label ": " << gdv::GDValue(gdv::GDVOrderedMap{ \
-    SM_PP_COMMA_MAP(GDV_SKV_EXPR, __VA_ARGS__)             \
-  }).asIndentedString()) /* user ; */
+#define TEST_CASE_EXPRS(label, ...) \
+  TEST_CASE(label ": " << GDVN_OMAP_EXPRS(0, __VA_ARGS__)) /* user ; */
 
 
 // If `name` is set as an environment variable, return its value as

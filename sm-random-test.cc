@@ -4,7 +4,6 @@
 #include "smbase/sm-random.h"          // module under test
 
 #include "smbase/chained-cond.h"       // smbase::cc::le_lt
-#include "smbase/gdv-ordered-map.h"    // gdv::GDVOrderedMap
 #include "smbase/gdvalue.h"            // gdv::GDValue
 #include "smbase/get-type-name.h"      // smbase::GetTypeName
 #include "smbase/most-sig-bit.h"       // smbase::mostSignificantBitOfArgPlusOne
