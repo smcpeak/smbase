@@ -40,14 +40,20 @@ struct GDVPTo<std::map<K,V,C,A>> {
     for (auto const &kv : p.mapGet()) {
       GDValue const &k = kv.first;
 
-      // It is intentional to not use `kv.second` here.  In both cases
-      // we are forming a *path* to the desired location, and `k` is
-      // part of the step.  In one case the step uses the key to go to
-      // the stored key, and in the other it goes to the stored value.
-      dest.insert(std::make_pair(
-        gdvpTo<K>(p.mapGetKeyAt(k)),
-        gdvpTo<V>(p.mapGetValueAt(k))
-      ));
+      try {
+        // It is intentional to not use `kv.second` here.  In both cases
+        // we are forming a *path* to the desired location, and `k` is
+        // part of the step.  In one case the step uses the key to go to
+        // the stored key, and in the other it goes to the stored value.
+        dest.insert(std::make_pair(
+          gdvpTo<K>(p.mapGetKeyAt(k)),
+          gdvpTo<V>(p.mapGetValueAt(k))
+        ));
+      }
+      catch (XGDValueError &x) {
+        // If this returns, the key/value will be effectively discarded.
+        p.handleError(x);
+      }
     }
 
     return dest;

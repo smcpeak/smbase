@@ -146,6 +146,16 @@ private:     // instance data
   // empty, then both are references to the same object.
   std::vector<GDVNavStep> m_path;
 
+public:      // data
+  // Optional handler for parse exceptions in certain recoverable
+  // contexts.  When null, the exception propagates normally.  Otherwise
+  // it is passed to the `handle` method.
+  //
+  // Initially null, this member is *not* copied by the constructors.
+  // It is meant to be set at a specific point where recovery is
+  // possible, only, so the handler can be sure of the context.
+  HandleXGDValueError * NULLABLE m_errorHandler;
+
 public:      // methods
   ~GDValueParser();
 
@@ -207,6 +217,10 @@ public:      // methods
 
   // Throw `XGDValueError` with this parser as context.
   void throwError(std::string &&msg) const NORETURN;
+
+  // If `m_errorHandler` is null, just re-throw `x`.  Otherwise, pass it
+  // to that handler, returning if the handler does.
+  void handleError(XGDValueError &x) const;
 
   // Throw `XGDValueError` if the current value does not have kind
   // `kind`.
@@ -305,6 +319,7 @@ public:      // methods
 };
 
 
+// --------------------------- XGDValueError ---------------------------
 // Thrown when a `GDValue` differs from what was expected.
 class XGDValueError : public smbase::XBase {
 public:      // data
@@ -331,6 +346,39 @@ public:      // methods
 
   // This combines information in `m_path` with `m_conflict`.
   virtual std::string getConflict() const override;
+};
+
+
+// ------------------------ HandleXGDValueError ------------------------
+// Interface for handling recoverable GDV parse errors.
+//
+// Note: This is for parsing GDV (C++ objects) into other data types,
+// not GDVN (text).
+//
+// In order for this to be used, the function doing the parsing has to
+// catch `XGDValueError` and pass it to `GDValueParser::handleError`,
+// while reacting sensibly (presumably by discarding some data) if
+// `handleError` returns.
+//
+// At the moment, the only function that does that is
+// `GDVPTo<std::map>::f` (in `gdvalue-map.h`), but my intent/expectation
+// is to add it elsewhere as needed and sensible.
+//
+class HandleXGDValueError {
+public:      // methods
+  virtual ~HandleXGDValueError();
+  HandleXGDValueError();
+
+  // When a recoverable error is encountered, and `p` has
+  // `m_errorHandler` set, this is invoked with the parser active at the
+  // level of recovery, and `x` the exception indicating the error.
+  //
+  // This can choose to re-throw `x`.
+  //
+  // If this function returns normally, the effect is to discard a
+  // portion of the input, the precise portion depending on where the
+  // recovery happens.
+  virtual void handle(GDValueParser const &p, XGDValueError &x) = 0;
 };
 
 

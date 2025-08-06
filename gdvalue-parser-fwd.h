@@ -11,6 +11,7 @@ namespace gdv {
 class GDVNavStep;
 class GDValueParser;
 class XGDValueError;
+class HandleXGDValueError;
 
 template <typename T, typename Enable = void>
 struct GDVPTo;

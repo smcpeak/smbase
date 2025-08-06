@@ -657,6 +657,41 @@ void test_orderedMapAsMap()
 }
 
 
+class ErrorHandler : public HandleXGDValueError {
+public:      // data
+  // The error details.
+  std::string m_path;
+  std::string m_message;
+
+public:      // methods
+  virtual void handle(GDValueParser const &p, XGDValueError &x)
+  {
+    // Should only get here once.
+    xassert(m_path.empty());
+
+    m_path = x.m_path;
+    m_message = x.m_message;
+  }
+};
+
+
+void test_errorHandler()
+{
+  ErrorHandler errorHandler;
+
+  GDValue value = fromGDVN("{ 1: Data{x:1 y:2}  2: Data{x:1 /*no y*/} }");
+  GDValueParser parser(value);
+  parser.m_errorHandler = &errorHandler;
+
+  // This should not throw, instead it should drop element 2.
+  std::map<int, Data> m = gdvpTo<std::map<int, Data>>(parser);
+  EXPECT_EQ(errorHandler.m_path, "<top>.2");
+  EXPECT_EQ(errorHandler.m_message,
+    "expected map to have key y, but it does not");
+  EXPECT_EQ_GDV(m, fromGDVN("{ 1: Data{x:1 y:2} }"));
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -683,6 +718,7 @@ void test_gdvalue_parser()
   test_move_parsedObject();
   test_optional();
   test_orderedMapAsMap();
+  test_errorHandler();
 }
 
 

@@ -174,7 +174,8 @@ GDValueParser::~GDValueParser()
 GDValueParser::GDValueParser(GDValueParser const &obj)
   : DMEMB(m_topLevel),
     DMEMB(m_value),
-    DMEMB(m_path)
+    DMEMB(m_path),
+    m_errorHandler(nullptr)
 {
   POSSIBLY_SELFCHECK_THIS();
 }
@@ -183,7 +184,8 @@ GDValueParser::GDValueParser(GDValueParser const &obj)
 GDValueParser::GDValueParser(GDValueParser      &&obj)
   : MDMEMB(m_topLevel),
     MDMEMB(m_value),
-    MDMEMB(m_path)
+    MDMEMB(m_path),
+    m_errorHandler(nullptr)
 {
   POSSIBLY_SELFCHECK_THIS();
 }
@@ -192,7 +194,8 @@ GDValueParser::GDValueParser(GDValueParser      &&obj)
 GDValueParser::GDValueParser(GDValue const &topLevel)
   : m_topLevel(&topLevel),
     m_value(&topLevel),
-    m_path()
+    m_path(),
+    m_errorHandler(nullptr)
 {
   POSSIBLY_SELFCHECK_THIS();
 }
@@ -201,7 +204,8 @@ GDValueParser::GDValueParser(GDValue const &topLevel)
 GDValueParser::GDValueParser(GDValueParser const &parent, GDVNavStep step)
   : m_topLevel(parent.m_topLevel),
     m_value(step.getSpecifiedChild(parent.m_value)),
-    m_path(parent.m_path)
+    m_path(parent.m_path),
+    m_errorHandler(nullptr)
 {
   m_path.push_back(step);
   POSSIBLY_SELFCHECK_THIS();
@@ -281,6 +285,17 @@ RELAY_QUERY(bool, isUnorderedContainer)
 void GDValueParser::throwError(std::string &&msg) const
 {
   THROW(XGDValueError(pathString(), std::move(msg)));
+}
+
+
+void GDValueParser::handleError(XGDValueError &x) const
+{
+  if (m_errorHandler) {
+    m_errorHandler->handle(*this, x);
+  }
+  else {
+    THROW(x);
+  }
 }
 
 
@@ -635,6 +650,15 @@ std::string XGDValueError::getConflict() const
   return stringb(
     "At GDV path " << m_path << ": " << m_message);
 }
+
+
+// ------------------------ HandleXGDValueError ------------------------
+HandleXGDValueError::~HandleXGDValueError()
+{}
+
+
+HandleXGDValueError::HandleXGDValueError()
+{}
 
 
 // ------------------------------ GDVPTo -------------------------------
