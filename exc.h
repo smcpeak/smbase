@@ -89,6 +89,11 @@ std::vector<std::string> &getExnContextVector();
   EXN_CONTEXT(#funcName "(" << SM_PP_APPLY(EXN_CONTEXT_CALL_ARG_LIST, args) << ")")
 
 
+// Return the current exception context as a string where each label is
+// terminated by ": ".  Thus, the result is something like "outer:
+// inner: ", or just an empty string if there is no context.
+std::string getExnContextString();
+
 
 // ------------------------------- XBase -------------------------------
 /* This is the base class for all exceptions in smbase and the other

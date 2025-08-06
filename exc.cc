@@ -32,6 +32,12 @@ std::vector<std::string> &getExnContextVector()
 }
 
 
+std::string getExnContextString()
+{
+  return join(suffixAll(getExnContextVector(), ": "), "");
+}
+
+
 // ------------------------------- XBase -------------------------------
 XBase::XBase() noexcept
   : std::exception(),

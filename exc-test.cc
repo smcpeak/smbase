@@ -3,20 +3,20 @@
 
 // This file is in the public domain.
 
-#include "exc.h"                       // module under test
+#include "smbase/exc.h"                // module under test
 
-#include "sm-test.h"                   // DIAG, verbose
+#include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
+#include "smbase/sm-test.h"            // DIAG, verbose, EXPECT_EQ
 
 #include <iostream>                    // std::{cout, endl}
 
 using namespace smbase;
 
-using std::cout;
-using std::endl;
+
+OPEN_ANONYMOUS_NAMESPACE
 
 
-// Called from unit-tests.cc.
-void test_exc()
+void test_basics()
 {
   XMessage x("yadda");
   DIAG(x);
@@ -27,6 +27,37 @@ void test_exc()
   catch (XBase &x) {
     DIAG("caught XBase: " << x);
   }
+}
+
+
+void test_getExnContextString()
+{
+  EXPECT_EQ(getExnContextString(), "");
+
+  {
+    EXN_CONTEXT("blah");
+    EXPECT_EQ(getExnContextString(), "blah: ");
+
+    {
+      EXN_CONTEXT("goo");
+      EXPECT_EQ(getExnContextString(), "blah: goo: ");
+    }
+
+    EXPECT_EQ(getExnContextString(), "blah: ");
+  }
+
+  EXPECT_EQ(getExnContextString(), "");
+}
+
+
+CLOSE_ANONYMOUS_NAMESPACE
+
+
+// Called from unit-tests.cc.
+void test_exc()
+{
+  test_basics();
+  test_getExnContextString();
 }
 
 
