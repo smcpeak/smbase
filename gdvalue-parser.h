@@ -317,7 +317,7 @@ public:      // data
   std::string m_path;
 
   // The conflict between what was expected and what was actually found
-  // in the primary value in `m_parser`.
+  // in the primary value at `m_path`.
   std::string m_message;
 
 public:      // methods
@@ -329,7 +329,7 @@ public:      // methods
 
   XGDValueError(XGDValueError const &obj);
 
-  // This combines information in `m_parser` with `m_conflict`.
+  // This combines information in `m_path` with `m_conflict`.
   virtual std::string getConflict() const override;
 };
 
