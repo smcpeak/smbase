@@ -2554,6 +2554,31 @@ void test_uint64()
 }
 
 
+void test_GDVN_OMAP_EXPRS()
+{
+  EXPECT_EQ(GDVN_OMAP_EXPRS(0, 1, 2, 3), "[`1`:1 `2`:2 `3`:3]");
+
+  std::map<int, std::string> m1{
+    { 1, "one string" },
+    { 2, "two string" },
+    { 3, "three string" },
+  };
+
+  std::vector<std::vector<std::string>> v1{
+    { "some", "strings", "for", "the", "first", "vector" },
+    { "some", "strings", "for", "the", "second", "vector" },
+  };
+
+  EXPECT_EQ(GDVN_OMAP_EXPRS(1, m1, v1), R"([
+    m1: {1:"one string" 2:"two string" 3:"three string"}
+    v1: [
+      ["some" "strings" "for" "the" "first" "vector"]
+      ["some" "strings" "for" "the" "second" "vector"]
+    ]
+  ])");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -2609,6 +2634,7 @@ void test_gdvalue()
     //test_ostreamPrint();
     test_fromGDVN();
     test_uint64();
+    test_GDVN_OMAP_EXPRS();
 
     // Some interesting values for the particular data used.
     testPrettyPrint(0);

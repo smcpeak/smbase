@@ -25,6 +25,7 @@
 #include "smbase/gdv-ordered-map-iface.h"        // gdv::GDVOrderedMap
 #include "smbase/sm-integer.h"                   // smbase::Integer
 #include "smbase/sm-macros.h"                    // OPEN_NAMESPACE, NULLABLE
+#include "smbase/sm-pp-util.h"                   // SM_PP_COMMA_MAP
 #include "smbase/std-string-view-fwd.h"          // std::string_view
 
 // libc++
@@ -933,22 +934,6 @@ FOR_EACH_GDV_CONTAINER(DEFER_INSTANTIATE)
 #undef DEFER_INSTANTIATE
 
 
-// Temporarily (for the enclosing scope) set `amount` as the indent
-// level.  This is meant for use before tracing output statements that
-// provide some of their own indentation context.
-#define GDVALUE_SCOPED_SET_INDENT(amount) \
-  SET_RESTORE(GDValue::s_defaultWriteOptions.m_indentLevel, amount)
-
-
-// Create a key/value pair that uses a symbol as a key.
-#define GDV_SKV(name, value) \
-  gdv::GDVMapEntry(gdv::GDVSymbol(name), toGDValue(value))
-
-// Stringify an expression to name the symbol.
-#define GDV_SKV_EXPR(expr) \
-  GDV_SKV(#expr, (expr))
-
-
 // ----------------------------- toGDValue -----------------------------
 /* The purpose of `toGDValue` is to provide something that can be
    overloaded to convert something to `GDValue` when it cannot be
@@ -1136,6 +1121,54 @@ std::ostream &operator<<(std::ostream &os, T const &t) {
   return os;
 }
 #endif // 0
+
+
+// --------------------- Serialization convenience ---------------------
+// Temporarily (for the enclosing scope) set `amount` as the indent
+// level.  This is meant for use before tracing output statements that
+// provide some of their own indentation context.
+#define GDVALUE_SCOPED_SET_INDENT(amount) \
+  SET_RESTORE(GDValue::s_defaultWriteOptions.m_indentLevel, amount)
+
+
+// Create a key/value pair that uses a symbol as a key.
+#define GDV_SKV(name, value) \
+  gdv::GDVMapEntry(gdv::GDVSymbol(name), toGDValue(value))
+
+// Stringify an expression to name the symbol.
+#define GDV_SKV_EXPR(expr) \
+  GDV_SKV(#expr, (expr))
+
+
+/*
+  Render the values of each of several argument expressions as an
+  indented string in the GDVN syntax of an ordered map.
+
+  Use it like:
+
+    GDVN_OMAP_EXPRS(2, expr1, expr2, expr3)
+
+  which yields a string like:
+
+    [
+      expr1: <GDVN for expr1>
+      expr2: <GDVN for expr2>
+      expr3: <GDVN for expr3>
+    ]
+
+  where the first argument (here, 2) specifies the outermost indentation
+  level in increments of two spaces.  In the example above, the closing
+  bracket is indented by 2 such levels.  (The opening bracket is too,
+  but the output string does not indent the first line.)
+
+  This is primarily meant to be used as part of diagnostic output, to
+  easily get a structured printout of several values that can be
+  converted to GDValue.
+*/
+#define GDVN_OMAP_EXPRS(level, ...)            \
+  (gdv::GDValue::createOrderedMap({            \
+    SM_PP_COMMA_MAP(GDV_SKV_EXPR, __VA_ARGS__) \
+  }).asIndentedStringLevel(level))
 
 
 // ----------------------- Member serialization ------------------------
