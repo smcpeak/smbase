@@ -155,6 +155,21 @@ std::ostream &beginTraceOutput(char const *traceScope, char const *suffix);
 #define TRACE4_STRING_EXPR(expr) TRACE_STRING_EXPR(4, expr)
 
 
+// Trace-print a labeled sequence of expressions as GDVN.
+//
+// To use this macro, you have to #include "gdvalue.h", and ensure that
+// `toGDValue` works on all the argument expressions (by including the
+// needed headers and/or importing the functions into the namespace).
+#define TRACE_GDVN_EXPRS(level, label, ...) \
+  TRACE(level, label ": " << GDVN_OMAP_EXPRS(0, __VA_ARGS__))
+
+#define TRACE0_GDVN_EXPRS(label, ...) TRACE_GDVN_EXPRS(0, label, __VA_ARGS__)
+#define TRACE1_GDVN_EXPRS(label, ...) TRACE_GDVN_EXPRS(1, label, __VA_ARGS__)
+#define TRACE2_GDVN_EXPRS(label, ...) TRACE_GDVN_EXPRS(2, label, __VA_ARGS__)
+#define TRACE3_GDVN_EXPRS(label, ...) TRACE_GDVN_EXPRS(3, label, __VA_ARGS__)
+#define TRACE4_GDVN_EXPRS(label, ...) TRACE_GDVN_EXPRS(4, label, __VA_ARGS__)
+
+
 // If the current trace level exceeds 'level', write 'stuff' as a trace
 // message, then increase the indentation level for the remainder of the
 // scope.  Otherwise, do not emit a trace message and do not inc/dec the

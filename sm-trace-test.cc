@@ -3,14 +3,26 @@
 
 // This file is in the public domain.
 
-#include "sm-trace.h"                  // module under test
+#include "smbase/sm-trace.h"           // module under test
 
-#include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
-#include "sm-test.h"                   // verbose, DIAG
+#include "smbase/gdvalue-map.h"        // gdv::toGDValue(std::map)
+#include "smbase/gdvalue-vector.h"     // gdv::toGDValue(std::vector)
+#include "smbase/gdvalue.h"            // GDVN_OMAP_EXPRS [h]
+#include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
+#include "smbase/sm-test.h"            // verbose, DIAG
+
+#include <map>                         // std::map
+#include <vector>                      // std::vector
 
 #include <assert.h>                    // assert.h
 
+using namespace gdv;
+
 using std::cout;
+
+
+// Allow exercising tracing in this module.
+INIT_TRACE("sm-trace");
 
 
 OPEN_ANONYMOUS_NAMESPACE
@@ -81,11 +93,7 @@ void SomeClass::foo()
 }
 
 
-CLOSE_ANONYMOUS_NAMESPACE
-
-
-// Called from unit-tests.cc.
-void test_sm_trace()
+void test_basics()
 {
   // Enabled.
   expectLevel(1, "someMod", "someMod");
@@ -140,6 +148,41 @@ void test_sm_trace()
     TRACE1("inside scoped section");
   }
   TRACE1("after scoped section");
+}
+
+
+void test_TRACEn_EXPRS()
+{
+  std::map<int, std::string> m1{
+    { 1, "one string" },
+    { 2, "two string" },
+    { 3, "three string" },
+  };
+
+  std::vector<std::vector<std::string>> v1{
+    { "some", "strings", "for", "the", "first", "vector" },
+    { "some", "strings", "for", "the", "second", "vector" },
+  };
+
+  if (verbose) {
+    TRACE0_GDVN_EXPRS("lvl0", m1, v1);
+  }
+
+  TRACE1_GDVN_EXPRS("lvl1", m1, v1);
+  TRACE2_GDVN_EXPRS("lvl2", m1, v1);
+  TRACE3_GDVN_EXPRS("lvl3", m1, v1);
+  TRACE4_GDVN_EXPRS("lvl4", m1, v1);
+}
+
+
+CLOSE_ANONYMOUS_NAMESPACE
+
+
+// Called from unit-tests.cc.
+void test_sm_trace()
+{
+  test_basics();
+  test_TRACEn_EXPRS();
 }
 
 
