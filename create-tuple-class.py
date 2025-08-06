@@ -750,9 +750,7 @@ def processImplementationFile(
   classToOptions: dict[str, OptionsMap]) -> None:
   """Determine the implementation file for `headerFname` and process it."""
 
-  if not headerFname.endswith(".h"):
-    die(f"Header file name must end with \".h\".")
-
+  assert(headerFname.endswith(".h"))
   implFname = headerFname[:-2]+".cc"
   debugPrint(f"implFname: {implFname}")
 
@@ -826,6 +824,10 @@ def main() -> None:
     printMode = True
   if opts.prefix:
     outputPrefix = opts.prefix
+
+  for fname in opts.headerFiles:
+    if not fname.endswith(".h"):
+      die(f"Header file name must end with \".h\": {fname!r}.")
 
   for fname in opts.headerFiles:
     processHeader(fname)
