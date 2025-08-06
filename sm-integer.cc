@@ -93,7 +93,9 @@ Integer::Integer(Integer &&obj)
 }
 
 
-template <typename PRIM>
+template <typename PRIM,
+          typename /*= typename std::enable_if<
+                         std::is_integral_v<PRIM>>::type*/>
 Integer::Integer(PRIM n)
   : m_storage()
 {

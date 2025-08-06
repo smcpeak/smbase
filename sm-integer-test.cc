@@ -322,6 +322,20 @@ void testGetAs()
 }
 
 
+class SomeClass {};
+
+void test_ctorWrongType()
+{
+  #if ERRNUM == 1
+    SomeClass sc;
+
+    // I should not allow conversion from any class, only primitive
+    // integer types.
+    Integer i(sc);
+  #endif
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -333,6 +347,7 @@ void test_sm_integer()
   testUnaryOps();
   testGetAs();
   testRandomArithmetic();
+  test_ctorWrongType();
 
   VPVAL(overflowCount);
   VPVAL(nonOverflowCount);

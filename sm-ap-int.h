@@ -16,7 +16,7 @@
 #include <limits>                      // std::numeric_limits
 #include <optional>                    // std::{optional, nullopt}
 #include <string_view>                 // std::string_view
-#include <type_traits>                 // std::{is_unsigned, make_unsigned}
+#include <type_traits>                 // std::{is_unsigned, make_unsigned, etc.}
 
 
 OPEN_NAMESPACE(smbase)
@@ -225,9 +225,11 @@ public:      // methods
     normalize();
   }
 
-  // Construct from `PRIM`, presumed to be a primitive type.  As this
+  // Construct from `PRIM`, a primitive integral type.  As this
   // preserves information, it is allowed to be invoked implicitly.
-  template <typename PRIM>
+  template <typename PRIM,
+            typename = typename std::enable_if<
+                         std::is_integral_v<PRIM>>::type>
   APInteger(PRIM n)
     : m_magnitude(),
       m_soe(SOE_EMBEDDED),

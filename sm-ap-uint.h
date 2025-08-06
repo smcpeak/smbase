@@ -26,7 +26,7 @@
 #include <iostream>                    // std::ostream
 #include <optional>                    // std::optional
 #include <string_view>                 // std::string_view
-#include <type_traits>                 // std::{is_integral, is_signed, is_unsigned}
+#include <type_traits>                 // std::{is_integral, is_signed, is_unsigned, etc.}
 #include <utility>                     // std::move
 #include <vector>                      // std::vector
 
@@ -313,15 +313,15 @@ public:      // methods
     : MDMEMB(m_vec)
   {}
 
-  // Construct from `PRIM`, presumed to be a primitive type.  The
-  // argument must be non-negative.  As this preserves information, it
-  // is allowed to be invoked implicitly.
-  template <typename PRIM>
+  // Construct from `PRIM`, a primitive integral type.  The argument
+  // must be non-negative.  As this preserves information, it is allowed
+  // to be invoked implicitly.
+  template <typename PRIM,
+            typename = typename std::enable_if<
+                         std::is_integral_v<PRIM>>::type>
   APUInteger(PRIM n)
     : m_vec()
   {
-    static_assert(std::is_integral<PRIM>::value);
-
     if (n < 0) {
       xmessage(stringb(
         "Attempted to create an APUInteger from negative value " <<

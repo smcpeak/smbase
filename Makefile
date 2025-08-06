@@ -707,6 +707,11 @@ $(eval $(call EXPECT_COMPILE_TEST_FAIL,dni-vector,2))
 check-compile-errs: check-dni-vector-errs
 
 
+# sm-integer-test errors
+$(eval $(call EXPECT_COMPILE_TEST_FAIL,sm-integer,1))
+check-compile-errs: check-sm-integer-errs
+
+
 # Check that things that should *not* compile in fact do not.
 .PHONY: check-compile-errs
 check: check-compile-errs

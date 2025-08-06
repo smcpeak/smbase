@@ -18,6 +18,7 @@
 #include "std-string-view-fwd.h"       // std::string_view [n]
 
 #include <iosfwd>                      // std::ostream [n]
+#include <type_traits>                 // std::is_integral_v
 
 
 OPEN_NAMESPACE(smbase)
@@ -62,9 +63,11 @@ public:      // methods
   Integer(Integer const &obj);
   Integer(Integer      &&obj);
 
-  // Convert from a primitive type.  The possible types are listed at
-  // the end of this file.
-  template <typename PRIM>
+  // Convert from a primitive integral type.  The possible types are
+  // listed at the end of this file.
+  template <typename PRIM,
+            typename = typename std::enable_if<
+                         std::is_integral_v<PRIM>>::type>
   Integer(PRIM n);
 
   // ---------- Assignment ----------
