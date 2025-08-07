@@ -21,6 +21,7 @@
 #include <limits>                      // std::numeric_limits
 #include <optional>                    // std::optional
 #include <sstream>                     // std::ostringstream
+#include <string>                      // std::string
 #include <string_view>                 // std::string_view
 #include <vector>                      // std::vector
 
@@ -421,6 +422,17 @@ std::string encodeWithEscapes(char const *src, int len)
 }
 
 
+std::string encodeWithEscapes(unsigned char const *src, int len)
+{
+  return encodeWithEscapes((char const *)src, len);
+}
+
+std::string encodeWithEscapes(signed char const *src, int len)
+{
+  return encodeWithEscapes((char const *)src, len);
+}
+
+
 void insertDoubleQuoted(std::ostream &os, std::string const &str)
 {
   os << '"';
@@ -452,6 +464,22 @@ std::string doubleQuote_sv(std::string_view sv)
 std::string doubleQuote_cstr(char const *s)
 {
   return doubleQuote_sv(s);
+}
+
+
+std::string doubleQuote(std::string const &s)
+{
+  return doubleQuote_string(s);
+}
+
+std::string doubleQuote(std::string_view sv)
+{
+  return doubleQuote_sv(sv);
+}
+
+std::string doubleQuote(char const *cstr)
+{
+  return doubleQuote_cstr(cstr);
 }
 
 

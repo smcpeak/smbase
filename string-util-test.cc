@@ -10,7 +10,9 @@
 #include <exception>                   // std::exception
 #include <iostream>                    // std::ostream
 #include <limits>                      // std::numeric_limits
+#include <string>                      // std::string
 #include <string_view>                 // std::string_view
+#include <vector>                      // std::vector
 
 
 using namespace smbase;

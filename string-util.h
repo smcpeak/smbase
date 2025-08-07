@@ -1,5 +1,5 @@
 // string-util.h
-// Utilities related to `std::string`.
+// Utilities related to `std::string` and `std::string_view`.
 
 // This was intended to eventually replace strutil.h, which was based on
 // the old smbase 'string' class.  However, I have now changed str.h to
@@ -13,14 +13,25 @@
 #define SMBASE_STRING_UTIL_H
 
 #include "codepoint.h"                 // CodePoint
+#include "sm-macros.h"                 // DEPRECATED
+#include "std-string-fwd.h"            // std::string
 #include "std-string-view-fwd.h"       // std::string_view
 #include "std-vector-fwd.h"            // stdfwd::vector
-#include "sm-macros.h"                 // DEPRECATED
 
 #include <cstddef>                     // std::size_t
 #include <cstdint>                     // std::{int64_t, uint64_t}
 #include <iosfwd>                      // std::ostream
-#include <string>                      // std::string
+
+
+// It might seem odd to use a forward declaration for `std::string` here
+// (setting aside its questionable standard conformance), since any
+// client module that #includes this file seems likely to also #include
+// `<string>`.  But I'm gradually adding more functionality for
+// `std::string_view`, and (at least with GCC) the `<string_view>`
+// header is only about half as large.  Thus, it is primarily with an
+// eye toward clients using `string_view` that I use a forward
+// declaration for `std::string`.  (Also, there are a few `char*`
+// functions in here.)
 
 
 // ------------------------------ Parsing ------------------------------
@@ -145,10 +156,8 @@ std::string encodeWithEscapes(std::string const &src);
 std::string encodeWithEscapes(char const *src, int len);
 
 // Overloads for the other variants of 'char'.
-inline std::string encodeWithEscapes(unsigned char const *src, int len)
-  { return encodeWithEscapes((char const *)src, len); }
-inline std::string encodeWithEscapes(signed char const *src, int len)
-  { return encodeWithEscapes((char const *)src, len); }
+std::string encodeWithEscapes(unsigned char const *src, int len);
+std::string encodeWithEscapes(signed char const *src, int len);
 
 
 // Insert 'str' into 'os', surrounded by double quotes, and using C-like
@@ -163,12 +172,9 @@ std::string doubleQuote_cstr(char const *cstr);
 
 // Normally, these overloads are what I use.  However, the
 // explicitly-typed forms are occasionally helpful.
-inline std::string doubleQuote(std::string const &s)
-  { return doubleQuote_string(s); }
-inline std::string doubleQuote(std::string_view sv)
-  { return doubleQuote_sv(sv); }
-inline std::string doubleQuote(char const *cstr)
-  { return doubleQuote_cstr(cstr); }
+std::string doubleQuote(std::string const &s);
+std::string doubleQuote(std::string_view sv);
+std::string doubleQuote(char const *cstr);
 
 // Return `c` enclosed in single quotes if it is printable and not a
 // metacharacter, or as an escape sequence if not.
