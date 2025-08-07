@@ -14,27 +14,25 @@
 
 #include "codepoint.h"                 // CodePoint
 #include "std-string-view-fwd.h"       // std::string_view
+#include "std-vector-fwd.h"            // stdfwd::vector
 #include "sm-macros.h"                 // DEPRECATED
 
 #include <cstddef>                     // std::size_t
 #include <cstdint>                     // std::{int64_t, uint64_t}
 #include <iosfwd>                      // std::ostream
 #include <string>                      // std::string
-#include <vector>                      // std::vector
-
-// TODO: Use forward declaration for `std::vector`.
 
 
 // ------------------------------ Parsing ------------------------------
 // Split `text` into words separated by `sep`.  If two occurrences of
 // `sep` are adjacent, the corresponding word will be empty.  The output
 // always has at least one element.
-std::vector<std::string> split(std::string const &text, char sep);
+stdfwd::vector<std::string> split(std::string const &text, char sep);
 
 
 // Split 'text' into non-empty words separated by 'sep', which never
 // appears in any of the result words.
-std::vector<std::string> splitNonEmpty(std::string const &text, char sep);
+stdfwd::vector<std::string> splitNonEmpty(std::string const &text, char sep);
 
 
 // Remove any whitespace (as determined by `std::isspace`) at the
@@ -76,29 +74,31 @@ int indexOfSubstring(std::string const &haystack, std::string const &needle);
 
 // ------------------ Manipulating vectors of strings ------------------
 // Return elements of 'vec' separated by 'sep'.
-std::string join(std::vector<std::string> const &vec,
+std::string join(stdfwd::vector<std::string> const &vec,
                  std::string const &sep);
 
 // Return 'vec' except with each element prefixed by 'prefix'.
-std::vector<std::string> prefixAll(std::vector<std::string> const &vec,
-                                   std::string const &prefix);
+stdfwd::vector<std::string> prefixAll(
+  stdfwd::vector<std::string> const &vec,
+  std::string const &prefix);
 
 // Return 'vec' except with each element suffixed by 'suffix'.
-std::vector<std::string> suffixAll(std::vector<std::string> const &vec,
-                                   std::string const &suffix);
+stdfwd::vector<std::string> suffixAll(
+  stdfwd::vector<std::string> const &vec,
+  std::string const &suffix);
 
 // Put all `count` of the elements of `array` into a vector, including
 // `array[0]`.  `array` can be `nullptr` only if `count==0`.
-std::vector<std::string> stringVectorFromPointerArray(
+stdfwd::vector<std::string> stringVectorFromPointerArray(
   int count, char const * const * NULLABLE array);
 
 // Write 'vec' to 'os' like: ["first", "second", "third"].  The elements
 // are quoted using the 'insertDoubleQuoted' function.
 std::ostream& operator<< (std::ostream &os,
-                          std::vector<std::string> const &vec);
+                          stdfwd::vector<std::string> const &vec);
 
 // Convert 'vec' to a string using 'operator<<'.
-std::string toString(std::vector<std::string> const &vec);
+std::string toString(stdfwd::vector<std::string> const &vec);
 
 
 // --------------------- Searching array of char* ----------------------
@@ -188,7 +188,8 @@ std::string shellDoubleQuote(std::string const &s);
 // preserve word boundaries and escape metacharacters, and single spaces
 // separating words.  If the input vector is empty, the output is also
 // empty.
-std::string shellDoubleQuoteCommand(std::vector<std::string> const &cmd);
+std::string shellDoubleQuoteCommand(
+  stdfwd::vector<std::string> const &cmd);
 
 
 // ---------------------------- File names -----------------------------
@@ -340,10 +341,12 @@ std::string int64ToRadixDigits(
 
 // -------------- Conversion between strings and vectors ---------------
 // Return the sequence of characters in `s`.
-std::vector<unsigned char> stringToVectorOfUChar(std::string const &s);
+stdfwd::vector<unsigned char>
+stringToVectorOfUChar(std::string const &s);
 
 // Return `v` as a string.
-std::string vectorOfUCharToString(std::vector<unsigned char> const &v);
+std::string vectorOfUCharToString(
+  stdfwd::vector<unsigned char> const &v);
 
 
 #endif // SMBASE_STRING_UTIL_H
