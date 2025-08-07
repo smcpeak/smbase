@@ -313,7 +313,7 @@ void expectEqGDVSer(
   headers that know how to convert various types to `GDValue`.
 */
 #define TEST_CASE_EXPRS(label, ...) \
-  TEST_CASE(label ": " << GDVN_OMAP_EXPRS(0, __VA_ARGS__)) /* user ; */
+  TEST_CASE(label ": " << GDVN_OMAP_EXPRS(__VA_ARGS__)) /* user ; */
 
 
 // If `name` is set as an environment variable, return its value as

@@ -2556,7 +2556,8 @@ void test_uint64()
 
 void test_GDVN_OMAP_EXPRS()
 {
-  EXPECT_EQ(GDVN_OMAP_EXPRS(0, 1, 2, 3), "[`1`:1 `2`:2 `3`:3]");
+  EXPECT_EQ(GDVN_OMAP_EXPRS_LEVEL(0, 1, 2, 3), "[`1`:1 `2`:2 `3`:3]");
+  EXPECT_EQ(GDVN_OMAP_EXPRS(1, 2, 3), "[`1`:1 `2`:2 `3`:3]");
 
   std::map<int, std::string> m1{
     { 1, "one string" },
@@ -2569,7 +2570,7 @@ void test_GDVN_OMAP_EXPRS()
     { "some", "strings", "for", "the", "second", "vector" },
   };
 
-  EXPECT_EQ(GDVN_OMAP_EXPRS(1, m1, v1), R"([
+  EXPECT_EQ(GDVN_OMAP_EXPRS_LEVEL(1, m1, v1), R"([
     m1: {1:"one string" 2:"two string" 3:"three string"}
     v1: [
       ["some" "strings" "for" "the" "first" "vector"]

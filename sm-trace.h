@@ -161,7 +161,7 @@ std::ostream &beginTraceOutput(char const *traceScope, char const *suffix);
 // `toGDValue` works on all the argument expressions (by including the
 // needed headers and/or importing the functions into the namespace).
 #define TRACE_GDVN_EXPRS(level, label, ...) \
-  TRACE(level, label ": " << GDVN_OMAP_EXPRS(0, __VA_ARGS__))
+  TRACE(level, label ": " << GDVN_OMAP_EXPRS(__VA_ARGS__))
 
 #define TRACE0_GDVN_EXPRS(label, ...) TRACE_GDVN_EXPRS(0, label, __VA_ARGS__)
 #define TRACE1_GDVN_EXPRS(label, ...) TRACE_GDVN_EXPRS(1, label, __VA_ARGS__)

@@ -1146,7 +1146,7 @@ std::ostream &operator<<(std::ostream &os, T const &t) {
 
   Use it like:
 
-    GDVN_OMAP_EXPRS(2, expr1, expr2, expr3)
+    GDVN_OMAP_EXPRS_LEVEL(2, expr1, expr2, expr3)
 
   which yields a string like:
 
@@ -1165,10 +1165,15 @@ std::ostream &operator<<(std::ostream &os, T const &t) {
   easily get a structured printout of several values that can be
   converted to GDValue.
 */
-#define GDVN_OMAP_EXPRS(level, ...)            \
+#define GDVN_OMAP_EXPRS_LEVEL(level, ...)      \
   (gdv::GDValue::createOrderedMap({            \
     SM_PP_COMMA_MAP(GDV_SKV_EXPR, __VA_ARGS__) \
   }).asIndentedStringLevel(level))
+
+
+// More compact form for indentation level 0.
+#define GDVN_OMAP_EXPRS(...) \
+  GDVN_OMAP_EXPRS_LEVEL(0, __VA_ARGS__)
 
 
 // ----------------------- Member serialization ------------------------

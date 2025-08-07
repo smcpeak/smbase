@@ -45,7 +45,7 @@ void check3(
           EXPECT_EQ(compoundTest(a, b, c), expect);
         }
         catch (XMessage &x) {
-          x.appendContext(GDVN_OMAP_EXPRS(0, a, b, c));
+          x.appendContext(GDVN_OMAP_EXPRS(a, b, c));
           throw x;
         }
       }
@@ -75,7 +75,7 @@ void check3_z(
         EXPECT_EQ(compoundTest(b, c), expect);
       }
       catch (XMessage &x) {
-        x.appendContext(GDVN_OMAP_EXPRS(0, b, c));
+        x.appendContext(GDVN_OMAP_EXPRS(b, c));
         throw x;
       }
     }
@@ -203,7 +203,7 @@ void check4(
             EXPECT_EQ(compoundTest(a, b, c, d), expect);
           }
           catch (XMessage &x) {
-            x.appendContext(GDVN_OMAP_EXPRS(0, a, b, c, d));
+            x.appendContext(GDVN_OMAP_EXPRS(a, b, c, d));
             throw x;
           }
         }
@@ -236,7 +236,7 @@ void check4_z(
           EXPECT_EQ(compoundTest(b, c, d), expect);
         }
         catch (XMessage &x) {
-          x.appendContext(GDVN_OMAP_EXPRS(0, b, c, d));
+          x.appendContext(GDVN_OMAP_EXPRS(b, c, d));
           throw x;
         }
       }
