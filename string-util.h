@@ -187,15 +187,24 @@ std::string singleQuoteChar(CodePoint c);
 // quoting is needed, returns 's'.  This uses double-quotes when 's'
 // needs quoting, which is when 's' contains a shell metacharacter or
 // any character outside the printable ASCII range.
-std::string shellDoubleQuote(std::string const &s);
+//
+// '=' is treated as a metacharacter iff `afterProgram==false`.
+std::string shellDoubleQuote(
+  std::string const &s, bool afterProgram=false);
 
 // Return a string that denotes an entire command line in POSIX shell
 // syntax, using double-quotes to enclose strings as necessary to
 // preserve word boundaries and escape metacharacters, and single spaces
-// separating words.  If the input vector is empty, the output is also
+// to separate words.  If the input vector is empty, the output is also
 // empty.
+//
+// If `afterProgram==false`, then the first word is treated as being the
+// program name, and hence '=' is a metacharacter to be quoted, whereas
+// all others are treated as coming after the program name, so '=' is
+// not a metacharacter for them.  Otherwise, all words are treated as
+// being after the program name, with '=' non-meta.
 std::string shellDoubleQuoteCommand(
-  stdfwd::vector<std::string> const &cmd);
+  stdfwd::vector<std::string> const &cmd, bool afterProgram=false);
 
 
 // ---------------------------- File names -----------------------------

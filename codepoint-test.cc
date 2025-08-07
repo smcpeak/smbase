@@ -3,17 +3,18 @@
 
 #include "codepoint.h"                 // module to test
 
+#include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
 #include "sm-test.h"                   // EXPECT_EQ
 #include "xassert.h"                   // xassert
 
 #include <iostream>                    // std::{cout, endl}
 
 
-// Called from unit-tests.cc.
-void test_codepoint()
-{
-  // This does not test everything yet.
+OPEN_ANONYMOUS_NAMESPACE
 
+
+void test_various()
+{
   xassert(isWhitespace(' '));
   xassert(isWhitespace('\t'));
   xassert(isWhitespace('\f'));
@@ -94,6 +95,29 @@ void test_codepoint()
   }
 
   xassert(!CodePoint(-1 /*int*/).has_value());
+}
+
+
+void test_isShellMetaCharacter()
+{
+  EXPECT_EQ(isShellMetacharacter('`'), true);
+  EXPECT_EQ(isShellMetacharacter('a'), false);
+  EXPECT_EQ(isShellMetacharacter(' '), true);
+  EXPECT_EQ(isShellMetacharacter('='), true);
+  EXPECT_EQ(isShellMetacharacter('=', true /*afterProgram*/), false);
+}
+
+
+CLOSE_ANONYMOUS_NAMESPACE
+
+
+// Called from unit-tests.cc.
+void test_codepoint()
+{
+  // This does not test everything yet.
+
+  test_various();
+  test_isShellMetaCharacter();
 }
 
 

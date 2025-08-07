@@ -868,6 +868,14 @@ void test_shellDoubleQuoteCommand()
   EXPECT_EQ(shellDoubleQuoteCommand(
     {"`a`", "$b", "'c"}),
     R"("\`a\`" "\$b" "'c")");
+
+  EXPECT_EQ(shellDoubleQuoteCommand(
+    {"a=1", "b=2", "c=3"}),
+    "\"a=1\" b=2 c=3");
+
+  EXPECT_EQ(shellDoubleQuoteCommand(
+    {"a=1", "b=2", "c=3"}, true /*afterProgram*/),
+    "a=1 b=2 c=3");
 }
 
 

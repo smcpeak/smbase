@@ -493,7 +493,8 @@ std::string singleQuoteChar(CodePoint c)
 }
 
 
-static bool hasShellMetaOrNonprint(std::string const &s)
+static bool hasShellMetaOrNonprint(
+  std::string const &s, bool afterProgram)
 {
   int len = s.length();
   for (int i=0; i<len; i++) {
@@ -501,7 +502,7 @@ static bool hasShellMetaOrNonprint(std::string const &s)
     if (!isASCIIPrintable(c)) {
       return true;
     }
-    if (isShellMetacharacter(c)) {
+    if (isShellMetacharacter(c, afterProgram)) {
       return true;
     }
   }
@@ -510,9 +511,9 @@ static bool hasShellMetaOrNonprint(std::string const &s)
 
 // Reference on shell double-quote syntax in the POSIX shell:
 // http://pubs.opengroup.org/onlinepubs/009695399/utilities/xcu_chap02.html#tag_02_02_03
-std::string shellDoubleQuote(std::string const &s)
+std::string shellDoubleQuote(std::string const &s, bool afterProgram)
 {
-  if (s.empty() || hasShellMetaOrNonprint(s)) {
+  if (s.empty() || hasShellMetaOrNonprint(s, afterProgram)) {
     std::ostringstream sb;
     sb << '"';
 
@@ -544,7 +545,8 @@ std::string shellDoubleQuote(std::string const &s)
 }
 
 
-std::string shellDoubleQuoteCommand(std::vector<std::string> const &cmd)
+std::string shellDoubleQuoteCommand(
+  std::vector<std::string> const &cmd, bool afterProgram)
 {
   std::ostringstream oss;
 
@@ -554,7 +556,8 @@ std::string shellDoubleQuoteCommand(std::vector<std::string> const &cmd)
       oss << ' ';
     }
 
-    oss << shellDoubleQuote(element);
+    oss << shellDoubleQuote(element, afterProgram);
+    afterProgram = true;
   }
 
   return oss.str();

@@ -184,7 +184,12 @@ bool isASCIIOctDigit(CodePoint c);
 
 // True if 'c' is a POSIX or Bash shell metacharacter, including space,
 // under the assumption that IFS has its usual value.
-bool isShellMetacharacter(CodePoint c);
+//
+// If `!afterProgram`, then `c` could appear before or within the
+// program name in a shell command line, which means '=' would be a
+// metacharacter.  If `afterProgram`, then '=' is reported as not a
+// metacharacter.
+bool isShellMetacharacter(CodePoint c, bool afterProgram=false);
 
 
 // ---------------------------- Conversions ----------------------------

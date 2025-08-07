@@ -184,7 +184,7 @@ bool isASCIIOctDigit(CodePoint c)
 // this list, but I'm not sure I understood it all correctly.  This
 // leans to the conservative side; I might be calling something meta
 // that isn't, but hopefully I didn't miss any metacharacters.
-bool isShellMetacharacter(CodePoint c)
+bool isShellMetacharacter(CodePoint c, bool afterProgram)
 {
   switch (c.valueOrN1()) {
     // Order: Going left to right then top to bottom across a US
@@ -202,7 +202,7 @@ bool isShellMetacharacter(CodePoint c)
     case '(':
     case ')':
     // not meta: - _ +
-    case '=':      // meta if appears before command
+    // see below: =
     case '[':      // character range glob
     case '{':      // alternation glob
     case ']':
@@ -223,6 +223,18 @@ bool isShellMetacharacter(CodePoint c)
     case '\n':
     case ' ':
       return true;
+
+    case '=':
+      if (afterProgram) {
+        // If we can be sure it only appears after the program name,
+        // then it is safe to treat is a non-meta.
+        return false;
+      }
+      else {
+        // This is a metacharacter if it appears before or within the
+        // program name.
+        return true;
+      }
 
     default:
       return false;
