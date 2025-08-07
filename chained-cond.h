@@ -44,6 +44,20 @@ inline bool z_le_le(T const &b, T const &c)
 
 
 template <typename T>
+inline bool lt_le(T const &a, T const &b, T const &c)
+{
+  return a < b && b <= c;
+}
+
+
+template <typename T>
+inline bool z_lt_le(T const &b, T const &c)
+{
+  return lt_le(T(), b, c);
+}
+
+
+template <typename T>
 inline bool le_le_le(T const &a, T const &b, T const &c, T const &d)
 {
   return a <= b && b <= c && c <= d;
