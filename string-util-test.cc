@@ -845,6 +845,30 @@ void testShellDoubleQuote()
 }
 
 
+void test_shellDoubleQuoteCommand()
+{
+  EXPECT_EQ(shellDoubleQuoteCommand(
+    {}),
+    "");
+
+  EXPECT_EQ(shellDoubleQuoteCommand(
+    {"one"}),
+    "one");
+
+  EXPECT_EQ(shellDoubleQuoteCommand(
+    {"a", "b", "c"}),
+    "a b c");
+
+  EXPECT_EQ(shellDoubleQuoteCommand(
+    {"a b", "c"}),
+    "\"a b\" c");
+
+  EXPECT_EQ(shellDoubleQuoteCommand(
+    {"`a`", "$b", "'c"}),
+    R"("\`a\`" "\$b" "'c")");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -883,6 +907,7 @@ void test_string_util()
   test_parseDecimalInt_noSign();
   testConvVectorString();
   testShellDoubleQuote();
+  test_shellDoubleQuoteCommand();
 }
 
 

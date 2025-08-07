@@ -22,6 +22,8 @@
 #include <string>                      // std::string
 #include <vector>                      // std::vector
 
+// TODO: Use forward declaration for `std::vector`.
+
 
 // ------------------------------ Parsing ------------------------------
 // Split `text` into words separated by `sep`.  If two occurrences of
@@ -180,6 +182,13 @@ std::string singleQuoteChar(CodePoint c);
 // needs quoting, which is when 's' contains a shell metacharacter or
 // any character outside the printable ASCII range.
 std::string shellDoubleQuote(std::string const &s);
+
+// Return a string that denotes an entire command line in POSIX shell
+// syntax, using double-quotes to enclose strings as necessary to
+// preserve word boundaries and escape metacharacters, and single spaces
+// separating words.  If the input vector is empty, the output is also
+// empty.
+std::string shellDoubleQuoteCommand(std::vector<std::string> const &cmd);
 
 
 // ---------------------------- File names -----------------------------

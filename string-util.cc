@@ -516,6 +516,23 @@ std::string shellDoubleQuote(std::string const &s)
 }
 
 
+std::string shellDoubleQuoteCommand(std::vector<std::string> const &cmd)
+{
+  std::ostringstream oss;
+
+  int ct = 0;
+  for (std::string const &element : cmd) {
+    if (ct++ > 0) {
+      oss << ' ';
+    }
+
+    oss << shellDoubleQuote(element);
+  }
+
+  return oss.str();
+}
+
+
 // ---------------------------- File names -----------------------------
 std::string stripExtension(std::string const &fname)
 {
