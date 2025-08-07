@@ -7,7 +7,7 @@
 #include "array.h"                     // Array
 #include "autofile.h"                  // AutoFILE
 #include "c-string-reader.h"           // decodeCStringEscapesToString, parseQuotedCString
-#include "codepoint.h"                 // isPrintableASCII, isShellMetacharacter
+#include "codepoint.h"                 // isASCIIPrintable
 #include "compare-util.h"              // smbase::compare
 #include "exc.h"                       // smbase::xformat
 #include "nonport.h"                   // vnprintf
@@ -98,57 +98,6 @@ string quoteCharacter(int c)
   }
   else {
     return stringf("\\U%08X", uc);
-  }
-}
-
-
-static bool hasShellMetaOrNonprint(string const &s)
-{
-  int len = s.length();
-  for (int i=0; i<len; i++) {
-    int c = (unsigned char)s[i];
-    if (!isASCIIPrintable(c)) {
-      return true;
-    }
-    if (isShellMetacharacter(c)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-// Reference on shell double-quote syntax in the POSIX shell:
-// http://pubs.opengroup.org/onlinepubs/009695399/utilities/xcu_chap02.html#tag_02_02_03
-string shellDoubleQuote(string const &s)
-{
-  if (s.empty() || hasShellMetaOrNonprint(s)) {
-    stringBuilder sb;
-    sb << '"';
-
-    int len = s.length();
-    for (int i=0; i<len; i++) {
-      char c = s[i];
-      switch (c) {
-        // Within a double-quoted string, only these four characters
-        // need to or can be escaped.
-        case '$':
-        case '`':
-        case '"':
-        case '\\':
-          sb << '\\' << c;
-          break;
-
-        default:
-          sb << c;
-          break;
-      }
-    }
-
-    sb << '"';
-    return sb.str();
-  }
-  else {
-    return s;
   }
 }
 

@@ -55,11 +55,7 @@ std::string quoteCharacter(int c)
   DEPRECATED("Use `singleQuoteChar` in `string-util`.");
 
 
-// Return a string that, in the POSIX shell syntax, denotes 's'.  If no
-// quoting is needed, returns 's'.  This uses double-quotes when 's'
-// needs quoting, which is when 's' contains a shell metacharacter or
-// any character outside the printable ASCII range.
-std::string shellDoubleQuote(string const &s);
+// 2025-08-07: Moved `shellDoubleQuote` into `string-util.h`.
 
 
 // 2018-06-30: I moved 'localTimeString' into datetime.h

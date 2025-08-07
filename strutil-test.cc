@@ -41,36 +41,6 @@ void pluralVector(int n, char const *in, char const *out)
 }
 
 
-static void expectSDQ(string const &s, string const &expect)
-{
-  string actual = shellDoubleQuote(s);
-#if 0
-  cout << "shellDoubleQuote:\n"
-       << "  s     : " << s << "\n"
-       << "  actual: " << actual << "\n"
-       << "  expect: " << expect << endl;
-#endif // 0
-  EXPECT_EQ(actual, expect);
-}
-
-static void testShellDoubleQuote()
-{
-  expectSDQ("", "\"\"");
-
-  expectSDQ("a", "a");
-  expectSDQ("abc", "abc");
-  expectSDQ("abczAZ01239@-_+:,./", "abczAZ01239@-_+:,./");
-
-  expectSDQ(" ", "\" \"");
-  expectSDQ(" a", "\" a\"");
-  expectSDQ("x y", "\"x y\"");
-  expectSDQ("$`\"\\", "\"\\$\\`\\\"\\\\\"");
-  expectSDQ("\n\t ", "\"\n\t \"");
-  expectSDQ("\x7F", "\"\x7F\"");
-  expectSDQ("\xFF", "\"\xFF\"");
-}
-
-
 static void testReadLinesFromFile()
 {
   ArrayStack<string> lines;
@@ -141,7 +111,6 @@ void test_strutil()
     xassert(compareStringPtrs(&y, &x) > 0);
   }
 
-  testShellDoubleQuote();
   testReadLinesFromFile();
   test_hasSubstring_insens_ascii();
 }

@@ -175,6 +175,13 @@ inline std::string doubleQuote(char const *cstr)
 std::string singleQuoteChar(CodePoint c);
 
 
+// Return a string that, in the POSIX shell syntax, denotes 's'.  If no
+// quoting is needed, returns 's'.  This uses double-quotes when 's'
+// needs quoting, which is when 's' contains a shell metacharacter or
+// any character outside the printable ASCII range.
+std::string shellDoubleQuote(std::string const &s);
+
+
 // ---------------------------- File names -----------------------------
 // If 'fname' contains any '.' characters, remove the last one and all
 // following characters, and return that.  Otherwise return 'fname'.

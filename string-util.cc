@@ -4,6 +4,7 @@
 #include "string-util.h"               // this module
 
 #include "breaker.h"                   // breaker
+#include "codepoint.h"                 // isASCIIPrintable, isShellMetacharacter
 #include "exc.h"                       // smbase::xmessage
 #include "optional-util.h"             // liftToOptional
 #include "overflow.h"                  // safeToInt, multiplyWithOverflowCheck[Opt], addWithOverflowCheckOpt
@@ -461,6 +462,57 @@ std::string singleQuoteChar(CodePoint c)
   insertPossiblyEscapedChar(oss, c.value(), '\'');
   oss << '\'';
   return oss.str();
+}
+
+
+static bool hasShellMetaOrNonprint(std::string const &s)
+{
+  int len = s.length();
+  for (int i=0; i<len; i++) {
+    int c = (unsigned char)s[i];
+    if (!isASCIIPrintable(c)) {
+      return true;
+    }
+    if (isShellMetacharacter(c)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Reference on shell double-quote syntax in the POSIX shell:
+// http://pubs.opengroup.org/onlinepubs/009695399/utilities/xcu_chap02.html#tag_02_02_03
+std::string shellDoubleQuote(std::string const &s)
+{
+  if (s.empty() || hasShellMetaOrNonprint(s)) {
+    std::ostringstream sb;
+    sb << '"';
+
+    int len = s.length();
+    for (int i=0; i<len; i++) {
+      char c = s[i];
+      switch (c) {
+        // Within a double-quoted string, only these four characters
+        // need to or can be escaped.
+        case '$':
+        case '`':
+        case '"':
+        case '\\':
+          sb << '\\' << c;
+          break;
+
+        default:
+          sb << c;
+          break;
+      }
+    }
+
+    sb << '"';
+    return sb.str();
+  }
+  else {
+    return s;
+  }
 }
 
 

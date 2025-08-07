@@ -821,6 +821,30 @@ void testConvVectorString()
 }
 
 
+void expectSDQ(std::string const &s, std::string const &expect)
+{
+  std::string actual = shellDoubleQuote(s);
+  EXPECT_EQ(actual, expect);
+}
+
+void testShellDoubleQuote()
+{
+  expectSDQ("", "\"\"");
+
+  expectSDQ("a", "a");
+  expectSDQ("abc", "abc");
+  expectSDQ("abczAZ01239@-_+:,./", "abczAZ01239@-_+:,./");
+
+  expectSDQ(" ", "\" \"");
+  expectSDQ(" a", "\" a\"");
+  expectSDQ("x y", "\"x y\"");
+  expectSDQ("$`\"\\", "\"\\$\\`\\\"\\\\\"");
+  expectSDQ("\n\t ", "\"\n\t \"");
+  expectSDQ("\x7F", "\"\x7F\"");
+  expectSDQ("\xFF", "\"\xFF\"");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -858,6 +882,7 @@ void test_string_util()
   testRepeatString();
   test_parseDecimalInt_noSign();
   testConvVectorString();
+  testShellDoubleQuote();
 }
 
 
