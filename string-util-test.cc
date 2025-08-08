@@ -3,9 +3,10 @@
 
 #include "string-util.h"               // module under test
 
-#include "exc.h"                       // EXN_CONTEXT, smbase::XFormat
-#include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
-#include "sm-test.h"                   // EXPECT_EQ, tprintf
+#include "smbase/exc.h"                // EXN_CONTEXT, smbase::XFormat
+#include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
+#include "smbase/sm-span.h"            // smbase::Span
+#include "smbase/sm-test.h"            // EXPECT_EQ, tprintf
 
 #include <exception>                   // std::exception
 #include <iostream>                    // std::ostream
@@ -850,7 +851,7 @@ void testShellDoubleQuote()
 void test_shellDoubleQuoteCommand()
 {
   EXPECT_EQ(shellDoubleQuoteCommand(
-    {}),
+    std::vector<std::string>{}),
     "");
 
   EXPECT_EQ(shellDoubleQuoteCommand(
@@ -876,6 +877,13 @@ void test_shellDoubleQuoteCommand()
   EXPECT_EQ(shellDoubleQuoteCommand(
     {"a=1", "b=2", "c=3"}, true /*afterProgram*/),
     "a=1 b=2 c=3");
+
+  {
+    // Test the overload that accepts Span.
+    char const *cmd[] = { "a", "foo bar" };
+    EXPECT_EQ(shellDoubleQuoteCommand(Span(cmd)),
+      "a \"foo bar\"");
+  }
 }
 
 

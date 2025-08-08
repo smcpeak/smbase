@@ -3,16 +3,17 @@
 
 #include "string-util.h"               // this module
 
-#include "breaker.h"                   // breaker
-#include "codepoint.h"                 // isASCIIPrintable, isShellMetacharacter
-#include "exc.h"                       // smbase::xmessage
-#include "optional-util.h"             // liftToOptional
-#include "overflow.h"                  // safeToInt, multiplyWithOverflowCheck[Opt], addWithOverflowCheckOpt
-#include "sm-regex.h"                  // smbase::Regex
-#include "strcmp-compare.h"            // StrcmpCompare
-#include "strutil.h"                   // stringf
-#include "vector-util.h"               // vecAccumulateWith
-#include "xassert.h"                   // xassert, xassertdb, xassertPrecondition
+#include "smbase/breaker.h"            // breaker
+#include "smbase/codepoint.h"          // isASCIIPrintable, isShellMetacharacter
+#include "smbase/exc.h"                // smbase::xmessage
+#include "smbase/optional-util.h"      // liftToOptional
+#include "smbase/overflow.h"           // safeToInt, multiplyWithOverflowCheck[Opt], addWithOverflowCheckOpt
+#include "smbase/sm-regex.h"           // smbase::Regex
+#include "smbase/sm-span.h"            // smbase::Span
+#include "smbase/strcmp-compare.h"     // StrcmpCompare
+#include "smbase/strutil.h"            // stringf
+#include "smbase/vector-util.h"        // vecAccumulateWith
+#include "smbase/xassert.h"            // xassert, xassertdb, xassertPrecondition
 
 #include <algorithm>                   // std::{binary_search, remove_if}
 #include <cctype>                      // std::isspace
@@ -561,6 +562,16 @@ std::string shellDoubleQuoteCommand(
   }
 
   return oss.str();
+}
+
+
+std::string shellDoubleQuoteCommand(
+  smbase::Span<char const * const> cmd, bool afterProgram)
+{
+  // Not particularly efficient, but this doesn't need to be.
+  std::vector<std::string> vec =
+    stringVectorFromPointerArray(cmd.size(), cmd.data());
+  return shellDoubleQuoteCommand(vec, afterProgram);
 }
 
 

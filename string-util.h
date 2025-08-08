@@ -12,15 +12,16 @@
 #ifndef SMBASE_STRING_UTIL_H
 #define SMBASE_STRING_UTIL_H
 
-#include "codepoint.h"                 // CodePoint
-#include "sm-macros.h"                 // DEPRECATED
-#include "std-string-fwd.h"            // std::string
-#include "std-string-view-fwd.h"       // std::string_view
-#include "std-vector-fwd.h"            // stdfwd::vector
+#include "smbase/codepoint.h"                    // CodePoint
+#include "smbase/sm-macros.h"                    // DEPRECATED
+#include "smbase/sm-span-fwd.h"                  // smbase::Span
+#include "smbase/std-string-fwd.h"               // std::string
+#include "smbase/std-string-view-fwd.h"          // std::string_view
+#include "smbase/std-vector-fwd.h"               // stdfwd::vector
 
-#include <cstddef>                     // std::size_t
-#include <cstdint>                     // std::{int64_t, uint64_t}
-#include <iosfwd>                      // std::ostream
+#include <cstddef>                               // std::size_t
+#include <cstdint>                               // std::{int64_t, uint64_t}
+#include <iosfwd>                                // std::ostream
 
 
 // It might seem odd to use a forward declaration for `std::string` here
@@ -205,6 +206,11 @@ std::string shellDoubleQuote(
 // being after the program name, with '=' non-meta.
 std::string shellDoubleQuoteCommand(
   stdfwd::vector<std::string> const &cmd, bool afterProgram=false);
+
+// Same, but for a span of `char*`, which is convenient when working
+// directly with the `argc/argv` representation.
+std::string shellDoubleQuoteCommand(
+  smbase::Span<char const * const> cmd, bool afterProgram=false);
 
 
 // ---------------------------- File names -----------------------------
