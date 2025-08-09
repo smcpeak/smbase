@@ -135,9 +135,20 @@ std::streamsize BufferedStreambuf::writeAllToDestination(
   std::streamsize totalWritten = 0;
 
   while (totalWritten < totalToWrite) {
-    std::streamsize written =
-      writeToDestination(src + totalWritten,
-                         totalToWrite - totalWritten);
+    std::streamsize written;
+    try {
+      written = writeToDestination(src + totalWritten,
+                                   totalToWrite - totalWritten);
+    }
+    catch (std::exception &x) {
+      if (!m_exceptionMessage) {
+        m_exceptionMessage = x.what();
+      }
+
+      // Treat like `written == 0`.
+      break;
+    }
+
     xassert(cc::z_le_le(written, totalToWrite - totalWritten));
 
     if (written == 0) {
@@ -152,13 +163,15 @@ std::streamsize BufferedStreambuf::writeAllToDestination(
 }
 
 
-void BufferedStreambuf::sync_handleExceptions() noexcept
+void BufferedStreambuf::autoflush() noexcept
 {
   GENERIC_CATCH_BEGIN
 
-  // Flush, ignoring the return value and sending any exception to
-  // `smbase::printUnhandled`.
-  sync();
+  if (!m_exceptionMessage) {
+    // Flush, ignoring the return value and sending any exception to
+    // `smbase::printUnhandled`.
+    sync();
+  }
 
   GENERIC_CATCH_END
 }
@@ -172,7 +185,8 @@ BufferedStreambuf::~BufferedStreambuf() noexcept
 
 
 BufferedStreambuf::BufferedStreambuf(std::size_t bufSize)
-  : m_buffer(bufSize)
+  : m_buffer(bufSize),
+    m_exceptionMessage()
 {
   xassertPrecondition(bufSize > 0);
 

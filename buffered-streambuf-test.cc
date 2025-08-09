@@ -28,24 +28,29 @@ public:      // data
   std::string &m_output;
 
   // If set, then we can only write this much in a single call to
-  // `writeToDestiation`.  If zero, it simulates a non-throwing error.
+  // `writeToDestination`.  If zero, it simulates a non-throwing error.
   std::optional<std::streamsize> m_partialWriteLimit;
 
-  // If set, then when we try to write, throw `XMessage` with this error
-  // string instead.
+  // If set, then if this is zero, have `writeToDestination` report an
+  // error.  If it is non-zero, decrement it.
+  std::optional<int> m_errorCountdown;
+
+  // If set, then when we try to report an error, throw `XMessage` with
+  // this error string instead of returning 0.
   std::optional<std::string> m_errorString;
 
 public:      // methods
   virtual ~TestBufferedStreambuf() override
   {
-    // Flush.
-    sync_handleExceptions();
+    autoflush();
   }
 
   TestBufferedStreambuf(std::size_t bufSize, std::string &output)
     : BufferedStreambuf(bufSize),
       m_output(output),
-      m_partialWriteLimit()
+      m_partialWriteLimit(),
+      m_errorCountdown(),
+      m_errorString()
   {}
 
   virtual std::streamsize writeToDestination(
@@ -53,14 +58,27 @@ public:      // methods
   {
     xassert(count >= 0);
 
-    // Possibly throw.
-    if (m_errorString) {
-      xmessage(*m_errorString);
-    }
-
     // Possibly impose the limit.
     if (m_partialWriteLimit && *m_partialWriteLimit < count) {
       count = *m_partialWriteLimit;
+    }
+
+    // Possibly error.
+    if (m_errorCountdown) {
+      if (*m_errorCountdown == 0) {
+        if (m_errorString) {
+          // Indicate error by exception.
+          xmessage(*m_errorString);
+        }
+        else {
+          // Indicate error by return value.
+          return 0;
+        }
+      }
+
+      else {
+        --*m_errorCountdown;
+      }
     }
 
     m_output.append(src, convertNumber<std::size_t>(count));
@@ -103,14 +121,16 @@ public:      // methods
 // I also check that the `ostream` has not seen any errors.
 //
 // TODO: Make an EXN_CONTEXT macro for the file/line combo.
-#define EXPECT_OUT_BUF(expectOut, expectBuf) \
-  EXN_CONTEXT(__FILE__ << ":" << __LINE__);  \
-  EXPECT_EQ_GDV(output, expectOut);          \
-  {                                          \
-    EXN_CONTEXT("buffer");                   \
-    buf.expectBuffer(expectBuf);             \
-  }                                          \
-  EXPECT_EQ(os.fail(), false) /* user ; */
+#define EXPECT_OUT_BUF(expectOut, expectBuf)  \
+  {                                           \
+    EXN_CONTEXT(__FILE__ << ":" << __LINE__); \
+    EXPECT_EQ_GDV(output, expectOut);         \
+    {                                         \
+      EXN_CONTEXT("buffer");                  \
+      buf.expectBuffer(expectBuf);            \
+    }                                         \
+    EXPECT_EQ(os.fail(), false);              \
+  }
 
 
 void test_basics()
@@ -236,6 +256,106 @@ void test_callOverflow()
 }
 
 
+void test_failWriteImmediate()
+{
+  TEST_CASE("test_failWriteImmediate");
+
+  TEST_SETUP(4);
+
+  os << "hi";
+  EXPECT_OUT_BUF("", "hi");
+
+  // Force the write to fail.
+  buf.m_partialWriteLimit = 0;
+  os.flush();
+  EXPECT_EQ(os.fail(), true);
+
+  // The data should still be in the buffer.
+  os.clear();
+  EXPECT_OUT_BUF("", "hi");
+
+  // We should be able to recover.
+  buf.m_partialWriteLimit = std::nullopt;
+  os.flush();
+  EXPECT_OUT_BUF("hi", "");
+}
+
+
+void test_failWriteDelayed()
+{
+  TEST_CASE("test_failWriteDelayed");
+
+  TEST_SETUP(10);
+
+  buf.m_errorCountdown = 1;
+  buf.m_partialWriteLimit = 2;
+
+  os << "hello";
+  EXPECT_OUT_BUF("", "hello");
+  os.flush();
+  EXPECT_EQ(os.fail(), true);
+
+  // Hmmm, I guess this gets set too.
+  EXPECT_EQ(os.bad(), true);
+
+  // One write should have succeeded.
+  os.clear();
+  EXPECT_OUT_BUF("he", "llo");
+}
+
+
+void test_failExn()
+{
+  TEST_CASE("test_failExn");
+
+  TEST_SETUP(10);
+
+  buf.m_errorCountdown = 1;
+  buf.m_partialWriteLimit = 2;
+  buf.m_errorString = "this is the error";
+  EXPECT_EQ(buf.m_exceptionMessage.has_value(), false);
+
+  os << "hello";
+  EXPECT_OUT_BUF("", "hello");
+
+  // This will trigger an exception that will then be caught internally.
+  os.flush();
+
+  // It will leave the stream with the bad bit set.
+  EXPECT_EQ(os.bad(), true);
+
+  // And the message will be in `buf`.
+  xassert(buf.m_exceptionMessage.has_value());
+  VPVAL(*buf.m_exceptionMessage);
+  EXPECT_HAS_SUBSTRING(*buf.m_exceptionMessage, "this is the error");
+
+  // The write should have been split.
+  EXPECT_EQ(output, "he");
+  buf.expectBuffer("llo");
+
+  // We now allow the destructor to run, which should *not* autoflush,
+  // and hence not throw another exception.
+}
+
+
+// Demonstrate the autoflush capability (when an exception has not been
+// caught).
+void test_autoflush()
+{
+  std::string output;
+
+  {
+    TestBufferedStreambuf buf(10, output);
+    std::ostream os(&buf);
+
+    os << "hi";
+    EXPECT_OUT_BUF("", "hi");
+  }
+
+  EXPECT_EQ(output, "hi");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -249,6 +369,10 @@ void test_buffered_streambuf()
   test_smallPartialWrite();
   test_largePartialWrite();
   test_callOverflow();
+  test_failWriteImmediate();
+  test_failWriteDelayed();
+  test_failExn();
+  test_autoflush();
 }
 
 

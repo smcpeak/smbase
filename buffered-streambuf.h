@@ -11,7 +11,9 @@
 #include "smbase/sm-macros.h"          // NO_OBJECT_COPIES
 
 #include <cstddef>                     // std::size_t
+#include <optional>                    // std::optional
 #include <streambuf>                   // std::streambuf
+#include <string>                      // std::string
 #include <vector>                      // std::vector
 
 
@@ -42,6 +44,24 @@ private:     // data
      a method is invoked from the outside.
   */
   std::vector<char> m_buffer;
+
+public:      // data
+  /* If `writeToDestination` throws an exception, we catch it and store
+     its `what()` here.  It is then up to the client to collect it
+     and/or clear it.
+
+     While a message is stored here, `autoflush` will not do anything.
+     That way we don't re-trigger the same exception during the
+     destructor.  Additionally, any additional exceptions from
+     `writeToDestination` will be discarded.
+
+     I would prefer a design that allowed the exception to propagate as
+     a structured object, but at least in GCC's C++ library,
+     `std::__ostream_insert`, which is used by all of the `ostream`
+     write operations, swallows all exceptions, turning them into
+     `badbit`.
+  */
+  std::optional<std::string> m_exceptionMessage;
 
 private:     // methods
   /* Set the beginning, current, and end pointers so that the current
@@ -88,21 +108,24 @@ protected:   // methods
   // However, this will throw if `writeToDestination` does.
   virtual int sync() override;
 
-  // Write `count` characters from `src` to the destination.  Return the
-  // number actually written, which may be less than `count`; that is
-  // not an error case.
-  //
-  // This must block until at least one character is successfully
-  // written (or an error occurs).
-  //
-  // On error, this function can either return 0 or throw an exception,
-  // with the latter being preferable.
-  //
-  // Requires: count >= 0
-  //
-  // Requires: All of [src, src+count-1] is valid.
-  //
-  // Ensures: 0 <= return <= count
+  /* Write `count` characters from `src` to the destination.  Return the
+     number actually written, which may be less than `count`; that is
+     not an error case.
+
+     This must block until at least one character is successfully
+     written (or an error occurs).
+
+     On error, this function can either return 0 or throw an exception.
+     However, an exception will not propagate out of this class, instead
+     getting turned into `m_exceptionMessage` and, typically, an ostream
+     `badbit`.
+
+     Requires: count >= 0
+
+     Requires: All of [src, src+count-1] is valid.
+
+     Ensures: 0 <= return <= count
+  */
   virtual std::streamsize writeToDestination(
     const char *src, std::streamsize count) = 0;
 
@@ -120,16 +143,17 @@ protected:   // methods
   std::streamsize writeAllToDestination(
     char const *src, std::streamsize count);
 
-  // Call `sync`, but pass any exceptions to `smbase::printUnhandled`
-  // before continuing normally.  This is meant to be called from a
-  // subclass destructor.
-  void sync_handleExceptions() noexcept;
+  // If `m_exceptionMessage` is set, do nothing.  Otherwise, call
+  // `sync`, but pass any exceptions to `smbase::printUnhandled` before
+  // continuing normally.  This is meant to be called from a subclass
+  // destructor.
+  void autoflush() noexcept;
 
 public:      // methods
   // This does *not* flush the stream because, by the time this dtor
   // runs, the vtable pointer for `writeToDestination` points at the
   // implementation in this class.  A subclass implementation can call
-  // `sync_handleExceptions()` to flush.
+  // `autoflush()` to flush.
   virtual ~BufferedStreambuf() noexcept override;
 
   // Create with a buffer of the specified size.
