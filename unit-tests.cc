@@ -188,6 +188,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(vector_util);
   RUN_TEST(voidlist);
   RUN_TEST(vptrmap);
+  RUN_TEST(windows_handle_ostream);
   RUN_TEST(xassert);
 
   #undef RUN_TEST

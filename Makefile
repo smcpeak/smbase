@@ -351,6 +351,7 @@ SRCS += vdtllist.cc
 SRCS += voidlist.cc
 SRCS += vptrmap.cc
 SRCS += warn.cc
+SRCS += windows-handle-ostream.cc
 SRCS += xarithmetic.cc
 SRCS += xoverflow.cc
 
@@ -493,6 +494,7 @@ UNIT_TEST_OBJS += vector-push-pop-test.o
 UNIT_TEST_OBJS += vector-util-test.o
 UNIT_TEST_OBJS += voidlist-test.o
 UNIT_TEST_OBJS += vptrmap-test.o
+UNIT_TEST_OBJS += windows-handle-ostream-test.o
 UNIT_TEST_OBJS += xassert-test.o
 
 # Master unit test module.
