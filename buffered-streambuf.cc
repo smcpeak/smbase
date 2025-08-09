@@ -169,7 +169,7 @@ void BufferedStreambuf::autoflush() noexcept
 {
   GENERIC_CATCH_BEGIN
 
-  if (!m_exceptionMessage) {
+  if (m_enableAutoflush && !m_exceptionMessage) {
     // Flush, ignoring the return value and sending any exception to
     // `smbase::printUnhandled`.
     sync();
@@ -188,7 +188,8 @@ BufferedStreambuf::~BufferedStreambuf() noexcept
 
 BufferedStreambuf::BufferedStreambuf(std::size_t bufSize)
   : m_buffer(bufSize),
-    m_exceptionMessage()
+    m_exceptionMessage(),
+    m_enableAutoflush(true)
 {
   xassertPrecondition(bufSize > 0);
 

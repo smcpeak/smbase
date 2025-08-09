@@ -66,6 +66,12 @@ public:      // data
   */
   std::optional<std::string> m_exceptionMessage;
 
+  // If false, `autoflush` will not do anything.  If true, it will try
+  // to flush, subject to the condition described for
+  // `m_exceptionMessage`.  Initially true, and entirely under the
+  // control of the client.
+  bool m_enableAutoflush;
+
 private:     // methods
   /* Set the beginning, current, and end pointers so that the current
      pointer is `offset` more than the beginning, i.e., there are

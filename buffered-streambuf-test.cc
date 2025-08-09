@@ -353,6 +353,21 @@ void test_autoflush()
   }
 
   EXPECT_EQ(output, "hi");
+
+  output.clear();
+  EXPECT_EQ(output, "");
+
+  {
+    TestBufferedStreambuf buf(10, output);
+    std::ostream os(&buf);
+    buf.m_enableAutoflush = false;
+
+    os << "hi";
+    EXPECT_OUT_BUF("", "hi");
+  }
+
+  // This time flushing does not happen.
+  EXPECT_EQ(output, "");
 }
 
 
