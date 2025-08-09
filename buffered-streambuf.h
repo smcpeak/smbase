@@ -8,13 +8,16 @@
 
 #include "buffered-streambuf-fwd.h"    // fwds for this module
 
-#include "smbase/sm-macros.h"          // NO_OBJECT_COPIES
+#include "smbase/sm-macros.h"          // NO_OBJECT_COPIES, OPEN_NAMESPACE
 
 #include <cstddef>                     // std::size_t
 #include <optional>                    // std::optional
 #include <streambuf>                   // std::streambuf
 #include <string>                      // std::string
 #include <vector>                      // std::vector
+
+
+OPEN_NAMESPACE(smbase)
 
 
 // Output stream buffer that just manages the buffering.  It has a pure
@@ -164,6 +167,9 @@ public:      // methods
   // Assert invariants.
   void selfCheck() const;
 };
+
+
+CLOSE_NAMESPACE(smbase)
 
 
 #endif // SMBASE_BUFFERED_STREAMBUF_H

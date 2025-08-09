@@ -6,12 +6,14 @@
 #include "smbase/chained-cond.h"       // smbase::cc::{le_le, z_le_le}
 #include "smbase/exc.h"                // GENERIC_CATCH_BEGIN,END
 #include "smbase/overflow.h"           // convertNumber
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 #include "smbase/xassert.h"            // xassert, xassertPrecondition
 
 #include <cstddef>                     // std::size_t
 #include <cstring>                     // std::memmove
 
-using namespace smbase;
+
+OPEN_NAMESPACE(smbase)
 
 
 void BufferedStreambuf::setCurrentOffset(std::size_t offset)
@@ -200,6 +202,9 @@ void BufferedStreambuf::selfCheck() const
 {
   xassert(cc::le_le(pbase(), pptr(), epptr()));
 }
+
+
+CLOSE_NAMESPACE(smbase)
 
 
 // EOF

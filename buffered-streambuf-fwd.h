@@ -6,6 +6,8 @@
 #ifndef SMBASE_BUFFERED_STREAMBUF_FWD_H
 #define SMBASE_BUFFERED_STREAMBUF_FWD_H
 
-class BufferedStreambuf;
+namespace smbase {
+  class BufferedStreambuf;
+}
 
 #endif // SMBASE_BUFFERED_STREAMBUF_FWD_H
