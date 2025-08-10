@@ -70,7 +70,6 @@ void test_syserr()
 
 
   TRY_FAIL(changeDirectory("some.strange.name/yadda"),
-           SysErrorReasonCode::R_PATH_NOT_FOUND,
            SysErrorReasonCode::R_FILE_NOT_FOUND);
 
   TRY_FAIL(createDirectory("test"),

@@ -23,7 +23,6 @@ DEFINE_ENUMERATION_TO_STRING_OR(
   (
     "R_NO_ERROR",
     "R_FILE_NOT_FOUND",
-    "R_PATH_NOT_FOUND",
     "R_ACCESS_DENIED",
     "R_OUT_OF_MEMORY",
     "R_SEGFAULT",
@@ -54,7 +53,6 @@ char const *reasonCodeDescription(SysErrorReasonCode r)
     (
       "No error occurred",
       "File not found",
-      "Path not found",
       "Access denied",
       "Out of memory (maybe)",    // always a suspicious message
       "Invalid pointer address",
@@ -290,7 +288,7 @@ STATICDEF SysErrorReasonCode XSysError::portablize(
     #define ENTRY(c, r) { c, SysErrorReasonCode::r }
     ENTRY(ERROR_SUCCESS,            R_NO_ERROR),
     ENTRY(ERROR_FILE_NOT_FOUND,     R_FILE_NOT_FOUND),
-    ENTRY(ERROR_PATH_NOT_FOUND,     R_PATH_NOT_FOUND),
+    ENTRY(ERROR_PATH_NOT_FOUND,     R_FILE_NOT_FOUND),
     ENTRY(ERROR_ACCESS_DENIED,      R_ACCESS_DENIED),
     ENTRY(ERROR_NOT_ENOUGH_MEMORY,  R_OUT_OF_MEMORY),
     ENTRY(ERROR_OUTOFMEMORY,        R_OUT_OF_MEMORY),
@@ -366,7 +364,7 @@ STATICDEF SysErrorReasonCode XSysError::portablize(
   } const arr[] = {
     { EZERO,        R_NO_ERROR          },
     { ENOFILE,      R_FILE_NOT_FOUND    },
-    { ENOPATH,      R_PATH_NOT_FOUND    },
+    { ENOPATH,      R_FILE_NOT_FOUND    },
     { EACCES,       R_ACCESS_DENIED     },
     { ENOMEM,       R_OUT_OF_MEMORY     },
     { EINVMEM,      R_SEGFAULT          },
