@@ -68,11 +68,16 @@ std::set<V> rangeSet(std::map<K,V> const &m)
 }
 
 
+// One issue with the name "mapInsertAllKeys" is it sounds like it is
+// inserting into the *map*.  The alternative with `setInsertAll` makes
+// it clearer what is happening, and this is not so common an operation
+// that it needs a dedicated function.
+template <class DestSet, class SrcMap>
+void mapInsertAllKeys(DestSet &dest, SrcMap const &src)
+  DEPRECATED("Change `mapInsertAllKeys(dest, src)` to `setInsertAll(dest, mapKeySet(src))`.");  // 2025-08-10
+
 // Insert all keys from 'src', presumably a map, into 'dest', presumably
 // a set.
-//
-// TODO: I think I should remove this in favor of `mapKeySet`.  Or,
-// change `mapKeySet` to call this function.
 template <class DestSet, class SrcMap>
 void mapInsertAllKeys(DestSet &dest, SrcMap const &src)
 {
