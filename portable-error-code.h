@@ -111,6 +111,12 @@ char const *toString(PortableErrorCode r);
 // Write `toString(r)`.
 std::ostream &operator<<(std::ostream &os, PortableErrorCode r);
 
+// I sometimes use unary `+` when printing values to ensure I get an
+// integer instead of a char.  Allow this enumeration to pass through
+// that idiom.
+inline PortableErrorCode operator+(PortableErrorCode r)
+  { return r; }
+
 // Human-readable string like "File not found".
 char const *reasonCodeDescription(PortableErrorCode r);
 
