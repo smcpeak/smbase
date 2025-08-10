@@ -78,7 +78,7 @@ void test_wait()
     PVAL(x.m_systemErrorCode);
     PVAL(x.m_systemErrorCode.codeDescription());
     PVAL(x.m_syscallName);
-    PVAL(x.m_context);
+    PVAL(x.m_argument);
   }
 }
 

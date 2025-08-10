@@ -138,6 +138,10 @@ public:      // methods
   // it accepted a `string` argument.  If you are porting older code
   // that relied on that, you probably want to inherit `XMessage`
   // instead.
+  //
+  // This constructor copies the global exception context into the
+  // object's `m_context` member.  Afterward, you can call
+  // `prependContext` and `appendContext` to further augment it.
   XBase() noexcept;
 
   XBase(XBase const &m) noexcept;

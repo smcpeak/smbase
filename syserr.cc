@@ -20,11 +20,11 @@ OPEN_NAMESPACE(smbase)
 XSysError::XSysError(
   SystemErrorCode systemErrorCode,
   std::string const &syscallName,
-  std::string const &context)
+  std::string const &argument)
   : XBase(),
     IMEMBFP(systemErrorCode),
     IMEMBFP(syscallName),
-    IMEMBFP(context)
+    IMEMBFP(argument)
 {}
 
 
@@ -32,7 +32,7 @@ XSysError::XSysError(XSysError const &obj)
   : XBase(obj),
     DMEMB(m_systemErrorCode),
     DMEMB(m_syscallName),
-    DMEMB(m_context)
+    DMEMB(m_argument)
 {}
 
 
@@ -70,8 +70,8 @@ std::string XSysError::getImmediateContext() const
 
   sb << m_syscallName << ": ";
 
-  if (!m_context.empty()) {
-    sb << doubleQuote(m_context) << ": ";
+  if (!m_argument.empty()) {
+    sb << doubleQuote(m_argument) << ": ";
   }
 
   return sb.str();
@@ -97,37 +97,37 @@ void xsyserror(char const *syscallName)
 
 
 void xsyserror(std::string const &syscallName,
-               std::string const &context)
+               std::string const &argument)
 {
   SystemErrorCode sec = SystemErrorCode::getCurrent();
-  THROW(XSysError(sec, syscallName, context));
+  THROW(XSysError(sec, syscallName, argument));
 }
 
 
 std::string sysErrorCodeString(
   SystemErrorCode systemErrorCode,
   std::string const &syscallName,
-  std::string const &context)
+  std::string const &argument)
 {
-  XSysError x(systemErrorCode, syscallName, context);
+  XSysError x(systemErrorCode, syscallName, argument);
   return x.getConflict();
 }
 
 
 string sysErrorString(char const *syscallName,
-                      char const *context)
+                      char const *argument)
 {
   return sysErrorCodeString(
     SystemErrorCode::getCurrent(),
     syscallName,
-    context);
+    argument);
 }
 
 
 void devWarningSysError(char const *file, int line,
-                        char const *syscallName, char const *context)
+                        char const *syscallName, char const *argument)
 {
-  devWarning(file, line, sysErrorString(syscallName, context).c_str());
+  devWarning(file, line, sysErrorString(syscallName, argument).c_str());
 }
 
 

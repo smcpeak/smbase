@@ -32,23 +32,23 @@ public:      // data
   // arguments.
   std::string m_syscallName;
 
-  // Error context, as specified in the ctor arguments.  This should be
-  // additional context details like the name a file we were trying to
-  // open.  May be empty.
+  // If this is not empty, it should be an argument to that system call,
+  // expressed as a string.  A common example would be a file name.
   //
-  // TODO: I should remove this and put the information into
-  // `XBase::m_contexts` instead.
-  std::string m_context;
+  // When not empty, this gets included in the conflict message
+  // surrounded by double quotes and with special characters escaped
+  // using C string literal syntax.
+  std::string m_argument;
 
 private:     // methods
-  // Get the context formed by `m_syscallName` and `m_context`.
+  // Get the context formed by `m_syscallName` and `m_argument`.
   std::string getImmediateContext() const;
 
 public:      // methods
   XSysError(
     SystemErrorCode systemErrorCode,
     std::string const &syscallName,
-    std::string const &context);
+    std::string const &argument);
 
   XSysError(XSysError const &obj);
 
@@ -83,7 +83,7 @@ public:      // methods
   // Construct and throw an `XSysError`.
   static void xsyserror(
     std::string const &syscallName,
-    std::string const &context) NORETURN;
+    std::string const &argument) NORETURN;
   // New: Just call the global (well, `smbase` namespace) scope version.
 #endif
 };
@@ -93,7 +93,7 @@ public:      // methods
 void xsyserror(char const *syscallName) NORETURN;
 void xsyserror(
   std::string const &syscallName,
-  std::string const &context) NORETURN;
+  std::string const &argument) NORETURN;
 
 
 // Get the message string that would be created if an `XSysError` were
@@ -101,12 +101,12 @@ void xsyserror(
 std::string sysErrorCodeString(
   SystemErrorCode systemErrorCode,
   std::string const &syscallName,
-  std::string const &context);
+  std::string const &argument);
 
 // Get the message string for the current system error code.
 std::string sysErrorString(
   char const *syscallName,
-  char const *context = nullptr);
+  char const *argument = nullptr);
 
 
 // Issue a "developer warning" about a system call that just failed.
@@ -119,13 +119,13 @@ void devWarningSysError(
   char const *file,
   int line,
   char const *syscallName,
-  char const *context = nullptr);
+  char const *argument = nullptr);
 
 #define DEV_WARNING_SYSERROR(syscall) \
   smbase::devWarningSysError(__FILE__, __LINE__, syscall) /* user ; */
 
-#define DEV_WARNING_SYSERROR_CTXT(syscall, context) \
-  smbase::devWarningSysError(__FILE__, __LINE__, syscall, context) /* user ; */
+#define DEV_WARNING_SYSERROR_CTXT(syscall, argument) \
+  smbase::devWarningSysError(__FILE__, __LINE__, syscall, argument) /* user ; */
 
 
 CLOSE_NAMESPACE(smbase)
