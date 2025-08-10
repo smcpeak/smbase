@@ -5,6 +5,7 @@
 
 #include "gdvalue-map.h"               // module under test
 #include "gdvalue-set.h"               // module under test
+#include "gdvalue-span.h"              // module under test
 #include "gdvalue-vector.h"            // module under test
 #include "gdvalue.h"                   // module under test
 
@@ -2580,6 +2581,14 @@ void test_GDVN_OMAP_EXPRS()
 }
 
 
+void test_span()
+{
+  int arr[3] = {1,2,3};
+  Span<int> sp(arr);
+  EXPECT_EQ_GDV(sp, (std::vector<int>{1,2,3}));
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -2636,6 +2645,7 @@ void test_gdvalue()
     test_fromGDVN();
     test_uint64();
     test_GDVN_OMAP_EXPRS();
+    test_span();
 
     // Some interesting values for the particular data used.
     testPrettyPrint(0);
