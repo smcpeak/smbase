@@ -7,7 +7,6 @@
 #define SMBASE_VOIDLIST_H
 
 #include "xassert.h"     // xassert
-#include "trdelete.h"    // TRASHINGDELETE
 
 #include <stddef.h>      // NULL
 
@@ -16,8 +15,6 @@
 // non-typesafe list node
 class VoidNode {
 public:
-  TRASHINGDELETE
-
   VoidNode *next;           // (owner) next item in list, or NULL if last item
   void *data;               // whatever it is the list is holding
 

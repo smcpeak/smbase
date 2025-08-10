@@ -13,8 +13,6 @@
 
 #include "flatten-fwd.h"               // fwds for this module
 
-#include "trdelete.h"                  // TRASHINGDELETE
-
 #include <stddef.h>                    // size_t
 #include <stdint.h>                    // int64_t, int32_t
 
@@ -28,8 +26,6 @@ public:      // data
 public:      // funcs
   Flatten();
   virtual ~Flatten();
-
-  TRASHINGDELETE;
 
   // query the read/write state
   virtual bool reading() const = 0;
