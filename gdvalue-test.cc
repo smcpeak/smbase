@@ -2157,7 +2157,7 @@ void testWriteReadFile()
     xfailure("should have failed");
   }
   catch (XSysError &x) {
-    VPVAL(x);
+    VPVAL(x.getPortableConflict());
   }
 
   try {
@@ -2165,7 +2165,7 @@ void testWriteReadFile()
     xfailure("should have failed");
   }
   catch (XSysError &x) {
-    VPVAL(x);
+    VPVAL(x.getPortableConflict());
   }
 }
 

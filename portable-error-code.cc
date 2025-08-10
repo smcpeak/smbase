@@ -39,7 +39,7 @@ std::ostream &operator<<(std::ostream &os, PortableErrorCode r)
 }
 
 
-char const *reasonCodeDescription(PortableErrorCode r)
+char const *portableCodeDescription(PortableErrorCode r)
 {
   RETURN_ENUMERATION_STRING_OR(
     PortableErrorCode,

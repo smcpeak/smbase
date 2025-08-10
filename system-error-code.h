@@ -11,6 +11,7 @@
 #include "smbase/std-string-fwd.h"               // std::string
 
 #include <cstdint>                               // std::uint32_t
+#include <iosfwd>                                // std::ostream
 
 
 OPEN_NAMESPACE(smbase)
@@ -57,6 +58,11 @@ public:      // methods
   // not have a system code, return PEC_NO_ERROR.  If there is not a
   // portable counterpart, return PEC_UNKNOWN.
   PortableErrorCode portableCode() const;
+
+  // Write `codeName()` to `os`.
+  void write(std::ostream &os) const;
+  friend std::ostream &operator<<(std::ostream &os, SystemErrorCode code)
+    { code.write(os); return os; }
 };
 
 

@@ -11,59 +11,28 @@
 #include "smbase/system-error-code.h"  // SystemErrorCode
 
 #include <cstring>                     // std::strlen
+#include <sstream>                     // std::ostringstream
 
 
 OPEN_NAMESPACE(smbase)
 
 
-XSysError::XSysError(PortableErrorCode r, int sysCode, rostring sysReason,
-                     rostring syscall, rostring ctx)
+XSysError::XSysError(
+  SystemErrorCode systemErrorCode,
+  std::string const &syscallName,
+  std::string const &context)
   : XBase(),
-    reason(r),
-    reasonString(reasonCodeDescription(r)),
-    sysErrorCode(sysCode),
-    sysReasonString(sysReason),
-    syscallName(syscall),
-    context(ctx)
+    IMEMBFP(systemErrorCode),
+    IMEMBFP(syscallName),
+    IMEMBFP(context)
 {}
-
-
-STATICDEF string XSysError::
-  constructWhyString(PortableErrorCode r, rostring sysReason,
-                     rostring syscall, rostring ctx)
-{
-  // build string; start with syscall that failed
-  stringBuilder sb;
-  sb << syscall;
-  if (!ctx.empty()) {
-    sb << ": " << doubleQuote(ctx);
-  }
-  sb << ": ";
-
-  // now a failure reason string
-  if (r != PortableErrorCode::PEC_UNKNOWN) {
-    sb << reasonCodeDescription(r);
-  }
-  else if ( /*(sysReason != NULL) &&*/ (sysReason[0] != 0)) {
-    sb << sysReason;
-  }
-  else {
-    // no useful info, use the PEC_UNKNOWN string
-    sb << reasonCodeDescription(r);
-  }
-
-  return sb.str();
-}
 
 
 XSysError::XSysError(XSysError const &obj)
   : XBase(obj),
-    reason(obj.reason),
-    reasonString(obj.reasonString),
-    sysErrorCode(obj.sysErrorCode),
-    sysReasonString(obj.sysReasonString),
-    syscallName(obj.syscallName),
-    context(obj.context)
+    DMEMB(m_systemErrorCode),
+    DMEMB(m_syscallName),
+    DMEMB(m_context)
 {}
 
 
@@ -71,72 +40,87 @@ XSysError::~XSysError()
 {}
 
 
+SystemErrorCode XSysError::getSystemErrorCode() const
+{
+  return m_systemErrorCode;
+}
+
+
+std::string XSysError::getSystemErrorDescription() const
+{
+  return m_systemErrorCode.codeDescription();
+}
+
+
+PortableErrorCode XSysError::getPortableErrorCode() const
+{
+  return m_systemErrorCode.portableCode();
+}
+
+
+std::string XSysError::getPortableErrorDescription() const
+{
+  return portableCodeDescription(getPortableErrorCode());
+}
+
+
+std::string XSysError::getImmediateContext() const
+{
+  std::ostringstream sb;
+
+  sb << m_syscallName << ": ";
+
+  if (!m_context.empty()) {
+    sb << doubleQuote(m_context) << ": ";
+  }
+
+  return sb.str();
+}
+
+
+std::string XSysError::getPortableConflict() const
+{
+  return getImmediateContext() + getPortableErrorDescription();
+}
+
+
 std::string XSysError::getConflict() const
 {
-  return constructWhyString(reason, sysReasonString,
-                            syscallName, context);
+  return getImmediateContext() + getSystemErrorDescription();
 }
 
-
-STATICDEF int XSysError::getSystemErrorCode()
-{
-  return SystemErrorCode::getCurrent().systemCode();
-}
-
-
-STATICDEF PortableErrorCode XSysError::portablize(
-  int sysErrorCode, std::string &sysReason)
-{
-  SystemErrorCode sec(sysErrorCode);
-  sysReason = sec.codeDescription();
-  return sec.portableCode();
-}
-
-
-STATICDEF void XSysError::
-  xsyserror(rostring syscallName, rostring context)
-{
-  // retrieve system error code
-  int code = getSystemErrorCode();
-
-  // translate it into one of ours
-  string sysMsg;
-  PortableErrorCode r = portablize(code, sysMsg);
-
-  // construct an object to throw
-  XSysError obj(r, code, sysMsg, syscallName, context);
-
-  // toss it
-  THROW(obj);
-}
 
 void xsyserror(char const *syscallName)
 {
-  XSysError::xsyserror(syscallName, string(""));
+  xsyserror(syscallName, std::string(""));
 }
 
-void xsyserror(rostring syscallName, rostring context)
+
+void xsyserror(std::string const &syscallName,
+               std::string const &context)
 {
-  XSysError::xsyserror(syscallName, context);
+  SystemErrorCode sec = SystemErrorCode::getCurrent();
+  THROW(XSysError(sec, syscallName, context));
 }
 
 
-string sysErrorCodeString(int systemErrorCode,
-                                   rostring syscallName,
-                                   rostring context)
+std::string sysErrorCodeString(
+  SystemErrorCode systemErrorCode,
+  std::string const &syscallName,
+  std::string const &context)
 {
-  string sysMsg;
-  PortableErrorCode r = XSysError::portablize(systemErrorCode, sysMsg);
-  return XSysError::constructWhyString(
-           r, sysMsg,
-           syscallName, context);
+  XSysError x(systemErrorCode, syscallName, context);
+  return x.getConflict();
 }
+
 
 string sysErrorString(char const *syscallName,
-                               char const *context)
+                      char const *context)
 {
-  return sysErrorCodeString(XSysError::getSystemErrorCode(),
-                            syscallName, context);
+  return sysErrorCodeString(
+    SystemErrorCode::getCurrent(),
+    syscallName,
+    context);
 }
 
 

@@ -10,7 +10,6 @@
 #include "smbase/stringb.h"            // stringb
 
 #include <algorithm>                   // std::sort
-//#include <cstring>                     // std::strlen
 #include <iostream>                    // std::hex
 
 
@@ -299,6 +298,12 @@ PortableErrorCode SystemErrorCode::portableCode() const
   else {
     return PortableErrorCode::PEC_UNKNOWN;
   }
+}
+
+
+void SystemErrorCode::write(std::ostream &os) const
+{
+  os << codeName();
 }
 
 

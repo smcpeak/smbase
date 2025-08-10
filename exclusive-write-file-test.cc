@@ -75,12 +75,10 @@ void test_wait()
 
   catch (XSysError &x) {
     DIAG("Got XSysError:");
-    PVAL(x.reason);
-    PVAL(x.reasonString);
-    PVAL(x.sysErrorCode);
-    PVAL(x.sysReasonString);
-    PVAL(x.syscallName);
-    PVAL(x.context);
+    PVAL(x.m_systemErrorCode);
+    PVAL(x.m_systemErrorCode.codeDescription());
+    PVAL(x.m_syscallName);
+    PVAL(x.m_context);
   }
 }
 

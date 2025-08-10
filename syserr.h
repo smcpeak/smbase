@@ -14,6 +14,7 @@
 #include "smbase/exc.h"                          // smbase::XBase
 #include "smbase/portable-error-code.h"          // PortableErrorCode
 #include "smbase/sm-macros.h"                    // OPEN_NAMESPACE, NORETURN
+#include "smbase/system-error-code.h"            // SystemErrorCode
 
 #include <string>                                // std::string
 
@@ -23,31 +24,13 @@ OPEN_NAMESPACE(smbase)
 
 // Thrown in response to a system call failure.
 class XSysError : public XBase {
-public:      // instance data
-  // Portable reason code corresponding to the platform-specific error
-  // code.
-  PortableErrorCode reason;
+public:      // data
+  // The platform-specific error code.
+  SystemErrorCode m_systemErrorCode;
 
-  // Reason string that corresponds to 'reason'.
-  //
-  // TODO: Remove this.
-  char const * const reasonString;
-
-  // Platform-specific error code: errno on Unix, GetLastError() on
-  // Windows.  The value is 0 when we don't have this information.
-  //
-  // TODO: When do we not have it?
-  //
-  // TODO: Change to std::optional<uint32_t>.
-  int sysErrorCode;
-
-  // Platform-specific reason string given by the OS, if any (might be
-  // empty).
-  std::string sysReasonString;
-
-  // Name of syscall or API function name, as specific in the ctor
+  // Name of syscall or API function name, as specified in the ctor
   // arguments.
-  std::string syscallName;
+  std::string m_syscallName;
 
   // Error context, as specified in the ctor arguments.  This should be
   // additional context details like the name a file we were trying to
@@ -55,49 +38,54 @@ public:      // instance data
   //
   // TODO: I should remove this and put the information into
   // `XBase::m_contexts` instead.
-  std::string context;
+  std::string m_context;
+
+private:     // methods
+  // Get the context formed by `m_syscallName` and `m_context`.
+  std::string getImmediateContext() const;
 
 public:      // methods
   XSysError(
-    PortableErrorCode r,
-    int sysCode,
-    std::string const &sysReason,
-    std::string const &syscall,
-    std::string const &ctx);
+    SystemErrorCode systemErrorCode,
+    std::string const &syscallName,
+    std::string const &context);
 
   XSysError(XSysError const &obj);
 
   ~XSysError();
 
+  SystemErrorCode getSystemErrorCode() const;
+  std::string getSystemErrorDescription() const;
+
+  PortableErrorCode getPortableErrorCode() const;
+  std::string getPortableErrorDescription() const;
+
+  // Like `getConflict`, but using the portable description.
+  std::string getPortableConflict() const;
+
   // XBase methods.
   virtual std::string getConflict() const override;
 
-  // TODO: Move most of the static methods out of the class.
-
+  // Old methods and their new replacements.
+#if 0
   // Retrieve the platform-specific error code.
   static int getSystemErrorCode();
+  // New: SystemErrorCode::getCurrent()
 
-  // Return a portable equivalent of `sysErrorCode`.  Returns PEC_UNKNOWN
-  // if the code is not recognized.  Sets `sysReason` to the system's
-  // message string, if possible.
-  //
-  // TODO: When is that not possible?  And what happens to `sysReason`
-  // in that case?
+  // Return a portable equivalent of `sysErrorCode`.  Returns
+  // PEC_UNKNOWN if the code is not recognized.  Sets `sysReason` to the
+  // system's message string for `sysErrorCode`.
   static PortableErrorCode portablize(
     int sysErrorCode, std::string &sysReason);
-
-  // Construct the string we use as the `getMessage()` of XBase.  If
-  // `ctx` is empty, the string doesn't include it.
-  static std::string constructWhyString(
-    PortableErrorCode r,
-    std::string const &sysReason,
-    std::string const &syscall,
-    std::string const &ctx);
+  // New: SystemErrorCode::portableCode()
+  // New: SystemErrorCode::codeDescription()
 
   // Construct and throw an `XSysError`.
   static void xsyserror(
     std::string const &syscallName,
     std::string const &context) NORETURN;
+  // New: Just call the global (well, `smbase` namespace) scope version.
+#endif
 };
 
 
@@ -111,7 +99,7 @@ void xsyserror(
 // Get the message string that would be created if an `XSysError` were
 // built while the system's error code was `systemErrorCode`.
 std::string sysErrorCodeString(
-  int systemErrorCode,
+  SystemErrorCode systemErrorCode,
   std::string const &syscallName,
   std::string const &context);
 

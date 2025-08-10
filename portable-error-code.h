@@ -118,7 +118,7 @@ inline PortableErrorCode operator+(PortableErrorCode r)
   { return r; }
 
 // Human-readable string like "File not found".
-char const *reasonCodeDescription(PortableErrorCode r);
+char const *portableCodeDescription(PortableErrorCode r);
 
 
 CLOSE_NAMESPACE(smbase)

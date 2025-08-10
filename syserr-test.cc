@@ -38,16 +38,16 @@ static int tryFail(std::function<bool ()> failingCall,
     }
   }
   catch (XSysError &x) {
-    if (!contains(reasons, x.reason)) {
+    if (!contains(reasons, x.getPortableErrorCode())) {
       // Convert the expected reasons into strings.
       std::set<std::string> reasonStrings =
         setMapElements<std::string>(reasons,
           [](PortableErrorCode r) -> std::string {
-            return reasonCodeDescription(r);
+            return portableCodeDescription(r);
           });
 
       cout << "ERROR: " << failingCallText << " returned '"
-           << x.reasonString << "' but one of "
+           << x.getPortableErrorCode() << "' but one of "
            << reasonStrings << " was expected.\n";
       return 1;
     }

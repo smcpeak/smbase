@@ -16,7 +16,7 @@ void test_names()
 {
   EXPECT_EQ(toString(PortableErrorCode::PEC_INVALID_FILENAME),
     "PEC_INVALID_FILENAME");
-  EXPECT_EQ(reasonCodeDescription(PortableErrorCode::PEC_INVALID_FILENAME),
+  EXPECT_EQ(portableCodeDescription(PortableErrorCode::PEC_INVALID_FILENAME),
     "File name is invalid (too long, or bad chars, or ...)");
 }
 
