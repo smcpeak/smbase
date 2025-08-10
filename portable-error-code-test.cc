@@ -14,9 +14,9 @@ OPEN_ANONYMOUS_NAMESPACE
 
 void test_names()
 {
-  EXPECT_EQ(toString(PortableErrorCode::R_INVALID_FILENAME),
-    "R_INVALID_FILENAME");
-  EXPECT_EQ(reasonCodeDescription(PortableErrorCode::R_INVALID_FILENAME),
+  EXPECT_EQ(toString(PortableErrorCode::PEC_INVALID_FILENAME),
+    "PEC_INVALID_FILENAME");
+  EXPECT_EQ(reasonCodeDescription(PortableErrorCode::PEC_INVALID_FILENAME),
     "File name is invalid (too long, or bad chars, or ...)");
 }
 

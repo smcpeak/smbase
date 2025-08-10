@@ -29,7 +29,7 @@ public:      // data
   // System-specific name for this code.
   char const *m_codeName;
 
-  // Portable counterpart, or R_UNKNOWN if there is none.
+  // Portable counterpart, or PEC_UNKNOWN if there is none.
   PortableErrorCode m_portableCode;
 
 public:      // methods
@@ -49,7 +49,7 @@ public:      // methods
 
 // Name without PCE, for when I want to be able to map a code to a name
 // without specifying a portable equivalent.
-#define NAME_ENTRY(c) { c, #c, PortableErrorCode::R_UNKNOWN }
+#define NAME_ENTRY(c) { c, #c, PortableErrorCode::PEC_UNKNOWN }
 
 
 int NameEntry::compareTo(NameEntry const &b) const
@@ -127,18 +127,18 @@ std::string SystemErrorCode::codeName() const
 
 // Note: Not `const` since we sort this array.
 NameEntry nameEntries[] = {
-  NAME_ENTRY_PEC(ERROR_SUCCESS,            R_NO_ERROR),
-  NAME_ENTRY_PEC(ERROR_FILE_NOT_FOUND,     R_FILE_NOT_FOUND),
-  NAME_ENTRY_PEC(ERROR_PATH_NOT_FOUND,     R_FILE_NOT_FOUND),
-  NAME_ENTRY_PEC(ERROR_ACCESS_DENIED,      R_ACCESS_DENIED),
-  NAME_ENTRY_PEC(ERROR_NOT_ENOUGH_MEMORY,  R_OUT_OF_MEMORY),
-  NAME_ENTRY_PEC(ERROR_OUTOFMEMORY,        R_OUT_OF_MEMORY),
-  NAME_ENTRY_PEC(ERROR_INVALID_BLOCK,      R_SEGFAULT),
-  NAME_ENTRY_PEC(ERROR_BAD_FORMAT,         R_FORMAT),
-  NAME_ENTRY_PEC(ERROR_INVALID_DATA,       R_INVALID_ARGUMENT),
-  NAME_ENTRY_PEC(ERROR_WRITE_PROTECT,      R_READ_ONLY),
-  NAME_ENTRY_PEC(ERROR_ALREADY_EXISTS,     R_ALREADY_EXISTS),
-  NAME_ENTRY_PEC(ERROR_BUSY,               R_BUSY),
+  NAME_ENTRY_PEC(ERROR_SUCCESS,            PEC_NO_ERROR),
+  NAME_ENTRY_PEC(ERROR_FILE_NOT_FOUND,     PEC_FILE_NOT_FOUND),
+  NAME_ENTRY_PEC(ERROR_PATH_NOT_FOUND,     PEC_FILE_NOT_FOUND),
+  NAME_ENTRY_PEC(ERROR_ACCESS_DENIED,      PEC_ACCESS_DENIED),
+  NAME_ENTRY_PEC(ERROR_NOT_ENOUGH_MEMORY,  PEC_OUT_OF_MEMORY),
+  NAME_ENTRY_PEC(ERROR_OUTOFMEMORY,        PEC_OUT_OF_MEMORY),
+  NAME_ENTRY_PEC(ERROR_INVALID_BLOCK,      PEC_SEGFAULT),
+  NAME_ENTRY_PEC(ERROR_BAD_FORMAT,         PEC_FORMAT),
+  NAME_ENTRY_PEC(ERROR_INVALID_DATA,       PEC_INVALID_ARGUMENT),
+  NAME_ENTRY_PEC(ERROR_WRITE_PROTECT,      PEC_READ_ONLY),
+  NAME_ENTRY_PEC(ERROR_ALREADY_EXISTS,     PEC_ALREADY_EXISTS),
+  NAME_ENTRY_PEC(ERROR_BUSY,               PEC_BUSY),
 };
 
 
@@ -234,19 +234,19 @@ std::string SystemErrorCode::codeDescription() const
 
 // Note: Not `const` since we sort this array.
 NameEntry nameEntries[] = {
-  NAME_ENTRY_PEC(EZERO,         R_NO_ERROR),
-  NAME_ENTRY_PEC(ENOFILE,       R_FILE_NOT_FOUND),
-  NAME_ENTRY_PEC(ENOPATH,       R_FILE_NOT_FOUND),
-  NAME_ENTRY_PEC(EACCES,        R_ACCESS_DENIED),
-  NAME_ENTRY_PEC(ENOMEM,        R_OUT_OF_MEMORY),
-  NAME_ENTRY_PEC(EINVMEM,       R_SEGFAULT),
-  NAME_ENTRY_PEC(EINVFMT,       R_FORMAT),
-  NAME_ENTRY_PEC(EINVAL,        R_INVALID_ARGUMENT),
-  NAME_ENTRY_PEC(EROFS,         R_READ_ONLY),
-  NAME_ENTRY_PEC(EEXIST,        R_ALREADY_EXISTS),
-  NAME_ENTRY_PEC(EAGAIN,        R_AGAIN),
-  NAME_ENTRY_PEC(EBUSY,         R_BUSY),
-  NAME_ENTRY_PEC(ENAMETOOLONG,  R_INVALID_FILENAME),
+  NAME_ENTRY_PEC(EZERO,         PEC_NO_ERROR),
+  NAME_ENTRY_PEC(ENOFILE,       PEC_FILE_NOT_FOUND),
+  NAME_ENTRY_PEC(ENOPATH,       PEC_FILE_NOT_FOUND),
+  NAME_ENTRY_PEC(EACCES,        PEC_ACCESS_DENIED),
+  NAME_ENTRY_PEC(ENOMEM,        PEC_OUT_OF_MEMORY),
+  NAME_ENTRY_PEC(EINVMEM,       PEC_SEGFAULT),
+  NAME_ENTRY_PEC(EINVFMT,       PEC_FORMAT),
+  NAME_ENTRY_PEC(EINVAL,        PEC_INVALID_ARGUMENT),
+  NAME_ENTRY_PEC(EROFS,         PEC_READ_ONLY),
+  NAME_ENTRY_PEC(EEXIST,        PEC_ALREADY_EXISTS),
+  NAME_ENTRY_PEC(EAGAIN,        PEC_AGAIN),
+  NAME_ENTRY_PEC(EBUSY,         PEC_BUSY),
+  NAME_ENTRY_PEC(ENAMETOOLONG,  PEC_INVALID_FILENAME),
 };
 
 
@@ -297,7 +297,7 @@ PortableErrorCode SystemErrorCode::portableCode() const
     return entry->m_portableCode;
   }
   else {
-    return PortableErrorCode::R_UNKNOWN;
+    return PortableErrorCode::PEC_UNKNOWN;
   }
 }
 

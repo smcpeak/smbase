@@ -54,8 +54,8 @@ public:      // methods
   std::string codeDescription() const;
 
   // Map the system error code to its portable counterpart.  If we do
-  // not have a system code, return R_NO_ERROR.  If there is not a
-  // portable counterpart, return R_UNKNOWN.
+  // not have a system code, return PEC_NO_ERROR.  If there is not a
+  // portable counterpart, return PEC_UNKNOWN.
   PortableErrorCode portableCode() const;
 };
 

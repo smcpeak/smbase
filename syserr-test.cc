@@ -70,13 +70,13 @@ void test_syserr()
 
 
   TRY_FAIL(changeDirectory("some.strange.name/yadda"),
-           PortableErrorCode::R_FILE_NOT_FOUND);
+           PortableErrorCode::PEC_FILE_NOT_FOUND);
 
   TRY_FAIL(createDirectory("test"),
-           PortableErrorCode::R_ALREADY_EXISTS);
+           PortableErrorCode::PEC_ALREADY_EXISTS);
 
   TRY_FAIL(isDirectory("doesnt.exist"),
-           PortableErrorCode::R_FILE_NOT_FOUND);
+           PortableErrorCode::PEC_FILE_NOT_FOUND);
 
   if (errors > 0) {
     cout << errors << " error(s)\n";

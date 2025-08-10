@@ -298,7 +298,7 @@ public:      // funcs
 
   // Create 'path' and any needed parents if it does not already exist.
   // If it, or any parent, already exists but is not a directory, throw
-  // 'XSysError' with reason R_ALREADY_EXISTS.  Any other problem also
+  // 'XSysError' with reason PEC_ALREADY_EXISTS.  Any other problem also
   // causes 'XSysError' to be thrown.  If no exception is thrown, then
   // after this call, the directory exists.  A trailing directory
   // separator on 'path' is ignored.

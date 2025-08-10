@@ -77,7 +77,7 @@ public:      // methods
   // Retrieve the platform-specific error code.
   static int getSystemErrorCode();
 
-  // Return a portable equivalent of `sysErrorCode`.  Returns R_UNKNOWN
+  // Return a portable equivalent of `sysErrorCode`.  Returns PEC_UNKNOWN
   // if the code is not recognized.  Sets `sysReason` to the system's
   // message string, if possible.
   //

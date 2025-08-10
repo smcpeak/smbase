@@ -41,14 +41,14 @@ STATICDEF string XSysError::
   sb << ": ";
 
   // now a failure reason string
-  if (r != PortableErrorCode::R_UNKNOWN) {
+  if (r != PortableErrorCode::PEC_UNKNOWN) {
     sb << reasonCodeDescription(r);
   }
   else if ( /*(sysReason != NULL) &&*/ (sysReason[0] != 0)) {
     sb << sysReason;
   }
   else {
-    // no useful info, use the R_UNKNOWN string
+    // no useful info, use the PEC_UNKNOWN string
     sb << reasonCodeDescription(r);
   }
 

@@ -32,7 +32,7 @@ void test_noError()
     EXPECT_EQ(none.codeDescription(), "...");
   }
   EXPECT_EQ(none.codeName(), none.codeNameOpt());
-  EXPECT_EQ(none.portableCode(), PortableErrorCode::R_NO_ERROR);
+  EXPECT_EQ(none.portableCode(), PortableErrorCode::PEC_NO_ERROR);
 }
 
 
@@ -59,7 +59,7 @@ void test_fileNotFound()
     EXPECT_HAS_SUBSTRING(sec.codeDescription(),
       "TODO: fill this in");
   }
-  EXPECT_EQ(sec.portableCode(), PortableErrorCode::R_FILE_NOT_FOUND);
+  EXPECT_EQ(sec.portableCode(), PortableErrorCode::PEC_FILE_NOT_FOUND);
 }
 
 
