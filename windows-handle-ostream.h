@@ -77,6 +77,9 @@ public:      // methods
 
   // Remove the error message (if there is one).
   void clearExceptionMessage();
+
+  // Assert invariants.
+  void selfCheck() const;
 };
 
 

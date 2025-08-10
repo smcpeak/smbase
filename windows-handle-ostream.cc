@@ -73,6 +73,8 @@ WindowsHandleOStream::WindowsHandleOStream(
   // though it seemingly works everywhere).  So we call `init` after the
   // members are initialized.
   init(&m_streambuf);
+
+  selfCheck();
 }
 
 
@@ -86,6 +88,12 @@ WindowsHandleOStream::getExceptionMessage() const
 void WindowsHandleOStream::clearExceptionMessage()
 {
   m_streambuf.m_exceptionMessage.reset();
+}
+
+
+void WindowsHandleOStream::selfCheck() const
+{
+  m_streambuf.selfCheck();
 }
 
 

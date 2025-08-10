@@ -63,6 +63,8 @@ void test_simple()
     OpenFileHandle ofh(testFileName);
     WindowsHandleOStream os(ofh.m_handle);
     os << "hello simple\n";
+
+    os.selfCheck();
   }
   EXPECT_EQ(testFileContents(), "hello simple\n");
 }
