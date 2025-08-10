@@ -1,0 +1,123 @@
+// portable-error-code.h
+// Portable enumeration of system call error code categories.
+
+// The basic idea is we map platform-specific error codes to elements of
+// this enumeration in order to allow code to portably distinguish among
+// various error causes.
+
+// See license.txt for copyright and terms of use.
+
+#ifndef SMBASE_PORTABLE_ERROR_CODE_H
+#define SMBASE_PORTABLE_ERROR_CODE_H
+
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
+
+#include <iosfwd>                      // std::ostream
+
+
+OPEN_NAMESPACE(smbase)
+
+
+// Portable failure reasons (modeled loosely on errno.h).
+//
+// It is anticipated that, as certain errors become important on
+// certain platforms, that this list will be extended as necessary.
+//
+// TODO: Rename this to PortableErrorCode.
+enum class SysErrorReasonCode : int {
+  // No error occurred.
+  //
+  // POSIX: 0
+  // Windows: ERROR_SUCCESS (0)
+  R_NO_ERROR,
+
+  // Specified file does not exist.
+  //
+  // POSIX: ENOENT
+  // Windows: ERROR_FILE_NOT_FOUND, ERROR_PATH_NOT_FOUND
+  R_FILE_NOT_FOUND,
+
+  // 2025-08-09: There was `R_PATH_NOT_FOUND` here, but I removed it
+  // because it is not usefully different from `R_FILE_NOT_FOUND` and
+  // (relatedly) not consistently distinguished in system error codes.
+
+  // Permission error.
+  //
+  // POSIX: EACCESS
+  // Windows: ERROR_ACCESS_DENIED
+  R_ACCESS_DENIED,
+
+  // Out of memory, or not enough space.
+  //
+  // POSIX: ENOMEM
+  // Windows: ERROR_NOT_ENOUGH_MEMORY, ERROR_OUTOFMEMORY
+  R_OUT_OF_MEMORY,
+
+  // Invalid address or pointer.
+  //
+  // POSIX: EFAULT
+  // Windows: ERROR_INVALID_BLOCK
+  R_SEGFAULT,
+
+  // Bad data format.
+  //
+  // POSIX: EINVFMT
+  // Windows: ERROR_BAD_FORMAT
+  R_FORMAT,
+
+  // POSIX: EINVAL
+  // Windows: ERROR_INVALID_DATA
+  R_INVALID_ARGUMENT,
+
+  // Attempt to write to a read-only resource.
+  //
+  // POSIX: EROFS
+  // Windows: ERROR_WRITE_PROTECT
+  R_READ_ONLY,
+
+  // File exists already.
+  //
+  // POSIX: EEXIST
+  // Windows: ERROR_ALREADY_EXISTS
+  R_ALREADY_EXISTS,
+
+  // Resource temporarily unavailable.
+  //
+  // POSIX: EAGAIN
+  // Windows: none
+  R_AGAIN,
+
+  // Resource busy.
+  //
+  // POSIX: EBUSY
+  // Windows: ERROR_BUSY
+  R_BUSY,
+
+  // File name too long, bad chars, etc.
+  //
+  // POSIX: ENAMETOOLONG
+  // Windows: none
+  R_INVALID_FILENAME,
+
+  // System error code that isn't mapped to one of the above.
+  R_UNKNOWN,
+
+  // Last item in the list, total number of reason codes.
+  NUM_REASONS
+};
+
+// Return a string like "R_NO_ERROR", or "<invalid>" if `r` is out of
+// bounds.
+char const *toString(SysErrorReasonCode r);
+
+// Write `toString(r)`.
+std::ostream &operator<<(std::ostream &os, SysErrorReasonCode r);
+
+// Human-readable string like "File not found".
+char const *reasonCodeDescription(SysErrorReasonCode r);
+
+
+CLOSE_NAMESPACE(smbase)
+
+
+#endif // SMBASE_PORTABLE_ERROR_CODE_H

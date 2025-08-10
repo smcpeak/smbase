@@ -134,6 +134,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(overflow);
   RUN_TEST(owner);
   RUN_TEST(parsestring);
+  RUN_TEST(portable_error_code);
   RUN_TEST(pprint);
   RUN_TEST(rack_allocator);
   RUN_TEST(reader);
