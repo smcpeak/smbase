@@ -8,6 +8,7 @@
 #include "smbase/dev-warning.h"        // devWarning
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 #include "smbase/string-util.h"        // doubleQuote
+#include "smbase/system-error-code.h"  // SystemErrorCode
 
 #include <cstring>                     // std::strlen
 
@@ -15,7 +16,6 @@
 OPEN_NAMESPACE(smbase)
 
 
-// ----------------------------- XSysError -----------------------------
 XSysError::XSysError(PortableErrorCode r, int sysCode, rostring sysReason,
                      rostring syscall, rostring ctx)
   : XBase(),
@@ -78,6 +78,21 @@ std::string XSysError::getConflict() const
 }
 
 
+STATICDEF int XSysError::getSystemErrorCode()
+{
+  return SystemErrorCode::getCurrent().systemCode();
+}
+
+
+STATICDEF PortableErrorCode XSysError::portablize(
+  int sysErrorCode, std::string &sysReason)
+{
+  SystemErrorCode sec(sysErrorCode);
+  sysReason = sec.codeDescription();
+  return sec.portableCode();
+}
+
+
 STATICDEF void XSysError::
   xsyserror(rostring syscallName, rostring context)
 {
@@ -133,210 +148,6 @@ void devWarningSysError(char const *file, int line,
 
 
 CLOSE_NAMESPACE(smbase)
-
-
-// ----------------------- Win32 code ------------------------------------
-#ifdef __WIN32__
-
-#ifdef USE_MINWIN_H
-#  include "minwin.h"   // api
-#else
-#  include <windows.h>  // api
-#endif
-#include <errno.h>      // errno
-
-OPEN_NAMESPACE(smbase)
-
-
-STATICDEF int XSysError::getSystemErrorCode()
-{
-  int ret = GetLastError();
-
-  // update: The confusing behavior I observed was with the Borland 4.5
-  // runtime libraries.  When I linked with the non-multithreaded versions,
-  // GetLastError worked as expected.  But when I linked with the
-  // multithreaded versions, GetLastError always returned 0, and I had to
-  // consult errno instead.  Further, the errno values didn't coincide
-  // exactly with expected values.  Therefore, the solution (at least for
-  // now) is to link only with the non-multithreaded versions, and not
-  // look to errno for anything.
-  #ifdef MT
-  #  error something is fishy with multithreaded..
-  #endif
-
-  // I thought something was happening, but now it seems
-  // it's not..
-  #if 0     // ?
-  if (ret == ERROR_SUCCESS) {
-    // for some calls, like mkdir, GetLastError is not
-    // set, but errno is; fortunately, MS decided to
-    // (mostly) overlap GetLastError codes with errno codes,
-    // so let's try this:
-    return errno;
-  }
-  #endif // 0
-
-  return ret;
-}
-
-
-STATICDEF PortableErrorCode XSysError::portablize(
-  int sysErrorCode, string &sysMsg)
-{
-  // I'd like to put this into a static class member, but then
-  // the table would have to prepend R_ constants with XSysError::,
-  // which is a pain.
-
-  // method to translate an error code into a string on win32; this
-  // code is copied+modified from the win32 SDK docs for FormatMessage
-  {
-    // get the string
-    LPVOID lpMsgBuf;
-    FormatMessage(
-        FORMAT_MESSAGE_ALLOCATE_BUFFER |
-        FORMAT_MESSAGE_FROM_SYSTEM |
-        FORMAT_MESSAGE_IGNORE_INSERTS,
-        NULL,
-        GetLastError(),
-        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-        (LPTSTR) &lpMsgBuf,
-        0,
-        NULL
-    );
-
-    // now the SDK says: "Process any inserts in lpMsgBuf."
-    //
-    // I think this means that lpMsgBuf might have "%" escape
-    // sequences in it... oh well, I'm just going to keep them
-
-    // Remove any newline characters from the end.
-    char *msgBuf = static_cast<char*>(lpMsgBuf);
-    int len = std::strlen(msgBuf);
-    for (int i = len-1; i >= 0; --i) {
-      if (msgBuf[i] == '\r' || msgBuf[i] == '\n') {
-        msgBuf[i] = 0;
-      }
-    }
-
-    // make a copy of the string
-    sysMsg = msgBuf;
-
-    // Free the buffer.
-    LocalFree( lpMsgBuf );
-  }
-
-  static struct S {
-    int code;
-    PortableErrorCode reason;
-  } const arr[] = {
-    #define ENTRY(c, r) { c, PortableErrorCode::r }
-    ENTRY(ERROR_SUCCESS,            R_NO_ERROR),
-    ENTRY(ERROR_FILE_NOT_FOUND,     R_FILE_NOT_FOUND),
-    ENTRY(ERROR_PATH_NOT_FOUND,     R_FILE_NOT_FOUND),
-    ENTRY(ERROR_ACCESS_DENIED,      R_ACCESS_DENIED),
-    ENTRY(ERROR_NOT_ENOUGH_MEMORY,  R_OUT_OF_MEMORY),
-    ENTRY(ERROR_OUTOFMEMORY,        R_OUT_OF_MEMORY),
-    ENTRY(ERROR_INVALID_BLOCK,      R_SEGFAULT),
-    ENTRY(ERROR_BAD_FORMAT,         R_FORMAT),
-    ENTRY(ERROR_INVALID_DATA,       R_INVALID_ARGUMENT),
-    ENTRY(ERROR_WRITE_PROTECT,      R_READ_ONLY),
-    ENTRY(ERROR_ALREADY_EXISTS,     R_ALREADY_EXISTS),
-    // What corresponds to R_AGAIN?
-    ENTRY(ERROR_BUSY,               R_BUSY),
-    #undef ENTRY
-  };
-
-  smbase_loopi(TABLESIZE(arr)) {
-    if (arr[i].code == sysErrorCode) {
-      // found it
-      return arr[i].reason;
-    }
-  }
-
-  // I don't know
-  return PortableErrorCode::R_UNKNOWN;
-}
-
-
-CLOSE_NAMESPACE(smbase)
-
-
-// ---------------------- unix ---------------------------
-#else      // unix
-
-#include <errno.h>       // errno
-#include <string.h>      // strerror
-
-// mappings to a set of error codes I can use below
-// (I am sure I've already done this somewhere else, but I
-// may have lost that file)
-#ifndef EZERO
-#  define EZERO 0
-#endif
-#ifndef ENOFILE
-#  define ENOFILE ENOENT
-#endif
-#ifndef ENOPATH
-#  define ENOPATH ENOENT
-#endif
-#ifndef EINVMEM
-#  define EINVMEM EFAULT
-#endif
-#ifndef EINVFMT
-#  define EINVFMT 0         // won't be seen because EZERO is first
-#endif
-
-
-OPEN_NAMESPACE(smbase)
-
-
-STATICDEF int XSysError::getSystemErrorCode()
-{
-  return errno;          // why was this "errno()"??
-}
-
-
-STATICDEF PortableErrorCode XSysError::portablize(
-  int sysErrorCode, string &sysMsg)
-{
-  sysMsg = strerror(sysErrorCode);
-    // operator= copies to local storage
-
-  static struct S {
-    int code;
-    PortableErrorCode reason;
-  } const arr[] = {
-    { EZERO,        R_NO_ERROR          },
-    { ENOFILE,      R_FILE_NOT_FOUND    },
-    { ENOPATH,      R_FILE_NOT_FOUND    },
-    { EACCES,       R_ACCESS_DENIED     },
-    { ENOMEM,       R_OUT_OF_MEMORY     },
-    { EINVMEM,      R_SEGFAULT          },
-    { EINVFMT,      R_FORMAT            },
-    { EINVAL,       R_INVALID_ARGUMENT  },
-    { EROFS,        R_READ_ONLY         },
-    { EEXIST,       R_ALREADY_EXISTS    },
-    { EAGAIN,       R_AGAIN             },
-    { EBUSY,        R_BUSY              },
-    { ENAMETOOLONG, R_INVALID_FILENAME  },
-  };
-
-  smbase_loopi(TABLESIZE(arr)) {
-    if (arr[i].code == sysErrorCode) {
-      // found it
-      return arr[i].reason;
-    }
-  }
-
-  // I don't know
-  return PortableErrorCode::R_UNKNOWN;
-}
-
-
-CLOSE_NAMESPACE(smbase)
-
-
-#endif  // unix
 
 
 // EOF

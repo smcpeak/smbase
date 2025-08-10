@@ -27,6 +27,7 @@
 // what I need to compile (and discard) the bits of Windows-calling code
 // I have.  It is fine to make ad-hoc additions and changes as needed.
 
+#define ERROR_FILE_NOT_FOUND 0x2
 #define STATUS_CONTROL_C_EXIT 0xC000013AU
 typedef char const *LPCSTR;
 typedef char *LPSTR;

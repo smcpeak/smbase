@@ -22,6 +22,8 @@ OPEN_NAMESPACE(smbase)
 //
 // It is anticipated that, as certain errors become important on
 // certain platforms, that this list will be extended as necessary.
+//
+// TODO: Rename these codes to start with "PEC_".
 enum class PortableErrorCode : int {
   // No error occurred.
   //
