@@ -7,6 +7,8 @@
 #include "dev-warning.h"               // devWarning
 #include "string-util.h"               // doubleQuote
 
+#include <cstring>                     // std::strlen
+
 
 // ---------------- portable code ----------------
 OPEN_NAMESPACE(smbase)
@@ -245,8 +247,17 @@ STATICDEF XSysError::Reason XSysError::portablize(
     // I think this means that lpMsgBuf might have "%" escape
     // sequences in it... oh well, I'm just going to keep them
 
+    // Remove any newline characters from the end.
+    char *msgBuf = static_cast<char*>(lpMsgBuf);
+    int len = std::strlen(msgBuf);
+    for (int i = len-1; i >= 0; --i) {
+      if (msgBuf[i] == '\r' || msgBuf[i] == '\n') {
+        msgBuf[i] = 0;
+      }
+    }
+
     // make a copy of the string
-    sysMsg = (char*)lpMsgBuf;
+    sysMsg = msgBuf;
 
     // Free the buffer.
     LocalFree( lpMsgBuf );
