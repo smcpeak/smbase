@@ -1,11 +1,12 @@
-// syserr.cc            see license.txt for copyright and terms of use
-// code for syserr.h
-// Scott McPeak, 1999-2000  This file is public domain.
+// syserr.cc
+// Code for `syserr.h`.
+
+// This file is in the public domain.
 
 #include "syserr.h"                    // this module
 
-#include "dev-warning.h"               // devWarning
-#include "string-util.h"               // doubleQuote
+#include "smbase/dev-warning.h"        // devWarning
+#include "smbase/string-util.h"        // doubleQuote
 
 #include <cstring>                     // std::strlen
 

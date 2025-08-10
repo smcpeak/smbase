@@ -8,9 +8,10 @@
 #ifndef SMBASE_SYSERR_H
 #define SMBASE_SYSERR_H
 
-#include "exc.h"                       // XBase
-#include "sm-macros.h"                 // OPEN_NAMESPACE, NORETURN
-#include "str.h"                       // rostring
+#include "smbase/exc.h"                // smbase::XBase
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE, NORETURN
+
+#include <string>                      // std::string
 
 
 OPEN_NAMESPACE(smbase)
@@ -18,18 +19,18 @@ OPEN_NAMESPACE(smbase)
 
 // Thrown in response to a system call failure.
 class XSysError : public XBase {
-private:    // data
-  // error strings for Reasons
-  static char const * const reasonStrings[];
-
-public:     // data
-  // portable failure reasons (modelled loosely on errno.h)
-  // it is anticipated that, as certain errors become important on certain
-  //   platforms, that this list will be extended as necessary
+public:      // types
+  // Portable failure reasons (modeled loosely on errno.h).
+  //
+  // It is anticipated that, as certain errors become important on
+  // certain platforms, that this list will be extended as necessary.
   enum Reason {
     R_NO_ERROR,          // no error occurred
+
+    // TODO: Combine the next two.
     R_FILE_NOT_FOUND,    // We sometimes get this when R_PATH_NOT_FOUND might be expected...
     R_PATH_NOT_FOUND,
+
     R_ACCESS_DENIED,
     R_OUT_OF_MEMORY,
     R_SEGFAULT,          // invalid address / pointer
@@ -42,75 +43,127 @@ public:     // data
     R_INVALID_FILENAME,  // too long, bad chars, etc.
     R_UNKNOWN,           // OS-specific, can't find out, just don't know, etc.
     NUM_REASONS          // (must be last item in list)
-  } reason;
+  };
 
-  // reason string that corresponds to 'reason'
+public:      // class data
+  // Error strings for Reasons.
+  //
+  // TODO: Remove this member, as it is only needed in the
+  // implementation file.
+  static char const * const reasonStrings[];
+
+public:      // instance data
+  // Portable reason code corresponding to the platform-specific error
+  // code.
+  Reason reason;
+
+  // Reason string that corresponds to 'reason'.
+  //
+  // TODO: Remove this.
   char const * const reasonString;
 
-  // nonportable error code (errno on Unix, GetLastError() on Windows)
-  // (value is 0 when we don't have this information)
+  // Platform-specific error code: errno on Unix, GetLastError() on
+  // Windows.  The value is 0 when we don't have this information.
+  //
+  // TODO: When do we not have it?
+  //
+  // TODO: Change to std::optional<uint32_t>.
   int sysErrorCode;
 
-  // reason string given by the OS, if any (might be NULL)
-  string sysReasonString;
+  // Platform-specific reason string given by the OS, if any (might be
+  // empty).
+  std::string sysReasonString;
 
-  // name of syscall or API function name
-  string syscallName;
+  // Name of syscall or API function name, as specific in the ctor
+  // arguments.
+  std::string syscallName;
 
-  // error context; what was being done (e.g., "opening an.important.file")
-  string context;
+  // Error context, as specified in the ctor arguments.  This should be
+  // additional context details like the name a file we were trying to
+  // open.  May be empty.
+  //
+  // TODO: I should remove this and put the information into
+  // `XBase::m_contexts` instead.
+  std::string context;
 
-public:    // funcs
-  XSysError(Reason r, int sysCode, rostring sysReason,
-            rostring syscall, rostring ctx);
+public:      // methods
+  XSysError(
+    Reason r,
+    int sysCode,
+    std::string const &sysReason,
+    std::string const &syscall,
+    std::string const &ctx);
+
   XSysError(XSysError const &obj);
+
   ~XSysError();
 
   // XBase methods.
   virtual std::string getConflict() const override;
 
-  // mapping functions used internally
+  // TODO: Move most of the static methods out of the class.
+
+  // Retrieve the platform-specific error code.
   static int getSystemErrorCode();
-    // retrieve the error code used by local convention
-    // [nonportable implementation]
 
-  static Reason portablize(int sysErrorCode, string &sysReason);
-    // return a portable equivalent of a system error code;
-    // returns R_UNKNOWN if the code is esoteric or invalid;
-    // sets 'sysmsg' to the system's message string, if possible
-    // [nonportable implementation]
+  // Return a portable equivalent of `sysErrorCode`.  Returns R_UNKNOWN
+  // if the code is not recognized.  Sets `sysReason` to the system's
+  // message string, if possible.
+  //
+  // TODO: When is that not possible?  And what happens to `sysReason`
+  // in that case?
+  static Reason portablize(int sysErrorCode, std::string &sysReason);
 
+  // Translate a Reason into a human-readable description string.  If
+  // `r` is invalid, a string saying to will be returned.
   static char const *getReasonString(Reason r);
-    // translate a Reason into a string (if r is invalid, a string
-    // saying to will be returned)
 
-  static string constructWhyString(Reason r, rostring sysReason,
-                                            rostring syscall, rostring ctx);
-    // construct the string we throw as the 'why' of XBase; if ctx is NULL,
-    // the string doesn't include it
+  // Construct the string we use as the `getMessage()` of XBase.  If
+  // `ctx` is empty, the string doesn't include it.
+  static std::string constructWhyString(
+    Reason r,
+    std::string const &sysReason,
+    std::string const &syscall,
+    std::string const &ctx);
 
-  static void xsyserror(rostring syscallName, rostring context) NORETURN;
-    // does the throw
+  // Construct and throw an `XSysError`.
+  static void xsyserror(
+    std::string const &syscallName,
+    std::string const &context) NORETURN;
 };
 
 
-// function that does the throw
+// Construct and throw an `XSysError`.
 void xsyserror(char const *syscallName) NORETURN;
-void xsyserror(rostring syscallName, rostring context) NORETURN;
+void xsyserror(
+  std::string const &syscallName,
+  std::string const &context) NORETURN;
 
 
-// get a representative string, for logging etc.
-string sysErrorCodeString(int systemErrorCode,
-                          rostring syscallName,
-                          rostring context);
+// Get the message string that would be created if an `XSysError` were
+// built while the system's error code was `systemErrorCode`.
+std::string sysErrorCodeString(
+  int systemErrorCode,
+  std::string const &syscallName,
+  std::string const &context);
 
-string sysErrorString(char const *syscallName,
-                      char const *context=NULL);
+// Get the message string for the current system error code.
+std::string sysErrorString(
+  char const *syscallName,
+  char const *context = nullptr);
 
 
 // Issue a "developer warning" about a system call that just failed.
-void devWarningSysError(char const *file, int line,
-                        char const *syscallName, char const *context=NULL);
+//
+// This is useful when we don't want to stop what we are doing (perhaps
+// because the system call failure doesn't impede progress, for example
+// failing to close a resource), but still want an alert that could aid
+// diagnosis and amplfy testing efforts.
+void devWarningSysError(
+  char const *file,
+  int line,
+  char const *syscallName,
+  char const *context = nullptr);
 
 #define DEV_WARNING_SYSERROR(syscall) \
   smbase::devWarningSysError(__FILE__, __LINE__, syscall) /* user ; */
