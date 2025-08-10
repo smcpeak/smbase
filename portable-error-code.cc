@@ -12,8 +12,8 @@ OPEN_NAMESPACE(smbase)
 
 
 DEFINE_ENUMERATION_TO_STRING_OR(
-  SysErrorReasonCode,
-  SysErrorReasonCode::NUM_REASONS,
+  PortableErrorCode,
+  PortableErrorCode::NUM_REASONS,
   (
     "R_NO_ERROR",
     "R_FILE_NOT_FOUND",
@@ -29,21 +29,21 @@ DEFINE_ENUMERATION_TO_STRING_OR(
     "R_INVALID_FILENAME",
     "R_UNKNOWN",
   ),
-  "<invalid SysErrorReasonCode>"
+  "<invalid PortableErrorCode>"
 )
 
 
-std::ostream &operator<<(std::ostream &os, SysErrorReasonCode r)
+std::ostream &operator<<(std::ostream &os, PortableErrorCode r)
 {
   return os << toString(r);
 }
 
 
-char const *reasonCodeDescription(SysErrorReasonCode r)
+char const *reasonCodeDescription(PortableErrorCode r)
 {
   RETURN_ENUMERATION_STRING_OR(
-    SysErrorReasonCode,
-    SysErrorReasonCode::NUM_REASONS,
+    PortableErrorCode,
+    PortableErrorCode::NUM_REASONS,
     (
       "No error occurred",
       "File not found",
@@ -60,7 +60,7 @@ char const *reasonCodeDescription(SysErrorReasonCode r)
       "Unknown or unrecognized error",
     ),
     r,
-    "<bug -- invalid SysErrorReasonCode>"
+    "<bug -- invalid PortableErrorCode>"
   )
 }
 

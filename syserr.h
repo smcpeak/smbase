@@ -12,7 +12,7 @@
 // is needed by low-level code that directly queries the OS.
 
 #include "smbase/exc.h"                          // smbase::XBase
-#include "smbase/portable-error-code.h"          // SysErrorReasonCode
+#include "smbase/portable-error-code.h"          // PortableErrorCode
 #include "smbase/sm-macros.h"                    // OPEN_NAMESPACE, NORETURN
 
 #include <string>                                // std::string
@@ -26,7 +26,7 @@ class XSysError : public XBase {
 public:      // instance data
   // Portable reason code corresponding to the platform-specific error
   // code.
-  SysErrorReasonCode reason;
+  PortableErrorCode reason;
 
   // Reason string that corresponds to 'reason'.
   //
@@ -59,7 +59,7 @@ public:      // instance data
 
 public:      // methods
   XSysError(
-    SysErrorReasonCode r,
+    PortableErrorCode r,
     int sysCode,
     std::string const &sysReason,
     std::string const &syscall,
@@ -83,13 +83,13 @@ public:      // methods
   //
   // TODO: When is that not possible?  And what happens to `sysReason`
   // in that case?
-  static SysErrorReasonCode portablize(
+  static PortableErrorCode portablize(
     int sysErrorCode, std::string &sysReason);
 
   // Construct the string we use as the `getMessage()` of XBase.  If
   // `ctx` is empty, the string doesn't include it.
   static std::string constructWhyString(
-    SysErrorReasonCode r,
+    PortableErrorCode r,
     std::string const &sysReason,
     std::string const &syscall,
     std::string const &ctx);

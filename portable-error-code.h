@@ -1,10 +1,6 @@
 // portable-error-code.h
 // Portable enumeration of system call error code categories.
 
-// The basic idea is we map platform-specific error codes to elements of
-// this enumeration in order to allow code to portably distinguish among
-// various error causes.
-
 // See license.txt for copyright and terms of use.
 
 #ifndef SMBASE_PORTABLE_ERROR_CODE_H
@@ -18,13 +14,15 @@
 OPEN_NAMESPACE(smbase)
 
 
-// Portable failure reasons (modeled loosely on errno.h).
+// Portable categories of system call errors.
+//
+// The basic idea is we map platform-specific error codes to elements of
+// this enumeration in order to allow code to portably distinguish among
+// various error causes.
 //
 // It is anticipated that, as certain errors become important on
 // certain platforms, that this list will be extended as necessary.
-//
-// TODO: Rename this to PortableErrorCode.
-enum class SysErrorReasonCode : int {
+enum class PortableErrorCode : int {
   // No error occurred.
   //
   // POSIX: 0
@@ -108,13 +106,13 @@ enum class SysErrorReasonCode : int {
 
 // Return a string like "R_NO_ERROR", or "<invalid>" if `r` is out of
 // bounds.
-char const *toString(SysErrorReasonCode r);
+char const *toString(PortableErrorCode r);
 
 // Write `toString(r)`.
-std::ostream &operator<<(std::ostream &os, SysErrorReasonCode r);
+std::ostream &operator<<(std::ostream &os, PortableErrorCode r);
 
 // Human-readable string like "File not found".
-char const *reasonCodeDescription(SysErrorReasonCode r);
+char const *reasonCodeDescription(PortableErrorCode r);
 
 
 CLOSE_NAMESPACE(smbase)

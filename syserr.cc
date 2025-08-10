@@ -16,7 +16,7 @@ OPEN_NAMESPACE(smbase)
 
 
 // ----------------------------- XSysError -----------------------------
-XSysError::XSysError(SysErrorReasonCode r, int sysCode, rostring sysReason,
+XSysError::XSysError(PortableErrorCode r, int sysCode, rostring sysReason,
                      rostring syscall, rostring ctx)
   : XBase(),
     reason(r),
@@ -29,7 +29,7 @@ XSysError::XSysError(SysErrorReasonCode r, int sysCode, rostring sysReason,
 
 
 STATICDEF string XSysError::
-  constructWhyString(SysErrorReasonCode r, rostring sysReason,
+  constructWhyString(PortableErrorCode r, rostring sysReason,
                      rostring syscall, rostring ctx)
 {
   // build string; start with syscall that failed
@@ -41,7 +41,7 @@ STATICDEF string XSysError::
   sb << ": ";
 
   // now a failure reason string
-  if (r != SysErrorReasonCode::R_UNKNOWN) {
+  if (r != PortableErrorCode::R_UNKNOWN) {
     sb << reasonCodeDescription(r);
   }
   else if ( /*(sysReason != NULL) &&*/ (sysReason[0] != 0)) {
@@ -86,7 +86,7 @@ STATICDEF void XSysError::
 
   // translate it into one of ours
   string sysMsg;
-  SysErrorReasonCode r = portablize(code, sysMsg);
+  PortableErrorCode r = portablize(code, sysMsg);
 
   // construct an object to throw
   XSysError obj(r, code, sysMsg, syscallName, context);
@@ -111,7 +111,7 @@ string sysErrorCodeString(int systemErrorCode,
                                    rostring context)
 {
   string sysMsg;
-  SysErrorReasonCode r = XSysError::portablize(systemErrorCode, sysMsg);
+  PortableErrorCode r = XSysError::portablize(systemErrorCode, sysMsg);
   return XSysError::constructWhyString(
            r, sysMsg,
            syscallName, context);
@@ -180,7 +180,7 @@ STATICDEF int XSysError::getSystemErrorCode()
 }
 
 
-STATICDEF SysErrorReasonCode XSysError::portablize(
+STATICDEF PortableErrorCode XSysError::portablize(
   int sysErrorCode, string &sysMsg)
 {
   // I'd like to put this into a static class member, but then
@@ -227,9 +227,9 @@ STATICDEF SysErrorReasonCode XSysError::portablize(
 
   static struct S {
     int code;
-    SysErrorReasonCode reason;
+    PortableErrorCode reason;
   } const arr[] = {
-    #define ENTRY(c, r) { c, SysErrorReasonCode::r }
+    #define ENTRY(c, r) { c, PortableErrorCode::r }
     ENTRY(ERROR_SUCCESS,            R_NO_ERROR),
     ENTRY(ERROR_FILE_NOT_FOUND,     R_FILE_NOT_FOUND),
     ENTRY(ERROR_PATH_NOT_FOUND,     R_FILE_NOT_FOUND),
@@ -254,7 +254,7 @@ STATICDEF SysErrorReasonCode XSysError::portablize(
   }
 
   // I don't know
-  return SysErrorReasonCode::R_UNKNOWN;
+  return PortableErrorCode::R_UNKNOWN;
 }
 
 
@@ -296,7 +296,7 @@ STATICDEF int XSysError::getSystemErrorCode()
 }
 
 
-STATICDEF SysErrorReasonCode XSysError::portablize(
+STATICDEF PortableErrorCode XSysError::portablize(
   int sysErrorCode, string &sysMsg)
 {
   sysMsg = strerror(sysErrorCode);
@@ -304,7 +304,7 @@ STATICDEF SysErrorReasonCode XSysError::portablize(
 
   static struct S {
     int code;
-    SysErrorReasonCode reason;
+    PortableErrorCode reason;
   } const arr[] = {
     { EZERO,        R_NO_ERROR          },
     { ENOFILE,      R_FILE_NOT_FOUND    },
@@ -329,7 +329,7 @@ STATICDEF SysErrorReasonCode XSysError::portablize(
   }
 
   // I don't know
-  return SysErrorReasonCode::R_UNKNOWN;
+  return PortableErrorCode::R_UNKNOWN;
 }
 
 
