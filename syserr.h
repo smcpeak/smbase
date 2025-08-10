@@ -8,54 +8,61 @@
 #ifndef SMBASE_SYSERR_H
 #define SMBASE_SYSERR_H
 
+// Note: This module is meant to have a minimum of dependencies since it
+// is needed by low-level code that directly queries the OS.
+
 #include "smbase/exc.h"                // smbase::XBase
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE, NORETURN
 
+#include <iosfwd>                      // std::ostream
 #include <string>                      // std::string
 
 
 OPEN_NAMESPACE(smbase)
 
 
+// Portable failure reasons (modeled loosely on errno.h).
+//
+// It is anticipated that, as certain errors become important on
+// certain platforms, that this list will be extended as necessary.
+enum class SysErrorReasonCode : int {
+  R_NO_ERROR,          // no error occurred
+
+  // TODO: Combine the next two.
+  R_FILE_NOT_FOUND,    // We sometimes get this when R_PATH_NOT_FOUND might be expected...
+  R_PATH_NOT_FOUND,
+
+  R_ACCESS_DENIED,
+  R_OUT_OF_MEMORY,
+  R_SEGFAULT,          // invalid address / pointer
+  R_FORMAT,            // bad data format
+  R_INVALID_ARGUMENT,
+  R_READ_ONLY,
+  R_ALREADY_EXISTS,
+  R_AGAIN,             // resource temporarily unavailable
+  R_BUSY,              // resource busy
+  R_INVALID_FILENAME,  // too long, bad chars, etc.
+  R_UNKNOWN,           // OS-specific, can't find out, just don't know, etc.
+  NUM_REASONS          // (must be last item in list)
+};
+
+// Return a string like "R_NO_ERROR", or "<invalid>" if `r` is out of
+// bounds.
+char const *toString(SysErrorReasonCode r);
+
+// Write `toString(r)`.
+std::ostream &operator<<(std::ostream &os, SysErrorReasonCode r);
+
+// Human-readable string like "File not found".
+char const *reasonCodeDescription(SysErrorReasonCode r);
+
+
 // Thrown in response to a system call failure.
 class XSysError : public XBase {
-public:      // types
-  // Portable failure reasons (modeled loosely on errno.h).
-  //
-  // It is anticipated that, as certain errors become important on
-  // certain platforms, that this list will be extended as necessary.
-  enum Reason {
-    R_NO_ERROR,          // no error occurred
-
-    // TODO: Combine the next two.
-    R_FILE_NOT_FOUND,    // We sometimes get this when R_PATH_NOT_FOUND might be expected...
-    R_PATH_NOT_FOUND,
-
-    R_ACCESS_DENIED,
-    R_OUT_OF_MEMORY,
-    R_SEGFAULT,          // invalid address / pointer
-    R_FORMAT,            // bad data format
-    R_INVALID_ARGUMENT,
-    R_READ_ONLY,
-    R_ALREADY_EXISTS,
-    R_AGAIN,             // resource temporarily unavailable
-    R_BUSY,              // resource busy
-    R_INVALID_FILENAME,  // too long, bad chars, etc.
-    R_UNKNOWN,           // OS-specific, can't find out, just don't know, etc.
-    NUM_REASONS          // (must be last item in list)
-  };
-
-public:      // class data
-  // Error strings for Reasons.
-  //
-  // TODO: Remove this member, as it is only needed in the
-  // implementation file.
-  static char const * const reasonStrings[];
-
 public:      // instance data
   // Portable reason code corresponding to the platform-specific error
   // code.
-  Reason reason;
+  SysErrorReasonCode reason;
 
   // Reason string that corresponds to 'reason'.
   //
@@ -88,7 +95,7 @@ public:      // instance data
 
 public:      // methods
   XSysError(
-    Reason r,
+    SysErrorReasonCode r,
     int sysCode,
     std::string const &sysReason,
     std::string const &syscall,
@@ -112,16 +119,13 @@ public:      // methods
   //
   // TODO: When is that not possible?  And what happens to `sysReason`
   // in that case?
-  static Reason portablize(int sysErrorCode, std::string &sysReason);
-
-  // Translate a Reason into a human-readable description string.  If
-  // `r` is invalid, a string saying to will be returned.
-  static char const *getReasonString(Reason r);
+  static SysErrorReasonCode portablize(
+    int sysErrorCode, std::string &sysReason);
 
   // Construct the string we use as the `getMessage()` of XBase.  If
   // `ctx` is empty, the string doesn't include it.
   static std::string constructWhyString(
-    Reason r,
+    SysErrorReasonCode r,
     std::string const &sysReason,
     std::string const &syscall,
     std::string const &ctx);

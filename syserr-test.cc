@@ -25,7 +25,7 @@ using namespace smbase;
 // be added to the count of failed tests.
 static int tryFail(std::function<bool ()> failingCall,
                    char const *failingCallText,
-                   std::set<XSysError::Reason> const &reasons)
+                   std::set<SysErrorReasonCode> const &reasons)
 {
   try {
     if (failingCall()) {
@@ -42,8 +42,8 @@ static int tryFail(std::function<bool ()> failingCall,
       // Convert the expected reasons into strings.
       std::set<std::string> reasonStrings =
         setMapElements<std::string>(reasons,
-          [](XSysError::Reason r) -> std::string {
-            return XSysError::getReasonString(r);
+          [](SysErrorReasonCode r) -> std::string {
+            return reasonCodeDescription(r);
           });
 
       cout << "ERROR: " << failingCallText << " returned '"
@@ -70,14 +70,14 @@ void test_syserr()
 
 
   TRY_FAIL(changeDirectory("some.strange.name/yadda"),
-           XSysError::R_PATH_NOT_FOUND,
-           XSysError::R_FILE_NOT_FOUND);
+           SysErrorReasonCode::R_PATH_NOT_FOUND,
+           SysErrorReasonCode::R_FILE_NOT_FOUND);
 
   TRY_FAIL(createDirectory("test"),
-           XSysError::R_ALREADY_EXISTS);
+           SysErrorReasonCode::R_ALREADY_EXISTS);
 
   TRY_FAIL(isDirectory("doesnt.exist"),
-           XSysError::R_FILE_NOT_FOUND);
+           SysErrorReasonCode::R_FILE_NOT_FOUND);
 
   if (errors > 0) {
     cout << errors << " error(s)\n";

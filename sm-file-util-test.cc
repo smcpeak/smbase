@@ -789,7 +789,7 @@ void testCreateDirectoryAndParents()
     xfailure("that should have failed");
   }
   catch (XSysError &x) {
-    xassert(x.reason == XSysError::R_ALREADY_EXISTS);
+    xassert(x.reason == SysErrorReasonCode::R_ALREADY_EXISTS);
   }
 
   // Clean up.

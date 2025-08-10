@@ -416,12 +416,15 @@ inline void pretendUsedFn(T const &) {}
 
 // The core of the enum-to-string logic, exposed separately so I can use
 // it to define functions not called 'toString()'.
+//
+// The `static_cast`s are in part to allow the use of an `enum class`
+// here.
 #define RETURN_ENUMERATION_STRING_OR(Enumeration, NUM_VALUES, nameList, value, unknown) \
   static char const * const names[] =                                                   \
     { SMBASE_PP_UNWRAP_PARENS nameList };                                               \
-  ASSERT_TABLESIZE(names, (NUM_VALUES));                                                \
+  ASSERT_TABLESIZE(names, static_cast<int>(NUM_VALUES));                                                \
   if ((unsigned)value < TABLESIZE(names)) {                                             \
-    return names[value];                                                                \
+    return names[static_cast<unsigned>(value)];                                                                \
   }                                                                                     \
   else {                                                                                \
     return unknown;                                                                     \

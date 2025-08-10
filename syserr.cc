@@ -6,60 +6,79 @@
 #include "syserr.h"                    // this module
 
 #include "smbase/dev-warning.h"        // devWarning
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE, DEFINE_ENUMERATION_TO_STRING_OR, RETURN_ENUMERATION_STRING_OR
 #include "smbase/string-util.h"        // doubleQuote
 
 #include <cstring>                     // std::strlen
+#include <iostream>                    // std::ostream
 
 
-// ---------------- portable code ----------------
 OPEN_NAMESPACE(smbase)
 
 
-char const * const XSysError::reasonStrings[] = {
-  "No error occurred",
-  "File not found",
-  "Path not found",
-  "Access denied",
-  "Out of memory (maybe)",    // always a suspicious message
-  "Invalid pointer address",
-  "Invalid data format",
-  "Invalid argument",
-  "Attempt to modify read-only data",
-  "The object already exists",
-  "Resource is temporarily unavailable",
-  "Resource is busy",
-  "File name is invalid (too long, or bad chars, or ...)",
-  "Unknown or unrecognized error",
-  "(bug -- invalid reason code)"        // corresponds to NUM_REASONS
-};
+// ------------------------ SysErrorReasonCode -------------------------
+DEFINE_ENUMERATION_TO_STRING_OR(
+  SysErrorReasonCode,
+  SysErrorReasonCode::NUM_REASONS,
+  (
+    "R_NO_ERROR",
+    "R_FILE_NOT_FOUND",
+    "R_PATH_NOT_FOUND",
+    "R_ACCESS_DENIED",
+    "R_OUT_OF_MEMORY",
+    "R_SEGFAULT",
+    "R_FORMAT",
+    "R_INVALID_ARGUMENT",
+    "R_READ_ONLY",
+    "R_ALREADY_EXISTS",
+    "R_AGAIN",
+    "R_BUSY",
+    "R_INVALID_FILENAME",
+    "R_UNKNOWN",
+  ),
+  "<invalid SysErrorReasonCode>"
+)
 
 
-STATICDEF char const *XSysError::
-  getReasonString(XSysError::Reason r)
+std::ostream &operator<<(std::ostream &os, SysErrorReasonCode r)
 {
-  // at compile-time, verify consistency between enumeration and string array
-  // (it's in here because, at least on Borland, the preprocessor respects
-  // the member access rules (strangely..))
-  #ifdef __BORLANDC__
-    #if TABLESIZE(reasonStrings) != NUM_REASONS+1
-      #error table and enumeration do not match
-    #endif
-  #endif
-
-  if ((unsigned)r < NUM_REASONS) {
-    return reasonStrings[r];
-  }
-  else {
-    return reasonStrings[NUM_REASONS];
-  }
+  return os << toString(r);
 }
 
 
-XSysError::XSysError(XSysError::Reason r, int sysCode, rostring sysReason,
+char const *reasonCodeDescription(SysErrorReasonCode r)
+{
+  RETURN_ENUMERATION_STRING_OR(
+    SysErrorReasonCode,
+    SysErrorReasonCode::NUM_REASONS,
+    (
+      "No error occurred",
+      "File not found",
+      "Path not found",
+      "Access denied",
+      "Out of memory (maybe)",    // always a suspicious message
+      "Invalid pointer address",
+      "Invalid data format",
+      "Invalid argument",
+      "Attempt to modify read-only data",
+      "The object already exists",
+      "Resource is temporarily unavailable",
+      "Resource is busy",
+      "File name is invalid (too long, or bad chars, or ...)",
+      "Unknown or unrecognized error",
+    ),
+    r,
+    "<bug -- invalid SysErrorReasonCode>"
+  )
+}
+
+
+// ----------------------------- XSysError -----------------------------
+XSysError::XSysError(SysErrorReasonCode r, int sysCode, rostring sysReason,
                      rostring syscall, rostring ctx)
   : XBase(),
     reason(r),
-    reasonString(getReasonString(r)),
+    reasonString(reasonCodeDescription(r)),
     sysErrorCode(sysCode),
     sysReasonString(sysReason),
     syscallName(syscall),
@@ -68,7 +87,7 @@ XSysError::XSysError(XSysError::Reason r, int sysCode, rostring sysReason,
 
 
 STATICDEF string XSysError::
-  constructWhyString(XSysError::Reason r, rostring sysReason,
+  constructWhyString(SysErrorReasonCode r, rostring sysReason,
                      rostring syscall, rostring ctx)
 {
   // build string; start with syscall that failed
@@ -80,15 +99,15 @@ STATICDEF string XSysError::
   sb << ": ";
 
   // now a failure reason string
-  if (r != R_UNKNOWN) {
-    sb << getReasonString(r);
+  if (r != SysErrorReasonCode::R_UNKNOWN) {
+    sb << reasonCodeDescription(r);
   }
   else if ( /*(sysReason != NULL) &&*/ (sysReason[0] != 0)) {
     sb << sysReason;
   }
   else {
     // no useful info, use the R_UNKNOWN string
-    sb << getReasonString(r);
+    sb << reasonCodeDescription(r);
   }
 
   return sb.str();
@@ -125,7 +144,7 @@ STATICDEF void XSysError::
 
   // translate it into one of ours
   string sysMsg;
-  Reason r = portablize(code, sysMsg);
+  SysErrorReasonCode r = portablize(code, sysMsg);
 
   // construct an object to throw
   XSysError obj(r, code, sysMsg, syscallName, context);
@@ -150,7 +169,7 @@ string sysErrorCodeString(int systemErrorCode,
                                    rostring context)
 {
   string sysMsg;
-  XSysError::Reason r = XSysError::portablize(systemErrorCode, sysMsg);
+  SysErrorReasonCode r = XSysError::portablize(systemErrorCode, sysMsg);
   return XSysError::constructWhyString(
            r, sysMsg,
            syscallName, context);
@@ -219,7 +238,7 @@ STATICDEF int XSysError::getSystemErrorCode()
 }
 
 
-STATICDEF XSysError::Reason XSysError::portablize(
+STATICDEF SysErrorReasonCode XSysError::portablize(
   int sysErrorCode, string &sysMsg)
 {
   // I'd like to put this into a static class member, but then
@@ -266,21 +285,23 @@ STATICDEF XSysError::Reason XSysError::portablize(
 
   static struct S {
     int code;
-    Reason reason;
+    SysErrorReasonCode reason;
   } const arr[] = {
-    { ERROR_SUCCESS,           R_NO_ERROR          },
-    { ERROR_FILE_NOT_FOUND,    R_FILE_NOT_FOUND    },
-    { ERROR_PATH_NOT_FOUND,    R_PATH_NOT_FOUND    },
-    { ERROR_ACCESS_DENIED,     R_ACCESS_DENIED     },
-    { ERROR_NOT_ENOUGH_MEMORY, R_OUT_OF_MEMORY     },
-    { ERROR_OUTOFMEMORY,       R_OUT_OF_MEMORY     },
-    { ERROR_INVALID_BLOCK,     R_SEGFAULT          },
-    { ERROR_BAD_FORMAT,        R_FORMAT            },
-    { ERROR_INVALID_DATA,      R_INVALID_ARGUMENT  },
-    { ERROR_WRITE_PROTECT,     R_READ_ONLY         },
-    { ERROR_ALREADY_EXISTS,    R_ALREADY_EXISTS    },
-    // ???                     R_AGAIN
-    { ERROR_BUSY,              R_BUSY              },
+    #define ENTRY(c, r) { c, SysErrorReasonCode::r }
+    ENTRY(ERROR_SUCCESS,            R_NO_ERROR),
+    ENTRY(ERROR_FILE_NOT_FOUND,     R_FILE_NOT_FOUND),
+    ENTRY(ERROR_PATH_NOT_FOUND,     R_PATH_NOT_FOUND),
+    ENTRY(ERROR_ACCESS_DENIED,      R_ACCESS_DENIED),
+    ENTRY(ERROR_NOT_ENOUGH_MEMORY,  R_OUT_OF_MEMORY),
+    ENTRY(ERROR_OUTOFMEMORY,        R_OUT_OF_MEMORY),
+    ENTRY(ERROR_INVALID_BLOCK,      R_SEGFAULT),
+    ENTRY(ERROR_BAD_FORMAT,         R_FORMAT),
+    ENTRY(ERROR_INVALID_DATA,       R_INVALID_ARGUMENT),
+    ENTRY(ERROR_WRITE_PROTECT,      R_READ_ONLY),
+    ENTRY(ERROR_ALREADY_EXISTS,     R_ALREADY_EXISTS),
+    // What corresponds to R_AGAIN?
+    ENTRY(ERROR_BUSY,               R_BUSY),
+    #undef ENTRY
   };
 
   smbase_loopi(TABLESIZE(arr)) {
@@ -291,7 +312,7 @@ STATICDEF XSysError::Reason XSysError::portablize(
   }
 
   // I don't know
-  return R_UNKNOWN;
+  return SysErrorReasonCode::R_UNKNOWN;
 }
 
 
@@ -333,7 +354,7 @@ STATICDEF int XSysError::getSystemErrorCode()
 }
 
 
-STATICDEF XSysError::Reason XSysError::portablize(
+STATICDEF SysErrorReasonCode XSysError::portablize(
   int sysErrorCode, string &sysMsg)
 {
   sysMsg = strerror(sysErrorCode);
@@ -341,7 +362,7 @@ STATICDEF XSysError::Reason XSysError::portablize(
 
   static struct S {
     int code;
-    Reason reason;
+    SysErrorReasonCode reason;
   } const arr[] = {
     { EZERO,        R_NO_ERROR          },
     { ENOFILE,      R_FILE_NOT_FOUND    },
@@ -366,7 +387,7 @@ STATICDEF XSysError::Reason XSysError::portablize(
   }
 
   // I don't know
-  return R_UNKNOWN;
+  return SysErrorReasonCode::R_UNKNOWN;
 }
 
 
