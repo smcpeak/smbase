@@ -56,7 +56,16 @@ void test_trdelete()
   f->x = 5;
   fieldptr = &(f->x);
   assert(*fieldptr == 5);
+
+  // If optimization is not enabled, GCC complains about this line:
+  //
+  // error: 'static void {anonymous}::Foo::operator delete(void*,
+  // size_t)' called on pointer returned from a mismatched allocation
+  // function -Werror=mismatched-new-delete]
+  //
+  // TODO: Just delete this module, it is obsolete anyway.
   delete f;
+
   if (*fieldptr == 5) {
     printf("trashing-delete failed\n");
     exit(2);
