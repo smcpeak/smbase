@@ -41,6 +41,46 @@ auto Span<T>::iterator::operator++(int) -> iterator
 
 
 template <typename T>
+auto Span<T>::iterator::operator--() -> iterator &
+{
+  --m_elementPointer;
+  return *this;
+}
+
+
+template <typename T>
+auto Span<T>::iterator::operator--(int) -> iterator
+{
+  iterator ret(*this);
+  --m_elementPointer;
+  return ret;
+}
+
+
+template <typename T>
+auto Span<T>::iterator::operator+=(difference_type n) -> iterator &
+{
+  m_elementPointer += n;
+  return *this;
+}
+
+
+template <typename T>
+auto Span<T>::iterator::operator-=(difference_type n) -> iterator &
+{
+  m_elementPointer -= n;
+  return *this;
+}
+
+
+template <typename T>
+T &Span<T>::iterator::operator[](difference_type n) const
+{
+  return m_elementPointer[n];
+}
+
+
+template <typename T>
 int Span<T>::iterator::compareTo(iterator const &b) const
 {
   auto const &a = *this;

@@ -16,7 +16,8 @@
 #include "smbase/sm-type-traits.h"     // smbase::IsConstAndNonConst_v
 #include "smbase/std-vector-fwd.h"     // std::vector
 
-#include <cstddef>                     // std::size_t
+#include <cstddef>                     // std::{ptrdiff_t, size_t}
+#include <iterator>                    // std::random_access_iterator_tag (32kLOC header!)
 
 
 OPEN_NAMESPACE(smbase)
@@ -45,6 +46,13 @@ public:      // types
   class iterator {
     friend class Span<T>;
 
+  public:      // standard typedefs
+    using iterator_category = std::random_access_iterator_tag;
+    using value_type        = T;
+    using difference_type   = std::ptrdiff_t;
+    using pointer           = T*;
+    using reference         = T&;
+
   private:     // data
     // Pointer to current view element.
     //
@@ -66,6 +74,23 @@ public:      // types
 
     inline iterator &operator++();
     inline iterator operator++(int);
+    inline iterator &operator--();
+    inline iterator operator--(int);
+
+    inline iterator &operator+=(difference_type n);
+    inline iterator &operator-=(difference_type n);
+
+    // These are very difficult to define outside the class.
+    friend inline iterator operator+(iterator it, difference_type n)
+      { it += n; return it; }
+    friend inline iterator operator+(difference_type n, iterator it)
+      { it += n; return it; }
+    friend inline iterator operator-(iterator it, difference_type n)
+      { it -= n; return it; }
+    friend inline difference_type operator-(iterator a, iterator b)
+      { return a.m_elementPointer - b.m_elementPointer; }
+
+    inline T &operator[](difference_type n) const;
 
     DECLARE_COMPARETO_AND_DEFINE_RELATIONALS(iterator)
   };
@@ -87,7 +112,8 @@ public:      // methods
   // Pointer and size.
   inline Span(T *data, size_type size);
 
-  // Array with known size.
+  // Array with known size.  C++ language rules require that the size
+  // must not be zero for this overload to be feasible.
   template <std::size_t size>
   inline Span(T (&arr)[size])
     : m_data(arr), m_size(size) {}

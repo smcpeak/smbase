@@ -3,11 +3,16 @@
 
 #include "sm-span.h"                   // module under test
 
+#include "smbase/gdvalue.h"            // gdv::toGDValue
+#include "smbase/gdvalue-span.h"       // gdv::toGDValue(Span)
+#include "smbase/gdvalue-vector.h"     // gdv::toGDValue(std::vector)
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE, TABLESIZE
-#include "smbase/sm-test.h"            // EXPECT_EQ, TEST_CASE
+#include "smbase/sm-test.h"            // EXPECT_EQ[_GDV], TEST_CASE
 
+#include <algorithm>                   // std::sort
 #include <vector>                      // std::vector
 
+using namespace gdv;
 using namespace smbase;
 
 
@@ -124,6 +129,68 @@ void test_defaultCtor()
 }
 
 
+void test_sort()
+{
+  int arr[5] = { 10, 4, 19, 25, 2 };
+  Span<int> sp(arr);
+
+  // For this to work, `Span::iterator` has to not only satisfy the
+  // requirements of a random access iterator, but also advertise itself
+  // as such with its `iterator_category`.  The latter is unfortunate
+  // since it requires #including <iterator>, which is a large header.
+  std::sort(sp.begin(), sp.end());
+
+  EXPECT_EQ_GDV(sp, (std::vector<int>{ 2, 4, 10, 19, 25 }));
+}
+
+
+void test_iterator()
+{
+  int arr[] = {10, 20, 30, 40, 50};
+  Span<int> s(arr);
+
+  auto it = s.begin();
+  EXPECT_EQ(*it, 10);
+
+  // Test ++ and --
+  ++it; EXPECT_EQ(*it, 20);
+  it++; EXPECT_EQ(*it, 30);
+  --it; EXPECT_EQ(*it, 20);
+  it--; EXPECT_EQ(*it, 10);
+
+  // Test += and -=
+  it += 2; EXPECT_EQ(*it, 30);
+  it -= 1; EXPECT_EQ(*it, 20);
+
+  // Test + and -
+  auto it2 = it + 3; EXPECT_EQ(*it2, 50);
+  auto it3 = 2 + s.begin(); EXPECT_EQ(*it3, 30);
+  auto it4 = it2 - 2; EXPECT_EQ(*it4, 30);
+
+  // Test difference
+  EXPECT_EQ((s.end() - s.begin()), 5);
+  EXPECT_EQ((it2 - it), 3);
+
+  // Test []
+  EXPECT_EQ(s.begin()[0], 10);
+  EXPECT_EQ(s.begin()[4], 50);
+
+  // Test comparisons
+  xassert(s.begin() < s.end());
+  xassert(s.begin() <= s.begin());
+  xassert(s.end() > s.begin());
+  xassert(!(s.begin() > s.end()));
+  xassert(s.begin() != s.end());
+  xassert(!(s.begin() == s.end()));
+
+  // Test traversal via loop
+  int idx = 0;
+  for (auto it = s.begin(); it != s.end(); ++it) {
+    EXPECT_EQ(*it, arr[idx++]);
+  }
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -137,6 +204,8 @@ void test_sm_span()
   test_subspan();
   test_arrayOfConst();
   test_defaultCtor();
+  test_sort();
+  test_iterator();
 }
 
 
