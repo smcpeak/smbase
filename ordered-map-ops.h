@@ -4,7 +4,7 @@
 #ifndef SMBASE_ORDERED_MAP_OPS_H
 #define SMBASE_ORDERED_MAP_OPS_H
 
-#include "ordered-map.h"               // interface for this module
+#include "ordered-map-iface.h"         // interface for this module
 
 #include "smbase/compare-util.h"       // smbase::compareSequences
 #include "smbase/map-util.h"           // smbase::mapKeySet

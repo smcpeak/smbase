@@ -15,7 +15,7 @@
 #include "smbase/gdv-ordered-map-iface.h"
 
 // `smbase::OrderedMap` full definitions.
-#include "smbase/ordered-map-ops.h"
+#include "smbase/ordered-map.h"
 
 
 #endif // SMBASE_GDV_ORDERED_MAP_H

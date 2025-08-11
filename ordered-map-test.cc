@@ -1,7 +1,7 @@
 // ordered-map-test.cc
 // Tests for `ordered-map` module.
 
-#include "smbase/ordered-map-ops.h"    // module under test
+#include "smbase/ordered-map.h"        // module under test
 
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
 #include "smbase/sm-test.h"            // EXPECT_EQ, DIAG
