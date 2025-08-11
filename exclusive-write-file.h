@@ -7,7 +7,7 @@
 #define SMBASE_EXCLUSIVE_WRITE_FILE_H
 
 #include "smbase/exc.h"                          // smbase::XBase
-#include "smbase/sm-macros.h"                    // NO_OBJECT_COPIES, OPEN_NAMESPACE
+#include "smbase/sm-macros.h"                    // NO_OBJECT_COPIES, OPEN_NAMESPACE, NULLABLE
 #include "smbase/std-string-view-fwd.h"          // std::string_view
 #include "smbase/system-error-code.h"            // smbase::SystemErrorCode
 
@@ -102,6 +102,19 @@ public:      // methods
   // it.
   virtual std::string getConflict() const override;
 };
+
+
+// Attempt to open, with exclusive write access, a file with a name
+// based on `fname`.  Keep trying up to (by default) 100 variations.
+// Upon success, return an owner pointer to the file object and set
+// `fname` to the adjusted name.  Throw an exception if all attempts
+// fail.
+//
+// Setting the envvar `EXCLUSIVE_FILE_MAX_SUFFIX` will adjust the number
+// of attempts, and setting it to 0 disables such file creation
+// entirely, causing this function to return null.
+ExclusiveWriteFile * NULLABLE tryCreateExclusiveWriteFile(
+  std::string &fname /*INOUT*/);
 
 
 CLOSE_NAMESPACE(smbase)

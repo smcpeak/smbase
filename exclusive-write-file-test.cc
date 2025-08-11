@@ -12,6 +12,7 @@
 
 #include <cstdlib>                               // std::exit
 #include <iostream>                              // std::{cin, cout, endl}
+#include <memory>                                // std::unique_ptr
 
 using namespace smbase;
 
@@ -116,6 +117,27 @@ void test_wait()
 }
 
 
+void test_createExclusive()
+{
+  std::string fname1(testFileName);
+  std::unique_ptr<ExclusiveWriteFile> file1(
+    tryCreateExclusiveWriteFile(fname1));
+  VPVAL(fname1);
+  file1->stream() << "write to " << fname1 << "\n";
+  EXPECT_EQ(fname1, testFileName);
+
+  std::string fname2(testFileName);
+  std::unique_ptr<ExclusiveWriteFile> file2(
+    tryCreateExclusiveWriteFile(fname2));
+  VPVAL(fname2);
+  file2->stream() << "write to " << fname2 << "\n";
+
+  // On Windows, we get exclusion within the process.  What will Linux
+  // do?
+  EXPECT_EQ(fname2, stringb(testFileName << ".2"));
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -129,6 +151,7 @@ void test_exclusive_write_file()
 
   test_simple();
   test_close();
+  test_createExclusive();
 }
 
 

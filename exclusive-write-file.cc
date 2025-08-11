@@ -6,6 +6,7 @@
 #include "exclusive-write-file.h"                // this module
 
 #include "smbase/exc.h"                          // EXN_CONTEXT, GENERIC_CATCH_BEGIN, OPEN_NAMESPACE
+#include "smbase/sm-env.h"                       // smbase::envAsIntOr
 #include "smbase/syserr.h"                       // xsyserror
 
 #include <iostream>                              // std::ostream
@@ -85,7 +86,7 @@ public:      // methods
     : m_hFile(INVALID_HANDLE_VALUE),
       m_stream()
   {
-    EXN_CONTEXT(fname);
+    EXN_CONTEXT(doubleQuote(fname));
 
     // `CreateFileA` requires a NUL-terminated string.  (It's possible,
     // even likely, that the caller had a `string` object already, but
@@ -297,6 +298,39 @@ std::ostream &ExclusiveWriteFile::stream()
 void ExclusiveWriteFile::selfCheck() const
 {
   m_private->selfCheck();
+}
+
+
+// -------------------- tryCreateExclusiveWriteFile --------------------
+ExclusiveWriteFile * NULLABLE tryCreateExclusiveWriteFile(
+  std::string &fname /*INOUT*/)
+{
+  int const maxSuffix = envAsIntOr(100, "EXCLUSIVE_FILE_MAX_SUFFIX");
+  for (int suffix = 1; suffix <= maxSuffix; ++suffix) {
+    std::string attemptName = fname;
+    if (suffix > 1) {
+      attemptName = stringb(fname << "." << suffix);
+    }
+
+    try {
+      ExclusiveWriteFile *ret = new ExclusiveWriteFile(attemptName);
+      fname = attemptName;
+      return ret;
+    }
+    catch (XExclusiveWriteFileConflict &x) {
+      if (suffix == maxSuffix) {
+        xmessage(stringb(
+          "Could not create a write-exclusive file based on " <<
+          doubleQuote(fname) << " despite trying " << maxSuffix <<
+          " suffixes.  The final attempt yielded the error: " << x));
+      }
+    }
+  }
+
+  // This can happen if the envvar is set to 0, effectively disabling
+  // creation of a file this way.  But a value of 1 or greater will
+  // cause an exception to be thrown if we can't open the file.
+  return nullptr;
 }
 
 
