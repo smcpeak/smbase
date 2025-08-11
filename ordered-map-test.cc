@@ -429,6 +429,29 @@ void testDifferentValueType()
 }
 
 
+void test_setValueAtNewKey()
+{
+  OrderedMap<int, int> m;
+
+  // Fine, not already present.
+  m.setValueAtNewKey(1, 2);
+
+  // Not fine, already present.
+  EXPECT_EXN_SUBSTR(m.setValueAtNewKey(1, 3),
+    XAssert, "wasNewKey");
+
+  // Test rvalue reference version.
+  int k = 10;
+  int v = 20;
+  m.setValueAtNewKey(std::move(k), std::move(v));
+
+  k = 10;
+  v = 21;
+  EXPECT_EXN_SUBSTR(m.setValueAtNewKey(std::move(k), std::move(v)),
+    XAssert, "wasNewKey");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -447,6 +470,7 @@ void test_ordered_map()
   testInsertRvalue();
   testSetValueAtKey();
   testDifferentValueType();
+  test_setValueAtNewKey();
 }
 
 

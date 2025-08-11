@@ -455,6 +455,24 @@ inline auto OrderedMap<KEY, VALUE>::setValueAtKey(
 
 
 template <typename KEY, typename VALUE>
+inline auto OrderedMap<KEY, VALUE>::setValueAtNewKey(
+  KEY const &key, VALUE const &value) -> void
+{
+  bool wasNewKey = setValueAtKey(key, value);
+  xassert(wasNewKey);
+}
+
+
+template <typename KEY, typename VALUE>
+inline auto OrderedMap<KEY, VALUE>::setValueAtNewKey(
+  KEY &&key, VALUE &&value) -> void
+{
+  bool wasNewKey = setValueAtKey(std::move(key), std::move(value));
+  xassert(wasNewKey);
+}
+
+
+template <typename KEY, typename VALUE>
 inline auto OrderedMap<KEY, VALUE>::insertAtIndex(size_type index, value_type const &entry) -> void
 {
   ++m_modificationCount;

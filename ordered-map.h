@@ -233,11 +233,17 @@ public:      // methods
   inline bool insert(value_type const &entry);
   inline bool insert(value_type      &&entry);
 
-  // If `key` is already mapped, update its value and return false.
-  // Otherwise, insert (append) a new entry that maps `key` to `value`
-  // and return true.
+  // If `key` is already mapped, update its value and return false
+  // without altering the extrinsic order.  Otherwise (the key is new),
+  // insert (append) a new entry that maps `key` to `value` and return
+  // true.
   inline bool setValueAtKey(KEY const &key, VALUE const &value);
   inline bool setValueAtKey(KEY      &&key, VALUE      &&value);
+
+  // Like `setValueAtKey`, but assert that `key` was not already
+  // present.
+  inline void setValueAtNewKey(KEY const &key, VALUE const &value);
+  inline void setValueAtNewKey(KEY      &&key, VALUE      &&value);
 
   // Insert an entry at a specific location.
   //
