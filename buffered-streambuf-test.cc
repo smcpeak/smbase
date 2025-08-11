@@ -119,11 +119,9 @@ public:      // methods
 // eventual output consists of them concatenated in this order.
 //
 // I also check that the `ostream` has not seen any errors.
-//
-// TODO: Make an EXN_CONTEXT macro for the file/line combo.
 #define EXPECT_OUT_BUF(expectOut, expectBuf)  \
   {                                           \
-    EXN_CONTEXT(__FILE__ << ":" << __LINE__); \
+    EXN_CONTEXT_FILE_LINE();                  \
     EXPECT_EQ_GDV(output, expectOut);         \
     {                                         \
       EXN_CONTEXT("buffer");                  \

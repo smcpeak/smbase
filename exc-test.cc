@@ -50,6 +50,21 @@ void test_getExnContextString()
 }
 
 
+void test_EXN_CONTEXT_FILE_LINE()
+{
+  EXN_CONTEXT_FILE_LINE();
+  VPVAL(getExnContextString());
+  EXPECT_HAS_SUBSTRING(getExnContextString(), "exc-test.cc:");
+
+  try {
+    THROW(XMessage("something"));
+  }
+  catch (XMessage &x) {
+    VPVAL(x);
+  }
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -58,6 +73,7 @@ void test_exc()
 {
   test_basics();
   test_getExnContextString();
+  test_EXN_CONTEXT_FILE_LINE();
 }
 
 

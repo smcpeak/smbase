@@ -11,6 +11,7 @@
 #include "sm-macros.h"                 // OPEN_NAMESPACE, NORETURN
 #include "sm-pp-util.h"                // SM_PP_MAP, SM_PP_APPLY
 #include "str.h"                       // string
+#include "string-util.h"               // compactFileAndLine
 #include "stringb.h"                   // stringb
 #include "vector-push-pop.h"           // VECTOR_PUSH_POP
 
@@ -61,9 +62,15 @@ OPEN_NAMESPACE(smbase)
 */
 std::vector<std::string> &getExnContextVector();
 
-// Add something to the context stack and remove it on scope exit.
+// Add a string to the context stack and remove it on scope exit.  This
+// is a little more efficient than `EXN_CONTEXT` when you already have a
+// single string.
+#define EXN_CONTEXT_STRING(str) \
+  VECTOR_PUSH_POP(smbase::getExnContextVector(), str)
+
+// Same, but using `stringb` to make a string.
 #define EXN_CONTEXT(stuff) \
-  VECTOR_PUSH_POP(smbase::getExnContextVector(), stringb(stuff))
+  EXN_CONTEXT_STRING(stringb(stuff))
 
 // Add an expression value to the context stack.
 #define EXN_CONTEXT_EXPR(expr) \
@@ -87,6 +94,10 @@ std::vector<std::string> &getExnContextVector();
 */
 #define EXN_CONTEXT_CALL(funcName, args) \
   EXN_CONTEXT(#funcName "(" << SM_PP_APPLY(EXN_CONTEXT_CALL_ARG_LIST, args) << ")")
+
+// Add "<file>:<line>" to the context vector.
+#define EXN_CONTEXT_FILE_LINE() \
+  EXN_CONTEXT_STRING(compactFileAndLine(__FILE__, __LINE__)) /* user ; */
 
 
 // Return the current exception context as a string where each label is
