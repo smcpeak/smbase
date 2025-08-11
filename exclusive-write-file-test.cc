@@ -73,12 +73,8 @@ void test_wait()
     std::cin.get();
   }
 
-  catch (XSysError &x) {
-    DIAG("Got XSysError:");
-    PVAL(x.m_systemErrorCode);
-    PVAL(x.m_systemErrorCode.codeDescription());
-    PVAL(x.m_syscallName);
-    PVAL(x.m_argument);
+  catch (XBase &x) {
+    std::cout << "Exception: " << x << "\n";
   }
 }
 

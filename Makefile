@@ -841,6 +841,7 @@ check: check-ctc
 # -------------- check create-tuple-class.py outputs -------------------
 # Set of header files that use create-tuple-class.py.
 CTC_HEADERS :=
+CTC_HEADERS += exclusive-write-file.h
 CTC_HEADERS += type-name-and-size.h
 CTC_HEADERS += xarithmetic.h
 CTC_HEADERS += xoverflow.h

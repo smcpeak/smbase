@@ -5,7 +5,7 @@
 
 #include "exclusive-write-file.h"                // this module
 
-#include "smbase/exc.h"                          // EXN_CONTEXT
+#include "smbase/exc.h"                          // EXN_CONTEXT, GENERIC_CATCH_BEGIN, OPEN_NAMESPACE
 #include "smbase/syserr.h"                       // xsyserror
 
 #include <iostream>                              // std::ostream
@@ -13,14 +13,59 @@
 #include <string>                                // std::string
 #include <string_view>                           // std::string_view
 
-using namespace smbase;
+#if PLATFORM_IS_WINDOWS
+
+  #include "smbase/sm-windows.h"                 // CreateFileA, etc.
+  #include "smbase/windows-handle-ostream.h"     // smbase::WindowsHandleOStream
+
+#else
+
+  #include "smbase/posix-fd-ostream.h"           // smbase::PosixFDOStream
+
+  #include <fstream>                             // std::filebuf
+
+  #include <errno.h>                             // errno
+  #include <fcntl.h>                             // fcntl, struct flock
+  #include <unistd.h>                            // open, close, ftruncate
+
+#endif
+
+
+OPEN_NAMESPACE(smbase)
+
+
+// -------------------- XExclusiveWriteFileConflict --------------------
+// ---- create-tuple-class: definitions for XExclusiveWriteFileConflict
+/*AUTO_CTC*/ XExclusiveWriteFileConflict::XExclusiveWriteFileConflict(
+/*AUTO_CTC*/   std::string const &fname)
+/*AUTO_CTC*/   : XBase(),
+/*AUTO_CTC*/     m_fname(fname)
+/*AUTO_CTC*/ {}
+/*AUTO_CTC*/
+/*AUTO_CTC*/ XExclusiveWriteFileConflict::XExclusiveWriteFileConflict(XExclusiveWriteFileConflict const &obj) noexcept
+/*AUTO_CTC*/   : XBase(obj),
+/*AUTO_CTC*/     DMEMB(m_fname)
+/*AUTO_CTC*/ {}
+/*AUTO_CTC*/
+/*AUTO_CTC*/ XExclusiveWriteFileConflict &XExclusiveWriteFileConflict::operator=(XExclusiveWriteFileConflict const &obj) noexcept
+/*AUTO_CTC*/ {
+/*AUTO_CTC*/   if (this != &obj) {
+/*AUTO_CTC*/     XBase::operator=(obj);
+/*AUTO_CTC*/     CMEMB(m_fname);
+/*AUTO_CTC*/   }
+/*AUTO_CTC*/   return *this;
+/*AUTO_CTC*/ }
+/*AUTO_CTC*/
+
+
+std::string XExclusiveWriteFileConflict::getConflict() const
+{
+  return "File is locked by another process.";
+}
 
 
 // --------------------- ExclusiveWriteFilePrivate ---------------------
 #if PLATFORM_IS_WINDOWS
-
-#include "smbase/sm-windows.h"                   // CreateFileA, etc.
-#include "smbase/windows-handle-ostream.h"       // smbase::WindowsHandleOStream
 
 
 class ExclusiveWriteFilePrivate {
@@ -47,6 +92,7 @@ public:      // methods
     // Open.
     m_hFile = CreateFileA(
       fnameString.c_str(),
+      // TODO: Figure this out.
       #if 1
         GENERIC_READ | GENERIC_WRITE,      // I can r/w (though I only write).
         FILE_SHARE_READ,                   // Allow others to read the file.
@@ -104,6 +150,7 @@ public:      // methods
     }
 
     if (m_hFile != INVALID_HANDLE_VALUE) {
+      // TODO: Resolve.
       #if 0
       OVERLAPPED ov = {};
       if (!UnlockFileEx(
@@ -138,25 +185,48 @@ public:      // methods
 
 #else // not windows
 
-#include "smbase/posix-fd-ostream.h"   // smbase::PosixFDOStream
 
-#include <fstream>                     // std::filebuf
-
-#include <fcntl.h>                     // fcntl, struct flock
-#include <unistd.h>                    // open, close
-
-
-class ExclusiveWriteFilePrivate {
+// Close a file descriptor in destructor.
+class AutoCloseFD {
 public:      // data
-  // Owning file descriptor to the open and locked file.
+  // File descriptor to close, or -1 to disable.
   int m_fd;
 
+public:
+  AutoCloseFD()
+    : m_fd(-1)
+  {}
+
+  ~AutoCloseFD() noexcept
+  {
+    GENERIC_CATCH_BEGIN
+
+    close();
+
+    GENERIC_CATCH_END
+  }
+
+  // Close the descriptor if it is still open.  Throws on error.
+  void close()
+  {
+    if (m_fd >= 0) {
+      if (::close(m_fd) < 0) {
+        xsyserror("close");
+      }
+      m_fd = -1;
+    }
+  }
+};
+
+
+class ExclusiveWriteFilePrivate : public AutoCloseFD {
+public:      // data
   // Stream wrapped around the descriptor.  null if the file is closed.
   std::unique_ptr<PosixFDOStream> m_stream;
 
 public:      // methods
   explicit ExclusiveWriteFilePrivate(std::string_view fname)
-    : m_fd(-1),
+    : AutoCloseFD(),
       m_stream()
   {
     EXN_CONTEXT_STRING(doubleQuote(fname));
@@ -164,7 +234,8 @@ public:      // methods
     // `open` requires a NUL-terminated string.
     std::string fnameString(fname);
 
-    m_fd = open(fnameString.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0666);
+    // Do not truncate yet, since this call ignores the lock.
+    m_fd = open(fnameString.c_str(), O_RDWR | O_CREAT, 0666);
     if (m_fd < 0) {
       xsyserror("open");
     }
@@ -175,9 +246,22 @@ public:      // methods
     fl.l_start = 0;
     fl.l_len = 0;            // Means to lock all bytes.
 
-    if (fcntl(m_fd, F_SETLKW, &fl) < 0) {
-      ::close(m_fd);
-      xsyserror("fcntl");
+    if (fcntl(m_fd, F_SETLK, &fl) < 0) {
+      // Note: `AutoCloseFD` will close `m_fd`.
+
+      // POSIX explains that both are possible, so we have to check for
+      // both.
+      if (errno == EAGAIN || errno == EACCES) {
+        THROW(XExclusiveWriteFileConflict(fnameString));
+      }
+      else {
+        xsyserror("fcntl");
+      }
+    }
+
+    // Successfully opened and locked, so truncate now.
+    if (ftruncate(m_fd, 0)) {
+      xsyserror("ftruncate");
     }
 
     m_stream = std::make_unique<PosixFDOStream>(m_fd);
@@ -192,6 +276,7 @@ public:      // methods
     GENERIC_CATCH_END
   }
 
+  // Close everything.  Throw on error.
   void close()
   {
     if (m_stream) {
@@ -199,12 +284,7 @@ public:      // methods
       m_stream.reset();
     }
 
-    if (m_fd >= 0) {
-      if (::close(m_fd) < 0) {
-        xsyserror("close");
-      }
-      m_fd = -1;
-    }
+    AutoCloseFD::close();
   }
 
   void selfCheck() const
@@ -214,7 +294,7 @@ public:      // methods
 };
 
 
-#endif
+#endif // !PLATFORM_IS_WINDOWS
 
 
 // ------------------------ ExclusiveWriteFile -------------------------
@@ -245,6 +325,9 @@ void ExclusiveWriteFile::selfCheck() const
 {
   m_private->selfCheck();
 }
+
+
+CLOSE_NAMESPACE(smbase)
 
 
 // EOF

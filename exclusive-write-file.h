@@ -7,11 +7,14 @@
 #define SMBASE_EXCLUSIVE_WRITE_FILE_H
 
 #include "smbase/exc.h"                          // smbase::XBase
-#include "smbase/sm-macros.h"                    // NO_OBJECT_COPIES
+#include "smbase/sm-macros.h"                    // NO_OBJECT_COPIES, OPEN_NAMESPACE
 #include "smbase/std-string-view-fwd.h"          // std::string_view
 
 #include <iosfwd>                                // std::ostream
 #include <memory>                                // std::unique_ptr
+
+
+OPEN_NAMESPACE(smbase)
 
 
 // Platform-specific private implementation details, defined in the .cc
@@ -19,10 +22,7 @@
 class ExclusiveWriteFilePrivate;
 
 
-/* Open a file for writing, creating it if needed, and truncating it if
-   it already exists.
-
-   Writing does not do any line ending translation.
+/* Open a file for writing with a discretionary write lock.
 
    While this object exists, other processes are allowed to read the
    file contents.  However, no other process can write to the file *if*
@@ -43,9 +43,13 @@ private:     // data
   std::unique_ptr<ExclusiveWriteFilePrivate> m_private;
 
 public:      // methods
-  // Open `fname` for writing with a discretionary write lock.  Throw an
-  // exception on failure; if another process has it open, throw
-  // `XExclusiveWriteFileConflict` specifically.
+  // Open `fname` for writing.  Create the file if needed, and truncate
+  // it if it already exists.
+  //
+  // If the file is already locked, this does *not* block, instead
+  // throwing `XExclusiveWriteFileConflict`.
+  //
+  // Other failures throw `XSysError`.
   explicit ExclusiveWriteFile(std::string_view fname);
 
   // This will try to flush, close the file and release the lock, but
@@ -68,7 +72,35 @@ public:      // methods
 
 // Thrown when `ExclusiveWriteFile` cannot open the file for the
 // specific reason that another process has it open.
-DEFINE_XMESSAGE_SUBCLASS(XExclusiveWriteFileConflict);
+//
+// We do not rely on interpreting `XSysError` because the meaning of the
+// possible error codes in this context is potentially ambiguous with
+// their meaning in other contexts.  Thus, we use a distinct exception
+// class.
+//
+class XExclusiveWriteFileConflict : public XBase {
+public:      // data
+  // The name of the file we were trying to lock.
+  std::string m_fname;
+
+public:      // methods
+  // ---- create-tuple-class: declarations for XExclusiveWriteFileConflict
+  /*AUTO_CTC*/ explicit XExclusiveWriteFileConflict(std::string const &fname);
+  /*AUTO_CTC*/ XExclusiveWriteFileConflict(XExclusiveWriteFileConflict const &obj) noexcept;
+  /*AUTO_CTC*/ XExclusiveWriteFileConflict &operator=(XExclusiveWriteFileConflict const &obj) noexcept;
+
+  // XBase methods.
+  //
+  // This message does not include the file name because I expect the
+  // file name to already be in the exception context stack, making
+  // including it here redundant.  However, the class still stores a
+  // copy of the name so that calling code can unambiguously retrieve
+  // it.
+  virtual std::string getConflict() const override;
+};
+
+
+CLOSE_NAMESPACE(smbase)
 
 
 #endif // SMBASE_EXCLUSIVE_WRITE_FILE_H
