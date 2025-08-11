@@ -7,13 +7,12 @@
 #ifndef SMBASE_EXC_H
 #define SMBASE_EXC_H
 
-#include "breaker.h"                   // breaker
-#include "sm-macros.h"                 // OPEN_NAMESPACE, NORETURN
-#include "sm-pp-util.h"                // SM_PP_MAP, SM_PP_APPLY
-#include "str.h"                       // string
-#include "string-util.h"               // compactFileAndLine
-#include "stringb.h"                   // stringb
-#include "vector-push-pop.h"           // VECTOR_PUSH_POP
+#include "smbase/breaker.h"            // breaker
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE, NORETURN
+#include "smbase/sm-pp-util.h"         // SM_PP_MAP, SM_PP_APPLY
+#include "smbase/string-util.h"        // compactFileAndLine
+#include "smbase/stringb.h"            // stringb
+#include "smbase/vector-push-pop.h"    // VECTOR_PUSH_POP
 
 #include <exception>                   // std::exception
 #include <iosfwd>                      // std::ostream
@@ -323,17 +322,17 @@ inline void xbase(std::string const &msg) { xmessage(msg); }
 // Thrown by `x_assert_fail`, which is declared in xassert.h.
 // Throwing this corresponds to detecting a bug in the program.
 class XAssert : public XBase {
-  string condition;          // text of the failed condition
-  string filename;           // name of the source file
+  std::string condition;     // text of the failed condition
+  std::string filename;      // name of the source file
   int lineno;                // line number
 
 public:
-  XAssert(rostring cond, rostring fname, int line);
+  XAssert(std::string const &cond, std::string const &fname, int line);
   XAssert(XAssert const &obj);
   ~XAssert();
 
-  rostring cond() const { return condition; }
-  rostring fname() const { return filename; }
+  std::string const &cond() const { return condition; }
+  std::string const &fname() const { return filename; }
   int line() const { return lineno; }
 
   // XBase methods.
@@ -356,7 +355,7 @@ public:
 */
 class XFormat : public XMessage {
 public:      // methods
-  XFormat(rostring cond);
+  XFormat(std::string const &cond);
   XFormat(XFormat const &obj);
   ~XFormat();
 
@@ -365,7 +364,7 @@ public:      // methods
 };
 
 // compact way to throw an XFormat
-void xformat(rostring condition) NORETURN;
+void xformat(std::string const &condition) NORETURN;
 
 #define xformatsb(msg) smbase::xformat(stringb(msg))
 
@@ -389,12 +388,12 @@ void formatAssert_fail(char const *cond, char const *file, int line) NORETURN;
 // not yet handled by the existing code.
 class XUnimp : public XMessage {
 public:
-  XUnimp(rostring msg);
+  XUnimp(std::string const &msg);
   XUnimp(XUnimp const &obj);
   ~XUnimp();
 };
 
-void throw_XUnimp(rostring msg) NORETURN;
+void throw_XUnimp(std::string const &msg) NORETURN;
 
 // throw XUnimp with file/line info
 void throw_XUnimp(char const *msg, char const *file, int line) NORETURN;
@@ -407,12 +406,12 @@ void throw_XUnimp(char const *msg, char const *file, int line) NORETURN;
 // error; it is not due to a bug in the program.
 class XFatal : public XMessage {
 public:
-  XFatal(rostring msg);
+  XFatal(std::string const &msg);
   XFatal(XFatal const &obj);
   ~XFatal();
 };
 
-void throw_XFatal(rostring msg) NORETURN;
+void throw_XFatal(std::string const &msg) NORETURN;
 #define xfatal(msg) smbase::throw_XFatal(stringb(msg))
 
 
