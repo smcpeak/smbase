@@ -51,7 +51,30 @@ void test_simple()
 
 void test_close()
 {
-  // TODO
+  sfu.removeFileIfExists(testFileName);
+
+  {
+    ExclusiveWriteFile ewf(testFileName);
+    ewf.stream() << "hello test_close\n";
+    ewf.selfCheck();
+
+    // No data should be written yet.
+    EXPECT_EQ(testFileContents(), "");
+
+    // Closing flushes.
+    ewf.close();
+    ewf.selfCheck();
+    EXPECT_EQ(testFileContents(), "hello test_close\n");
+
+    // Redundant close is fine.
+    ewf.close();
+    ewf.selfCheck();
+
+    // Destructor should also be fine.
+  }
+
+  // Double-check the contents.
+  EXPECT_EQ(testFileContents(), "hello test_close\n");
 }
 
 
@@ -92,8 +115,6 @@ void test_exclusive_write_file()
 
   test_simple();
   test_close();
-
-  // TODO: more tests
 }
 
 

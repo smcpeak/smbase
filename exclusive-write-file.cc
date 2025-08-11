@@ -289,7 +289,9 @@ public:      // methods
 
   void selfCheck() const
   {
-    m_stream->selfCheck();
+    if (m_stream) {
+      m_stream->selfCheck();
+    }
   }
 };
 
