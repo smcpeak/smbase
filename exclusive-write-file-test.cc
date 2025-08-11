@@ -10,6 +10,7 @@
 #include "smbase/sm-test.h"                      // EXPECT_EQ
 #include "smbase/syserr.h"                       // smbase::XSysError
 
+#include <cstdlib>                               // std::exit
 #include <iostream>                              // std::{cin, cout, endl}
 
 using namespace smbase;
@@ -96,8 +97,20 @@ void test_wait()
     std::cin.get();
   }
 
+  catch (XExclusiveWriteFileConflict &x) {
+    std::cout << "Conflict: " << x << "\n";
+    std::exit(1);
+  }
+
+  catch (XSysError &x) {
+    std::cout << "XSysError: " << x << "\n";
+    std::cout << "Code: " << x.getSystemErrorCode().codeName() << "\n";
+    std::exit(2);
+  }
+
   catch (XBase &x) {
-    std::cout << "Exception: " << x << "\n";
+    std::cout << "XBase: " << x << "\n";
+    std::exit(2);
   }
 }
 

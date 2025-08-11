@@ -284,6 +284,7 @@ public:      // methods
       m_stream.reset();
     }
 
+    // Simply closing the file releases the lock.
     AutoCloseFD::close();
   }
 
