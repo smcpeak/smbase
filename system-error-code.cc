@@ -138,6 +138,43 @@ NameEntry nameEntries[] = {
   NAME_ENTRY_PEC(ERROR_WRITE_PROTECT,      PEC_READ_ONLY),
   NAME_ENTRY_PEC(ERROR_ALREADY_EXISTS,     PEC_ALREADY_EXISTS),
   NAME_ENTRY_PEC(ERROR_BUSY,               PEC_BUSY),
+
+  /* I considered various options for how to map this.  On Linux, a
+     failure of `fcntl(F_SETLK)` yields `EAGAIN`, but POSIX specifies
+     that `EACCES` is also a possibility in that situation.  Both are
+     quite vague though.
+
+     Map to PEC_AGAIN:
+       - Pro: Agrees with Linux.
+       - Pro: Code exists, isn't yet used on Windows.
+       - Con: Not necessarily aligned with POSIX, so possibly confusing.
+       - Con: Not specific to the situation, so possibly ambiguous.
+
+     Map to PEC_ACCESS_DENIED:
+       - Con: Quite misleading.  IMO, "access denied" indicates that an
+         action conflicted with a *security* policy, whereas mutual
+         exclusion is primarily about data *integrity*.
+
+     Map to a new PEC_SHARING_VIOLATION (e.g.):
+       - Pro: Specific.
+       - Con: Definitely misaligned with Linux and POSIX.
+       - Con: Yet a third PEC_* code for this situation.
+
+     This experience seems to show that trying to map all OS-specific
+     codes into a coarse-grained "portable" code space is going to be,
+     at best, very difficult, and thus the specific choice here is
+     perhaps not very important since it's part of an overall system
+     that does not work.
+
+     Instead, I may need to rely on the approach taken with
+     `XExclusiveWriteFile`, where a highly-specific exception type is
+     thrown from the spot where I know the context.  It carries the
+     `SystemErrorCode` but we don't have to look at it to know what
+     happened, and thus have no need for a "portable" interpretation.
+
+     Therefore, I went with the least-friction option of `PEC_AGAIN`.
+  */
+  NAME_ENTRY_PEC(ERROR_SHARING_VIOLATION,  PEC_AGAIN),
 };
 
 

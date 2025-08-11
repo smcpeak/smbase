@@ -93,45 +93,26 @@ public:      // methods
     // `string_view` in the interface for flexibility.)
     std::string fnameString(fname);
 
-    // Open.
+    // Open and acquire write lock.
     m_hFile = CreateFileA(
       fnameString.c_str(),
-      // TODO: Figure this out.
-      #if 1
-        GENERIC_READ | GENERIC_WRITE,      // I can r/w (though I only write).
-        FILE_SHARE_READ,                   // Allow others to read the file.
-      #else
-        GENERIC_WRITE,
-        0,
-      #endif
+      GENERIC_READ | GENERIC_WRITE,      // I can r/w (though I only write).
+      FILE_SHARE_READ,                   // Allow others to read the file.
       nullptr,
       CREATE_ALWAYS,                     // Create or truncate.
       FILE_ATTRIBUTE_NORMAL,
       nullptr);
 
     if (m_hFile == INVALID_HANDLE_VALUE) {
-      xsyserror("Failed to open for locking");
+      SystemErrorCode sec = SystemErrorCode::getCurrent();
+      if (sec.systemCode() == ERROR_SHARING_VIOLATION) {
+        THROW(XExclusiveWriteFileConflict(sec, fnameString));
+      }
+      else {
+        // The file name is already on the context stack.
+        THROW(XSysError(sec, "CreateFileA", ""));
+      }
     }
-
-    #if 0
-    // Lock.
-    OVERLAPPED ov = {};
-    if (!LockFileEx(
-           m_hFile,
-           // TODO: Experiment with this.
-           LOCKFILE_EXCLUSIVE_LOCK | LOCKFILE_FAIL_IMMEDIATELY,
-           //LOCKFILE_FAIL_IMMEDIATELY,
-           //LOCKFILE_EXCLUSIVE_LOCK,
-           0,                  // Reserved.
-           MAXDWORD,           // Low 32 bits of number of bytes to lock.
-           MAXDWORD,           // High 32 bits of number of bytes to lock.
-           &ov)) {
-      std::string msg = GetLastErrorAsString();
-
-      CloseHandle(m_hFile);
-      throw std::runtime_error(fname + ": Failed to lock file: " + msg);
-    }
-    #endif
 
     // Make the stream.  Does not take ownership of the handle.
     m_stream = std::make_unique<WindowsHandleOStream>(m_hFile);
@@ -154,25 +135,7 @@ public:      // methods
     }
 
     if (m_hFile != INVALID_HANDLE_VALUE) {
-      // TODO: Resolve.
-      #if 0
-      OVERLAPPED ov = {};
-      if (!UnlockFileEx(
-             m_hFile,
-             0,                  // Reserved.
-             MAXDWORD,           // Low 32 bits.
-             MAXDWORD,           // High 32 bits.
-             &ov)) {
-        std::string msg = GetLastErrorAsString();
-
-        // If we failed to unlock it once, reset the handle anyway so we
-        // do not try again during the dtor (if we are not in it now).
-        m_hFile = INVALID_HANDLE_VALUE;
-
-        throw std::runtime_error("Failed to unlock file: " + msg);
-      }
-      #endif
-
+      // Closing the handle unlocks the file.
       CloseHandle(m_hFile);
       m_hFile = INVALID_HANDLE_VALUE;
     }
