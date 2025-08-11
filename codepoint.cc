@@ -242,6 +242,12 @@ bool isShellMetacharacter(CodePoint c, bool afterProgram)
 }
 
 
+bool isSlashOrBackslash(CodePoint c)
+{
+  return c == '/' || c == '\\';
+}
+
+
 int convertUSASCIIToUpper(int c)
 {
   if (0x61 /*'a'*/ <= c && c <= 0x7a /*'z'*/) {

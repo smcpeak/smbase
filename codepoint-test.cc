@@ -108,6 +108,15 @@ void test_isShellMetaCharacter()
 }
 
 
+void test_isSlashOrBackslash()
+{
+  EXPECT_EQ(isSlashOrBackslash(0), false);
+  EXPECT_EQ(isSlashOrBackslash('x'), false);
+  EXPECT_EQ(isSlashOrBackslash('/'), true);
+  EXPECT_EQ(isSlashOrBackslash('\\'), true);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -118,6 +127,7 @@ void test_codepoint()
 
   test_various();
   test_isShellMetaCharacter();
+  test_isSlashOrBackslash();
 }
 
 
