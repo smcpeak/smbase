@@ -218,6 +218,15 @@ std::string shellDoubleQuoteCommand(
 // following characters, and return that.  Otherwise return 'fname'.
 std::string stripExtension(std::string const &fname);
 
+// Return a pointer to the last occurrence of forward slash or backslash
+// in `fname`, or null if neither occurs.
+char const * NULLABLE lastSlashOrBackslash(char const *fname);
+
+// Return "<fname>:<line>", except discard any path information in
+// `fname` first.  The primary intended use is for when `fname` is the
+// expansion of __FILE__.
+std::string compactFileAndLine(char const *fname, int line);
+
 
 // ----------------------- Manipulating strings ------------------------
 // If 'str' is longer than 'maxLen', truncate it to 'maxLen', with the

@@ -4,13 +4,14 @@
 #include "string-util.h"               // this module
 
 #include "smbase/breaker.h"            // breaker
-#include "smbase/codepoint.h"          // isASCIIPrintable, isShellMetacharacter
+#include "smbase/codepoint.h"          // isASCIIPrintable, isShellMetacharacter, isSlashOrBackslash
 #include "smbase/exc.h"                // smbase::xmessage
 #include "smbase/optional-util.h"      // liftToOptional
 #include "smbase/overflow.h"           // safeToInt, multiplyWithOverflowCheck[Opt], addWithOverflowCheckOpt
 #include "smbase/sm-regex.h"           // smbase::Regex
 #include "smbase/sm-span.h"            // smbase::Span
 #include "smbase/strcmp-compare.h"     // StrcmpCompare
+#include "smbase/stringb.h"            // stringb
 #include "smbase/strutil.h"            // stringf
 #include "smbase/vector-util.h"        // vecAccumulateWith
 #include "smbase/xassert.h"            // xassert, xassertdb, xassertPrecondition
@@ -18,7 +19,7 @@
 #include <algorithm>                   // std::{binary_search, remove_if}
 #include <cctype>                      // std::isspace
 #include <cstdlib>                     // std::abs
-#include <cstring>                     // std::{strchr, strrchr}
+#include <cstring>                     // std::{strchr, strrchr, strlen}
 #include <limits>                      // std::numeric_limits
 #include <optional>                    // std::optional
 #include <sstream>                     // std::ostringstream
@@ -586,6 +587,28 @@ std::string stripExtension(std::string const &fname)
   else {
     return fname;
   }
+}
+
+
+char const * NULLABLE lastSlashOrBackslash(char const *fname)
+{
+  char const *p = fname + std::strlen(fname);
+  while (p > fname) {
+    if (isSlashOrBackslash(p[-1])) {
+      return p-1;
+    }
+    --p;
+  }
+  return nullptr;
+}
+
+
+std::string compactFileAndLine(char const *fname, int line)
+{
+  if (char const *slash = lastSlashOrBackslash(fname)) {
+    fname = slash+1;
+  }
+  return stringb(fname << ':' << line);
 }
 
 

@@ -887,6 +887,36 @@ void test_shellDoubleQuoteCommand()
 }
 
 
+void testOne_lsob(char const *input, int expectOffset)
+{
+  EXN_CONTEXT_CALL(testOne_lsob, (input, expectOffset));
+
+  char const *actual = lastSlashOrBackslash(input);
+  xassert(actual == input+expectOffset);
+}
+
+void test_lastSlashOrBackslash()
+{
+  xassert(lastSlashOrBackslash("") == nullptr);
+  xassert(lastSlashOrBackslash("x") == nullptr);
+  xassert(lastSlashOrBackslash(".,!@#$%^&*()") == nullptr);
+  testOne_lsob("a/b", 1);
+  testOne_lsob("/b", 0);
+  testOne_lsob("/b/", 2);
+  testOne_lsob("/", 0);
+  testOne_lsob("a\\b\\c\\d", 5);
+  testOne_lsob("a/b\\c/d", 5);
+  testOne_lsob("a/b/c\\d", 5);
+}
+
+
+void test_compactFileAndLine()
+{
+  EXPECT_EQ(compactFileAndLine("foo.cc", 3), "foo.cc:3");
+  EXPECT_EQ(compactFileAndLine("bar/foo.cc", 4), "foo.cc:4");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -926,6 +956,8 @@ void test_string_util()
   testConvVectorString();
   testShellDoubleQuote();
   test_shellDoubleQuoteCommand();
+  test_lastSlashOrBackslash();
+  test_compactFileAndLine();
 }
 
 
