@@ -241,10 +241,13 @@ public:      // funcs
   virtual bool windowsPathSemantics() const;
 
   // True if `path` exclusively uses forward slashes, i.e., it does not
-  // contain any backslashes.
+  // contain any backslashes on a platform where backslashes act as
+  // path separators.
   bool hasNormalizedPathSeparators(string const &path) const;
 
-  // Return a string with all path separators as forward slashes.
+  // Return a string with all path separators as forward slashes.  On
+  // platforms where only forward slashes behave as path separators,
+  // returns `s` unchanged.
   virtual string normalizePathSeparators(string const &s) const;
 
   // Return the current directory as an absolute path name.

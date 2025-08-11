@@ -17,7 +17,7 @@ using namespace smbase;
 
 
 // Defined in sm-file-util.cc.
-void getDirectoryEntries_scanThenStat(SMFileUtil &sfu,
+void getDirectoryEntries_scanThenStat(SMFileUtil const &sfu,
   ArrayStack<SMFileUtil::DirEntryInfo> /*OUT*/ &entries, string const &directory);
 
 
@@ -294,24 +294,45 @@ void printSomeStuff()
 
 void test_hasNormalizedPathSeparators()
 {
-  SMFileUtil sfu;
+  TestSMFileUtil sfu;
+  sfu.m_windowsPathSemantics = true;
+
   EXPECT_EQ(sfu.hasNormalizedPathSeparators(""), true);
   EXPECT_EQ(sfu.hasNormalizedPathSeparators("/"), true);
   EXPECT_EQ(sfu.hasNormalizedPathSeparators("\\"), false);
   EXPECT_EQ(sfu.hasNormalizedPathSeparators("\\/"), false);
+  EXPECT_EQ(sfu.hasNormalizedPathSeparators("/a/b/c"), true);
+
+  sfu.m_windowsPathSemantics = false;
+
+  EXPECT_EQ(sfu.hasNormalizedPathSeparators(""), true);
+  EXPECT_EQ(sfu.hasNormalizedPathSeparators("/"), true);
+  EXPECT_EQ(sfu.hasNormalizedPathSeparators("\\"), true);
+  EXPECT_EQ(sfu.hasNormalizedPathSeparators("\\/"), true);
   EXPECT_EQ(sfu.hasNormalizedPathSeparators("/a/b/c"), true);
 }
 
 
 void test_normalizePathSeparators()
 {
-  SMFileUtil sfu;
+  TestSMFileUtil sfu;
+  sfu.m_windowsPathSemantics = true;
+
   EXPECT_EQ(sfu.normalizePathSeparators(""), "");
   EXPECT_EQ(sfu.normalizePathSeparators("/"), "/");
   EXPECT_EQ(sfu.normalizePathSeparators("\\"), "/");
   EXPECT_EQ(sfu.normalizePathSeparators("\\/"), "//");
   EXPECT_EQ(sfu.normalizePathSeparators("/a/b/c"), "/a/b/c");
   EXPECT_EQ(sfu.normalizePathSeparators("\\a\\b\\c"), "/a/b/c");
+
+  sfu.m_windowsPathSemantics = false;
+
+  EXPECT_EQ(sfu.normalizePathSeparators(""), "");
+  EXPECT_EQ(sfu.normalizePathSeparators("/"), "/");
+  EXPECT_EQ(sfu.normalizePathSeparators("\\"), "\\");
+  EXPECT_EQ(sfu.normalizePathSeparators("\\/"), "\\/");
+  EXPECT_EQ(sfu.normalizePathSeparators("/a/b/c"), "/a/b/c");
+  EXPECT_EQ(sfu.normalizePathSeparators("\\a\\b\\c"), "\\a\\b\\c");
 }
 
 

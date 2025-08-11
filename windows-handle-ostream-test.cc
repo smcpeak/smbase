@@ -1,12 +1,17 @@
 // windows-handle-ostream-test.cc
 // Tests for `windows-handle-ostream` module.
 
+#include "smbase/sm-platform.h"        // PLATFORM_IS_WINDOWS
+
+#if PLATFORM_IS_WINDOWS
+
 #include "smbase/windows-handle-ostream.h"       // module under test
 
 #include "smbase/exc.h"                          // EXN_CONTEXT
 #include "smbase/sm-file-util.h"                 // SMFileUtil
 #include "smbase/sm-macros.h"                    // OPEN_ANONYMOUS_NAMESPACE
 #include "smbase/sm-test.h"                      // EXPECT_EQ
+#include "smbase/sm-windows.h"                   // HANDLE, INVALID_HANDLE_VALUE, CreateFileA, etc.
 #include "smbase/syserr.h"                       // xsyserror
 
 using namespace smbase;
@@ -99,6 +104,14 @@ void test_windows_handle_ostream()
   test_simple();
   test_error();
 }
+
+
+#else // !PLATFORM_IS_WINDOWS
+// Module is essentially empty on other platforms.
+void test_windows_handle_ostream()
+{}
+
+#endif
 
 
 // EOF

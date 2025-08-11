@@ -1,6 +1,10 @@
 // windows-handle-ostream.cc
 // Code for `windows-handle-ostream` module.
 
+#include "smbase/sm-platform.h"        // PLATFORM_IS_WINDOWS
+
+#if PLATFORM_IS_WINDOWS
+
 #include "windows-handle-ostream.h"    // this module
 
 #include "smbase/overflow.h"           // convertNumber
@@ -99,5 +103,10 @@ void WindowsHandleOStream::selfCheck() const
 
 CLOSE_NAMESPACE(smbase)
 
+
+#else // !PLATFORM_IS_WINDOWS
+// Module is empty on other platforms.
+
+#endif
 
 // EOF

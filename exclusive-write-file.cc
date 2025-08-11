@@ -1,12 +1,12 @@
 // exclusive-write-file.cc
 // Code for `exclusive-write-file` module.
 
+#include "smbase/sm-platform.h"                  // PLATFORM_IS_WINDOWS
+
 #include "exclusive-write-file.h"                // this module
 
 #include "smbase/exc.h"                          // EXN_CONTEXT
-#include "smbase/sm-windows.h"                   // CreateFileA, etc.
 #include "smbase/syserr.h"                       // xsyserror
-#include "smbase/windows-handle-ostream.h"       // smbase::WindowsHandleOstream
 
 #include <iostream>                              // std::ostream
 #include <memory>                                // std::unique_ptr
@@ -18,6 +18,11 @@ using namespace smbase;
 
 // --------------------- ExclusiveWriteFilePrivate ---------------------
 #if PLATFORM_IS_WINDOWS
+
+#include "smbase/sm-windows.h"                   // CreateFileA, etc.
+#include "smbase/windows-handle-ostream.h"       // smbase::WindowsHandleOStream
+
+
 class ExclusiveWriteFilePrivate {
 public:      // data
   // Owning handle to the open and locked file.
@@ -132,6 +137,81 @@ public:      // methods
 
 
 #else // not windows
+
+#include "smbase/posix-fd-ostream.h"   // smbase::PosixFDOStream
+
+#include <fstream>                     // std::filebuf
+
+#include <fcntl.h>                     // fcntl, struct flock
+#include <unistd.h>                    // open, close
+
+
+class ExclusiveWriteFilePrivate {
+public:      // data
+  // Owning file descriptor to the open and locked file.
+  int m_fd;
+
+  // Stream wrapped around the descriptor.  null if the file is closed.
+  std::unique_ptr<PosixFDOStream> m_stream;
+
+public:      // methods
+  explicit ExclusiveWriteFilePrivate(std::string_view fname)
+    : m_fd(-1),
+      m_stream()
+  {
+    EXN_CONTEXT_STRING(doubleQuote(fname));
+
+    // `open` requires a NUL-terminated string.
+    std::string fnameString(fname);
+
+    m_fd = open(fnameString.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0666);
+    if (m_fd < 0) {
+      xsyserror("open");
+    }
+
+    struct flock fl{};
+    fl.l_type = F_WRLCK;
+    fl.l_whence = SEEK_SET;
+    fl.l_start = 0;
+    fl.l_len = 0;            // Means to lock all bytes.
+
+    if (fcntl(m_fd, F_SETLKW, &fl) < 0) {
+      ::close(m_fd);
+      xsyserror("fcntl");
+    }
+
+    m_stream = std::make_unique<PosixFDOStream>(m_fd);
+  }
+
+  ~ExclusiveWriteFilePrivate() noexcept
+  {
+    GENERIC_CATCH_BEGIN
+
+    close();
+
+    GENERIC_CATCH_END
+  }
+
+  void close()
+  {
+    if (m_stream) {
+      m_stream->flush();
+      m_stream.reset();
+    }
+
+    if (m_fd >= 0) {
+      if (::close(m_fd) < 0) {
+        xsyserror("close");
+      }
+      m_fd = -1;
+    }
+  }
+
+  void selfCheck() const
+  {
+    m_stream->selfCheck();
+  }
+};
 
 
 #endif

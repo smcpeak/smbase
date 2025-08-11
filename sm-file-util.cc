@@ -408,6 +408,10 @@ SMFileUtil::~SMFileUtil()
 
 bool SMFileUtil::hasNormalizedPathSeparators(string const &path) const
 {
+  if (!windowsPathSemantics()) {
+    return true;
+  }
+
   for (char c : path) {
     if (c == '\\') {
       return false;
@@ -1100,7 +1104,7 @@ void SMFileUtil::getDirectoryNames(ArrayStack<string> /*OUT*/ &entries,
 // This is defined as an external function so it can be called by
 // the test code.  It works on all platforms but is relatively slow
 // on Windows.
-void getDirectoryEntries_scanThenStat(SMFileUtil &sfu,
+void getDirectoryEntries_scanThenStat(SMFileUtil const &sfu,
   ArrayStack<SMFileUtil::DirEntryInfo> /*OUT*/ &entries, string const &directory)
 {
   entries.clear();

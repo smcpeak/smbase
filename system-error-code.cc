@@ -217,9 +217,6 @@ std::string SystemErrorCode::codeDescription() const
 #ifndef EZERO
 #  define EZERO 0
 #endif
-#ifndef ENOFILE
-#  define ENOFILE ENOENT
-#endif
 #ifndef ENOPATH
 #  define ENOPATH ENOENT
 #endif
@@ -232,9 +229,12 @@ std::string SystemErrorCode::codeDescription() const
 
 
 // Note: Not `const` since we sort this array.
+//
+// Generally I prefer to use names documented in POSIX, hence I use
+// ENOENT here instead of ENOFILE.
 NameEntry nameEntries[] = {
   NAME_ENTRY_PEC(EZERO,         PEC_NO_ERROR),
-  NAME_ENTRY_PEC(ENOFILE,       PEC_FILE_NOT_FOUND),
+  NAME_ENTRY_PEC(ENOENT,        PEC_FILE_NOT_FOUND),
   NAME_ENTRY_PEC(ENOPATH,       PEC_FILE_NOT_FOUND),
   NAME_ENTRY_PEC(EACCES,        PEC_ACCESS_DENIED),
   NAME_ENTRY_PEC(ENOMEM,        PEC_OUT_OF_MEMORY),
@@ -251,7 +251,7 @@ NameEntry nameEntries[] = {
 
 /*static*/ SystemErrorCode SystemErrorCode::getCurrent()
 {
-  return errno;
+  return SystemErrorCode(errno);
 }
 
 
