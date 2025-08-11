@@ -6,6 +6,8 @@
 #ifndef SMBASE_EXCLUSIVE_WRITE_FILE_H
 #define SMBASE_EXCLUSIVE_WRITE_FILE_H
 
+#include "exclusive-write-file-fwd.h"            // fwds for this module
+
 #include "smbase/exc.h"                          // smbase::XBase
 #include "smbase/sm-macros.h"                    // NO_OBJECT_COPIES, OPEN_NAMESPACE, NULLABLE
 #include "smbase/std-string-view-fwd.h"          // std::string_view

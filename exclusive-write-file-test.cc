@@ -122,14 +122,14 @@ void test_createExclusive()
 {
   std::string fname1(testFileName);
   std::unique_ptr<ExclusiveWriteFile> file1(
-    tryCreateExclusiveWriteFile(fname1));
+    tryCreateExclusiveWriteFile(fname1 /*INOUT*/));
   VPVAL(fname1);
   file1->stream() << "write to " << fname1 << "\n";
   EXPECT_EQ(fname1, testFileName);
 
   std::string fname2(testFileName);
   std::unique_ptr<ExclusiveWriteFile> file2(
-    tryCreateExclusiveWriteFile(fname2));
+    tryCreateExclusiveWriteFile(fname2 /*INOUT*/));
   VPVAL(fname2);
   file2->stream() << "write to " << fname2 << "\n";
 
