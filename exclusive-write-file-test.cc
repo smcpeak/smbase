@@ -7,6 +7,7 @@
 #include "smbase/sm-env.h"                       // smbase::envAsBool
 #include "smbase/sm-file-util.h"                 // SMFileUtil
 #include "smbase/sm-macros.h"                    // OPEN_ANONYMOUS_NAMESPACE
+#include "smbase/sm-platform.h"                  // PLATFORM_IS_WINDOWS
 #include "smbase/sm-test.h"                      // EXPECT_EQ
 #include "smbase/syserr.h"                       // smbase::XSysError
 
@@ -132,9 +133,16 @@ void test_createExclusive()
   VPVAL(fname2);
   file2->stream() << "write to " << fname2 << "\n";
 
-  // On Windows, we get exclusion within the process.  What will Linux
-  // do?
-  EXPECT_EQ(fname2, stringb(testFileName << ".2"));
+  if (PLATFORM_IS_WINDOWS) {
+    // On Windows, we get exclusion within the process.
+    EXPECT_EQ(fname2, stringb(testFileName << ".2"));
+  }
+  else {
+    // On Linux, we get no intraprocess exclusion.  (I would prefer that
+    // the semantics be the same, but I don't think that is easy to
+    // accomplish.)
+    EXPECT_EQ(fname2, testFileName);
+  }
 }
 
 
