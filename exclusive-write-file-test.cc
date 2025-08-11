@@ -99,6 +99,7 @@ void test_wait()
 
   catch (XExclusiveWriteFileConflict &x) {
     std::cout << "Conflict: " << x << "\n";
+    std::cout << "Code: " << x.m_systemErrorCode.codeName() << "\n";
     std::exit(1);
   }
 

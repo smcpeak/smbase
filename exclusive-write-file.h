@@ -9,6 +9,7 @@
 #include "smbase/exc.h"                          // smbase::XBase
 #include "smbase/sm-macros.h"                    // NO_OBJECT_COPIES, OPEN_NAMESPACE
 #include "smbase/std-string-view-fwd.h"          // std::string_view
+#include "smbase/system-error-code.h"            // smbase::SystemErrorCode
 
 #include <iosfwd>                                // std::ostream
 #include <memory>                                // std::unique_ptr
@@ -80,12 +81,15 @@ public:      // methods
 //
 class XExclusiveWriteFileConflict : public XBase {
 public:      // data
+  // The platform-specific code resulting from the lock attempt.
+  SystemErrorCode m_systemErrorCode;
+
   // The name of the file we were trying to lock.
   std::string m_fname;
 
 public:      // methods
   // ---- create-tuple-class: declarations for XExclusiveWriteFileConflict
-  /*AUTO_CTC*/ explicit XExclusiveWriteFileConflict(std::string const &fname);
+  /*AUTO_CTC*/ explicit XExclusiveWriteFileConflict(SystemErrorCode const &systemErrorCode, std::string const &fname);
   /*AUTO_CTC*/ XExclusiveWriteFileConflict(XExclusiveWriteFileConflict const &obj) noexcept;
   /*AUTO_CTC*/ XExclusiveWriteFileConflict &operator=(XExclusiveWriteFileConflict const &obj) noexcept;
 

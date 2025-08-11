@@ -37,13 +37,16 @@ OPEN_NAMESPACE(smbase)
 // -------------------- XExclusiveWriteFileConflict --------------------
 // ---- create-tuple-class: definitions for XExclusiveWriteFileConflict
 /*AUTO_CTC*/ XExclusiveWriteFileConflict::XExclusiveWriteFileConflict(
+/*AUTO_CTC*/   SystemErrorCode const &systemErrorCode,
 /*AUTO_CTC*/   std::string const &fname)
 /*AUTO_CTC*/   : XBase(),
+/*AUTO_CTC*/     m_systemErrorCode(systemErrorCode),
 /*AUTO_CTC*/     m_fname(fname)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
 /*AUTO_CTC*/ XExclusiveWriteFileConflict::XExclusiveWriteFileConflict(XExclusiveWriteFileConflict const &obj) noexcept
 /*AUTO_CTC*/   : XBase(obj),
+/*AUTO_CTC*/     DMEMB(m_systemErrorCode),
 /*AUTO_CTC*/     DMEMB(m_fname)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
@@ -51,6 +54,7 @@ OPEN_NAMESPACE(smbase)
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   if (this != &obj) {
 /*AUTO_CTC*/     XBase::operator=(obj);
+/*AUTO_CTC*/     CMEMB(m_systemErrorCode);
 /*AUTO_CTC*/     CMEMB(m_fname);
 /*AUTO_CTC*/   }
 /*AUTO_CTC*/   return *this;
@@ -237,6 +241,7 @@ public:      // methods
     // Do not truncate yet, since this call ignores the lock.
     m_fd = open(fnameString.c_str(), O_RDWR | O_CREAT, 0666);
     if (m_fd < 0) {
+      // I don't pass `fname` because it's already on the context stack.
       xsyserror("open");
     }
 
@@ -249,13 +254,15 @@ public:      // methods
     if (fcntl(m_fd, F_SETLK, &fl) < 0) {
       // Note: `AutoCloseFD` will close `m_fd`.
 
+      SystemErrorCode sec = SystemErrorCode::getCurrent();
+
       // POSIX explains that both are possible, so we have to check for
       // both.
-      if (errno == EAGAIN || errno == EACCES) {
-        THROW(XExclusiveWriteFileConflict(fnameString));
+      if (sec.systemCode() == EAGAIN || sec.systemCode() == EACCES) {
+        THROW(XExclusiveWriteFileConflict(sec, fnameString));
       }
       else {
-        xsyserror("fcntl");
+        THROW(XSysError(sec, "fcntl", ""));
       }
     }
 
