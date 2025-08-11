@@ -264,6 +264,9 @@ public:      // methods
   //
   inline bool eraseKey(KEY const &key);
 
+  // Like `eraseKey`, but assert that the key was present.
+  inline void eraseExistingKey(KEY const &key);
+
   // Remove the entry at `index`, which must be within bounds.
   inline void eraseIndex(size_type index);
 

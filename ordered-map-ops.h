@@ -473,7 +473,8 @@ inline auto OrderedMap<KEY, VALUE>::setValueAtNewKey(
 
 
 template <typename KEY, typename VALUE>
-inline auto OrderedMap<KEY, VALUE>::insertAtIndex(size_type index, value_type const &entry) -> void
+inline auto OrderedMap<KEY, VALUE>::insertAtIndex(
+  size_type index, value_type const &entry) -> void
 {
   ++m_modificationCount;
 
@@ -499,6 +500,15 @@ inline auto OrderedMap<KEY, VALUE>::eraseKey(KEY const &key) -> bool
   else {
     return false;
   }
+}
+
+
+template <typename KEY, typename VALUE>
+inline auto OrderedMap<KEY, VALUE>::eraseExistingKey(
+  KEY const &key) -> void
+{
+  bool keyWasPresent = eraseKey(key);
+  xassert(keyWasPresent);
 }
 
 

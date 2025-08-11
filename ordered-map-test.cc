@@ -452,6 +452,19 @@ void test_setValueAtNewKey()
 }
 
 
+void test_eraseExistingKey()
+{
+  OrderedMap<int, int> m{{1,2}};
+
+  // Fine, key is there.
+  m.eraseExistingKey(1);
+
+  // Not fine, key is no longer there.
+  EXPECT_EXN_SUBSTR(m.eraseExistingKey(1),
+    XAssert, "keyWasPresent");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -471,6 +484,7 @@ void test_ordered_map()
   testSetValueAtKey();
   testDifferentValueType();
   test_setValueAtNewKey();
+  test_eraseExistingKey();
 }
 
 
