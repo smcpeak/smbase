@@ -917,6 +917,74 @@ void test_compactFileAndLine()
 }
 
 
+void testOne_ram(
+  char const *src,
+  std::vector<std::pair<std::string, std::string>> const &substitutions,
+  char const *expect)
+{
+  EXN_CONTEXT_EXPR(src);
+  EXPECT_EQ(replaceAllMultiple(src, substitutions), expect);
+}
+
+
+void test_replaceAllMultiple()
+{
+  // Simple case.
+  testOne_ram(
+    "abc def",
+    {{"abc", "123"}},
+    "123 def");
+
+  // No match.
+  testOne_ram(
+    "abc def",
+    {{"abd", "123"}},
+    "abc def");
+
+  // Multiple matches, first wins.
+  testOne_ram(
+    "abc",
+    {{"abc", "123"}, {"abc", "456"}},
+    "123");
+
+  // Replacement is smaller.
+  testOne_ram(
+    "abcd",
+    {{"abc", "X"}},
+    "Xd");
+
+  // Replacement is larger.
+  testOne_ram(
+    "xabcd",
+    {{"abc", "elephant"}},
+    "xelephantd");
+
+  // Multiple substitutions.
+  testOne_ram(
+    "abc def abc",
+    {{"abc", "X"}, {"def", "Y"}},
+    "X Y X");
+
+  // Exercise bitvector a bit.
+  testOne_ram(
+    "abcdefghijklmnopqrstuvwxyz",
+    {{"a","A"}, {"c","C"}, {"e","E"}, {"g","G"}, {"i","I"}, {"k","K"}},
+    "AbCdEfGhIjKlmnopqrstuvwxyz");
+
+  // First match, not longest.
+  testOne_ram(
+    "abcdef",
+    {{"abc", "X"}, {"abcd", "Y"}},
+    "Xdef");
+
+  // No recursive substitution.
+  testOne_ram(
+    "abc def",
+    {{"abc", "def"}, {"def", "ghi"}},
+    "def ghi");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -958,6 +1026,7 @@ void test_string_util()
   test_shellDoubleQuoteCommand();
   test_lastSlashOrBackslash();
   test_compactFileAndLine();
+  test_replaceAllMultiple();
 }
 
 

@@ -25,6 +25,7 @@
 #include <sstream>                     // std::ostringstream
 #include <string>                      // std::string
 #include <string_view>                 // std::string_view
+#include <utility>                     // std::pair
 #include <vector>                      // std::vector
 
 using namespace smbase;
@@ -655,6 +656,60 @@ std::string replace(
   std::string const &newstr)
 {
   return replaceAll(origSrc, oldstr, newstr);
+}
+
+
+std::string replaceAllMultiple(
+  std::string const &src,
+  stdfwd::vector<std::pair<std::string, std::string>> const &substitutions)
+{
+  std::string result;
+
+  // It is likely the output size will be similar.
+  result.reserve(src.size());
+
+  // 256-bit table, 1 bit per possible unsigned char.
+  unsigned char firstCharTable[32] = {}; // 32 * 8 = 256 bits
+
+  // Precompute which first characters appear in any key.
+  for (auto const &kv : substitutions) {
+    xassert(!kv.first.empty());
+    unsigned char c = static_cast<unsigned char>(kv.first[0]);
+    firstCharTable[c / 8] |= static_cast<unsigned char>(1u << (c % 8));
+  }
+
+  // Next index in `src` that is a candidate for replacement.
+  std::size_t pos = 0;
+
+  while (pos < src.size()) {
+    unsigned char c = static_cast<unsigned char>(src[pos]);
+    bool matched = false;
+
+    // Quick reject: if no key starts with this char, skip full scan
+    if (firstCharTable[c / 8] & (1u << (c % 8))) {
+      for (auto const &kv : substitutions) {
+        std::string const &from = kv.first;
+
+        // I already checked this above, but it's quick to check again,
+        // and the consequence of an empty `from` here would be a hang.
+        xassert(!from.empty());
+
+        if (0 == src.compare(pos, from.size(), from)) {
+          result.append(kv.second);
+          pos += from.size();
+          matched = true;
+          break;
+        }
+      }
+    }
+
+    if (!matched) {
+      result.push_back(src[pos]);
+      ++pos;
+    }
+  }
+
+  return result;
 }
 
 

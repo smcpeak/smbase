@@ -15,8 +15,10 @@
 #include "smbase/codepoint.h"                    // CodePoint
 #include "smbase/sm-macros.h"                    // DEPRECATED
 #include "smbase/sm-span-fwd.h"                  // smbase::Span
+#include "smbase/std-map-fwd.h"                  // std::map
 #include "smbase/std-string-fwd.h"               // std::string
 #include "smbase/std-string-view-fwd.h"          // std::string_view
+#include "smbase/std-utility-fwd.h"              // std::pair
 #include "smbase/std-vector-fwd.h"               // stdfwd::vector
 
 #include <cstddef>                               // std::size_t
@@ -254,6 +256,23 @@ std::string replace(
   std::string const &oldstr,
   std::string const &newstr)
   DEPRECATED("Use `replaceAll` instead.");
+
+
+// Replace all occurrences of first elements in `substitutions` with
+// their corresponding second elements.  This checks for matches in
+// order, replacing the first (not necessarily longest) that matches,
+// although longest match can be achieved by ordering the vector that
+// way.  The replacement text is not considered for any further
+// substitution (which is one way this differs from repeatedly
+// applying `replaceAll`).
+//
+// Note that if an earlier first element is a prefix of a later first
+// element, the later one can never be substituted.
+//
+// Requires that no first element be empty.
+std::string replaceAllMultiple(
+  std::string const &src,
+  stdfwd::vector<std::pair<std::string, std::string>> const &substitutions);
 
 
 // If 'full' ends with 'suffix', return a string like 'full' but with
