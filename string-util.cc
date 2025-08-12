@@ -36,7 +36,10 @@ using namespace smbase;
 // https://stackoverflow.com/questions/236129/how-do-i-iterate-over-the-words-of-a-string
 // but that was buggy and I've now changed it enough to be mostly
 // unrelated, although I acknowledge the provenance.
-std::vector<std::string> split(std::string const &text, char sep)
+std::vector<std::string> split(
+  std::string const &text,
+  char sep,
+  bool wantEmpty)
 {
   // Result words.
   std::vector<std::string> tokens;
@@ -51,7 +54,9 @@ std::vector<std::string> split(std::string const &text, char sep)
   // Look for the next occurrence of 'sep'.
   while ((end = text.find(sep, start)) != std::string::npos) {
     // Take the token.
-    tokens.push_back(text.substr(start, end - start));
+    if (end - start > 0 || wantEmpty) {
+      tokens.push_back(text.substr(start, end - start));
+    }
 
     // Skip past the separator we just found.
     start = end + 1;
@@ -59,7 +64,9 @@ std::vector<std::string> split(std::string const &text, char sep)
 
   // Final token, which is empty if `sep` occurred at the end of `text`
   // or `text` was empty.
-  tokens.push_back(text.substr(start));
+  if (start < text.size() || wantEmpty) {
+    tokens.push_back(text.substr(start));
+  }
 
   return tokens;
 }
@@ -67,17 +74,43 @@ std::vector<std::string> split(std::string const &text, char sep)
 
 std::vector<std::string> splitNonEmpty(std::string const &text, char sep)
 {
-  std::vector<std::string> tokens = split(text, sep);
+  return split(text, sep, false);
+}
 
-  // Remove the empty tokens using remove-erase.
-  tokens.erase(
-    std::remove_if(
-      tokens.begin(),
-      tokens.end(),
-      [](std::string const &s) -> bool {
-        return s.empty();
-      }),
-    tokens.end());
+
+// The logic in this function is identical that in `split`, except
+// with `find` replaced with `find_first_of`.
+std::vector<std::string> splitMultiSep(
+  std::string const &text,
+  std::string const &separators,
+  bool wantEmpty)
+{
+  // Result words.
+  std::vector<std::string> tokens;
+
+  // Place to start looking for the next token.
+  std::string::size_type start = 0;
+
+  // Location of the next 'separators' character after (or at) 'start',
+  // or 'npos' if none is found.
+  std::string::size_type end = 0;
+
+  // Look for the next occurrence of a character in 'separators'.
+  while ((end = text.find_first_of(separators, start)) != std::string::npos) {
+    // Take the token.
+    if (end - start > 0 || wantEmpty) {
+      tokens.push_back(text.substr(start, end - start));
+    }
+
+    // Skip past the separator we just found.
+    start = end + 1;
+  }
+
+  // Final token, which is empty if something in `separators` occurred
+  // at the end of `text` or `text` was empty.
+  if (start < text.size() || wantEmpty) {
+    tokens.push_back(text.substr(start));
+  }
 
   return tokens;
 }
@@ -283,6 +316,20 @@ std::vector<std::string> stringVectorFromPointerArray(
   }
 
   return ret;
+}
+
+
+void eraseEmptyStrings(std::vector<std::string> &vec /*IN/OUT*/)
+{
+  // Remove the empty elements using remove-erase.
+  vec.erase(
+    std::remove_if(
+      vec.begin(),
+      vec.end(),
+      [](std::string const &s) -> bool {
+        return s.empty();
+      }),
+    vec.end());
 }
 
 

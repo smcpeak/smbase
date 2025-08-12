@@ -38,15 +38,32 @@
 
 
 // ------------------------------ Parsing ------------------------------
-// Split `text` into words separated by `sep`.  If two occurrences of
-// `sep` are adjacent, the corresponding word will be empty.  The output
-// always has at least one element.
-stdfwd::vector<std::string> split(std::string const &text, char sep);
-
+// Split `text` into words separated by `sep`.
+//
+// If `wantEmpty`: If two occurrences of `sep` are adjacent, the
+// corresponding word will be empty.  The output always has at least one
+// element.
+//
+// If `!wantEmpty`: What would have been empty strings are filtered out.
+stdfwd::vector<std::string> split(
+  std::string const &text,
+  char sep,
+  bool wantEmpty = true);
 
 // Split 'text' into non-empty words separated by 'sep', which never
 // appears in any of the result words.
-stdfwd::vector<std::string> splitNonEmpty(std::string const &text, char sep);
+//
+// Equivalent to: split(text, sep, false)
+stdfwd::vector<std::string> splitNonEmpty(
+  std::string const &text,
+  char sep);
+
+
+// Like `split`, but treat any character in `separators` as a separator.
+stdfwd::vector<std::string> splitMultiSep(
+  std::string const &text,
+  std::string const &separators,
+  bool wantEmpty);
 
 
 // Remove any whitespace (as determined by `std::isspace`) at the
@@ -105,6 +122,10 @@ stdfwd::vector<std::string> suffixAll(
 // `array[0]`.  `array` can be `nullptr` only if `count==0`.
 stdfwd::vector<std::string> stringVectorFromPointerArray(
   int count, char const * const * NULLABLE array);
+
+// Erase from `vec` all strings that are empty: {"a","","b"} ->
+// {"a","b"}.
+void eraseEmptyStrings(stdfwd::vector<std::string> &vec /*IN/OUT*/);
 
 // Write 'vec' to 'os' like: ["first", "second", "third"].  The elements
 // are quoted using the 'insertDoubleQuoted' function.

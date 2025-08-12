@@ -113,6 +113,43 @@ void testSplitNonEmpty()
 }
 
 
+void testOne_splitMultiSep(
+  char const *in,
+  char const *sep,
+  std::vector<std::string> const &expect)
+{
+  // Start by computing with empty strings.
+  std::vector<std::string> tokens =
+    splitMultiSep(in, sep, true /*wantEmpty*/);
+  EXPECT_EQ(tokens, expect);
+
+  // Then remove them.
+  eraseEmptyStrings(tokens);
+
+  // And expect that to match `wantEmpty==false`.
+  EXPECT_EQ(splitMultiSep(in, sep, false /*wantEmpty*/), tokens);
+}
+
+
+void test_splitMultiSep()
+{
+  testOne_splitMultiSep(
+    "abcdefghij",
+    "adgh",
+    {"", "bc", "ef", "", "ij"});
+
+  testOne_splitMultiSep(
+    "",
+    "adgh",
+    {""});
+
+  testOne_splitMultiSep(
+    "aa",
+    "adgh",
+    {"", "", ""});
+}
+
+
 void testNumLeadingChars()
 {
   EXPECT_EQ(numLeadingChars("", ' '), 0);
@@ -985,6 +1022,28 @@ void test_replaceAllMultiple()
 }
 
 
+void testOne_eraseEmptyStrings(
+  std::vector<std::string> const &input,
+  std::vector<std::string> const &expect)
+{
+  std::vector<std::string> actual(input);
+  eraseEmptyStrings(actual);
+  EXPECT_EQ(actual, expect);
+}
+
+
+void test_eraseEmptyStrings()
+{
+  testOne_eraseEmptyStrings(
+    {},
+    {});
+
+  testOne_eraseEmptyStrings(
+    {"", "a", "", "bc", "d", "", "", "q"},
+    {"a", "bc", "d", "q"});
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -992,6 +1051,7 @@ void test_string_util()
 {
   testSplit();
   testSplitNonEmpty();
+  test_splitMultiSep();
   testNumLeadingChars();
   testJoin();
   testPrefixAll();
@@ -1027,6 +1087,7 @@ void test_string_util()
   test_lastSlashOrBackslash();
   test_compactFileAndLine();
   test_replaceAllMultiple();
+  test_eraseEmptyStrings();
 }
 
 
