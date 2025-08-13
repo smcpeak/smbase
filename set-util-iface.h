@@ -86,6 +86,12 @@ std::optional<T> setHasElementNotIn(
   stdfwd::set<T> const &larger);
 
 
+// True if there is no element in both `a` and `b`.
+template <typename K, typename C, typename A>
+bool setIsDisjointWith(std::set<K,C,A> const &a,
+                       std::set<K,C,A> const &b);
+
+
 // Return a set containing the union of `a` and `b`.
 template <typename K, typename C, typename A>
 std::set<K,C,A> setUnion(std::set<K,C,A> const &a,

@@ -110,6 +110,33 @@ std::optional<T> setHasElementNotIn(
 
 
 template <typename K, typename C, typename A>
+bool setIsDisjointWith(std::set<K,C,A> const &a,
+                       std::set<K,C,A> const &b)
+{
+  auto it_a = a.begin();
+  auto it_b = b.begin();
+
+  // Traverse the sets in parallel, advancing whichever iterator is
+  // smaller at each step.
+  while (it_a != a.end() && it_b != b.end()) {
+    if (*it_a < *it_b) {
+      ++it_a;
+    }
+    else if (*it_b < *it_a) {
+      ++it_b;
+    }
+    else {
+      // Found a match, sets are not disjoint.
+      return false;
+    }
+  }
+
+  // Disjoint.
+  return true;
+}
+
+
+template <typename K, typename C, typename A>
 std::set<K,C,A> setUnion(std::set<K,C,A> const &a,
                          std::set<K,C,A> const &b)
 {

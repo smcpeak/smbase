@@ -3,16 +3,19 @@
 
 #include "set-util.h"                  // module under test
 
-#include "exc.h"                       // smbase::XAssert
-#include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
-#include "sm-test.h"                   // EXPECT_EQ
-#include "stringb.h"                   // stringb
-#include "vector-util.h"               // operator<<(vector)
-#include "xassert.h"                   // xassert
+#include "smbase/gdvalue-set.h"        // gdv::GDValue(std::set)
+#include "smbase/gdvalue.h"            // gdv::GDValue
+#include "smbase/exc.h"                // smbase::XAssert
+#include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
+#include "smbase/sm-test.h"            // EXPECT_EQ
+#include "smbase/stringb.h"            // stringb
+#include "smbase/vector-util.h"        // operator<<(vector)
+#include "smbase/xassert.h"            // xassert
 
 #include <cstdlib>                     // std::atoi
 #include <set>                         // std::set
 
+using namespace gdv;
 using namespace smbase;
 
 
@@ -204,6 +207,31 @@ void testSetWriter()
 }
 
 
+void testOne_setIsDisjointWith(
+  std::set<int> const &a,
+  std::set<int> const &b,
+  bool expect)
+{
+  TEST_CASE_EXPRS("testOne_setIsDisjointWith", a, b);
+  EXPECT_EQ(setIsDisjointWith(a, b), expect);
+  EXPECT_EQ(setIsDisjointWith(b, a), expect);
+}
+
+
+void test_setIsDisjointWith()
+{
+  testOne_setIsDisjointWith({}, {}, true);
+  testOne_setIsDisjointWith({1}, {}, true);
+  testOne_setIsDisjointWith({1}, {2}, true);
+  testOne_setIsDisjointWith({1,2}, {2}, false);
+  testOne_setIsDisjointWith({1,2,3,4}, {3,5,6}, false);
+  testOne_setIsDisjointWith({1,2,4}, {3,5,6}, true);
+  testOne_setIsDisjointWith({1,2,6}, {3,5,6}, false);
+  testOne_setIsDisjointWith({1,2,6}, {1,5,7}, false);
+  testOne_setIsDisjointWith({1,2,6}, {1,2,6}, false);
+}
+
+
 void test_setUnion()
 {
   EXPECT_EQ(
@@ -259,6 +287,7 @@ void test_set_util()
   test_setRemove();
   testOstreamInsert();
   testSetWriter();
+  test_setIsDisjointWith();
   test_setUnion();
   test_setRemoveMany();
   test_setInsertMany();
