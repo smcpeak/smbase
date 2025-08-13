@@ -428,6 +428,7 @@ UNIT_TEST_OBJS += gprintf-test.o
 UNIT_TEST_OBJS += growbuf-test.o
 UNIT_TEST_OBJS += hashline-test.o
 UNIT_TEST_OBJS += indexed-string-table-test.o
+UNIT_TEST_OBJS += iter-and-end-test.o
 UNIT_TEST_OBJS += list-util-test.o
 UNIT_TEST_OBJS += map-util-test.o
 UNIT_TEST_OBJS += most-sig-bit-test.o
