@@ -159,7 +159,7 @@ namespace {
   template <typename K, typename C, typename A>
   int compareNSetIterators(
     Span<ConstIterAndEnd<std::set<K,C,A>>> iterAndEnds,
-    C &isLessThan)
+    C const &isLessThan)
   {
     // The number of sets we are working with.
     int const N = static_cast<int>(iterAndEnds.size());

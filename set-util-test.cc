@@ -239,6 +239,16 @@ void testOne_setIsDisjointWith(
 }
 
 
+namespace {
+  struct Mod10Compare {
+    bool operator()(int a, int b) const
+    {
+      return (a % 10) < (b % 10);
+    }
+  };
+}
+
+
 void test_setIsDisjointWith()
 {
   testOne_setIsDisjointWith({}, {}, true);
@@ -250,6 +260,34 @@ void test_setIsDisjointWith()
   testOne_setIsDisjointWith({1,2,6}, {3,5,6}, false);
   testOne_setIsDisjointWith({1,2,6}, {1,5,7}, false);
   testOne_setIsDisjointWith({1,2,6}, {1,2,6}, false);
+
+  // Test with unusual comparator.
+  std::set<int, Mod10Compare> s1 = {1};
+  std::set<int, Mod10Compare> s2 = {22};
+  {
+    TEST_CASE_EXPRS("part1", toGDValue(s1), toGDValue(s2));
+    EXPECT_EQ(setIsDisjointWith(s1, s2), true);
+    EXPECT_EQ(setIsDisjointWith(s2, s1), true);
+
+    ConstIterAndEnd<std::set<int, Mod10Compare>> iterAndEnds[] = {
+      constIterAndEnd(s1),
+      constIterAndEnd(s2),
+    };
+    EXPECT_EQ(setsAreDisjoint(Span(iterAndEnds)), true);
+  }
+
+  {
+    s1.insert(12);
+    TEST_CASE_EXPRS("part2", toGDValue(s1), toGDValue(s2));
+    EXPECT_EQ(setIsDisjointWith(s1, s2), false);
+    EXPECT_EQ(setIsDisjointWith(s2, s1), false);
+
+    ConstIterAndEnd<std::set<int, Mod10Compare>> iterAndEnds[] = {
+      constIterAndEnd(s1),
+      constIterAndEnd(s2),
+    };
+    EXPECT_EQ(setsAreDisjoint(Span(iterAndEnds)), false);
+  }
 }
 
 
