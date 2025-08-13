@@ -164,6 +164,25 @@ void testc_read()
 }
 
 
+void testc_convertToConst()
+{
+  std::vector<int> v{1,2,3};
+
+  // Start with non-const.
+  IterAndEnd<std::vector<int>> itaNC(v.begin(), v.end());
+
+  // Convert to const.
+  int expect=1;
+  ConstIterAndEnd<std::vector<int>> ita(itaNC);
+  while (!ita.empty()) {
+    EXPECT_EQ(*ita, expect);
+    ++expect;
+    ++ita;
+  }
+  EXPECT_EQ(expect, 4);
+}
+
+
 void testc_copy_and_assign()
 {
   std::vector<int> v{10,20,30};
@@ -268,6 +287,7 @@ void test_iter_and_end()
 
   testc_read();
   // no write
+  testc_convertToConst();
   testc_copy_and_assign();
   testc_begin_end_and_empty();
   testc_increment_operators();
