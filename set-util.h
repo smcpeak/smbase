@@ -6,7 +6,10 @@
 
 #include "set-util-iface.h"            // interface for this module
 
+#include "smbase/chained-cond.h"       // smbase::cc::z_le_lt
+#include "smbase/iter-and-end.h"       // smbase::ConstIterAndEnd
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
+#include "smbase/sm-span.h"            // smbase::Span
 #include "smbase/xassert.h"            // xassert
 
 #include <optional>                    // std::optional
@@ -109,20 +112,26 @@ std::optional<T> setHasElementNotIn(
 }
 
 
+// I choose to keep this as a separate implementation from
+// `setsAreDisjoint` because it is much simpler, possibly faster, has
+// fewer dependencies, and is useful for behavior comparison testing.
 template <typename K, typename C, typename A>
 bool setIsDisjointWith(std::set<K,C,A> const &a,
                        std::set<K,C,A> const &b)
 {
+  // Comparator to use.
+  C isLessThan;
+
   auto it_a = a.begin();
   auto it_b = b.begin();
 
   // Traverse the sets in parallel, advancing whichever iterator is
   // smaller at each step.
   while (it_a != a.end() && it_b != b.end()) {
-    if (*it_a < *it_b) {
+    if (isLessThan(*it_a, *it_b)) {
       ++it_a;
     }
-    else if (*it_b < *it_a) {
+    else if (isLessThan(*it_b, *it_a)) {
       ++it_b;
     }
     else {
@@ -133,6 +142,111 @@ bool setIsDisjointWith(std::set<K,C,A> const &a,
 
   // Disjoint.
   return true;
+}
+
+
+namespace {
+  /* Compare N `IterAndEnd` to find the one with the smallest value and
+     return its index, with two special cases:
+
+       -1    At least N-1 iterators are at their ends, meaning we have
+             at most one container with elements left to compare, and
+             thus can conclude that all sets were disjoint.
+
+       -2    Two equal elements were found, so we know the sets are
+             *not* disjoint.
+  */
+  template <typename K, typename C, typename A>
+  int compareNSetIterators(
+    Span<ConstIterAndEnd<std::set<K,C,A>>> iterAndEnds,
+    C &isLessThan)
+  {
+    // The number of sets we are working with.
+    int const N = static_cast<int>(iterAndEnds.size());
+
+    // The number of iterators that were found to have reached their
+    // ends.
+    int numEnded = 0;
+
+    // Index of the iterator with the smallest value, or -1 if no value
+    // yet seen.
+    int smallestIndex = -1;
+
+    // Find the smallest element in `iterAndEnds`.
+    for (int i=0; i < N; ++i) {
+      ConstIterAndEnd<std::set<K,C,A>> &iae = iterAndEnds[i];
+
+      if (iae.empty()) {
+        ++numEnded;
+      }
+
+      else if (smallestIndex < 0) {
+        smallestIndex = i;
+      }
+
+      else {
+        ConstIterAndEnd<std::set<K,C,A>> &smallest =
+          iterAndEnds[smallestIndex];
+
+        if (isLessThan(*iae, *smallest)) {
+          // New smallest.
+          smallestIndex = i;
+        }
+        else if (isLessThan(*smallest, *iae)) {
+          // Keep the current smallest.
+        }
+        else {
+          // Equal values; sets are not disjoint.
+          return -2;
+        }
+      }
+    }
+
+    if (numEnded >= N-1) {
+      // Iterators exhausted, sets are disjoint.  (The only way that
+      // `numEnded` would not be exactly `N-1` is if all of the sets
+      // were empty at the start, in which case `numEnded` would be `N`
+      // here.)
+      return -1;
+    }
+
+    xassert(smallestIndex >= 0);
+    return smallestIndex;
+  }
+} // anonymous namespace
+
+
+template <typename K, typename C, typename A>
+bool setsAreDisjoint(
+  Span<ConstIterAndEnd<std::set<K,C,A>>> iterAndEnds)
+{
+  int const N = iterAndEnds.size();
+  if (N < 2) {
+    // Nothing to compare, so disjointness is assured.
+    return true;
+  }
+
+  // Comparator to use.
+  C isLessThan;
+
+  // Iterate over all sets in parallel, advancing the smallest iterator
+  // at each step.
+  while (true) {
+    int smallestIndex = compareNSetIterators(iterAndEnds, isLessThan);
+    if (smallestIndex == -2) {
+      return false;          // Equal elements; not disjoint.
+    }
+    else if (smallestIndex == -1) {
+      return true;           // Exhausted iterators; disjooint.
+    }
+    else {
+      xassert(cc::z_le_lt(smallestIndex, N));
+      ++iterAndEnds[smallestIndex];
+    }
+  }
+
+  // Not reached.
+  return false;
 }
 
 

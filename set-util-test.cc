@@ -4,10 +4,13 @@
 #include "set-util.h"                  // module under test
 
 #include "smbase/gdvalue-set.h"        // gdv::GDValue(std::set)
+#include "smbase/gdvalue-span.h"       // gdv::GDValue(smbase::Span)
 #include "smbase/gdvalue.h"            // gdv::GDValue
 #include "smbase/exc.h"                // smbase::XAssert
+#include "smbase/sm-env.h"             // smbase::envAsIntOr
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
-#include "smbase/sm-test.h"            // EXPECT_EQ
+#include "smbase/sm-random.h"          // smbase::sm_random
+#include "smbase/sm-test.h"            // EXPECT_EQ, envRandomizedTestIters
 #include "smbase/stringb.h"            // stringb
 #include "smbase/vector-util.h"        // operator<<(vector)
 #include "smbase/xassert.h"            // xassert
@@ -215,6 +218,24 @@ void testOne_setIsDisjointWith(
   TEST_CASE_EXPRS("testOne_setIsDisjointWith", a, b);
   EXPECT_EQ(setIsDisjointWith(a, b), expect);
   EXPECT_EQ(setIsDisjointWith(b, a), expect);
+
+  // Test the general algorithm with just two sets.
+  std::vector<ConstIterAndEnd<std::set<int>>> iterAndEnds = {
+    constIterAndEnd(a),
+    constIterAndEnd(b)
+  };
+
+  // We need to explicitly say `Span` here because otherwise the
+  // compiler fails to deduce the template arguments for
+  // `setsAreDisjoint` before it gets to the stage of considering
+  // implicit conversions.
+  EXPECT_EQ(setsAreDisjoint(Span(iterAndEnds)), expect);
+
+  // Swap the order.  (Note that the previous iterators have been
+  // modified, so we need to recreate them.)
+  iterAndEnds[0] = constIterAndEnd(b);
+  iterAndEnds[1] = constIterAndEnd(a);
+  EXPECT_EQ(setsAreDisjoint(Span(iterAndEnds)), expect);
 }
 
 
@@ -229,6 +250,191 @@ void test_setIsDisjointWith()
   testOne_setIsDisjointWith({1,2,6}, {3,5,6}, false);
   testOne_setIsDisjointWith({1,2,6}, {1,5,7}, false);
   testOne_setIsDisjointWith({1,2,6}, {1,2,6}, false);
+}
+
+
+void testOne_setsAreDisjoint(
+  std::set<int> const &a,
+  std::set<int> const &b,
+  std::set<int> const &c,
+  bool expect)
+{
+  TEST_CASE_EXPRS("testOne_setsAreDisjoint", a, b, c);
+
+  std::set<int> const *sets[] = { &a, &b, &c };
+
+  // All permutations of the sets should yield the same result.
+  int permutations[][3] = {
+    { 0, 1, 2 },
+    { 0, 2, 1 },
+    { 1, 0, 2 },
+    { 1, 2, 0 },
+    { 2, 0, 1 },
+    { 2, 1, 0 },
+  };
+
+  for (int (&permutation)[3] : permutations) {
+    EXN_CONTEXT(toGDValue(Span(permutation)));
+    ConstIterAndEnd<std::set<int>> iterAndEnds[] = {
+      constIterAndEnd(*( sets[permutation[0]] )),
+      constIterAndEnd(*( sets[permutation[1]] )),
+      constIterAndEnd(*( sets[permutation[2]] ))
+    };
+    EXPECT_EQ(setsAreDisjoint(Span(iterAndEnds)), expect);
+  }
+}
+
+
+void test_setsAreDisjoint()
+{
+  testOne_setsAreDisjoint(
+    {},
+    {},
+    {},
+    true);
+
+  testOne_setsAreDisjoint(
+    {1},
+    {},
+    {},
+    true);
+
+  testOne_setsAreDisjoint(
+    {1},
+    {2},
+    {},
+    true);
+
+  testOne_setsAreDisjoint(
+    {2},
+    {2},
+    {},
+    false);
+
+  testOne_setsAreDisjoint(
+    {1},
+    {2},
+    {3},
+    true);
+
+  testOne_setsAreDisjoint(
+    {1},
+    {2},
+    {2},
+    false);
+
+  testOne_setsAreDisjoint(
+    {2},
+    {2},
+    {2},
+    false);
+
+  testOne_setsAreDisjoint(
+    {1,4},
+    {2},
+    {3},
+    true);
+
+  testOne_setsAreDisjoint(
+    {1,4},
+    {2},
+    {3},
+    true);
+
+  testOne_setsAreDisjoint(
+    {1,4},
+    {2,5},
+    {3},
+    true);
+
+  testOne_setsAreDisjoint(
+    {1,4},
+    {2,5},
+    {3,6},
+    true);
+
+  testOne_setsAreDisjoint(
+    {1,2},
+    {2,5},
+    {3,6},
+    false);
+
+  testOne_setsAreDisjoint(
+    {1,4},
+    {2,5},
+    {3,2},
+    false);
+}
+
+
+void test_setsAreDisjointRandomized()
+{
+  TEST_CASE("test_setsAreDisjointRandomized");
+
+  // Overall iteration count; orthogonal to other parameters.
+  int const numIters = envRandomizedTestIters(100, "SADR_ITERS", 1);
+
+  // Sizes that need to be kept balanced for the test to have diagnostic
+  // value.  "Balanced" means the final `numDisjoint` is approximately
+  // half of `numIters`.
+  int const numInsertions = envAsIntOr(10, "SADR_INSERTIONS");
+  int const numValues = envAsIntOr(50, "SADR_VALUES");
+  int const numSets = envAsIntOr(4, "SADR_SETS");
+
+  VPVAL(numIters);
+  VPVAL(numInsertions);
+  VPVAL(numValues);
+  VPVAL(numSets);
+
+  // Number of sets of sets that ended up being disjoint.  Ideally,
+  // about half of `numSets` would be disjoint.
+  int numDisjoint = 0;
+
+  smbase_loopi(numIters) {
+    EXN_CONTEXT_EXPR(i);
+
+    // All elements in all sets (running union).
+    std::set<int> allElements;
+
+    // The set of sets to test disjointness of.
+    std::vector<std::set<int>> sets(numSets);
+
+    // True until we cause `sets` to not be disjoint.
+    bool isDisjoint = true;
+
+    // Populate the sets by performing a total of `numInsertions`
+    // insertions, although some may be duplicates.
+    smbase_loopj(numInsertions) {
+      int v = sm_random(numValues);
+      int index = sm_random(numSets);
+
+      if (setInsert(sets.at(index), v)) {
+        // We inserted `v`.  Was it already in another set?
+        if (!setInsert(allElements, v)) {
+          // It was, so we know the sets will not be disjoint.
+          isDisjoint = false;
+        }
+      }
+    }
+
+    // Prepare to call `setsAreDisjoint`.
+    std::vector<ConstIterAndEnd<std::set<int>>> iterAndEnds;
+    smbase_loopj(numSets) {
+      iterAndEnds.push_back(constIterAndEnd(sets.at(j)));
+    }
+
+    // See if we get the right answer.
+    EXPECT_EQ(setsAreDisjoint(Span(iterAndEnds)), isDisjoint);
+
+    if (isDisjoint) {
+      ++numDisjoint;
+    }
+  }
+
+  VPVAL(numDisjoint);
+  if (numIters > 0) {
+    DIAG("ratio: " << (float)numDisjoint / (float)numIters);
+  }
 }
 
 
@@ -288,6 +494,8 @@ void test_set_util()
   testOstreamInsert();
   testSetWriter();
   test_setIsDisjointWith();
+  test_setsAreDisjoint();
+  test_setsAreDisjointRandomized();
   test_setUnion();
   test_setRemoveMany();
   test_setInsertMany();

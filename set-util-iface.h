@@ -13,7 +13,9 @@
 
 #include "set-util-fwd.h"              // fwds for this module
 
+#include "smbase/iter-and-end-fwd.h"   // smbase::ConstIterAndEnd
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
+#include "smbase/sm-span-fwd.h"        // smbase::Span
 #include "smbase/std-optional-fwd.h"   // std::optional
 #include "smbase/std-set-fwd.h"        // stdfwd::set
 #include "smbase/std-vector-fwd.h"     // stdfwd::vector
@@ -23,6 +25,10 @@
 
 
 OPEN_NAMESPACE(smbase)
+
+
+// TODO: All of the methods that use `stdfwd` should use `std` and
+// have all three template parameters spelled out.
 
 
 // Insert 't' into 's'.  Return true if it was inserted, false if it was
@@ -90,6 +96,15 @@ std::optional<T> setHasElementNotIn(
 template <typename K, typename C, typename A>
 bool setIsDisjointWith(std::set<K,C,A> const &a,
                        std::set<K,C,A> const &b);
+
+
+// True if there is no element in any of the sets pointed to by elements
+// accessible via `iterAndEnds`.
+//
+// NOTE: The iterators within the span are *modified* by this algorithm!
+template <typename K, typename C, typename A>
+bool setsAreDisjoint(
+  Span<ConstIterAndEnd<std::set<K,C,A>>> iterAndEnds);
 
 
 // Return a set containing the union of `a` and `b`.
