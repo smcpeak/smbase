@@ -11,6 +11,9 @@ namespace smbase {
   template <typename CONTAINER>
   class IterAndEnd;
 
+  template <typename CONTAINER>
+  class ConstIterAndEnd;
+
 } // namespace smbase
 
 #endif // SMBASE_ITER_AND_END_FWD_H

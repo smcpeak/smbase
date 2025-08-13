@@ -16,6 +16,7 @@ using namespace smbase;
 OPEN_ANONYMOUS_NAMESPACE
 
 
+// ---------------------------- IterAndEnd -----------------------------
 void test_read()
 {
   std::vector<int> v{1,2,3};
@@ -143,6 +144,115 @@ void test_iterAndEnd()
 }
 
 
+// -------------------------- ConstIterAndEnd --------------------------
+void testc_read()
+{
+  std::vector<int> v{1,2,3};
+
+  int expect=1;
+  ConstIterAndEnd<std::vector<int>> ita(v.begin(), v.end());
+  while (!ita.empty()) {
+    EXPECT_EQ(*ita, expect);
+
+    // Does not compile because the iterator is const.
+    //*ita = 0;
+
+    ++expect;
+    ++ita;
+  }
+  EXPECT_EQ(expect, 4);
+}
+
+
+void testc_copy_and_assign()
+{
+  std::vector<int> v{10,20,30};
+
+  ConstIterAndEnd<std::vector<int>> orig(v.begin(), v.end());
+
+  // Copy constructor.
+  ConstIterAndEnd<std::vector<int>> copy(orig);
+  xassert(copy.m_iter == orig.m_iter);
+  xassert(copy.m_end == orig.m_end);
+  xassert(copy == orig);
+
+  // Modify copy and check inequality
+  ++copy;
+  xassert(copy != orig);
+
+  // Assignment operator
+  ConstIterAndEnd<std::vector<int>> assign(orig);
+  xassert(assign == orig);
+  xassert(assign != copy);
+  assign = copy;
+  xassert(assign != orig);
+  xassert(assign == copy);
+}
+
+
+void testc_begin_end_and_empty()
+{
+  std::vector<int> v{4,5,6};
+
+  // Iterate without range syntax.
+  {
+    ConstIterAndEnd<std::vector<int>> ita(v.begin(), v.end());
+
+    int expect = 4;
+    for (; !ita.empty(); ++ita) {
+      EXPECT_EQ(*ita, expect);
+      ++expect;
+    }
+    EXPECT_EQ(expect, 7);
+  }
+
+  // Iterate with range syntax.
+  {
+    ConstIterAndEnd<std::vector<int>> ita(v.begin(), v.end());
+
+    int expect = 4;
+    for (int i : ita) {
+      EXPECT_EQ(i, expect);
+      ++expect;
+    }
+    EXPECT_EQ(expect, 7);
+  }
+}
+
+
+void testc_increment_operators()
+{
+  std::vector<int> v{7,8,9};
+  ConstIterAndEnd<std::vector<int>> ita(v.begin(), v.end());
+
+  // Pre-increment
+  EXPECT_EQ(*ita, 7);
+  ConstIterAndEnd<std::vector<int>> ita2 = ++ita;
+  EXPECT_EQ(*ita, 8);
+  EXPECT_EQ(*ita2, 8);
+
+  // Post-increment
+  ConstIterAndEnd<std::vector<int>> ita3 = ita++;
+  EXPECT_EQ(*ita3, 8);
+  EXPECT_EQ(*ita, 9);
+}
+
+
+void testc_iterAndEnd()
+{
+  std::list<int> lst{100, 200, 300};
+  auto ita = constIterAndEnd(lst); // deduced type ConstIterAndEnd<std::list<int>>
+
+  int expect = 100;
+  while (!ita.empty()) {
+    EXPECT_EQ(*ita, expect);
+    expect += 100;
+    ++ita;
+  }
+  EXPECT_EQ(expect, 400);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -155,6 +265,13 @@ void test_iter_and_end()
   test_begin_end_and_empty();
   test_increment_operators();
   test_iterAndEnd();
+
+  testc_read();
+  // no write
+  testc_copy_and_assign();
+  testc_begin_end_and_empty();
+  testc_increment_operators();
+  testc_iterAndEnd();
 }
 
 

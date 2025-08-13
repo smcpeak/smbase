@@ -113,6 +113,110 @@ IterAndEnd<CONTAINER> iterAndEnd(CONTAINER &c)
 }
 
 
+// Iterator, with end, that *cannot* modify its container.
+template <typename CONTAINER>
+class ConstIterAndEnd {
+public:      // types
+  // The type of iterator we wrap.
+  using Iterator = typename CONTAINER::const_iterator;
+
+  // Value of the elements we iterate over.
+  using value_type = typename Iterator::value_type;
+
+public:      // data
+  // The iterator.
+  Iterator m_iter;
+
+  // The end.  Ordinarily, this does not change after initialization,
+  // but I do not mark it `const` because that would preclude
+  // assignment.
+  Iterator m_end;
+
+public:      // methods
+  ConstIterAndEnd(Iterator iter, Iterator end)
+    : IMEMBFP(iter),
+      IMEMBFP(end)
+  {}
+
+  ConstIterAndEnd(ConstIterAndEnd const &obj)
+    : DMEMB(m_iter),
+      DMEMB(m_end)
+  {}
+
+  ConstIterAndEnd &operator=(ConstIterAndEnd const &obj)
+  {
+    CMEMB(m_iter);
+    CMEMB(m_end);
+    return *this;
+  }
+
+  // Assuming that `CONTAINER::const_iterator` can be created from a
+  // `CONTAINER::iterator`, we should be able to do the same for our
+  // combined structure.
+  ConstIterAndEnd(IterAndEnd<CONTAINER> const &obj)
+    : DMEMB(m_iter),
+      DMEMB(m_end)
+  {}
+
+  bool operator==(ConstIterAndEnd const &obj) const
+  {
+    return EMEMB(m_iter) &&
+           EMEMB(m_end);
+  }
+
+  bool operator!=(ConstIterAndEnd const &obj) const
+  {
+    return !operator==(obj);
+  }
+
+  // -------------------- container-like interface ---------------------
+  bool empty() const
+  {
+    return m_iter == m_end;
+  }
+
+  Iterator begin() const
+  {
+    return m_iter;
+  }
+
+  Iterator end() const
+  {
+    return m_end;
+  }
+
+  // --------------------- iterator-like interface ---------------------
+  value_type const &operator*() const
+  {
+    return *m_iter;
+  }
+
+  // No `operator->` because applying `->` to iterators is generally
+  // troublesome.
+
+  ConstIterAndEnd &operator++()
+  {
+    ++m_iter;
+    return *this;
+  }
+
+  ConstIterAndEnd operator++(int)
+  {
+    ConstIterAndEnd ret(*this);
+    ++m_iter;
+    return ret;
+  }
+};
+
+
+// Extract begin/end from `c`.
+template <typename CONTAINER>
+ConstIterAndEnd<CONTAINER> constIterAndEnd(CONTAINER const &c)
+{
+  return ConstIterAndEnd<CONTAINER>(c.begin(), c.end());
+}
+
+
 CLOSE_NAMESPACE(smbase)
 
 
