@@ -41,8 +41,8 @@ OPEN_NAMESPACE(smbase)
 /*AUTO_CTC*/   SystemErrorCode const &systemErrorCode,
 /*AUTO_CTC*/   std::string const &fname)
 /*AUTO_CTC*/   : XBase(),
-/*AUTO_CTC*/     m_systemErrorCode(systemErrorCode),
-/*AUTO_CTC*/     m_fname(fname)
+/*AUTO_CTC*/     IMEMBFP(systemErrorCode),
+/*AUTO_CTC*/     IMEMBFP(fname)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
 /*AUTO_CTC*/ XExclusiveWriteFileConflict::XExclusiveWriteFileConflict(XExclusiveWriteFileConflict const &obj) noexcept

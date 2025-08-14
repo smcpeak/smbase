@@ -481,7 +481,24 @@ def generatePrimaryCtorInit(fieldName: str) -> str:
   """Generate the primary ctor initializer for `fieldName`."""
 
   paramName = generatePrimaryCtorParamName(fieldName)
-  return f"{fieldName}({paramName})"
+
+  if fieldName.startswith("m_"):
+    # Use the purpose-built macro.
+    return f"IMEMBFP({paramName})"
+  else:
+    return f"{fieldName}({paramName})"
+
+
+def generatePrimaryMoveCtorInit(fieldName: str) -> str:
+  """Generate the primary move ctor initializer for `fieldName`."""
+
+  paramName = generatePrimaryCtorParamName(fieldName)
+
+  if fieldName.startswith("m_"):
+    # Use the purpose-built macro.
+    return f"IMEMBMFP({paramName})"
+  else:
+    return f"{fieldName}(std::move({paramName}))"
 
 
 def generateCtorInits(
@@ -489,9 +506,9 @@ def generateCtorInits(
   fields: list[Field],
   kind: str) -> list[str]:
 
-  """Generate the lines that initialize a constructor.  The ctor kind
-  is indicated by `kind`, which is either "primary" or the name of a
-  macro to invoke for each member."""
+  """Generate the lines that initialize a constructor.  The ctor kind is
+  indicated by `kind`, which is either "primary", "primaryMove", or the
+  name of a macro to invoke for each member."""
 
   out: list[str] = []
 
@@ -511,6 +528,9 @@ def generateCtorInits(
 
     elif kind == "primary":
       init = generatePrimaryCtorInit(fieldName)
+
+    elif kind == "primaryMove":
+      init = generatePrimaryMoveCtorInit(fieldName)
 
     else:
       init = f"{kind}({fieldName})"
@@ -553,9 +573,9 @@ def generateDefinitions(
   #   int x,
   #   float y,
   #   std::string const &z)
-  #   : m_x(x),              // insert "Super()" if superclass
-  #     m_y(y),
-  #     m_z(z)
+  #   : IMEMBFP(x),          // insert "Super()" if superclass
+  #     IMEMBFP(y),
+  #     IMEMBFP(z)
   # {}
   out += [
     f"{curClass}::{curClass}("
@@ -574,15 +594,15 @@ def generateDefinitions(
     #   int x,
     #   float y,
     #   std::string &&z)
-    #   : m_x(x),              // insert "Super()" if superclass
-    #     m_y(y),
-    #     m_z(z)
+    #   : IMEMBMFP(x),       // insert "Super()" if superclass
+    #     IMEMBMFP(y),
+    #     IMEMBMFP(z)
     # {}
     out += [
       f"{curClass}::{curClass}("
     ] + (
            generatePrimaryMoveCtorParamsSeparateLines(fields) +
-           generateCtorInits(superclass, fields, "primary")
+           generateCtorInits(superclass, fields, "primaryMove")
         ) + [
       "{}",
       ""

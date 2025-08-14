@@ -11,7 +11,7 @@ OPEN_NAMESPACE(smbase)
 /*AUTO_CTC*/ XDivideByZero::XDivideByZero(
 /*AUTO_CTC*/   std::string const &dividend)
 /*AUTO_CTC*/   : XArithmetic(),
-/*AUTO_CTC*/     m_dividend(dividend)
+/*AUTO_CTC*/     IMEMBFP(dividend)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
 /*AUTO_CTC*/ XDivideByZero::XDivideByZero(XDivideByZero const &obj) noexcept

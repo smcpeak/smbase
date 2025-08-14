@@ -19,15 +19,15 @@ OPEN_NAMESPACE(smbase)
 /*AUTO_CTC*/ TypeNameAndSize::TypeNameAndSize(
 /*AUTO_CTC*/   std::string const &name,
 /*AUTO_CTC*/   int bits)
-/*AUTO_CTC*/   : m_name(name),
-/*AUTO_CTC*/     m_bits(bits)
+/*AUTO_CTC*/   : IMEMBFP(name),
+/*AUTO_CTC*/     IMEMBFP(bits)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
 /*AUTO_CTC*/ TypeNameAndSize::TypeNameAndSize(
 /*AUTO_CTC*/   std::string &&name,
 /*AUTO_CTC*/   int bits)
-/*AUTO_CTC*/   : m_name(name),
-/*AUTO_CTC*/     m_bits(bits)
+/*AUTO_CTC*/   : IMEMBMFP(name),
+/*AUTO_CTC*/     IMEMBMFP(bits)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
 /*AUTO_CTC*/ TypeNameAndSize::TypeNameAndSize(TypeNameAndSize const &obj) noexcept

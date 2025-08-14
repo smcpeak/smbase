@@ -19,18 +19,18 @@ using namespace smbase;
 /*AUTO_CTC*/   int x,
 /*AUTO_CTC*/   float y,
 /*AUTO_CTC*/   std::string const &z)
-/*AUTO_CTC*/   : m_x(x),
-/*AUTO_CTC*/     m_y(y),
-/*AUTO_CTC*/     m_z(z)
+/*AUTO_CTC*/   : IMEMBFP(x),
+/*AUTO_CTC*/     IMEMBFP(y),
+/*AUTO_CTC*/     IMEMBFP(z)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
 /*AUTO_CTC*/ Foo::Foo(
 /*AUTO_CTC*/   int x,
 /*AUTO_CTC*/   float y,
 /*AUTO_CTC*/   std::string &&z)
-/*AUTO_CTC*/   : m_x(x),
-/*AUTO_CTC*/     m_y(y),
-/*AUTO_CTC*/     m_z(z)
+/*AUTO_CTC*/   : IMEMBMFP(x),
+/*AUTO_CTC*/     IMEMBMFP(y),
+/*AUTO_CTC*/     IMEMBMFP(z)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
 /*AUTO_CTC*/ Foo::Foo(Foo const &obj) noexcept
@@ -101,7 +101,7 @@ using namespace smbase;
 /*AUTO_CTC*/ Bar::Bar(
 /*AUTO_CTC*/   int n)
 /*AUTO_CTC*/   : EmptyBase(),
-/*AUTO_CTC*/     m_n(n)
+/*AUTO_CTC*/     IMEMBFP(n)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
 /*AUTO_CTC*/ Bar::Bar(Bar const &obj) noexcept
@@ -149,7 +149,7 @@ using namespace smbase;
 // ---- create-tuple-class: definitions for Baz
 /*AUTO_CTC*/ Baz::Baz(
 /*AUTO_CTC*/   int *p)
-/*AUTO_CTC*/   : m_p(p)
+/*AUTO_CTC*/   : IMEMBFP(p)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
 /*AUTO_CTC*/ Baz::Baz(Baz const &obj) noexcept

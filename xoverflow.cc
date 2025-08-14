@@ -17,10 +17,10 @@ OPEN_NAMESPACE(smbase)
 /*AUTO_CTC*/   std::string const &rhs,
 /*AUTO_CTC*/   std::string const &op)
 /*AUTO_CTC*/   : XOverflow(),
-/*AUTO_CTC*/     m_type(type),
-/*AUTO_CTC*/     m_lhs(lhs),
-/*AUTO_CTC*/     m_rhs(rhs),
-/*AUTO_CTC*/     m_op(op)
+/*AUTO_CTC*/     IMEMBFP(type),
+/*AUTO_CTC*/     IMEMBFP(lhs),
+/*AUTO_CTC*/     IMEMBFP(rhs),
+/*AUTO_CTC*/     IMEMBFP(op)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
 /*AUTO_CTC*/ XBinaryOpOverflow::XBinaryOpOverflow(XBinaryOpOverflow const &obj) noexcept
@@ -61,11 +61,11 @@ std::string XBinaryOpOverflow::getConflict() const
 /*AUTO_CTC*/   TypeNameAndSize const &sourceType,
 /*AUTO_CTC*/   TypeNameAndSize const &destType)
 /*AUTO_CTC*/   : XNumericConversion(),
-/*AUTO_CTC*/     m_sourceValue(sourceValue),
-/*AUTO_CTC*/     m_destValue(destValue),
-/*AUTO_CTC*/     m_roundTripValue(roundTripValue),
-/*AUTO_CTC*/     m_sourceType(sourceType),
-/*AUTO_CTC*/     m_destType(destType)
+/*AUTO_CTC*/     IMEMBFP(sourceValue),
+/*AUTO_CTC*/     IMEMBFP(destValue),
+/*AUTO_CTC*/     IMEMBFP(roundTripValue),
+/*AUTO_CTC*/     IMEMBFP(sourceType),
+/*AUTO_CTC*/     IMEMBFP(destType)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
 /*AUTO_CTC*/ XNumericConversionLosesInformation::XNumericConversionLosesInformation(XNumericConversionLosesInformation const &obj) noexcept
@@ -109,9 +109,9 @@ std::string XNumericConversionLosesInformation::getConflict() const
 /*AUTO_CTC*/   TypeNameAndSize const &sourceType,
 /*AUTO_CTC*/   TypeNameAndSize const &destType)
 /*AUTO_CTC*/   : XNumericConversion(),
-/*AUTO_CTC*/     m_sourceValue(sourceValue),
-/*AUTO_CTC*/     m_sourceType(sourceType),
-/*AUTO_CTC*/     m_destType(destType)
+/*AUTO_CTC*/     IMEMBFP(sourceValue),
+/*AUTO_CTC*/     IMEMBFP(sourceType),
+/*AUTO_CTC*/     IMEMBFP(destType)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
 /*AUTO_CTC*/ XNumericConversionOutsideRange::XNumericConversionOutsideRange(XNumericConversionOutsideRange const &obj) noexcept
@@ -151,10 +151,10 @@ std::string XNumericConversionOutsideRange::getConflict() const
 /*AUTO_CTC*/   bool destIsSigned,
 /*AUTO_CTC*/   unsigned destSizeBytes)
 /*AUTO_CTC*/   : XNumericConversion(),
-/*AUTO_CTC*/     m_sourceTypeName(sourceTypeName),
-/*AUTO_CTC*/     m_sourceValue(sourceValue),
-/*AUTO_CTC*/     m_destIsSigned(destIsSigned),
-/*AUTO_CTC*/     m_destSizeBytes(destSizeBytes)
+/*AUTO_CTC*/     IMEMBFP(sourceTypeName),
+/*AUTO_CTC*/     IMEMBFP(sourceValue),
+/*AUTO_CTC*/     IMEMBFP(destIsSigned),
+/*AUTO_CTC*/     IMEMBFP(destSizeBytes)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
 /*AUTO_CTC*/ XNumericConversionFromAP::XNumericConversionFromAP(XNumericConversionFromAP const &obj) noexcept
