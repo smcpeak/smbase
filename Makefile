@@ -938,7 +938,7 @@ HEADERS := $(wildcard *.h)
 out/index.html.ok: index.html get-file-descriptions.py $(HEADERS)
 	$(CREATE_OUTPUT_DIRECTORY)
 	$(PYTHON3) ./get-file-descriptions.py \
-	  --ignore='-fwd\.h$$' *.h
+	  --ignore='-(fwd|iface|ops)\.h$$' *.h
 	touch $@
 
 check: out/index.html.ok
