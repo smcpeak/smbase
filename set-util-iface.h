@@ -11,17 +11,18 @@
 #ifndef SMBASE_SET_UTIL_IFACE_H
 #define SMBASE_SET_UTIL_IFACE_H
 
-#include "set-util-fwd.h"              // fwds for this module
+#include "set-util-fwd.h"                        // fwds for this module
 
-#include "smbase/iter-and-end-fwd.h"   // smbase::ConstIterAndEnd
-#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
-#include "smbase/sm-span-fwd.h"        // smbase::Span
-#include "smbase/std-optional-fwd.h"   // std::optional
-#include "smbase/std-set-fwd.h"        // stdfwd::set
-#include "smbase/std-vector-fwd.h"     // stdfwd::vector
+#include "smbase/iter-and-end-fwd.h"             // smbase::ConstIterAndEnd
+#include "smbase/nway-comparison-result-fwd.h"   // smbase::NWayComparisonResult
+#include "smbase/sm-macros.h"                    // OPEN_NAMESPACE
+#include "smbase/sm-span-fwd.h"                  // smbase::Span
+#include "smbase/std-optional-fwd.h"             // std::optional
+#include "smbase/std-set-fwd.h"                  // stdfwd::set
+#include "smbase/std-vector-fwd.h"               // stdfwd::vector
 
-#include <cstddef>                     // std::size_t
-#include <iosfwd>                      // std::ostream [n]
+#include <cstddef>                               // std::size_t
+#include <iosfwd>                                // std::ostream [n]
 
 
 OPEN_NAMESPACE(smbase)
@@ -98,13 +99,46 @@ bool setIsDisjointWith(std::set<K,C,A> const &a,
                        std::set<K,C,A> const &b);
 
 
-// True if there is no element in any of the sets pointed to by elements
-// accessible via `iterAndEnds`.
-//
-// NOTE: The iterators within the span are *modified* by this algorithm!
+/* True if there is no element common to any two of the sets of elements
+   accessible via `iterAndEnds`, i.e., every element in their union is
+   contained by exactly one set.
+
+   To use this with, say, three sets, do something like this:
+
+     ConstIterAndEnd<std::set<int>> iterAndEnds[] = {
+       constIterAndEnd(set1),
+       constIterAndEnd(set2),
+       constIterAndEnd(set3),
+     };
+     bool areDisjoint = setsAreDisjoint(Span(iterAndEnds));
+
+   NOTE: The iterators pointed to by the span are *modified* by this
+   algorithm!  (But the sets they refer to are not.)  This can be
+   exploited to learn which sets had equal elements; see
+   `compareNSetIterators`.
+
+   The run time is O(s * N) where `s` is the sum of the sizes of the
+   sets and `N` is the number of sets.  It traverses all sets in
+   parallel (O(s) steps), advancing the smallest iterator at each step
+   (O(N) to find the smallest, O(1) to advance it).
+*/
 template <typename K, typename C, typename A>
 bool setsAreDisjoint(
   Span<ConstIterAndEnd<std::set<K,C,A>>> iterAndEnds);
+
+
+/* Compare N `IterAndEnd`s to find the one with the smallest value, or
+   report that two are equal, or that no comparison is possible.
+
+   This can be used after calling `setsAreDisjoint` to learn which sets
+   had a common element and what it was, since that function leaves
+   `iterAndEnds` with its iterators pointing at the spot that caused it
+   to stop.
+*/
+template <typename K, typename C, typename A>
+NWayComparisonResult compareNSetIterators(
+  Span<ConstIterAndEnd<std::set<K,C,A>>> iterAndEnds,
+  C const &isLessThan = C());
 
 
 // Return a set containing the union of `a` and `b`.

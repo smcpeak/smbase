@@ -4,18 +4,19 @@
 #ifndef SMBASE_SET_UTIL_H
 #define SMBASE_SET_UTIL_H
 
-#include "set-util-iface.h"            // interface for this module
+#include "set-util-iface.h"                      // interface for this module
 
-#include "smbase/chained-cond.h"       // smbase::cc::z_le_lt
-#include "smbase/iter-and-end.h"       // smbase::ConstIterAndEnd
-#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
-#include "smbase/sm-span.h"            // smbase::Span
-#include "smbase/xassert.h"            // xassert
+#include "smbase/chained-cond.h"                 // smbase::cc::z_le_lt
+#include "smbase/iter-and-end.h"                 // smbase::ConstIterAndEnd
+#include "smbase/nway-comparison-result.h"       // smbase::NWayComparisonResult
+#include "smbase/sm-macros.h"                    // OPEN_NAMESPACE
+#include "smbase/sm-span.h"                      // smbase::Span
+#include "smbase/xassert.h"                      // xassert
 
-#include <optional>                    // std::optional
-#include <ostream>                     // std::ostream
-#include <set>                         // std::set
-#include <vector>                      // std::vector
+#include <optional>                              // std::optional
+#include <ostream>                               // std::ostream
+#include <set>                                   // std::set
+#include <vector>                                // std::vector
 
 
 OPEN_NAMESPACE(smbase)
@@ -145,75 +146,64 @@ bool setIsDisjointWith(std::set<K,C,A> const &a,
 }
 
 
-namespace {
-  /* Compare N `IterAndEnd` to find the one with the smallest value and
-     return its index, with two special cases:
+// Compare N `IterAndEnd` to find the one with the smallest value.
+template <typename K, typename C, typename A>
+NWayComparisonResult compareNSetIterators(
+  Span<ConstIterAndEnd<std::set<K,C,A>>> iterAndEnds,
+  C const &isLessThan)
+{
+  // The number of sets we are working with.
+  int const N = static_cast<int>(iterAndEnds.size());
 
-       -1    At least N-1 iterators are at their ends, meaning we have
-             at most one container with elements left to compare, and
-             thus can conclude that all sets were disjoint.
+  // The number of iterators that were found to have reached their
+  // ends.
+  int numEnded = 0;
 
-       -2    Two equal elements were found, so we know the sets are
-             *not* disjoint.
-  */
-  template <typename K, typename C, typename A>
-  int compareNSetIterators(
-    Span<ConstIterAndEnd<std::set<K,C,A>>> iterAndEnds,
-    C const &isLessThan)
-  {
-    // The number of sets we are working with.
-    int const N = static_cast<int>(iterAndEnds.size());
+  // Index of the iterator with the smallest value, or -1 if no value
+  // yet seen.
+  int smallestIndex = -1;
 
-    // The number of iterators that were found to have reached their
-    // ends.
-    int numEnded = 0;
+  // Find the smallest element in `iterAndEnds`.
+  for (int i=0; i < N; ++i) {
+    ConstIterAndEnd<std::set<K,C,A>> &iae = iterAndEnds[i];
 
-    // Index of the iterator with the smallest value, or -1 if no value
-    // yet seen.
-    int smallestIndex = -1;
+    if (iae.empty()) {
+      ++numEnded;
+    }
 
-    // Find the smallest element in `iterAndEnds`.
-    for (int i=0; i < N; ++i) {
-      ConstIterAndEnd<std::set<K,C,A>> &iae = iterAndEnds[i];
+    else if (smallestIndex < 0) {
+      smallestIndex = i;
+    }
 
-      if (iae.empty()) {
-        ++numEnded;
-      }
+    else {
+      ConstIterAndEnd<std::set<K,C,A>> &smallest =
+        iterAndEnds[smallestIndex];
 
-      else if (smallestIndex < 0) {
+      if (isLessThan(*iae, *smallest)) {
+        // New smallest.
         smallestIndex = i;
       }
-
+      else if (isLessThan(*smallest, *iae)) {
+        // Keep the current smallest.
+      }
       else {
-        ConstIterAndEnd<std::set<K,C,A>> &smallest =
-          iterAndEnds[smallestIndex];
-
-        if (isLessThan(*iae, *smallest)) {
-          // New smallest.
-          smallestIndex = i;
-        }
-        else if (isLessThan(*smallest, *iae)) {
-          // Keep the current smallest.
-        }
-        else {
-          // Equal values; sets are not disjoint.
-          return -2;
-        }
+        // Equal values; sets are not disjoint.
+        return NWayComparisonResult(smallestIndex, i);
       }
     }
-
-    if (numEnded >= N-1) {
-      // Iterators exhausted, sets are disjoint.  (The only way that
-      // `numEnded` would not be exactly `N-1` is if all of the sets
-      // were empty at the start, in which case `numEnded` would be `N`
-      // here.)
-      return -1;
-    }
-
-    xassert(smallestIndex >= 0);
-    return smallestIndex;
   }
-} // anonymous namespace
+
+  if (numEnded >= N-1) {
+    // Iterators exhausted, sets are disjoint.  (The only way that
+    // `numEnded` would not be exactly `N-1` is if all of the sets
+    // were empty at the start, in which case `numEnded` would be `N`
+    // here.)
+    return NWayComparisonResult();
+  }
+
+  xassert(smallestIndex >= 0);
+  return NWayComparisonResult(smallestIndex);
+}
 
 
 template <typename K, typename C, typename A>
@@ -232,14 +222,16 @@ bool setsAreDisjoint(
   // Iterate over all sets in parallel, advancing the smallest iterator
   // at each step.
   while (true) {
-    int smallestIndex = compareNSetIterators(iterAndEnds, isLessThan);
-    if (smallestIndex == -2) {
+    NWayComparisonResult result =
+      compareNSetIterators(iterAndEnds, isLessThan);
+    if (result.hasEqualIndices()) {
       return false;          // Equal elements; not disjoint.
     }
-    else if (smallestIndex == -1) {
+    else if (result.isNull()) {
       return true;           // Exhausted iterators; disjooint.
     }
     else {
+      int smallestIndex = result.getSmallest();
       xassert(cc::z_le_lt(smallestIndex, N));
       ++iterAndEnds[smallestIndex];
     }

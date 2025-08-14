@@ -220,9 +220,9 @@ void testOne_setIsDisjointWith(
   EXPECT_EQ(setIsDisjointWith(b, a), expect);
 
   // Test the general algorithm with just two sets.
-  std::vector<ConstIterAndEnd<std::set<int>>> iterAndEnds = {
+  ConstIterAndEnd<std::set<int>> iterAndEnds[] = {
     constIterAndEnd(a),
-    constIterAndEnd(b)
+    constIterAndEnd(b),
   };
 
   // We need to explicitly say `Span` here because otherwise the
@@ -230,6 +230,22 @@ void testOne_setIsDisjointWith(
   // `setsAreDisjoint` before it gets to the stage of considering
   // implicit conversions.
   EXPECT_EQ(setsAreDisjoint(Span(iterAndEnds)), expect);
+
+  if (!expect) {
+    // The sets were not disjoint.  Find a common element.
+    NWayComparisonResult result = compareNSetIterators(Span(iterAndEnds));
+    xassert(result.hasEqualIndices());
+
+    auto const [ai, bi] = result.getEqualIndices();
+    xassert((ai==0 && bi==1) || (ai==1 && bi==0));
+
+    int const commonElement = *iterAndEnds[ai];
+    xassert(commonElement == *iterAndEnds[bi]);
+
+    // Check that the sets really have this element.
+    xassert(setContains(a, commonElement));
+    xassert(setContains(b, commonElement));
+  }
 
   // Swap the order.  (Note that the previous iterators have been
   // modified, so we need to recreate them.)
@@ -319,6 +335,22 @@ void testOne_setsAreDisjoint(
       constIterAndEnd(*( sets[permutation[2]] ))
     };
     EXPECT_EQ(setsAreDisjoint(Span(iterAndEnds)), expect);
+
+    if (!expect) {
+      // The sets were not disjoint.  Find a common element.
+      NWayComparisonResult result =
+        compareNSetIterators(Span(iterAndEnds));
+      xassert(result.hasEqualIndices());
+
+      auto const [ai, bi] = result.getEqualIndices();
+
+      int const commonElement = *iterAndEnds[ai];
+      xassert(commonElement == *iterAndEnds[bi]);
+
+      // Check that the sets really have this element.
+      xassert(setContains(*sets[permutation[ai]], commonElement));
+      xassert(setContains(*sets[permutation[bi]], commonElement));
+    }
   }
 }
 
@@ -466,6 +498,21 @@ void test_setsAreDisjointRandomized()
 
     if (isDisjoint) {
       ++numDisjoint;
+    }
+    else {
+      // The sets were not disjoint.  Find a common element.
+      NWayComparisonResult result =
+        compareNSetIterators(Span(iterAndEnds));
+      xassert(result.hasEqualIndices());
+
+      auto const [ai, bi] = result.getEqualIndices();
+
+      int const commonElement = *iterAndEnds[ai];
+      xassert(commonElement == *iterAndEnds[bi]);
+
+      // Check that the sets really have this element.
+      xassert(setContains(sets[ai], commonElement));
+      xassert(setContains(sets[bi], commonElement));
     }
   }
 

@@ -33,19 +33,19 @@ private:     // data
 
 public:      // methods
   // Null result, there was nothing to compare (N is 0 or 1).
-  inline NWayComparisonResult();
+  inline explicit NWayComparisonResult();
 
   // The smallest was `smallestIndex`, which must be in [0, N-1].  Here,
   // `N` refers to the number of items compared, but this class does not
   // actually store that value, so cannot fully enforce the
   // precondition.
-  inline NWayComparisonResult(int smallestIndex);
+  inline explicit NWayComparisonResult(int smallestIndex);
 
   // At least two elements were equal, and these are their indices,
   // which must be distinct and in [0, N-1].  Depending on the algorithm
   // that finds them, these are *not* necessarily the smallest values
   // that are equal.
-  inline NWayComparisonResult(int eqIndex1, int eqIndex2);
+  inline explicit NWayComparisonResult(int eqIndex1, int eqIndex2);
 
   inline NWayComparisonResult(NWayComparisonResult const &obj);
   inline NWayComparisonResult &operator=(NWayComparisonResult const &obj);
