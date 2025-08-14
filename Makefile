@@ -435,6 +435,7 @@ UNIT_TEST_OBJS += most-sig-bit-test.o
 UNIT_TEST_OBJS += mypopen-test.o
 UNIT_TEST_OBJS += mysig-test.o
 UNIT_TEST_OBJS += nonport-test.o
+UNIT_TEST_OBJS += nway-comparison-result-test.o
 UNIT_TEST_OBJS += objlist-test.o
 UNIT_TEST_OBJS += objpool-test.o
 UNIT_TEST_OBJS += optional-opll-test.o

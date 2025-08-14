@@ -127,6 +127,7 @@ static void entry(int argc, char **argv)
   RUN_TEST_NO_DECL(mypopen);
   RUN_TEST(mysig);
   RUN_TEST(nonport);
+  RUN_TEST(nway_comparison_result);
   RUN_TEST(objlist);
   RUN_TEST(objpool);
   RUN_TEST(optional_opll);
