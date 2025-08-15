@@ -16,9 +16,7 @@ OPEN_NAMESPACE(gdv)
 
 
 // The most positive and most negative integer values that can be safely
-// encoded in JSON using integer notation.  This assumes the JSON
-// implementation is using 64-bit floats, which is common, and can
-// exactly represent all integers in [- 2^53, 2^53 - 1].
+// encoded in JSON using integer notation according to RFC 8259.
 //
 // For integers in this range, this module encodes them using JSON
 // numbers in the normal way.  For integers outside the range, it
@@ -33,8 +31,8 @@ OPEN_NAMESPACE(gdv)
 // hex digits, depending on the current value of
 // `GDValue::s_defaultWriteOptions.m_writeLargeIntegersAsDecimal`.
 //
-std::int64_t const MOST_POSITIVE_JSON_INT = INT64_C( 0x1fffffffffffff);    // 2^53 - 1
-std::int64_t const MOST_NEGATIVE_JSON_INT = INT64_C(-0x20000000000000);    // - 2^53
+std::int64_t const MOST_POSITIVE_JSON_INT = INT64_C( 0x1fffffffffffff);    // + (2^53 - 1)
+std::int64_t const MOST_NEGATIVE_JSON_INT = INT64_C(-0x1fffffffffffff);    // - (2^53 - 1)
 
 
 // ---------------------- Convert GDValue to JSON ----------------------

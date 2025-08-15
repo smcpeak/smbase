@@ -837,8 +837,8 @@ Specific GDV kinds are handled as follows:
 
     GDVN: 123
 
-    If the value is small enough to represent exactly as a 64-bit float,
-    i.e., it is in the range [- 2^53, 2^53 - 1]:
+    If the value is within the RFC 8259 specified "interoperable" range,
+    i.e., it is in the range [- 2**53 + 1, 2**53 - 1]:
 
       JSON: 123
 
@@ -970,25 +970,21 @@ The problems with the JSON data model are:
   of a standard way to convey the "type" of (in particular) maps leads
   to various contortions.
 
-* Limited range: JSON tacitly inherits JavaScript's use of 64-bit floats
-  to represent all numbers, limiting integers to 53 bits in practice.
-
-* Imprecise semantics of integers: Due to representing them as floats
-  it is unclear what numbers larger than 2**53 mean.  In practice this
-  leads to loss of information during reading and writing.
-
 * Imprecise semantics of maps: The spec refrains from specifying whether
   the order of elements in a map is significant, and only recommends
   (via "SHOULD") that map keys be unique.  This puts the burden of
   interoperability for arguably the most important component of the data
   model on the *users* of JSON.
 
+* Limited integer range: RFC 8259 only assures interoperability for
+  integers in the range [-(2**53)+1, (2**53)-1].
+
 * Imprecise semantics of floats: JSON uses floating-point numbers
   serialized as decimal representations.  While that does not inherently
   mean a loss of precision (as every binary float can be exactly
-  expressed as a decimal float with sufficient digits) the specification
-  is very casual about the interpretation of floats and their associated
-  precision, again putting the burden of interoperability on users.
+  expressed as a decimal float with sufficient digits), RFC 8259 merely
+  advises "implementations" to stay within IEEE 754 64-bit limits,
+  effectively putting the burden of interoperability on users.
 
 Turning our attention to the JSON text format, one problem is the comma
 separator.  Commas are annoying to properly insert between elements,

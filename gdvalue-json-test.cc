@@ -49,12 +49,12 @@ void testInteger()
   testCycle(GDValue(-1), "-1");
 
   testCycle(GDValue(MOST_POSITIVE_JSON_INT),  "9007199254740991");
-  testCycle(GDValue(MOST_NEGATIVE_JSON_INT), "-9007199254740992");
+  testCycle(GDValue(MOST_NEGATIVE_JSON_INT), "-9007199254740991");
 
   testCycle(GDValue(MOST_POSITIVE_JSON_INT+1),
     R"({"_type":"integer", "value":"9007199254740992"})");
   testCycle(GDValue(MOST_NEGATIVE_JSON_INT-1),
-    R"({"_type":"integer", "value":"-9007199254740993"})");
+    R"({"_type":"integer", "value":"-9007199254740992"})");
 
   // Test very large values written as decimal.
   {
