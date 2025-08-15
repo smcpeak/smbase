@@ -40,6 +40,10 @@ enum GDValueKind : unsigned char {
   // `GDVSmallInteger` type.
   GDVK_SMALL_INTEGER,
 
+  // IEEE 754 binary64 floating-point finite (not Nan or Infinity)
+  // value.
+  GDVK_BINARY64_FLOAT,
+
   // String: Sequence of Unicode characters encoded as UTF-8.
   GDVK_STRING,
 

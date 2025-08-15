@@ -75,7 +75,7 @@ one of the following:
     magnitude.  There is only one zero value (not both a positive and
     negative zero).
 
-  * TODO: Add floats.
+  * Float: IEEE 754 binary64 finite (not NaN or Infinity) value.
 
   * String: A finite sequence of Unicode code points.
 
@@ -111,7 +111,7 @@ regard the following symbols as having pre-established reserved meaning:
 
   * true: Boolean true.
 
-  * TODO: NaN, PInf, NInf.
+  * NaN, Infinity, NegativeInfinity: Special floating-point values.
 
 The data model is meant to allow values to be totally ordered (that is,
 for all values A and B, exactly one of A<B, A>B, and A==B is true)
@@ -167,6 +167,82 @@ producing or consuming the data to decide what symbols mean, so the
 model allows maximum flexibility.  Of course, in most situations it is
 wise to select symbols that are convenient for humans to read and write,
 but the data model does not insist on that.
+
+
+Semantics of finite floating-point values
+-----------------------------------------
+
+The primary motivation for including floating-point values is JSON
+compatibility.  JSON, as specified in RFC 8259, is vague about the
+range and precision of its numbers, merely stating:
+
+  Since software that implements IEEE 754 binary64 (double precision)
+  numbers [IEEE754] is generally available and widely used, good
+  interoperability can be achieved by implementations that expect no
+  more precision or range than these provide, in the sense that
+  implementations will approximate JSON numbers within the expected
+  precision.
+
+This statement seems to suggest that range and precision can be regarded
+as unspecified quality of implementation detials.  But the meaning of a
+floating-point number is tied to its precision, and that precision is
+crucial when deciding how to convert between bases, which is
+necessitated by the fact that binary64 (the format RFC 8259 assumes is
+used internally by producers and consumers) is a binary format, while
+JSON is a decimal format.  For example, when serializing a binary64
+value representing 2**200, it would be absurd to render it as
+1.606938044258990275541962092341162602522202993782792835301376e60 (61
+digits) when binary64 only needs 17 decimal digits to ensure that
+round-trip conversion is the identity function; and the problem is even
+worse in the other direction, as a number expressed as a finite sequence
+of decimal digits cannot, in general, be represented as a finite
+sequence of binary digits, so the innocent-looking "0.3" can't be
+converted at all without some a-priori knowledge of its intended
+precision.
+
+Consequently, GDV takes the position that the floats it carries are IEEE
+754 binary64 numbers, excluding Nan and +/-Infinity (which JSON also
+excludes, and for which GDV has recommended symbols).  In the future, it
+may be desirable to add additional precisions to GDV, for which some
+sort of GDVN notational extension (such as the "F" and "L" suffixes of
+C/C++) could be used to denote the precision along with the nominal
+value.
+
+
+Symbols for special floating-point values
+-----------------------------------------
+
+The choice of symbols recommended for use for special floating-point
+values (things that are not GDV "floating point numbers", but are part
+of the space of IEEE 754 values) is intended to satisfy these goals:
+
+  - Self-descriptive
+  - In common usage already
+  - Adheres to the rules for unquoted symbols in GDVN (below)
+  - Uses only the US-ASCII subset of UTF-8
+
+I first reviewed what some popular programming languages' standard
+libraries print by default:
+
+  Language   NaN   +Infinity   -Infinity
+  --------   ---   ---------   ---------
+  C++        nan   inf         -inf
+  Python     nan   inf         -inf
+  node.js    NaN   Infinity    -Infinity
+  Java       NaN   Infinity    -Infinity
+
+This led me to "NaN" and "Infinity", but "-Infinity" would require
+quotation.
+
+The IEEE 754 standard uses "+∞" and "-∞", which are tempting, but
+outside US-ASCII and would require quoting.
+
+The Unity API defines a constant, "Mathf.NegativeInfinity":
+
+  https://docs.unity3d.com/ScriptReference/Mathf.html
+
+That's not a great precedent for "common usage", but it satisfies the
+other goals, so that is my recommendation.
 
 
 The name "sequence"
@@ -401,7 +477,24 @@ Integers have the form <sign?><radix?><digits> where:
     in particular, a leading zero does *not* indicate to use octal.
     Hexadecimal digits A-F can be uppercase or lowercase.
 
-TODO: Specify a form for floating-point numbers.
+Floating-point numbers are the same as in JSON, except that (for
+uniformity with integers) they allow also leading zeroes.  Specifically,
+they have the form <sign?><digits>.<digits><exp?> where:
+
+  * <sign?> is either "" or "-".  Unlike for integers, "-0" is a
+    distinct floating-point number from "0".
+
+  * <digits> is a non-empty sequence of decimal digits.  As above,
+    leading zeroes on the integer portion are allowed but insignificant.
+
+  * <exp?>, if present, is the sequence:
+
+    * "e" or "E".
+
+    * "+", "-", or "" to indicate the exponent sign.
+
+    * A non-empty sequence of decimal digits, possibly with redundant
+      leading zeroes.
 
 A double-quoted string is as in JSON, with a few noted extensions:
 

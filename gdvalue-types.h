@@ -36,6 +36,12 @@ using GDVInteger = smbase::Integer;
 // Stored when the kind is GDVK_SMALL_INTEGER.
 using GDVSmallInteger = std::int64_t;
 
+// Stored when the kind is GDVK_BINARY64_FLOAT.  This type is required
+// to be capable of storing IEEE 754 binary64 floats (except for NaN and
+// +/-Infinity), and hence would have to be adjusted if this code were
+// compiled for a machine where `double` does not have that capability.
+using GDVBinary64Float = double;
+
 // GDValue(GDVK_STRING) holds this.  It is a UTF-8 encoding of the
 // sequence of Unicode code points the string represents.
 using GDVString = std::string;

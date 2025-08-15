@@ -18,7 +18,7 @@
 // this dir
 #include "smbase/compare-util.h"                 // DEFINE_FRIEND_RELATIONAL_OPERATORS
 #include "smbase/gdvalue-kind.h"                 // GDValueKind
-#include "smbase/gdvalue-types.h"                // GDVSize, GDVIndex, GDVInteger, GDVSmallInteger, GDVString, GDVSequence, GDVSet, GDVMap, GDVOrderedMap, GDVMapEntry
+#include "smbase/gdvalue-types.h"                // GDVSize, GDVIndex, GDVInteger, GDVSmallInteger, GDVBinary64Float, GDVString, GDVSequence, GDVSet, GDVMap, GDVOrderedMap, GDVMapEntry
 #include "smbase/gdvalue-write-options.h"        // gdv::GDValueWriteOptions
 #include "smbase/gdvsymbol.h"                    // gdv::GDVSymbol
 #include "smbase/gdvtuple.h"                     // gdv::GDVTuple
@@ -124,6 +124,7 @@ using GDVTaggedOrderedMap = GDVTaggedContainer<GDVOrderedMap>;
            False
        Integer
          SmallInteger
+       Binary64Float
        String
      Container                  -----+ non-exclusive subtype
        OrderedContainer              |
@@ -188,6 +189,7 @@ public:      // class data
   static unsigned s_ct_integerCtorCopy;
   static unsigned s_ct_integerCtorMove;
   static unsigned s_ct_integerSmallIntCtor;
+  static unsigned s_ct_binary64FloatCtor;
   static unsigned s_ct_stringCtorCopy;
   static unsigned s_ct_stringCtorMove;
   static unsigned s_ct_stringSetCopy;
@@ -243,6 +245,9 @@ private:     // instance data
     // does so for *storage* only.
     GDVSmallInteger m_smallInteger;
 
+    // The value for `GDVK_BINARY64_FLOAT`.  Always `std::isfinite`.
+    GDVBinary64Float m_binary64Float;
+
     explicit GDValueUnion(GDVSymbol::Index symbolIndex)
       : m_symbol(symbolIndex)
     {}
@@ -273,6 +278,7 @@ public:      // methods
   // Make an empty/zero value of 'kind':
   //   Symbol: null  (Note: This is not the empty symbol, ``.)
   //   Integer or SmallInteger: 0
+  //   Binary64Float: +0
   //   String: ""
   //   Container: empty
   //   Tagged container: null symbol, empty container
@@ -295,6 +301,7 @@ public:      // methods
   bool isInteger()          const { return m_kind == GDVK_INTEGER          ||
                                            isSmallInteger();                  }
   bool isSmallInteger()     const { return m_kind == GDVK_SMALL_INTEGER;      }
+  bool isBinary64Float()    const { return m_kind == GDVK_BINARY64_FLOAT;     }
   bool isString()           const { return m_kind == GDVK_STRING;             }
 
   bool isSequence()         const { return m_kind == GDVK_SEQUENCE         ||
@@ -337,13 +344,18 @@ public:      // methods
 
   /* Return <0 if a<b, 0 if a==b, and >0 otherwise.
 
-     Comparison is first by value kind, in order of GDValueKind.  Then
-     within each kind:
+     Comparison is first by value super-kind (`getSuperKind()`), in
+     order of GDValueKind.  Then within each super-kind:
 
        symbol: Ordered lexicographically by code point.  A prefix (e.g.,
        "a") is less than any string it is a prefix of (e.g., "aa").
 
-       integer: Ordered numerically.
+       integer: Ordered numerically.  Small integers are included in
+       this order at their proper numerical position.
+
+       binary64float: Ordered numerically, EXCEPT that -0 < +0 despite
+       them being equal numerically per IEEE 754.  Note that means that
+       every integer is less than every float when compared as GDValues.
 
        string: Lexicographic, like symbol.
 
@@ -359,7 +371,8 @@ public:      // methods
                 J is missing from both A and B or A[J] == B[J]
               K is in B but not A, or A[K] < B[K]
 
-       ordered map: Lexicographic by ordered (k,v) pairs.
+       ordered map: Lexicographic by (k,v) pairs, the pairs themselves
+       also being ordered lexicographically.
 
      Note: Since `null`, `false`, and `true` are treated as symbols,
      their relative order is:
@@ -556,6 +569,18 @@ public:      // methods
 
   // Requires `isSmallInteger()`.
   GDVSmallInteger smallIntegerGet() const;
+
+
+  // ---- Binary64Float ----
+  // This is explicit because, otherwise, implicit conversions from
+  // integer types to floating types could cause misinterpretation.
+  explicit GDValue(GDVBinary64Float v);
+
+  // Requires `std::isfinite(v)`.
+  void binary64FloatSet(GDVBinary64Float v);
+
+  // Requires `isBinary64Float()`.
+  GDVBinary64Float binary64FloatGet() const;
 
 
   // ---- String ----
@@ -852,6 +877,11 @@ public:      // methods
 // the class body.
 template <>
 /*implicit*/ GDValue::GDValue(char const *str);
+
+
+// Expose the representational (non-numeric) comparison used internally
+// so I can write unit tests for it.
+int compareGDVBinary64Floats(GDVBinary64Float a, GDVBinary64Float b);
 
 
 #define DEFINE_GDV_KIND_ITERABLE(GDVKindName, kindName)              \
