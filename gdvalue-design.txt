@@ -512,6 +512,12 @@ where:
 
   * There must be at least one of ".", "e", or "E".
 
+If the exactly denoted value is outside the range of IEEE 754 binary64
+(its magnitude is greater than the the maximum value), the syntax is
+invalid.  Otherwise, the effectively denoted value is the nearest
+representable value using IEEE 754 "round to nearest, ties to even"
+rule.
+
 A double-quoted string is as in JSON, with a few noted extensions:
 
   * It begins and ends with '"'.
