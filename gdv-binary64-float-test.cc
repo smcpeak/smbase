@@ -234,6 +234,82 @@ void test_serialization()
 }
 
 
+void testOne_deserialization(
+  char const *text,
+  double expect)
+{
+  EXN_CONTEXT_EXPR(text);
+
+  GDVBinary64Float actual = GDVBinary64Float::parseString(text);
+  EXPECT_EQ(actual.getValue(), expect);
+}
+
+
+void test_deserialization()
+{
+  // Test a few cases that the serializer does not exercise.
+  testOne_deserialization("0", 0);
+  testOne_deserialization("1e100", 1e100);
+  testOne_deserialization("1e+100", 1e100);
+  testOne_deserialization("1e-100", 1e-100);
+
+  // The additional digits are essentially ignored.
+  testOne_deserialization("12345678901234567890.1234567890",
+                          1.2345678901234568e+19);
+
+  // Test how rounding is done.
+  testOne_deserialization("1",
+                           1);
+  testOne_deserialization("1.0000000000000002",
+                           1.0000000000000002);
+
+  // This rounds down, but that is not very informative.
+  testOne_deserialization("1.0000000000000001",
+                           1.0000000000000000);
+
+  // minDenorm
+  testOne_deserialization("4.9406564584124654e-324",
+                           4.9406564584124654e-324);
+
+  // minDenorm*2
+  testOne_deserialization("9.8813129168249309e-324",
+                           9.8813129168249309e-324);
+
+  // Evidently this rounds to the nearest, which is what the spec says.
+  testOne_deserialization("5.9406564584124654e-324",
+                           4.9406564584124654e-324);
+  testOne_deserialization("6.9406564584124654e-324",
+                           4.9406564584124654e-324);
+  testOne_deserialization("7.9406564584124654e-324",
+                           9.8813129168249309e-324);
+  testOne_deserialization("8.9406564584124654e-324",
+                           9.8813129168249309e-324);
+  testOne_deserialization("9.9406564584124654e-324",
+                           9.8813129168249309e-324);
+
+  // The "Result too large" text comes from the C++ library, so probably
+  // is not portable.  But I'll wait until this trips to weaken the
+  // check so I can see where it differs and to what extent.
+  EXPECT_EXN_SUBSTR(GDVBinary64Float::parseString("1e400"),
+    XFormat, "Parsing \"1e400\" as float: offset 5: Result too large");
+
+  EXPECT_EXN_SUBSTR(GDVBinary64Float::parseString("1ee4"),
+    XFormat, "Parsing \"1ee4\" as float: offset 1: invalid character");
+
+  EXPECT_EXN_SUBSTR(GDVBinary64Float::parseString("NaN"),
+    XFormat, "Parsing \"NaN\" as float: Non-finite value");
+  EXPECT_EXN_SUBSTR(GDVBinary64Float::parseString("inf"),
+    XFormat, "Parsing \"inf\" as float: Non-finite value");
+  EXPECT_EXN_SUBSTR(GDVBinary64Float::parseString("-inf"),
+    XFormat, "Parsing \"-inf\" as float: Non-finite value");
+  EXPECT_EXN_SUBSTR(GDVBinary64Float::parseString("Infinity"),
+    XFormat, "Parsing \"Infinity\" as float: Non-finite value");
+
+  EXPECT_EXN_SUBSTR(GDVBinary64Float::parseString("Infinity!"),
+    XFormat, "Parsing \"Infinity!\" as float: offset 8: invalid character");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -243,6 +319,7 @@ void test_gdv_binary64_float()
   test_basics();
   test_compareDoublesRepresentationally();
   test_serialization();
+  test_deserialization();
 }
 
 

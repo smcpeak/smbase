@@ -1581,24 +1581,18 @@ void testOneErrorSubstrOrRegex(
   EXN_CONTEXT("input=" << doubleQuote(input));
 
   try {
-    try {
-      GDValue::readFromString(input);
-      xfailure("should have failed");
-    }
-    catch (ReaderException &e) {
-      EXPECT_EQ(e.m_location.m_lc.m_line, expectLine);
-      EXPECT_EQ(e.m_location.m_lc.m_column, expectColumn);
-      if (expectErrorSubstring) {
-        EXPECT_HAS_SUBSTRING(e.m_syntaxError, expectErrorSubstring);
-      }
-      else {
-        EXPECT_MATCHES_REGEX(e.m_syntaxError, expectErrorRegex);
-      }
-    }
+    GDValue::readFromString(input);
+    xfailure("should have failed");
   }
-  catch (XBase &x) {
-    x.prependContext(stringb("input=" << doubleQuote(input)));
-    throw;
+  catch (ReaderException &e) {
+    EXPECT_EQ(e.m_location.m_lc.m_line, expectLine);
+    EXPECT_EQ(e.m_location.m_lc.m_column, expectColumn);
+    if (expectErrorSubstring) {
+      EXPECT_HAS_SUBSTRING(e.m_syntaxError, expectErrorSubstring);
+    }
+    else {
+      EXPECT_MATCHES_REGEX(e.m_syntaxError, expectErrorRegex);
+    }
   }
 }
 
@@ -1689,7 +1683,7 @@ void testSyntaxErrors()
     testOneErrorRegex("/-", 1, 2, "'-'.*after '/'");
 
     // Comment-related: check that they do not mess up locations.
-    testOneErrorSubstr("//x\n3.4", 2, 2, "Unexpected '.'");
+    testOneErrorSubstr("//x\n3;4", 2, 2, "Unexpected ';'");
   }
 
   // skipCStyleComment
@@ -2602,11 +2596,13 @@ void test_binary64Float()
   EXPECT_EQ(
     compareDoublesRepresentationally(v.binary64FloatGet().getValue(), 0),
     0);
+  testSerializeRoundtrip(v);
 
   v.binary64FloatSet(GDVBinary64Float(1));
   v.selfCheck();
   xassert(v.isBinary64Float());
   EXPECT_EQ(v.binary64FloatGet(), GDVBinary64Float(1));
+  testSerializeRoundtrip(v);
 
   GDVBinary64Float const denorm(
     std::numeric_limits<GDVBinary64Float>::denorm_min());
@@ -2615,6 +2611,7 @@ void test_binary64Float()
   v.selfCheck();
   xassert(v.isBinary64Float());
   EXPECT_EQ(v.binary64FloatGet(), denorm);
+  testSerializeRoundtrip(v);
 
   GDVBinary64Float const lowest(
     std::numeric_limits<GDVBinary64Float>::lowest());
@@ -2622,12 +2619,68 @@ void test_binary64Float()
   v.selfCheck();
   xassert(v.isBinary64Float());
   EXPECT_EQ(v.binary64FloatGet(), lowest);
+  testSerializeRoundtrip(v);
 
-  // TODO: Serialization, etc.
+  v = fromGDVN("10.0");
+  v.selfCheck();
+  EXPECT_EQ(v.binary64FloatGet().getValue(), 10.0);
+  testSerializeRoundtrip(v);
+
+  v = fromGDVN("3e300");
+  v.selfCheck();
+  EXPECT_EQ(v.binary64FloatGet().getValue(), 3e300);
+  testSerializeRoundtrip(v);
+
+  v = fromGDVN("[1e100 -0.0 3.1415926535897931]");
+  v.selfCheck();
+  EXPECT_EQ(v.asString(), "[1e+100 -0.0 3.1415926535897931]");
+  testSerializeRoundtrip(v);
+
+  v = fromGDVN("12345678901234567890.1234567890");
+  v.selfCheck();
+
+  // Naively we would expect the final digit to be '8', but evidently in
+  // this case it ends up as '7' after conversion.  The result of
+  // converting decimal to binary with either digit is the same.
+  EXPECT_EQ(v.asString(), "1.2345678901234567e+19");
+  testSerializeRoundtrip(v);
+}
 
 
-
-
+void test_binary64Float_parseErrors()
+{
+  testOneErrorSubstr("+1.0", 1, 1,
+    "Unexpected '+' while looking for the start of a value.");
+  testOneErrorSubstr("1.", 1, 3,
+    "Unexpected end of file while looking for digit after '.' in float.");
+  testOneErrorSubstr("1. ", 1, 3,
+    "Unexpected ' ' while looking for digit after '.' in float.");
+  testOneErrorSubstr("1.0e", 1, 5,
+    "Unexpected end of file while looking for digit or sign after exponent indicator in float.");
+  testOneErrorSubstr("1.0e ", 1, 5,
+    "Unexpected ' ' while looking for digit or sign after exponent indicator in float.");
+  testOneErrorSubstr("1.0e+", 1, 6,
+    "Unexpected end of file while looking for digit after sign after exponent indicator in float.");
+  testOneErrorSubstr("1.0e+ ", 1, 6,
+    "Unexpected ' ' while looking for digit after sign after exponent indicator in float.");
+  testOneErrorSubstr("1.0e-", 1, 6,
+    "Unexpected end of file while looking for digit after sign after exponent indicator in float.");
+  testOneErrorSubstr("1.0e- ", 1, 6,
+    "Unexpected ' ' while looking for digit after sign after exponent indicator in float.");
+  testOneErrorSubstr("1e", 1, 3,
+    "Unexpected end of file while looking for digit or sign after exponent indicator in float.");
+  testOneErrorSubstr("1e ", 1, 3,
+    "Unexpected ' ' while looking for digit or sign after exponent indicator in float.");
+  testOneErrorSubstr("1e+", 1, 4,
+    "Unexpected end of file while looking for digit after sign after exponent indicator in float.");
+  testOneErrorSubstr("1e+ ", 1, 4,
+    "Unexpected ' ' while looking for digit after sign after exponent indicator in float.");
+  testOneErrorSubstr("1e-", 1, 4,
+    "Unexpected end of file while looking for digit after sign after exponent indicator in float.");
+  testOneErrorSubstr("1e- ", 1, 4,
+    "Unexpected ' ' while looking for digit after sign after exponent indicator in float.");
+  testOneErrorSubstr("1e400", 1, 5,
+    "Parsing \"1e400\" as float: offset 5: Result too large");
 }
 
 
@@ -2689,6 +2742,7 @@ void test_gdvalue()
     test_GDVN_OMAP_EXPRS();
     test_span();
     test_binary64Float();
+    test_binary64Float_parseErrors();
 
     // Some interesting values for the particular data used.
     testPrettyPrint(0);

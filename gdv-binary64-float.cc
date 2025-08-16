@@ -183,20 +183,33 @@ void GDVBinary64Float::write(std::ostream &os) const
     view.data() + view.size(),
     value /*OUT*/);
 
-  if (ec == std::errc()) {
-    // Successful conversion.
-    if (std::isfinite(value)) {
-      return GDVBinary64Float(value);
+  try {
+    if (ec == std::errc()) {
+      if (ptr == view.data() + view.size()) {
+        // Successful conversion.
+        if (std::isfinite(value)) {
+          return GDVBinary64Float(value);
+        }
+        else {
+          // This happens for "NaN", "Infinity", and a few variations.
+          xformat("Non-finite value");
+        }
+      }
+      else {
+        xformatsb("offset " << (ptr - view.data()) <<
+                  ": invalid character");
+      }
     }
     else {
-      // TODO: Can this happen?
-      xformatsb("Non-finite floating-point value: " << doubleQuote(view));
+      std::error_code code = std::make_error_code(ec);
+      xformatsb("offset " << (ptr - view.data()) <<
+                ": " << code.message());
     }
   }
-  else {
-    std::error_code code = std::make_error_code(ec);
-    xformatsb(doubleQuote(view) << ": " << code.message() <<
-              " at offset " << (ptr - view.data()));
+  catch (XFormat &x) {
+    x.prependContext(stringb(
+      "Parsing " << doubleQuote(view) << " as float"));
+    throw x;
   }
 
   // Not reached.

@@ -7,6 +7,7 @@
 
 // this dir
 #include "smbase/counting-ostream.h"   // CountingOStream
+#include "smbase/gdv-binary64-float.h" // gdv::GDVBinary64Float
 #include "smbase/gdv-ordered-map.h"    // gdv::GDVOrderedMap
 #include "smbase/gdvalue.h"            // gdv::GDValue
 #include "smbase/gdvsymbol.h"          // gdv::GDVSymbol
@@ -211,7 +212,7 @@ bool GDValueWriter::tryWrite(GDValue const &value,
       break;
 
     case GDVK_BINARY64_FLOAT:
-      // TODO
+      os() << value.binary64FloatGet();
       break;
 
     case GDVK_SYMBOL: {

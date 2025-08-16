@@ -7,6 +7,7 @@
 
 #include "smbase/codepoint.h"          // isWhitespace, decodeRadixIndicatorLetter, isASCIIRadixDigit
 #include "smbase/exc.h"                // THROW
+#include "smbase/gdv-binary64-float.h" // gdv::GDVBinary64Float
 #include "smbase/gdvsymbol.h"          // GDVSymbol
 #include "smbase/overflow.h"           // addWithOverflowCheck, multiplyWithOverflowCheck
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
@@ -564,7 +565,7 @@ int GDValueReader::readNextDelimitedCharacterEscape()
 }
 
 
-GDValue GDValueReader::readNextInteger(int const firstChar)
+GDValue GDValueReader::readNextNumber(int const firstChar)
 {
   // We will collect all of the characters of the number here before
   // interpreting them as a number.
@@ -581,7 +582,7 @@ GDValue GDValueReader::readNextInteger(int const firstChar)
     c = readChar();
     if (!isASCIIDigit(c)) {
       unexpectedCharErr(c,
-        "looking for digit after minus sign that starts an integer");
+        "looking for digit after minus sign that starts a number");
     }
   }
 
@@ -598,12 +599,17 @@ GDValue GDValueReader::readNextInteger(int const firstChar)
   else {
     // Radix?
     int radix = 0;
+    bool hasRadixIndicator = false;
     if (firstDigit == '0') {
       radix = decodeRadixIndicatorLetter(c);
     }
     if (radix) {
-      // Next.
+      hasRadixIndicator = true;
+
+      // Store the indicator.
       digits.push_back((char)c);
+
+      // Get the character after the radix indicator.
       c = readNotEOFCharOrErr(
         "looking for digit after radix indicator in integer");
     }
@@ -616,6 +622,18 @@ GDValue GDValueReader::readNextInteger(int const firstChar)
       // Next.
       digits.push_back((char)c);
       c = readChar();
+    }
+
+    // Float indicator?
+    if (c == '.' || c == 'e' || c == 'E') {
+      if (hasRadixIndicator) {
+        // The format does not currently allow for (e.g.) hex floats.
+        unexpectedCharErr(c,
+          "looking for digit in integer after a radix indicator");
+      }
+      else {
+        return continueReadingFloat(digits, c);
+      }
     }
 
     putbackAfterValueOrErr(c);
@@ -631,6 +649,76 @@ GDValue GDValueReader::readNextInteger(int const firstChar)
     // But if it happens, map it into a `ReaderException` for
     // uniformity.
     err(x.getMessage());     // gcov-ignore
+    return GDValue();        // Not reached.
+  }
+}
+
+
+GDValue GDValueReader::continueReadingFloat(
+  std::vector<char> &digits,
+  int c)
+{
+  xassert(c == '.' || c == 'e' || c == 'E');
+
+  // Fractional part?
+  if (c == '.') {
+    digits.push_back(c);
+    c = readChar();
+
+    // We require at least one digit after the decimal point.
+    if (!isASCIIRadixDigit(c, 10)) {
+      unexpectedCharErr(c,
+        "looking for digit after '.' in float");
+    }
+
+    // Accumulate digits.
+    while (isASCIIRadixDigit(c, 10)) {
+      digits.push_back((char)c);
+      c = readChar();
+    }
+  }
+
+  // Exponent?
+  if (c == 'e' || c == 'E') {
+    digits.push_back((char)c);
+    c = readChar();
+
+    if (c == '-' || c == '+') {
+      digits.push_back((char)c);
+      c = readChar();
+
+      // A digit must follow the sign.
+      if (!isASCIIRadixDigit(c, 10)) {
+        unexpectedCharErr(c,
+          "looking for digit after sign after exponent indicator in float");
+      }
+    }
+    else {
+      // A digit or sign must follow the exponent indicator, and we have
+      // ruled out a sign.
+      if (!isASCIIRadixDigit(c, 10)) {
+        unexpectedCharErr(c,
+          "looking for digit or sign after exponent indicator in float");
+      }
+    }
+
+    // Accumulate digits.
+    while (isASCIIRadixDigit(c, 10)) {
+      digits.push_back((char)c);
+      c = readChar();
+    }
+  }
+
+  putbackAfterValueOrErr(c);
+
+  try {
+    return GDValue(GDVBinary64Float::parseString(
+      std::string_view(digits.data(), digits.size())));
+  }
+  catch (XFormat &x) {
+    // This could happen due to the value being out of range, for
+    // example, "1e400".
+    err(x.getMessage());
     return GDValue();        // Not reached.
   }
 }
@@ -751,7 +839,7 @@ std::optional<GDValue> GDValueReader::readNextValue()
       case '8':
       case '9':
       case '-':
-        return std::make_optional(readNextInteger(c));
+        return std::make_optional(readNextNumber(c));
 
       default:
         if (isLetter(c) || c == '_' || c == '`') {

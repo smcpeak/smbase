@@ -91,10 +91,20 @@ protected:   // methods
   // characters up to the next '}' and return the denoted code point.
   int readNextDelimitedCharacterEscape();
 
-  // Having seen and consumed 'firstChar', a character that starts an
-  // integer (so, it is '-' or a digit), read the remainder and put them
-  // into an integer.  Return after consuming the final digit.
-  GDValue readNextInteger(int firstChar);
+  // Having seen and consumed 'firstChar', a character that starts a
+  // number (so, it is '-' or a digit), read the remainder and put them
+  // into a number, depending on what follows.  Return after consuming
+  // the final digit.
+  GDValue readNextNumber(int firstChar);
+
+  // We have seen the start of a number and accumulated it into
+  // `digits`.  We then read either a decimal point or the 'e' or 'E'
+  // that starts an exponent, which is in `c`.  Add that to `digits` and continue reading
+  // the rest of the float.  Return the denoted value after reading the
+  // final digit.
+  GDValue continueReadingFloat(
+    std::vector<char> &digits,
+    int c);
 
   // Having seen and consumed 'firstChar', a character that starts a
   // symbol, read the remainder and put them into a symbol.  Then, if
