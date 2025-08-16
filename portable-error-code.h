@@ -3,6 +3,11 @@
 
 // See license.txt for copyright and terms of use.
 
+// TODO: This module's purpose is essentially the same as
+// `<system_error>`, so I should replace this one with that.  One issue,
+// though, is I have `system-error-code.h`, whose name needs to be
+// reconciled with `<system_error>`.
+
 #ifndef SMBASE_PORTABLE_ERROR_CODE_H
 #define SMBASE_PORTABLE_ERROR_CODE_H
 
