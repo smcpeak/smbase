@@ -156,16 +156,20 @@ int compare(GDVBinary64Float const &a, GDVBinary64Float const &b)
 
 void GDVBinary64Float::write(std::ostream &os) const
 {
-  // https://stackoverflow.com/a/52299693/2659307
+  // Based on https://stackoverflow.com/a/34556738 .
   std::ostringstream oss;
-  oss.precision(std::numeric_limits<double>::max_digits10 - 1);
-  oss << std::scientific << m_value;
+  oss.precision(std::numeric_limits<double>::max_digits10);
+  oss << m_value;
 
-  // TODO: Trim excess zeroes on the right.
+  // Ensure the result has a decimal or exponent so it will be reliably
+  // recognized as floating-point.
+  std::string s = oss.str();
+  if (s.find_first_of("eE.") == std::string::npos) {
+    s += ".0";
+  }
 
-  oss << oss.str();
+  os << s;
 }
-
 
 
 /*static*/ GDVBinary64Float GDVBinary64Float::parseString(
