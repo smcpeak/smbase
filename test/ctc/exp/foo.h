@@ -16,11 +16,12 @@ public:
   std::string m_z;
 
 public:
-  // ---- create-tuple-class: declarations for Foo +compare +write +move
+  // ---- create-tuple-class: declarations for Foo +compare +write +move +selfCheck -writeDefn
   /*AUTO_CTC*/ explicit Foo(int x, float y, std::string const &z);
   /*AUTO_CTC*/ explicit Foo(int x, float y, std::string &&z);
   /*AUTO_CTC*/ Foo(Foo const &obj) noexcept;
   /*AUTO_CTC*/ Foo(Foo &&obj) noexcept;
+  /*AUTO_CTC*/ void selfCheck() const;
   /*AUTO_CTC*/ Foo &operator=(Foo const &obj) noexcept;
   /*AUTO_CTC*/ Foo &operator=(Foo &&obj) noexcept;
   /*AUTO_CTC*/ // For +compare:

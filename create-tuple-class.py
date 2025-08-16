@@ -10,6 +10,15 @@ This script rewrites a section of a C++ header and implementation file
 to contain the required method declarations and definitions.  It is
 meant to be used on a file that is otherwise manually edited.
 
+Within the class definition, put a line like:
+
+  // ---- create-tuple-class: declarations for Foo +compare +write +move
+
+In the implementation .cc file, put a line like (this one does not take
+any options since they are specified in the line above):
+
+  // ---- create-tuple-class: definitions for Foo
+
 See test/ctc/in/foo.{h,cc} for example input and test/ctc/exp/foo.{h,cc}
 for the corresponding example output.
 
@@ -28,6 +37,14 @@ recognized:
 
     Generate `write`, `toString`, and `operator<<`.
 
+  -writeDefn
+
+    Omit the definition of `write`.
+
+  +selfCheck
+
+    Declare (but do not define) `selfCheck`, and emit calls to it in
+    the ctors and assignment operators.
 """
 
 import argparse              # argparse
@@ -234,6 +251,10 @@ def generateDeclarations(
     # Foo(Foo &&obj) noexcept;
     out.append(f"{curClass}({curClass} &&obj){noexcept};")
 
+  if options.get("selfCheck", False):
+    # void selfCheck() const;
+    out.append("void selfCheck() const;")
+
   # Foo &operator=(Foo const &obj) noexcept;
   out.append(f"{curClass} &operator=({curClass} const &obj){noexcept};")
 
@@ -283,8 +304,14 @@ def parseOptions(optionsString: str) -> OptionsMap:
     elif opt == "+write":
       ret["write"] = True
 
+    elif opt == "-writeDefn":
+      ret["noWriteDefn"] = True
+
     elif opt == "+move":
       ret["move"] = True
+
+    elif opt == "+selfCheck":
+      ret["selfCheck"] = True
 
     else:
       die(f"Unrecognized option: {opt}")
@@ -556,6 +583,32 @@ def generateCallsPerField(fields: list[Field], func: str) -> list[str]:
   return out
 
 
+def generateCtorBody(options: OptionsMap) -> list[str]:
+  """Generate and return the code for the body of a ctor."""
+
+  out: list[str] = []
+
+  if options.get("selfCheck", False):
+    out.append("{")
+    out.append("  selfCheck();")
+    out.append("}")
+  else:
+    out.append("{}")
+
+  return out
+
+
+def maybeGenerateSelfCheck(
+  options: OptionsMap,
+  indent: str) -> list[str]:
+  """If +selfCheck, return `indent` + "selfCheck();"""
+
+  if options.get("selfCheck", False):
+    return [indent + "selfCheck();"]
+  else:
+    return []
+
+
 def generateDefinitions(
   curClass: str,
   superclass: Optional[str],
@@ -576,16 +629,14 @@ def generateDefinitions(
   #   : IMEMBFP(x),          // insert "Super()" if superclass
   #     IMEMBFP(y),
   #     IMEMBFP(z)
-  # {}
-  out += [
-    f"{curClass}::{curClass}("
-  ] + (
-         generatePrimaryCtorParamsSeparateLines(fields) +
-         generateCtorInits(superclass, fields, "primary")
-      ) + [
-    "{}",
-    ""
-  ]
+  # {
+  #   selfCheck();           // If +selfCheck.
+  # }
+  out.append(f"{curClass}::{curClass}(")
+  out.extend(generatePrimaryCtorParamsSeparateLines(fields))
+  out.extend(generateCtorInits(superclass, fields, "primary"))
+  out.extend(generateCtorBody(options))
+  out.append("")
 
   enableMoveOps: bool = options.get("move", False)
 
@@ -597,41 +648,39 @@ def generateDefinitions(
     #   : IMEMBMFP(x),       // insert "Super()" if superclass
     #     IMEMBMFP(y),
     #     IMEMBMFP(z)
-    # {}
-    out += [
-      f"{curClass}::{curClass}("
-    ] + (
-           generatePrimaryMoveCtorParamsSeparateLines(fields) +
-           generateCtorInits(superclass, fields, "primaryMove")
-        ) + [
-      "{}",
-      ""
-    ]
+    # {
+    #   selfCheck();         // If +selfCheck.
+    # }
+    out.append(f"{curClass}::{curClass}(")
+    out.extend(generatePrimaryMoveCtorParamsSeparateLines(fields))
+    out.extend(generateCtorInits(superclass, fields, "primaryMove"))
+    out.extend(generateCtorBody(options))
+    out.append("")
 
   # Foo::Foo(Foo const &obj) noexcept
   #   : DMEMB(m_x),          // insert "Super(obj)" if superclass
   #     DMEMB(m_y),
   #     DMEMB(m_z)
-  # {}
-  out += [
-    f"{curClass}::{curClass}({curClass} const &obj){noexcept}",
-  ] + generateCtorInits(superclass, fields, "DMEMB") + [
-    "{}",
-    ""
-  ]
+  # {
+  #   selfCheck();           // If +selfCheck.
+  # }
+  out.append(f"{curClass}::{curClass}({curClass} const &obj){noexcept}")
+  out.extend(generateCtorInits(superclass, fields, "DMEMB"))
+  out.extend(generateCtorBody(options))
+  out.append("")
 
   if enableMoveOps:
     # Foo::Foo(Foo &&obj) noexcept
-    #   : MDMEMB(m_x),         // insert "Super(std::move(obj))" if superclass
+    #   : MDMEMB(m_x),       // insert "Super(std::move(obj))" if superclass
     #     MDMEMB(m_y),
     #     MDMEMB(m_z)
-    # {}
-    out += [
-      f"{curClass}::{curClass}({curClass} &&obj){noexcept}"
-    ] + generateCtorInits(superclass, fields, "MDMEMB") + [
-      "{}",
-      ""
-    ]
+    # {
+    #   selfCheck();         // If +selfCheck.
+    # }
+    out.append(f"{curClass}::{curClass}({curClass} &&obj){noexcept}")
+    out.extend(generateCtorInits(superclass, fields, "MDMEMB"))
+    out.extend(generateCtorBody(options))
+    out.append("")
 
   # Foo &Foo::operator=(Foo const &obj) noexcept
   # {
@@ -640,23 +689,21 @@ def generateDefinitions(
   #     CMEMB(x);
   #     CMEMB(y);
   #     CMEMB(z);
+  #     selfCheck();         // If +selfCheck.
   #   }
   #   return *this;
   # }
-  out += [
-    f"{curClass} &{curClass}::operator=({curClass} const &obj){noexcept}",
-    "{",
-    "  if (this != &obj) {"
-  ] + (
-        ([f"    {superclass}::operator=(obj);"]
-           if superclass is not None else []) +
-        generateCallsPerField(fields, "  CMEMB")
-      ) + [
-    "  }",
-    "  return *this;",
-    "}",
-    ""
-  ]
+  out.append(  f"{curClass} &{curClass}::operator=({curClass} const &obj){noexcept}")
+  out.append(   "{")
+  out.append(   "  if (this != &obj) {")
+  if superclass is not None:
+    out.append(f"    {superclass}::operator=(obj);")
+  out.extend(        generateCallsPerField(fields, "  CMEMB"))
+  out.extend(        maybeGenerateSelfCheck(options, "    "))
+  out.append(   "  }")
+  out.append(   "  return *this;")
+  out.append(   "}")
+  out.append(   "")
 
   if enableMoveOps:
     # Foo &Foo::operator=(Foo &&obj) noexcept
@@ -669,20 +716,17 @@ def generateDefinitions(
     #   }
     #   return *this;
     # }
-    out += [
-      f"{curClass} &{curClass}::operator=({curClass} &&obj){noexcept}",
-      "{",
-      "  if (this != &obj) {"
-    ] + (
-          ([f"    {superclass}::operator=(std::move(obj));"]
-             if superclass is not None else []) +
-          generateCallsPerField(fields, "  MCMEMB")
-        ) + [
-      "  }",
-      "  return *this;",
-      "}",
-      ""
-    ]
+    out.append(  f"{curClass} &{curClass}::operator=({curClass} &&obj){noexcept}")
+    out.append(   "{")
+    out.append(   "  if (this != &obj) {")
+    if superclass is not None:
+      out.append(f"    {superclass}::operator=(std::move(obj));")
+    out.extend(        generateCallsPerField(fields, "  MCMEMB"))
+    out.extend(        maybeGenerateSelfCheck(options, "    "))
+    out.append(   "  }")
+    out.append(   "  return *this;")
+    out.append(   "}")
+    out.append(   "")
 
   if options.get("compare", False):
     # int compare(Foo const &a, Foo const &b)
@@ -725,23 +769,24 @@ def generateDefinitions(
       ""
     ]
 
-    # void Foo::write(std::ostream &os) const
-    # {
-    #   os << "{";
-    #   WRITE_MEMBER(m_x);
-    #   WRITE_MEMBER(m_y);
-    #   WRITE_MEMBER(m_z);
-    #   os << " }";
-    # }
-    out += [
-      f"void {curClass}::write(std::ostream &os) const",
-      "{",
-      "  os << \"{\";"
-    ] + generateCallsPerField(fields, "WRITE_MEMBER") + [
-      "  os << \" }\";",
-      "}",
-      ""
-    ]
+    if not options.get("noWriteDefn", False):
+      # void Foo::write(std::ostream &os) const
+      # {
+      #   os << "{";
+      #   WRITE_MEMBER(m_x);
+      #   WRITE_MEMBER(m_y);
+      #   WRITE_MEMBER(m_z);
+      #   os << " }";
+      # }
+      out += [
+        f"void {curClass}::write(std::ostream &os) const",
+        "{",
+        "  os << \"{\";"
+      ] + generateCallsPerField(fields, "WRITE_MEMBER") + [
+        "  os << \" }\";",
+        "}",
+        ""
+      ]
 
     # std::ostream &operator<<(std::ostream &os, Foo const &obj)
     # {

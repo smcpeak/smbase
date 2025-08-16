@@ -22,7 +22,9 @@ using namespace smbase;
 /*AUTO_CTC*/   : IMEMBFP(x),
 /*AUTO_CTC*/     IMEMBFP(y),
 /*AUTO_CTC*/     IMEMBFP(z)
-/*AUTO_CTC*/ {}
+/*AUTO_CTC*/ {
+/*AUTO_CTC*/   selfCheck();
+/*AUTO_CTC*/ }
 /*AUTO_CTC*/
 /*AUTO_CTC*/ Foo::Foo(
 /*AUTO_CTC*/   int x,
@@ -31,19 +33,25 @@ using namespace smbase;
 /*AUTO_CTC*/   : IMEMBMFP(x),
 /*AUTO_CTC*/     IMEMBMFP(y),
 /*AUTO_CTC*/     IMEMBMFP(z)
-/*AUTO_CTC*/ {}
+/*AUTO_CTC*/ {
+/*AUTO_CTC*/   selfCheck();
+/*AUTO_CTC*/ }
 /*AUTO_CTC*/
 /*AUTO_CTC*/ Foo::Foo(Foo const &obj) noexcept
 /*AUTO_CTC*/   : DMEMB(m_x),
 /*AUTO_CTC*/     DMEMB(m_y),
 /*AUTO_CTC*/     DMEMB(m_z)
-/*AUTO_CTC*/ {}
+/*AUTO_CTC*/ {
+/*AUTO_CTC*/   selfCheck();
+/*AUTO_CTC*/ }
 /*AUTO_CTC*/
 /*AUTO_CTC*/ Foo::Foo(Foo &&obj) noexcept
 /*AUTO_CTC*/   : MDMEMB(m_x),
 /*AUTO_CTC*/     MDMEMB(m_y),
 /*AUTO_CTC*/     MDMEMB(m_z)
-/*AUTO_CTC*/ {}
+/*AUTO_CTC*/ {
+/*AUTO_CTC*/   selfCheck();
+/*AUTO_CTC*/ }
 /*AUTO_CTC*/
 /*AUTO_CTC*/ Foo &Foo::operator=(Foo const &obj) noexcept
 /*AUTO_CTC*/ {
@@ -51,6 +59,7 @@ using namespace smbase;
 /*AUTO_CTC*/     CMEMB(m_x);
 /*AUTO_CTC*/     CMEMB(m_y);
 /*AUTO_CTC*/     CMEMB(m_z);
+/*AUTO_CTC*/     selfCheck();
 /*AUTO_CTC*/   }
 /*AUTO_CTC*/   return *this;
 /*AUTO_CTC*/ }
@@ -61,6 +70,7 @@ using namespace smbase;
 /*AUTO_CTC*/     MCMEMB(m_x);
 /*AUTO_CTC*/     MCMEMB(m_y);
 /*AUTO_CTC*/     MCMEMB(m_z);
+/*AUTO_CTC*/     selfCheck();
 /*AUTO_CTC*/   }
 /*AUTO_CTC*/   return *this;
 /*AUTO_CTC*/ }
@@ -78,15 +88,6 @@ using namespace smbase;
 /*AUTO_CTC*/   std::ostringstream oss;
 /*AUTO_CTC*/   write(oss);
 /*AUTO_CTC*/   return oss.str();
-/*AUTO_CTC*/ }
-/*AUTO_CTC*/
-/*AUTO_CTC*/ void Foo::write(std::ostream &os) const
-/*AUTO_CTC*/ {
-/*AUTO_CTC*/   os << "{";
-/*AUTO_CTC*/   WRITE_MEMBER(m_x);
-/*AUTO_CTC*/   WRITE_MEMBER(m_y);
-/*AUTO_CTC*/   WRITE_MEMBER(m_z);
-/*AUTO_CTC*/   os << " }";
 /*AUTO_CTC*/ }
 /*AUTO_CTC*/
 /*AUTO_CTC*/ std::ostream &operator<<(std::ostream &os, Foo const &obj)
