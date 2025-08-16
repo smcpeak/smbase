@@ -76,6 +76,7 @@ printMode: bool = False
 outputPrefix: str = ""
 
 
+# --------------------- General purpose utilities ----------------------
 def readLinesNoNL(filename: str) -> list[str]:
   """Get the lines in 'filename' without newlines."""
   with open(filename) as file:
@@ -116,6 +117,51 @@ def writeUpdatedFile(fname: str, oldLines: list[str], newLines: list[str]) -> No
     print(f"Wrote updated contents for {fname}.")
 
 
+# ------------------------- ClassOptions class -------------------------
+class ClassOptions:
+  """
+  Represent the options associated with a particular class whose method
+  declarations are to be generated.
+  """
+
+  def __init__(self) -> None:
+    # All options default to False
+    self.compare:     bool = False
+    self.write:       bool = False
+    self.noWriteDefn: bool = False
+    self.move:        bool = False
+    self.selfCheck:   bool = False
+
+  @classmethod
+  def parse(cls, optionsString: str) -> "ClassOptions":
+    """Parse an options string into an ClassOptions object we can use
+    during code generation."""
+
+    opts = cls()
+
+    for opt in optionsString.split():
+      if opt == "+compare":
+        opts.compare = True
+
+      elif opt == "+write":
+        opts.write = True
+
+      elif opt == "-writeDefn":
+        opts.noWriteDefn = True
+
+      elif opt == "+move":
+        opts.move = True
+
+      elif opt == "+selfCheck":
+        opts.selfCheck = True
+
+      else:
+        die(f"Unrecognized option: {opt}")
+
+    return opts
+
+
+# -------------------------- Code generation ---------------------------
 # This is quite crude but may suffice for now.
 primitiveTypesRE = re.compile(r"\b(int|float|unsigned|bool)\b")
 
@@ -196,11 +242,6 @@ def generatePrimaryMoveCtorParams(fields: list[Field]) -> str:
     [generatePrimaryMoveCtorParam(type, name) for (type, name) in fields])
 
 
-# The options are expressed as a map from option key to bool.  This is
-# populated by `parseOptions`.
-OptionsMap = dict[str, bool]
-
-
 def addAutoPrefix(line: str) -> str:
   """Put the /*AUTO_CTC*/ prefix in front of `line`."""
 
@@ -217,7 +258,7 @@ def generateDeclarations(
   curClass: str,
   curIndentation: str,
   fields: list[Field],
-  options: OptionsMap) -> list[str]:
+  options: ClassOptions) -> list[str]:
 
   """Generate and return the declarations for methods of `curClass`,
   which has overall indentation `curIndentation`, subject to
@@ -232,7 +273,7 @@ def generateDeclarations(
   # explicit Foo(int x, float y, std::string const &z);
   out.append(f"explicit {curClass}({generatePrimaryCtorParams(fields)});")
 
-  enableMoveOps: bool = options.get("move", False)
+  enableMoveOps: bool = options.move
 
   if enableMoveOps and hasNonPrimitiveField(fields):
     # The primary move constructor takes all class-typed arguments by
@@ -251,7 +292,7 @@ def generateDeclarations(
     # Foo(Foo &&obj) noexcept;
     out.append(f"{curClass}({curClass} &&obj){noexcept};")
 
-  if options.get("selfCheck", False):
+  if options.selfCheck:
     # void selfCheck() const;
     out.append("void selfCheck() const;")
 
@@ -262,7 +303,7 @@ def generateDeclarations(
     # Foo &operator=(Foo &&obj) noexcept;
     out.append(f"{curClass} &operator=({curClass} &&obj){noexcept};")
 
-  if options.get("compare", False):
+  if options.compare:
     # // For +compare:
     out.append("// For +compare:")
 
@@ -272,7 +313,7 @@ def generateDeclarations(
     # DEFINE_FRIEND_RELATIONAL_OPERATORS(Foo)
     out.append(f"DEFINE_FRIEND_RELATIONAL_OPERATORS({curClass})")
 
-  if options.get("write", False):
+  if options.write:
     # // For +write:
     out.append("// For +write:")
 
@@ -289,34 +330,6 @@ def generateDeclarations(
   out = [curIndentation + "  " + addAutoPrefix(line) for line in out]
 
   return out
-
-
-def parseOptions(optionsString: str) -> OptionsMap:
-  """Parse an options string into a map we can use during code
-  generation."""
-
-  ret: OptionsMap = {}
-
-  for opt in optionsString.split():
-    if opt == "+compare":
-      ret["compare"] = True
-
-    elif opt == "+write":
-      ret["write"] = True
-
-    elif opt == "-writeDefn":
-      ret["noWriteDefn"] = True
-
-    elif opt == "+move":
-      ret["move"] = True
-
-    elif opt == "+selfCheck":
-      ret["selfCheck"] = True
-
-    else:
-      die(f"Unrecognized option: {opt}")
-
-  return ret
 
 
 identifierLetterRE = re.compile("^[a-zA-Z0-9_]$")
@@ -401,7 +414,7 @@ def processHeader(headerFname: str) -> None:
   # Map from class name to its fields and options.
   classToSuperclass: dict[str, str] = {}
   classToFields: dict[str, list[Field]] = {}
-  classToOptions: dict[str, OptionsMap] = {}
+  classToClassOptions: dict[str, ClassOptions] = {}
 
   # Compute the new contents.
   for i, line in enumerate(origHeaderLines):
@@ -433,14 +446,14 @@ def processHeader(headerFname: str) -> None:
         if directiveClass != curClass:
           die(f"Found directive to write declarations for {directiveClass} "+
               f"but the current class is {curClass}.")
-        options = parseOptions(m.group(2))
+        options = ClassOptions.parse(m.group(2))
         debugPrint(f"{i+1}: begin decls: {options}")
 
         if curClass is None or curIndentation is None:
           die("no current class")
         else:
           classToFields[curClass] = curFields
-          classToOptions[curClass] = options
+          classToClassOptions[curClass] = options
 
           newHeaderLines += generateDeclarations(
             curClass,
@@ -471,7 +484,7 @@ def processHeader(headerFname: str) -> None:
     headerFname,
     classToSuperclass,
     classToFields,
-    classToOptions)
+    classToClassOptions)
 
 
 def generatePrimaryCtorParamsSeparateLines(fields: list[Field]) -> list[str]:
@@ -583,12 +596,12 @@ def generateCallsPerField(fields: list[Field], func: str) -> list[str]:
   return out
 
 
-def generateCtorBody(options: OptionsMap) -> list[str]:
+def generateCtorBody(options: ClassOptions) -> list[str]:
   """Generate and return the code for the body of a ctor."""
 
   out: list[str] = []
 
-  if options.get("selfCheck", False):
+  if options.selfCheck:
     out.append("{")
     out.append("  selfCheck();")
     out.append("}")
@@ -599,11 +612,11 @@ def generateCtorBody(options: OptionsMap) -> list[str]:
 
 
 def maybeGenerateSelfCheck(
-  options: OptionsMap,
+  options: ClassOptions,
   indent: str) -> list[str]:
   """If +selfCheck, return `indent` + "selfCheck();"""
 
-  if options.get("selfCheck", False):
+  if options.selfCheck:
     return [indent + "selfCheck();"]
   else:
     return []
@@ -613,7 +626,7 @@ def generateDefinitions(
   curClass: str,
   superclass: Optional[str],
   fields: list[Field],
-  options: OptionsMap) -> list[str]:
+  options: ClassOptions) -> list[str]:
 
   """Generate and return the definitions for methods of `curClass`,
   subject to `options`."""
@@ -638,7 +651,7 @@ def generateDefinitions(
   out.extend(generateCtorBody(options))
   out.append("")
 
-  enableMoveOps: bool = options.get("move", False)
+  enableMoveOps: bool = options.move
 
   if enableMoveOps and hasNonPrimitiveField(fields):
     # Foo::Foo(
@@ -728,7 +741,7 @@ def generateDefinitions(
     out.append(   "}")
     out.append(   "")
 
-  if options.get("compare", False):
+  if options.compare:
     # int compare(Foo const &a, Foo const &b)
     # {
     #   RET_IF_COMPARE_MEMBERS(x);
@@ -752,7 +765,7 @@ def generateDefinitions(
       ""
     ]
 
-  if options.get("write", False):
+  if options.write:
     # std::string Foo::toString() const
     # {
     #   std::ostringstream oss;
@@ -769,7 +782,7 @@ def generateDefinitions(
       ""
     ]
 
-    if not options.get("noWriteDefn", False):
+    if not options.noWriteDefn:
       # void Foo::write(std::ostream &os) const
       # {
       #   os << "{";
@@ -812,7 +825,7 @@ def processImplementationFile(
   headerFname: str,
   classToSuperclass: dict[str, str],
   classToFields: dict[str, list[Field]],
-  classToOptions: dict[str, OptionsMap]) -> None:
+  classToClassOptions: dict[str, ClassOptions]) -> None:
   """Determine the implementation file for `headerFname` and process it."""
 
   assert(headerFname.endswith(".h"))
@@ -846,13 +859,13 @@ def processImplementationFile(
         curClass = m.group(1)
         debugPrint(f"{i+1}: begin, curClass={curClass}")
 
-        if curClass not in classToOptions:
+        if curClass not in classToClassOptions:
           die(f"Found directive to create definitions for {curClass}, "+
               f"but its declarations were not seen.")
 
         superclass: Optional[str] = classToSuperclass.get(curClass, None)
         fields: list[Field] = classToFields[curClass]
-        options: OptionsMap = classToOptions[curClass]
+        options: ClassOptions = classToClassOptions[curClass]
 
         newImplLines += generateDefinitions(
           curClass,
