@@ -104,6 +104,9 @@ std::vector<std::string> &getExnContextVector();
 // inner: ", or just an empty string if there is no context.
 std::string getExnContextString();
 
+// Get the number of elements on the context stack.
+std::size_t getExnContextSize();
+
 
 // ------------------------------- XBase -------------------------------
 /* This is the base class for all exceptions in smbase and the other
@@ -210,7 +213,10 @@ public:      // methods
   // could see it, like in unit tests, then debug information can be
   // appropriate.)
   //
-  // Default: Prepend `context` to `m_contexts`.
+  // The default behavior inserts `context` into `m_contexts` at
+  // position `getExnContextSize()`.  This is "prepend" with respect to
+  // context gathered closer to the throw site (hence the name), but
+  // "append" w.r.t. context from higher up.
   //
   virtual void prependContext(std::string const &context);
 

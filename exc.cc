@@ -4,13 +4,13 @@
 
 #include "exc.h"                       // this module
 
-// smbase
 #include "dev-warning.h"               // DEV_WARNING
 #include "sm-iostream.h"               // clog
 #include "sm-macros.h"                 // DMEMB, CMEMB
 #include "string-util.h"               // join
 
-// libc
+#include <cstdlib>                     // std::min
+
 #include <ctype.h>                     // toupper, tolower
 #include <stdarg.h>                    // va_xxx
 #include <string.h>                    // strlen, strcpy
@@ -35,6 +35,12 @@ std::vector<std::string> &getExnContextVector()
 std::string getExnContextString()
 {
   return join(suffixAll(getExnContextVector(), ": "), "");
+}
+
+
+std::size_t getExnContextSize()
+{
+  return getExnContextVector().size();
 }
 
 
@@ -99,7 +105,13 @@ std::string XBase::getContext() const
 
 void XBase::prependContext(std::string const &context)
 {
-  m_contexts.insert(m_contexts.begin(), context);
+  // The expected insertion point is `getExnContextSize()`, but for
+  // safety, limit it to the bounds of `m_contexts`.
+  std::size_t index = std::min(m_contexts.size(), getExnContextSize());
+
+  // Insert `contex` after any context still on the stack, but before
+  // whatever was added closer to the throw site.
+  m_contexts.insert(m_contexts.begin() + index, context);
 }
 
 

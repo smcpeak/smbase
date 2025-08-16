@@ -65,6 +65,31 @@ void test_EXN_CONTEXT_FILE_LINE()
 }
 
 
+void test_prependContextWithExnContext()
+{
+  try {
+    EXN_CONTEXT("outer");
+
+    try {
+      {
+        EXN_CONTEXT("inner");
+
+        xmessage("msg");
+      }
+    }
+    catch (XMessage &x) {
+      // This gets inserted between "outer" and "inner" because "outer"
+      // is still on the global context stack.
+      x.prependContext("prepended");
+      throw x;
+    }
+  }
+  catch (XMessage &x) {
+    EXPECT_EQ(x.getMessage(), "outer: prepended: inner: msg");
+  }
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -74,6 +99,7 @@ void test_exc()
   test_basics();
   test_getExnContextString();
   test_EXN_CONTEXT_FILE_LINE();
+  test_prependContextWithExnContext();
 }
 
 
