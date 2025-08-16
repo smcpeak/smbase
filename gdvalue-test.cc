@@ -11,6 +11,7 @@
 
 // this dir
 #include "smbase/counting-ostream.h"   // nullOStream
+#include "smbase/gdv-binary64-float.h" // gdv::GDVBinary64Float
 #include "smbase/gdv-ordered-map.h"    // gdv::GDVOrderedMap
 #include "smbase/gdvsymbol.h"          // gdv::GDVSymbol
 #include "smbase/reader.h"             // smbase::ReaderException
@@ -2592,128 +2593,31 @@ void test_span()
 }
 
 
-void testOne_compareGDVBinary64Floats(
-  GDVBinary64Float a,
-  GDVBinary64Float b,
-  int expect)
-{
-  EXN_CONTEXT_EXPR(a);
-  EXN_CONTEXT_EXPR(b);
-
-  EXPECT_EQ(compareGDVBinary64Floats(a, b), expect);
-  EXPECT_EQ(compareGDVBinary64Floats(b, a), -expect);
-
-  if (std::isfinite(a) && std::isfinite(b)) {
-    // Compare them as GDValues, expecting the same result.
-    GDValue va(a);
-    GDValue vb(b);
-
-    EXPECT_EQ(compare(va, vb), expect);
-    EXPECT_EQ(compare(vb, va), -expect);
-  }
-}
-
-
-void test_compareGDVBinary64Floats()
-{
-  testOne_compareGDVBinary64Floats(0, 0, 0);
-  testOne_compareGDVBinary64Floats(1, 0, 1);
-  testOne_compareGDVBinary64Floats(-1, 0, -1);
-  testOne_compareGDVBinary64Floats(-1, 1, -1);
-
-  // Negative zero.
-  testOne_compareGDVBinary64Floats(-0.0, 0, -1);
-  testOne_compareGDVBinary64Floats(-0.0, 1, -1);
-  testOne_compareGDVBinary64Floats(-0.0, -1, 1);
-
-  // Smallest positive normal.
-  GDVBinary64Float const minNorm =
-    std::numeric_limits<GDVBinary64Float>::min();
-  xassert(minNorm > 0);
-
-  testOne_compareGDVBinary64Floats(minNorm, minNorm, 0);
-  testOne_compareGDVBinary64Floats(minNorm, 0, 1);
-  testOne_compareGDVBinary64Floats(-minNorm, 0, -1);
-  testOne_compareGDVBinary64Floats(-minNorm, minNorm, -1);
-
-  // Smallest positive denormal.
-  GDVBinary64Float const denorm =
-    std::numeric_limits<GDVBinary64Float>::denorm_min();
-  xassert(denorm > 0);
-
-  testOne_compareGDVBinary64Floats(denorm, denorm, 0);
-  testOne_compareGDVBinary64Floats(denorm, 0, 1);
-  testOne_compareGDVBinary64Floats(denorm, -0.0, 1);
-  testOne_compareGDVBinary64Floats(-denorm, 0, -1);
-  testOne_compareGDVBinary64Floats(-denorm, denorm, -1);
-  testOne_compareGDVBinary64Floats(denorm, minNorm, -1);
-  testOne_compareGDVBinary64Floats(-denorm, -minNorm, 1);
-
-  // Most positive and negative.
-  GDVBinary64Float const highest =
-    std::numeric_limits<GDVBinary64Float>::max();
-  GDVBinary64Float const lowest =
-    std::numeric_limits<GDVBinary64Float>::lowest();
-
-  testOne_compareGDVBinary64Floats(highest, highest, 0);
-  testOne_compareGDVBinary64Floats(lowest, lowest, 0);
-  testOne_compareGDVBinary64Floats(highest, 0, 1);
-  testOne_compareGDVBinary64Floats(lowest, 0, -1);
-  testOne_compareGDVBinary64Floats(lowest, highest, -1);
-  testOne_compareGDVBinary64Floats(highest, minNorm, 1);
-  testOne_compareGDVBinary64Floats(highest, denorm, 1);
-
-  // Finite before non-finite.
-  testOne_compareGDVBinary64Floats(INFINITY, 0, 1);
-  testOne_compareGDVBinary64Floats(-INFINITY, 0, 1);
-  testOne_compareGDVBinary64Floats(NAN, 0, 1);
-  testOne_compareGDVBinary64Floats(INFINITY, highest, 1);
-  testOne_compareGDVBinary64Floats(INFINITY, lowest, 1);
-  testOne_compareGDVBinary64Floats(INFINITY, denorm, 1);
-  testOne_compareGDVBinary64Floats(INFINITY, minNorm, 1);
-  testOne_compareGDVBinary64Floats(INFINITY, -0.0, 1);
-
-  // NegativeInfinity before Infinity.
-  testOne_compareGDVBinary64Floats(INFINITY, -INFINITY, 1);
-  testOne_compareGDVBinary64Floats(INFINITY, INFINITY, 0);
-  testOne_compareGDVBinary64Floats(-INFINITY, -INFINITY, 0);
-
-  // NAN == NAN
-  testOne_compareGDVBinary64Floats(NAN, NAN, 0);
-
-  // -1 if NAN<INFINITY as classification, +1 otherwise.
-  int const nan_vs_infinity =
-    compare(std::fpclassify(NAN), std::fpclassify(INFINITY));
-
-  // NAN vs. INFINITY
-  testOne_compareGDVBinary64Floats(NAN, INFINITY, nan_vs_infinity);
-  testOne_compareGDVBinary64Floats(NAN, -INFINITY, nan_vs_infinity);
-}
-
-
 void test_binary64Float()
 {
   GDValue v(GDVK_BINARY64_FLOAT);
   xassert(v.isBinary64Float());
   v.selfCheck();
-  EXPECT_EQ(v.binary64FloatGet(), 0);
-  EXPECT_EQ(compareGDVBinary64Floats(v.binary64FloatGet(), 0), 0);
+  EXPECT_EQ(v.binary64FloatGet(), GDVBinary64Float(0));
+  EXPECT_EQ(
+    compareDoublesRepresentationally(v.binary64FloatGet().getValue(), 0),
+    0);
 
-  v.binary64FloatSet(1);
+  v.binary64FloatSet(GDVBinary64Float(1));
   v.selfCheck();
   xassert(v.isBinary64Float());
-  EXPECT_EQ(v.binary64FloatGet(), 1);
+  EXPECT_EQ(v.binary64FloatGet(), GDVBinary64Float(1));
 
-  GDVBinary64Float const denorm =
-    std::numeric_limits<GDVBinary64Float>::denorm_min();
+  GDVBinary64Float const denorm(
+    std::numeric_limits<GDVBinary64Float>::denorm_min());
   v.reset();
   v.binary64FloatSet(denorm);
   v.selfCheck();
   xassert(v.isBinary64Float());
   EXPECT_EQ(v.binary64FloatGet(), denorm);
 
-  GDVBinary64Float const lowest =
-    std::numeric_limits<GDVBinary64Float>::lowest();
+  GDVBinary64Float const lowest(
+    std::numeric_limits<GDVBinary64Float>::lowest());
   v.binary64FloatSet(lowest);
   v.selfCheck();
   xassert(v.isBinary64Float());
@@ -2784,7 +2688,6 @@ void test_gdvalue()
     test_uint64();
     test_GDVN_OMAP_EXPRS();
     test_span();
-    test_compareGDVBinary64Floats();
     test_binary64Float();
 
     // Some interesting values for the particular data used.

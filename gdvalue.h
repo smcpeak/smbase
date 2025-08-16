@@ -17,12 +17,13 @@
 
 // this dir
 #include "smbase/compare-util.h"                 // DEFINE_FRIEND_RELATIONAL_OPERATORS
+#include "smbase/gdv-binary64-float-fwd.h"       // gdv::GDVBinary64Float
+#include "smbase/gdv-ordered-map-iface.h"        // gdv::GDVOrderedMap
 #include "smbase/gdvalue-kind.h"                 // GDValueKind
-#include "smbase/gdvalue-types.h"                // GDVSize, GDVIndex, GDVInteger, GDVSmallInteger, GDVBinary64Float, GDVString, GDVSequence, GDVSet, GDVMap, GDVOrderedMap, GDVMapEntry
+#include "smbase/gdvalue-types.h"                // GDVSize, GDVIndex, GDVInteger, GDVSmallInteger, GDVString, GDVSequence, GDVSet, GDVMap, GDVOrderedMap, GDVMapEntry
 #include "smbase/gdvalue-write-options.h"        // gdv::GDValueWriteOptions
 #include "smbase/gdvsymbol.h"                    // gdv::GDVSymbol
 #include "smbase/gdvtuple.h"                     // gdv::GDVTuple
-#include "smbase/gdv-ordered-map-iface.h"        // gdv::GDVOrderedMap
 #include "smbase/sm-integer.h"                   // smbase::Integer
 #include "smbase/sm-macros.h"                    // OPEN_NAMESPACE, NULLABLE
 #include "smbase/sm-pp-util.h"                   // SM_PP_COMMA_MAP
@@ -189,7 +190,8 @@ public:      // class data
   static unsigned s_ct_integerCtorCopy;
   static unsigned s_ct_integerCtorMove;
   static unsigned s_ct_integerSmallIntCtor;
-  static unsigned s_ct_binary64FloatCtor;
+  static unsigned s_ct_binary64FloatCtorCopy;
+  static unsigned s_ct_binary64FloatCtorMove;
   static unsigned s_ct_stringCtorCopy;
   static unsigned s_ct_stringCtorMove;
   static unsigned s_ct_stringSetCopy;
@@ -223,6 +225,7 @@ private:     // instance data
 
     // These are all owner pointers (when active, of course).
     GDVInteger          *m_integer;
+    GDVBinary64Float    *m_binary64Float;
     GDVString           *m_string;
     GDVSequence         *m_sequence;
     GDVTaggedSequence   *m_taggedSequence;
@@ -245,8 +248,11 @@ private:     // instance data
     // does so for *storage* only.
     GDVSmallInteger m_smallInteger;
 
-    // The value for `GDVK_BINARY64_FLOAT`.  Always `std::isfinite`.
-    GDVBinary64Float m_binary64Float;
+    // It would be possible to embed `GDVBinary64Float` without a space
+    // penalty if it is implemented using `double` (which is my
+    // expectation).  However, I want the design to accomodate a
+    // different implementation, and there is no compelling need to
+    // optimize the storage of floats in `GDValue`.
 
     explicit GDValueUnion(GDVSymbol::Index symbolIndex)
       : m_symbol(symbolIndex)
@@ -572,15 +578,17 @@ public:      // methods
 
 
   // ---- Binary64Float ----
-  // This is explicit because, otherwise, implicit conversions from
-  // integer types to floating types could cause misinterpretation.
-  explicit GDValue(GDVBinary64Float v);
+  // It should be safe to construct this implicitly since we have the
+  // intermediate `GDVBinary64Float` class, whose ctor is explicit, to
+  // prevent unintended conversion from integers, etc.
+  /*implicit*/ GDValue(GDVBinary64Float const &v);
+  /*implicit*/ GDValue(GDVBinary64Float      &&v);
 
-  // Requires `std::isfinite(v)`.
-  void binary64FloatSet(GDVBinary64Float v);
+  void binary64FloatSet(GDVBinary64Float const &v);
+  void binary64FloatSet(GDVBinary64Float      &&v);
 
   // Requires `isBinary64Float()`.
-  GDVBinary64Float binary64FloatGet() const;
+  GDVBinary64Float const &binary64FloatGet() const;
 
 
   // ---- String ----
@@ -877,11 +885,6 @@ public:      // methods
 // the class body.
 template <>
 /*implicit*/ GDValue::GDValue(char const *str);
-
-
-// Expose the representational (non-numeric) comparison used internally
-// so I can write unit tests for it.
-int compareGDVBinary64Floats(GDVBinary64Float a, GDVBinary64Float b);
 
 
 #define DEFINE_GDV_KIND_ITERABLE(GDVKindName, kindName)              \

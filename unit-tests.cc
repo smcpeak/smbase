@@ -111,6 +111,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(exclusive_write_file);
   RUN_TEST(functional_set);
   RUN_TEST(gcc_options);
+  RUN_TEST(gdv_binary64_float);
   RUN_TEST(gdvalue);
   RUN_TEST(gdvalue_json);
   RUN_TEST(gdvalue_parser);

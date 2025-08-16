@@ -289,6 +289,7 @@ SRCS += file-line-col.cc
 SRCS += flatten.cc
 SRCS += functional-set.cc
 SRCS += gcc-options.cc
+SRCS += gdv-binary64-float.cc
 SRCS += gdvalue-json.cc
 SRCS += gdvalue-parser.cc
 SRCS += gdvalue-reader.cc
@@ -418,6 +419,7 @@ UNIT_TEST_OBJS += exc-test.o
 UNIT_TEST_OBJS += exclusive-write-file-test.o
 UNIT_TEST_OBJS += functional-set-test.o
 UNIT_TEST_OBJS += gcc-options-test.o
+UNIT_TEST_OBJS += gdv-binary64-float-test.o
 UNIT_TEST_OBJS += gdvalue-json-test.o
 UNIT_TEST_OBJS += gdvalue-parser-test.o
 UNIT_TEST_OBJS += gdvalue-test.o
@@ -844,6 +846,7 @@ check: check-ctc
 # Set of header files that use create-tuple-class.py.
 CTC_HEADERS :=
 CTC_HEADERS += exclusive-write-file.h
+CTC_HEADERS += gdv-binary64-float.h
 CTC_HEADERS += type-name-and-size.h
 CTC_HEADERS += xarithmetic.h
 CTC_HEADERS += xoverflow.h

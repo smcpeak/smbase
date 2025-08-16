@@ -210,6 +210,10 @@ bool GDValueWriter::tryWrite(GDValue const &value,
       os() << value.smallIntegerGet();
       break;
 
+    case GDVK_BINARY64_FLOAT:
+      // TODO
+      break;
+
     case GDVK_SYMBOL: {
       std::string_view name = value.symbolGetName();
       if (GDVSymbol::validUnquotedSymbolName(name)) {

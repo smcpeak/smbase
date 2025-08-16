@@ -8,6 +8,7 @@
 // this dir
 #include "smbase/compare-util.h"       // smbase::compare, RET_IF_COMPARE
 #include "smbase/exc.h"                // GENERIC_CATCH_{BEGIN,END}
+#include "smbase/gdv-binary64-float.h" // gdv::GDVBinary64Float
 #include "smbase/gdv-ordered-map.h"    // gdv::GDVOrderedMap
 #include "smbase/gdvalue-reader.h"     // gdv::GDValueReader
 #include "smbase/gdvalue-writer.h"     // gdv::GDValueWriter
@@ -128,6 +129,7 @@ int compare(
 // ---------------------------- GDValueKind ----------------------------
 // Like `FOR_EACH_GDV_ALLOCATED_KIND`, but missing Integer.
 #define FOR_EACH_GDV_ALLOCATED_KIND_EXCEPT_INTEGER(macro)        \
+  macro(BINARY64_FLOAT,     Binary64Float   , binary64Float   )  \
   macro(STRING,             String          , string          )  \
   macro(SEQUENCE,           Sequence        , sequence        )  \
   macro(TAGGED_SEQUENCE,    TaggedSequence  , taggedSequence  )  \
@@ -150,7 +152,6 @@ int compare(
 #define FOR_EACH_GDV_KIND(macro)                         \
   macro(SYMBOL,          Symbol        , symbol        ) \
   macro(SMALL_INTEGER,   SmallInteger  , smallInteger  ) \
-  macro(BINARY64_FLOAT,  Binary64Float , binary64Float ) \
   FOR_EACH_GDV_ALLOCATED_KIND(macro)
 
 
@@ -229,7 +230,8 @@ unsigned GDValue::s_ct_symbolCtor = 0;
 unsigned GDValue::s_ct_integerCtorCopy = 0;
 unsigned GDValue::s_ct_integerCtorMove = 0;
 unsigned GDValue::s_ct_integerSmallIntCtor = 0;
-unsigned GDValue::s_ct_binary64FloatCtor = 0;
+unsigned GDValue::s_ct_binary64FloatCtorCopy = 0;
+unsigned GDValue::s_ct_binary64FloatCtorMove = 0;
 unsigned GDValue::s_ct_stringCtorCopy = 0;
 unsigned GDValue::s_ct_stringCtorMove = 0;
 unsigned GDValue::s_ct_stringSetCopy = 0;
@@ -376,11 +378,6 @@ GDValue::GDValue(GDValueKind kind)
       m_value.m_smallInteger = 0;
       break;
 
-    case GDVK_BINARY64_FLOAT:
-      m_kind = GDVK_BINARY64_FLOAT;
-      m_value.m_binary64Float = 0;
-      break;
-
     #define CASE(KIND, Kind, kind)        \
       case GDVK_##KIND:                   \
         m_value.m_##kind = new GDV##Kind; \
@@ -451,49 +448,6 @@ bool GDValue::isUnorderedContainer() const
 
 
 // -------------------------- GDValue compare --------------------------
-int compareGDVBinary64Floats(GDVBinary64Float a, GDVBinary64Float b)
-{
-  using smbase::compare;
-
-  if (std::isfinite(a) && std::isfinite(b)) {
-    // First compare the sign bits to ensure -0 < +0.  I swap the order
-    // of the arguments here because I want negative < positive, which
-    // after calling `signbit` means true < false, but in C++, false <
-    // true.
-    RET_IF_COMPARE(std::signbit(b), std::signbit(a));
-
-    // Now just compare them normally.
-    return compare(a, b);
-  }
-
-  else {
-    // This should be impossible because there is an assertion
-    // preventing non-finite values from being stored as
-    // `GDVK_BINARY64_FLOAT`.  But if it somehow happens, I think
-    // comparison is a bad place to misbehave or assert (because we
-    // might be trying to debug the situation), so compare them anyway.
-
-    // I'll put the finite values before non-finite values.
-    RET_IF_COMPARE(std::isfinite(b), std::isfinite(a));
-
-    // Now we're only dealing with non-finite.  Use the FP
-    // classification to separate NaN from Infinity.  Note that the
-    // order among `fpclassify` values is implementation-defined.
-    RET_IF_COMPARE(std::fpclassify(a), std::fpclassify(b));
-
-    if (std::isinf(a)) {
-      // Both are infinite, use ordinary comparison.
-      return compare(a, b);
-    }
-    else {
-      // I will say that NaNs compare equal here since my goal is
-      // representational rather than numerical equality.
-      return 0;
-    }
-  }
-}
-
-
 // TODO: This is a candidate for being moved to someplace more general.
 template <typename CONTAINER>
 static int compareOrderedContainer(CONTAINER const &aContainer,
@@ -580,10 +534,6 @@ int compare(GDValue const &a, GDValue const &b)
     case GDVK_SMALL_INTEGER:
       return COMPARE_MEMBERS(m_value.m_smallInteger);
 
-    case GDVK_BINARY64_FLOAT:
-      return compareGDVBinary64Floats(
-        a.m_value.m_binary64Float, b.m_value.m_binary64Float);
-
     #define CASE(KIND, Kind, kind)                         \
       case GDVK_##KIND:                                    \
         return DEEP_COMPARE_PTR_MEMBERS(m_value.m_##kind);
@@ -607,7 +557,6 @@ STATICDEF unsigned GDValue::countConstructorCalls()
     + s_ct_boolCtor
     + s_ct_symbolCtor
     + s_ct_integerSmallIntCtor
-    + s_ct_binary64FloatCtor
 
     #define CASE(KIND, Kind, kind) \
       + s_ct_##kind##CtorCopy      \
@@ -629,7 +578,6 @@ void GDValue::reset()
 
     case GDVK_SYMBOL:
     case GDVK_SMALL_INTEGER:
-    case GDVK_BINARY64_FLOAT:
       break;
 
     #define CASE(KIND, Kind, kind) \
@@ -656,19 +604,24 @@ void GDValue::swap(GDValue &obj) noexcept
 }
 
 
-static void checkContainer(void const *)
+static void checkAllocatedPtr(void const *)
 {
   // General case, nothing to do.
 }
 
-static void checkContainer(GDVOrderedMap const *c)
+static void checkAllocatedPtr(GDVOrderedMap const *p)
 {
-  c->selfCheck();
+  p->selfCheck();
 }
 
-static void checkContainer(GDVTaggedOrderedMap const *c)
+static void checkAllocatedPtr(GDVTaggedOrderedMap const *p)
 {
-  c->m_container.selfCheck();
+  p->m_container.selfCheck();
+}
+
+static void checkAllocatedPtr(GDVBinary64Float const *p)
+{
+  p->selfCheck();
 }
 
 
@@ -692,14 +645,10 @@ void GDValue::selfCheck() const
     case GDVK_SMALL_INTEGER:
       break;
 
-    case GDVK_BINARY64_FLOAT:
-      xassert(std::isfinite(m_value.m_binary64Float));
-      break;
-
     #define CASE(KIND, Kind, kind)                     \
       case GDVK_##KIND:                                \
         xassertInvariant(m_value.m_##kind != nullptr); \
-        checkContainer(m_value.m_##kind);              \
+        checkAllocatedPtr(m_value.m_##kind);           \
         break;
 
     FOR_EACH_GDV_ALLOCATED_KIND_EXCEPT_INTEGER(CASE)
@@ -1055,31 +1004,47 @@ GDVSmallInteger GDValue::smallIntegerGet() const
 
 
 // --------------------------- Binary64Float ---------------------------
-GDValue::GDValue(GDVBinary64Float v)
+GDValue::GDValue(GDVBinary64Float const &v)
   : INIT_AS_NULL()
 {
   binary64FloatSet(v);
 
-  ++s_ct_binary64FloatCtor;
+  ++s_ct_binary64FloatCtorCopy;
 }
 
 
-void GDValue::binary64FloatSet(GDVBinary64Float v)
+GDValue::GDValue(GDVBinary64Float &&v)
+  : INIT_AS_NULL()
 {
-  xassertPrecondition(std::isfinite(v));
+  binary64FloatSet(std::move(v));
 
+  ++s_ct_binary64FloatCtorMove;
+}
+
+
+void GDValue::binary64FloatSet(GDVBinary64Float const &v)
+{
   reset();
 
+  m_value.m_binary64Float = new GDVBinary64Float(v);
   m_kind = GDVK_BINARY64_FLOAT;
-  m_value.m_binary64Float = v;
 }
 
 
-GDVBinary64Float GDValue::binary64FloatGet() const
+void GDValue::binary64FloatSet(GDVBinary64Float &&v)
+{
+  reset();
+
+  m_value.m_binary64Float = new GDVBinary64Float(std::move(v));
+  m_kind = GDVK_BINARY64_FLOAT;
+}
+
+
+GDVBinary64Float const &GDValue::binary64FloatGet() const
 {
   xassertPrecondition(isBinary64Float());
 
-  return m_value.m_binary64Float;
+  return *(m_value.m_binary64Float);
 }
 
 
