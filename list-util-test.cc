@@ -26,12 +26,30 @@ void test_listMoveFront()
 }
 
 
+void test_listAt()
+{
+  std::list<std::string> lst { "one", "two", "three" };
+
+  EXPECT_EQ(listAtC(lst, 0), "one");
+  EXPECT_EQ(listAtC(lst, 1), "two");
+  EXPECT_EQ(listAtC(lst, 2), "three");
+
+  EXPECT_EXN_SUBSTR(listAtC(lst, 3),
+    XAssert, "fewer than 3 elements");
+
+  listAt(lst, 1) = "TWO";
+  EXPECT_EQ(listAtC(lst, 1), "TWO");
+  EXPECT_EQ(listAt(lst, 1), "TWO");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
 void test_list_util()
 {
   test_listMoveFront();
+  test_listAt();
 }
 
 
