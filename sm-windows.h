@@ -74,6 +74,14 @@ BOOL GetExitCodeProcess(
 BOOL CloseHandle(
   HANDLE hObject
 );
+typedef struct tagRECT {
+  LONG left;
+  LONG top;
+  LONG right;
+  LONG bottom;
+} RECT,*PRECT,*NPRECT,*LPRECT;
+typedef int WINBOOL;
+/*WINUSERAPI*/ WINBOOL /*WINAPI*/ GetWindowRect(HWND hWnd,LPRECT lpRect);
 
 #endif // PLATFORM_IS_WINDOWS
 
