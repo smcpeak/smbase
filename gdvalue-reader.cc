@@ -10,6 +10,7 @@
 #include "smbase/gdv-binary64-float.h" // gdv::GDVBinary64Float
 #include "smbase/gdvsymbol.h"          // GDVSymbol
 #include "smbase/overflow.h"           // addWithOverflowCheck, multiplyWithOverflowCheck
+#include "smbase/sm-env.h"             // smbase::envAsBool
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 #include "smbase/string-util.h"        // possiblyTruncatedWithEllipsis
 #include "smbase/utf8-writer.h"        // smbase::UTF8Writer
@@ -658,6 +659,18 @@ GDValue GDValueReader::continueReadingFloat(
   std::vector<char> &digits,
   int c)
 {
+  // This is useful to test how layers above this one react to
+  // syntax errors.  Floats are fairly rare, so I have decent
+  // control over exactly where it happens.  They are also typically
+  // parsed somewhat deep in the data, so recovering from down here
+  // is a good exercise.
+  static bool injectError =
+    envAsBool("GDVALUE_READER_INJECT_FLOAT_ERROR");
+  if (injectError) {
+    unexpectedCharErr(c,
+      "<injected syntax error due to GDVALUE_READER_INJECT_FLOAT_ERROR>");
+  }
+
   xassert(c == '.' || c == 'e' || c == 'E');
 
   // Fractional part?
