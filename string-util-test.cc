@@ -725,6 +725,38 @@ void testIndexOfSubstring()
 }
 
 
+void expectIndexOfSubstringInsensitive(std::string const &haystack,
+  std::string const &needle, int expect)
+{
+  SubstringSearchFlags ssf = SubstringSearchFlags::SSF_CASE_INSENSITIVE;
+
+  int actual = indexOfSubstring(haystack, needle, ssf);
+  EXPECT_EQ(actual, expect);
+
+  // Make sure 'hasSubstring' agrees.
+  EXPECT_EQ(hasSubstring(haystack, needle, ssf), expect != -1);
+}
+
+
+void testIndexOfSubstringInsensitive()
+{
+  expectIndexOfSubstringInsensitive("", "", 0);
+  expectIndexOfSubstringInsensitive("", "x", -1);
+  expectIndexOfSubstringInsensitive("x", "", 0);
+  expectIndexOfSubstringInsensitive("x", "x", 0);
+  expectIndexOfSubstringInsensitive("x", "X", 0);
+  expectIndexOfSubstringInsensitive("X", "x", 0);
+  expectIndexOfSubstringInsensitive("X", "X", 0);
+  expectIndexOfSubstringInsensitive("abcdcde", "C", 2);
+  expectIndexOfSubstringInsensitive("abcdcdE", "e", 6);
+  expectIndexOfSubstringInsensitive("abCdcde", "cD", 2);
+  expectIndexOfSubstringInsensitive("abcdcdE", "ce", -1);
+  expectIndexOfSubstringInsensitive("foofooBar", "Foobar", 3);
+  expectIndexOfSubstringInsensitive("foofoofoobar", "foofoobaR", 3);
+  expectIndexOfSubstringInsensitive("foofoofooba", "foofoobaR", -1);
+}
+
+
 void testReplaceAllRegex()
 {
   EXPECT_EQ(replaceAllRegex("", "x", ""), "");
@@ -1076,6 +1108,7 @@ void test_string_util()
   testRemoveSuffix();
   testEncodeWithEscapes();
   testIndexOfSubstring();
+  testIndexOfSubstringInsensitive();
   testReplaceAllRegex();
   testStringVectorFromPointerArray();
   testRemoveTestCaseIndentation();

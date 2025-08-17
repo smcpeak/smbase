@@ -248,14 +248,27 @@ bool contains(std::string const &str, char c)
 
 
 bool hasSubstring(
-  std::string const &haystack, std::string const &needle)
+  std::string const &haystack,
+  std::string const &needle,
+  SubstringSearchFlags flags)
 {
-  return indexOfSubstring(haystack, needle) >= 0;
+  return indexOfSubstring(haystack, needle, flags) >= 0;
 }
 
 int indexOfSubstring(
-  std::string const &haystack, std::string const &needle)
+  std::string const &haystack,
+  std::string const &needle,
+  SubstringSearchFlags flags)
 {
+  if (flags == SubstringSearchFlags::SSF_CASE_INSENSITIVE) {
+    // Somewhat inefficient, but simple.
+    std::string lowerHaystack = stringTolower(haystack);
+    std::string lowerNeedle = stringTolower(needle);
+    return indexOfSubstring(lowerHaystack, lowerNeedle,
+                            SubstringSearchFlags::SSF_NONE);
+  }
+
+  // Case-sensitive search.
   std::string::size_type i = haystack.find(needle);
   if (i == std::string::npos) {
     return -1;

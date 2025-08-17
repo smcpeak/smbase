@@ -94,13 +94,24 @@ bool endsWith(std::string const &str, std::string const &suffix);
 bool contains(std::string const &str, char c);
 
 
+enum class SubstringSearchFlags {
+  SSF_NONE,
+  SSF_CASE_INSENSITIVE
+};
+
 // True if 'needle' occurs as a substring within 'haystack'.  If
 // 'needle' is empty, this always returns true.
-bool hasSubstring(std::string const &haystack, std::string const &needle);
+bool hasSubstring(
+  std::string const &haystack,
+  std::string const &needle,
+  SubstringSearchFlags flags = SubstringSearchFlags::SSF_NONE);
 
 // If 'needle' occurs within 'haystack', return the byte offset of the
 // first byte of the first occurrence.  Otherwise, return -1.
-int indexOfSubstring(std::string const &haystack, std::string const &needle);
+int indexOfSubstring(
+  std::string const &haystack,
+  std::string const &needle,
+  SubstringSearchFlags flags = SubstringSearchFlags::SSF_NONE);
 
 
 // ------------------ Manipulating vectors of strings ------------------
