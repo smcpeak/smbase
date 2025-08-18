@@ -45,7 +45,7 @@
 #ifndef REFCT_SERF_H
 #define REFCT_SERF_H
 
-#include "refct-serf.h"                // fwds for this module
+#include "refct-serf-fwd.h"            // fwds for this module
 
 #include "compare-util-iface.h"        // smbase::compare
 #include "sm-noexcept.h"               // NOEXCEPT
