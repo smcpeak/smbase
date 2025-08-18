@@ -82,7 +82,11 @@ int compareSequences(CONTAINER const &a, CONTAINER const &b);
 
 
 // Define a single friend relational operator in terms of `compare`.
-#define DEFINE_ONE_FRIEND_RELATIONAL_OPERATOR(Class, op) \
+//
+// Mark it "maybe_unused" because I typically generate all six for
+// uniformity without necessarily using all (or any) of them.
+#define DEFINE_ONE_FRIEND_RELATIONAL_OPERATOR(Class, op)   \
+  [[maybe_unused]]                                         \
   friend bool operator op (Class const &a, Class const &b) \
     { return compare(a,b) op 0; }
 
