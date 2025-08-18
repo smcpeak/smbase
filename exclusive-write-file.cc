@@ -302,7 +302,7 @@ void ExclusiveWriteFile::selfCheck() const
 
 
 // -------------------- tryCreateExclusiveWriteFile --------------------
-ExclusiveWriteFile * NULLABLE tryCreateExclusiveWriteFile(
+std::unique_ptr<ExclusiveWriteFile> tryCreateExclusiveWriteFile(
   std::string &fname /*INOUT*/)
 {
   int const maxSuffix = envAsIntOr(100, "EXCLUSIVE_FILE_MAX_SUFFIX");
@@ -313,7 +313,8 @@ ExclusiveWriteFile * NULLABLE tryCreateExclusiveWriteFile(
     }
 
     try {
-      ExclusiveWriteFile *ret = new ExclusiveWriteFile(attemptName);
+      std::unique_ptr<ExclusiveWriteFile> ret(
+        new ExclusiveWriteFile(attemptName));
       fname = attemptName;
       return ret;
     }

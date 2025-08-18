@@ -115,7 +115,7 @@ public:      // methods
 // Setting the envvar `EXCLUSIVE_FILE_MAX_SUFFIX` will adjust the number
 // of attempts, and setting it to 0 disables such file creation
 // entirely, causing this function to return null.
-ExclusiveWriteFile * NULLABLE tryCreateExclusiveWriteFile(
+std::unique_ptr<ExclusiveWriteFile> tryCreateExclusiveWriteFile(
   std::string &fname /*INOUT*/);
 
 
