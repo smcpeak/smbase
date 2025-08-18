@@ -7,12 +7,12 @@
 
 #include "smbase/exc.h"                          // EXN_CONTEXT, GENERIC_CATCH_BEGIN, OPEN_NAMESPACE
 #include "smbase/sm-env.h"                       // smbase::envAsIntOr
+#include "smbase/sm-macros.h"                    // IMEMBFP
 #include "smbase/syserr.h"                       // xsyserror
 
 #include <iostream>                              // std::ostream
 #include <memory>                                // std::unique_ptr
 #include <string>                                // std::string
-#include <string_view>                           // std::string_view
 
 #if PLATFORM_IS_WINDOWS
 
@@ -82,21 +82,15 @@ public:      // data
   std::unique_ptr<WindowsHandleOStream> m_stream;
 
 public:      // methods
-  explicit ExclusiveWriteFilePrivate(std::string_view fname)
+  explicit ExclusiveWriteFilePrivate(std::string const &fname)
     : m_hFile(INVALID_HANDLE_VALUE),
       m_stream()
   {
     EXN_CONTEXT(doubleQuote(fname));
 
-    // `CreateFileA` requires a NUL-terminated string.  (It's possible,
-    // even likely, that the caller had a `string` object already, but
-    // the cost of an extra copy here is negligible, so I use
-    // `string_view` in the interface for flexibility.)
-    std::string fnameString(fname);
-
     // Open and acquire write lock.
     m_hFile = CreateFileA(
-      fnameString.c_str(),
+      fname.c_str(),
       GENERIC_READ | GENERIC_WRITE,      // I can r/w (though I only write).
       FILE_SHARE_READ,                   // Allow others to read the file.
       nullptr,
@@ -107,7 +101,7 @@ public:      // methods
     if (m_hFile == INVALID_HANDLE_VALUE) {
       SystemErrorCode sec = SystemErrorCode::getCurrent();
       if (sec.systemCode() == ERROR_SHARING_VIOLATION) {
-        THROW(XExclusiveWriteFileConflict(sec, fnameString));
+        THROW(XExclusiveWriteFileConflict(sec, fname));
       }
       else {
         // The file name is already on the context stack.
@@ -193,17 +187,14 @@ public:      // data
   std::unique_ptr<PosixFDOStream> m_stream;
 
 public:      // methods
-  explicit ExclusiveWriteFilePrivate(std::string_view fname)
+  explicit ExclusiveWriteFilePrivate(std::string const &fname)
     : AutoCloseFD(),
       m_stream()
   {
     EXN_CONTEXT_STRING(doubleQuote(fname));
 
-    // `open` requires a NUL-terminated string.
-    std::string fnameString(fname);
-
     // Do not truncate yet, since this call ignores the lock.
-    m_fd = open(fnameString.c_str(), O_RDWR | O_CREAT, 0666);
+    m_fd = open(fname.c_str(), O_RDWR | O_CREAT, 0666);
     if (m_fd < 0) {
       // I don't pass `fname` because it's already on the context stack.
       xsyserror("open");
@@ -223,7 +214,7 @@ public:      // methods
       // POSIX explains that both are possible, so we have to check for
       // both.
       if (sec.systemCode() == EAGAIN || sec.systemCode() == EACCES) {
-        THROW(XExclusiveWriteFileConflict(sec, fnameString));
+        THROW(XExclusiveWriteFileConflict(sec, fname));
       }
       else {
         THROW(XSysError(sec, "fcntl", ""));
@@ -272,8 +263,9 @@ public:      // methods
 
 
 // ------------------------ ExclusiveWriteFile -------------------------
-ExclusiveWriteFile::ExclusiveWriteFile(std::string_view fname)
-  : m_private(new ExclusiveWriteFilePrivate(fname))
+ExclusiveWriteFile::ExclusiveWriteFile(std::string const &fname)
+  : IMEMBFP(fname),
+    m_private(new ExclusiveWriteFilePrivate(fname))
 {}
 
 
@@ -303,7 +295,7 @@ void ExclusiveWriteFile::selfCheck() const
 
 // -------------------- tryCreateExclusiveWriteFile --------------------
 std::unique_ptr<ExclusiveWriteFile> tryCreateExclusiveWriteFile(
-  std::string &fname /*INOUT*/)
+  std::string const &fname)
 {
   int const maxSuffix = envAsIntOr(100, "EXCLUSIVE_FILE_MAX_SUFFIX");
   for (int suffix = 1; suffix <= maxSuffix; ++suffix) {
@@ -313,10 +305,8 @@ std::unique_ptr<ExclusiveWriteFile> tryCreateExclusiveWriteFile(
     }
 
     try {
-      std::unique_ptr<ExclusiveWriteFile> ret(
+      return std::unique_ptr<ExclusiveWriteFile>(
         new ExclusiveWriteFile(attemptName));
-      fname = attemptName;
-      return ret;
     }
     catch (XExclusiveWriteFileConflict &x) {
       if (suffix == maxSuffix) {

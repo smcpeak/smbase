@@ -120,16 +120,16 @@ void test_wait()
 
 void test_createExclusive()
 {
-  std::string fname1(testFileName);
   std::unique_ptr<ExclusiveWriteFile> file1(
-    tryCreateExclusiveWriteFile(fname1 /*INOUT*/));
+    tryCreateExclusiveWriteFile(testFileName));
+  std::string fname1 = file1->getFname();
   VPVAL(fname1);
   file1->stream() << "write to " << fname1 << "\n";
   EXPECT_EQ(fname1, testFileName);
 
-  std::string fname2(testFileName);
   std::unique_ptr<ExclusiveWriteFile> file2(
-    tryCreateExclusiveWriteFile(fname2 /*INOUT*/));
+    tryCreateExclusiveWriteFile(testFileName));
+  std::string fname2 = file2->getFname();
   VPVAL(fname2);
   file2->stream() << "write to " << fname2 << "\n";
 

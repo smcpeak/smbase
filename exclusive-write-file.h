@@ -10,11 +10,11 @@
 
 #include "smbase/exc.h"                          // smbase::XBase
 #include "smbase/sm-macros.h"                    // NO_OBJECT_COPIES, OPEN_NAMESPACE, NULLABLE
-#include "smbase/std-string-view-fwd.h"          // std::string_view
 #include "smbase/system-error-code.h"            // smbase::SystemErrorCode
 
 #include <iosfwd>                                // std::ostream
 #include <memory>                                // std::unique_ptr
+#include <string>                                // std::string
 
 
 OPEN_NAMESPACE(smbase)
@@ -42,6 +42,10 @@ class ExclusiveWriteFile {
   NO_OBJECT_COPIES(ExclusiveWriteFile);
 
 private:     // data
+  // Name of the file.  This is stored, in part, so that a caller of
+  // `tryCreateExclusiveWriteFile` can learn the created file name.
+  std::string const m_fname;
+
   // Lock data.  Never null.
   std::unique_ptr<ExclusiveWriteFilePrivate> m_private;
 
@@ -53,11 +57,14 @@ public:      // methods
   // throwing `XExclusiveWriteFileConflict`.
   //
   // Other failures throw `XSysError`.
-  explicit ExclusiveWriteFile(std::string_view fname);
+  explicit ExclusiveWriteFile(std::string const &fname);
 
   // This will try to flush, close the file and release the lock, but
   // does not have a way to communicate failures.
   ~ExclusiveWriteFile() noexcept;
+
+  std::string const &getFname() const
+    { return m_fname; }
 
   // Flush, close and unlock the file if it is currently locked.  This
   // will throw an exception on error.
@@ -108,15 +115,15 @@ public:      // methods
 
 // Attempt to open, with exclusive write access, a file with a name
 // based on `fname`.  Keep trying up to (by default) 100 variations.
-// Upon success, return an owner pointer to the file object and set
-// `fname` to the adjusted name.  Throw an exception if all attempts
-// fail.
+// Upon success, return a pointer to the file object, from which the
+// actual file name can be obtained via `getFname()`.  Throw an
+// exception if all attempts fail.
 //
 // Setting the envvar `EXCLUSIVE_FILE_MAX_SUFFIX` will adjust the number
 // of attempts, and setting it to 0 disables such file creation
 // entirely, causing this function to return null.
 std::unique_ptr<ExclusiveWriteFile> tryCreateExclusiveWriteFile(
-  std::string &fname /*INOUT*/);
+  std::string const &fname);
 
 
 CLOSE_NAMESPACE(smbase)
