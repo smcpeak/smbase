@@ -54,6 +54,10 @@
 
 
 // Base class of objects to which RCSerf can point.
+//
+// NOTE: If you inherit this class virtually, you must explicitly call
+// `verifyZeroRefCount()` in your destructor.
+//
 class SerfRefCount {
   friend class RCSerfPrivateHelpers;
 
@@ -108,6 +112,15 @@ public:      // funcs
   // exist in case they want to for uniformity.
   bool operator== (SerfRefCount const &) const { return true; }
   bool operator!= (SerfRefCount const &) const { return false; }
+
+  // Aborts the program if the reference count is not zero.
+  //
+  // This is meant to be called from the destructor of a class that
+  // inherits `SerfRefCount` virtually in order to perform the check
+  // while the object still has that type.  See comments in
+  // `refct-serf-test.cc`, above `testEditorWindowIssue()` for a
+  // detailed explanation.
+  void verifyZeroRefCount() const;
 };
 
 

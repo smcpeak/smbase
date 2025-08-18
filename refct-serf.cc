@@ -7,10 +7,14 @@
 #include "breaker.h"                   // breaker
 #include "objcount.h"                  // CHECK_OBJECT_COUNT
 #include "sm-swap.h"                   // swap
+#include "sm-trace.h"                  // INIT_TRACE, etc.
 
 // libc
 #include <stdio.h>                     // fprintf, stderr, fflush
 #include <stdlib.h>                    // abort
+
+
+INIT_TRACE("refct-serf");
 
 
 // ---------------------- SerfRefCount ----------------------
@@ -34,6 +38,7 @@ SerfRefCount::SerfRefCount()
   : m_serfRefCount(0)
 {
   s_objectCount++;
+  TRACE1((void*)this << ": SerfRefCount(), new obj count is " << s_objectCount);
 }
 
 
@@ -41,6 +46,7 @@ SerfRefCount::SerfRefCount(SerfRefCount const &)
   : m_serfRefCount(0)
 {
   s_objectCount++;
+  TRACE1((void*)this << ": SerfRefCount(copy), new obj count is " << s_objectCount);
 }
 
 
@@ -48,13 +54,22 @@ SerfRefCount::SerfRefCount(SerfRefCount &&)
   : m_serfRefCount(0)
 {
   s_objectCount++;
+  TRACE1((void*)this << ": SerfRefCount(move), new obj count is " << s_objectCount);
 }
 
 
 SerfRefCount::~SerfRefCount()
 {
   s_objectCount--;
+  TRACE1((void*)this << ": in dtor, new obj count is " << s_objectCount <<
+         ", ref count is " << m_serfRefCount);
 
+  verifyZeroRefCount();
+}
+
+
+void SerfRefCount::verifyZeroRefCount() const
+{
   if (m_serfRefCount != 0) {
     SerfRefCount::callPreAbortFunction();
     if (m_serfRefCount != 0) {
@@ -81,6 +96,8 @@ STATICDEF void RCSerfPrivateHelpers::incRefct(SerfRefCount const *p)
 {
   if (p) {
     p->m_serfRefCount++;               // refct is mutable
+    TRACE1("incRefCt: incremented ref count of " << (void*)p <<
+           " to " << p->m_serfRefCount);
   }
 }
 
@@ -89,6 +106,8 @@ STATICDEF void RCSerfPrivateHelpers::decRefct(SerfRefCount const *p)
 {
   if (p) {
     p->m_serfRefCount--;               // refct is mutable
+    TRACE1("decRefCt: decremented ref count of " << (void*)p <<
+           " to " << p->m_serfRefCount);
 
     if (p->m_serfRefCount < 0) {
       SerfRefCount::callPreAbortFunction();

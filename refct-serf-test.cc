@@ -14,6 +14,8 @@
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
 #include "sm-test.h"                   // EXPECT_EQ, DIAG, verbose
 
+#include <memory>                      // std::unique_ptr
+
 using namespace smbase;
 
 
@@ -92,12 +94,23 @@ public:      // funcs
 class Super1 : virtual public SerfRefCount {
 public:
   int x;
+
+  ~Super1()
+  {
+    verifyZeroRefCount();
+  }
 };
 
 class Super2 : virtual public SerfRefCount {
 public:
   int y;
-  virtual ~Super2() {}       // Give this one a vtable.
+
+  // Give this one a vtable.  (Actually I think virtual inheritance
+  // means they both have one.)
+  virtual ~Super2()
+  {
+    verifyZeroRefCount();
+  }
 };
 
 class Sub : public Super1, public Super2 {
@@ -778,6 +791,174 @@ void test_RCSerf_compare()
 }
 
 
+// Replicate a situation with EditorWindow.
+class QWidget {
+public:      // data
+  std::unique_ptr<QWidget> m_ownedChild;
+
+public:      // methods
+  QWidget()
+    : m_ownedChild()
+  {
+    DIAG((void*)this << ": QWidget ctor");
+  }
+
+  virtual ~QWidget()
+  {
+    DIAG((void*)this << ": QWidget dtor start");
+    m_ownedChild.reset();
+    DIAG((void*)this << ": QWidget dtor end");
+  }
+};
+
+class NamedTextDocumentListObserver : virtual public SerfRefCount {
+public:
+  NamedTextDocumentListObserver()
+    // SerfRefCount() is implicitly called before all other ctors.
+  {
+    DIAG((void*)this << ": NamedTextDocumentListObserver ctor");
+  }
+
+  virtual ~NamedTextDocumentListObserver()
+  {
+    DIAG((void*)this << ": NamedTextDocumentListObserver dtor start");
+
+    // Solution part 1: Perform the check while this object is still a
+    // `NamedTextDocumentListObserver`.  This will ensure we cleanly
+    // abort instead of randomly crash if solution part 2 is not done.
+    verifyZeroRefCount();
+
+    DIAG((void*)this << ": NamedTextDocumentListObserver dtor end");
+  }
+};
+
+class EditorWindow : public QWidget,
+                     public NamedTextDocumentListObserver {
+public:
+  EditorWindow()
+    : QWidget(),
+      NamedTextDocumentListObserver()
+  {
+    DIAG((void*)this << ": EditorWindow ctor");
+  }
+
+  virtual ~EditorWindow()
+  {
+    DIAG((void*)this << ": EditorWindow dtor start");
+
+    // Solution part 2: Clear this child now, while this object is still
+    // an `EditorWindow`, so the child can safely nullify its pointer.
+    m_ownedChild.reset();
+
+    DIAG((void*)this << ": EditorWindow dtor end");
+  }
+};
+
+class EditorWidget : public QWidget,
+                     public NamedTextDocumentListObserver {
+public:      // data
+  RCSerf<EditorWindow> m_window;
+
+public:      // methods
+  EditorWidget(EditorWindow *window)
+    : QWidget(),
+      NamedTextDocumentListObserver(),
+      m_window(window)
+  {
+    DIAG((void*)this << ": EditorWidget ctor, window=" << (void*)m_window);
+  }
+
+  virtual ~EditorWidget()
+  {
+    DIAG((void*)this << ": EditorWidget dtor start, window=" << (void*)m_window);
+
+    // This is the problematic line (which would happen implicitly if
+    // this line were not here).
+    //
+    // In the original code (without solution parts 1 or 2), it would
+    // semi-randomly crash due to trying to access the `SerfRefCount`
+    // subobject after the vtable pointer saying how to get it has been
+    // changed to one that does not know.
+    //
+    // After fix part 1, we never reach this line because the problem is
+    // detected earlier.
+    //
+    // After fix part 2, we execute this line while `m_window` still has
+    // a vtable that lets us access its `SerfRefCount` subobject safely.
+    m_window = nullptr;
+
+    DIAG((void*)this << ": EditorWidget dtor end, window=" << (void*)m_window);
+  }
+};
+
+
+/*
+  This function, along with the class declarations above, re-creates a
+  subtle problem I had in the editor when I changed a plain pointer to
+  `RCSerf`.
+
+  The origin of the problem is `RCSerf` tries to decrement the reference
+  count of a `SerfRefCount` subobject that was inherited virtually.
+  That requires a vtable that knows about that subobject, but it does
+  not have one if the instance of the class that inherited it has been
+  destroyed (even if the object as a whole still exists).
+
+  The sequence of events leading to the problem is:
+
+    1. `ew` EditorWindow dtor begins.
+
+    2. `ew` NamedTextDocumentListObserver dtor runs.  Now, the `ew`
+       object no longer has a vtable with access to `SerfRefCount`.
+
+    3. `ew` QWidget dtor begins.  It begins deletion of `m_ownedChild`.
+
+    4. Child object EditorWidget dtor begins.
+
+    5. `m_window = nullptr` runs, which runs this line:
+
+          RCSerfPrivateHelpers::decRefct(m_ptr);
+
+       This tries to convert `m_ptr`, which has type `EditorWindow*`, to
+       type `SerfRefCount*`.  Since `SerfRefCount` is a virtual base of
+       `EditorWindow`, that requires using the vtable, but the vtable of
+       `ew` does not know how to do that anymore, so it computes a
+       semi-random address for it.
+
+    6. RCSerfPrivateHelpers::decRefct executes with a bad address
+       argument, which can crash immediately, or complain due to a
+       negative count, or silently corrupt a random location, leading to
+       a likely crash later (which is what happened for me initially).
+
+  The solution is in two parts:
+
+    Part 1 (detection): Check the reference count during the destructor
+    of any class that directly virtually inherits `SerfRefCount`, which
+    here is `NamedTextDocumentListObserver`.  If the count is non-zero,
+    it means there is an outstanding pointer that still thinks it is
+    pointing at a `SerfRefCount` via ths subclass, but that subobject is
+    about to become inaccessible, so we need to detect this and stop
+    immediately.
+
+    Part 2 (prevention): Detach the offending pointer earlier, in
+    `~EditorWindow`, before we get into the `QWidget` destructor.
+
+  So, the key takeaway is if class A inherits `SerfRefCount` virtually,
+  then `~A` must call `verifyZeroRefCount()`.
+*/
+void testEditorWindowIssue()
+{
+  TEST_CASE("testEditorWindowIssue");
+
+  {
+    EditorWindow ew;
+    ew.m_ownedChild.reset(new EditorWidget(&ew));
+    DIAG("object graph constructed, &ew = " << (void*)&ew);
+  }
+
+  DIAG("done in testEditorWindowIssue");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -811,6 +992,7 @@ void test_refct_serf()
   testMultipleInheritance(false /*failure*/);
   testMultipleInheritance(true /*failure*/);
   test_RCSerf_compare();
+  testEditorWindowIssue();
 }
 
 
