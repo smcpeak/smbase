@@ -347,9 +347,9 @@ inline void pretendUsedFn(T const &) {}
 
 // Place in a class definition to inhibit the auto-generated copy
 // operations.
-#define NO_OBJECT_COPIES(name)              \
-  name(name&) = delete;                     \
-  void operator=(name&) = delete /*user ;*/
+#define NO_OBJECT_COPIES(name)                     \
+  name(name const &) = delete;                     \
+  void operator=(name const &) = delete /*user ;*/
 
 
 // In the past, I had "#define override virtual" here, intended as
