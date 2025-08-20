@@ -84,6 +84,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(array);
   RUN_TEST(array2d);
   RUN_TEST(arrayqueue);
+  RUN_TEST(ast_switch);
   RUN_TEST(astlist);
   RUN_TEST(astlist_gdvalue);
   RUN_TEST(autofile);

@@ -1,0 +1,254 @@
+ast-switch.txt
+Explanation of the `ast-switch.h` design.
+
+
+Usage
+=====
+
+
+ASTSWITCH
+---------
+
+The ASTSWITCH macro is used to "switch" on the run-time type of an
+object in a class hierarchy.  It is used like this:
+
+  Syperclass *superclassPointer = ...;
+
+  ASTSWITCH(Superclass, superclassPointer) {
+    ASTCASE(Subclass1, subclass1Pointer) {
+      subclass1Pointer->subclass1Method();
+      ...
+    }
+
+    ASTNEXT(Subclass2, subclass2Pointer) {
+      subclass2Pointer->subclass2Field = 6;
+      ...
+    }
+
+    ASTNEXT(Subclass3, subclass3Pointer) {
+      somethingElse(subclass3Pointer);
+      ...
+    }
+
+    ...
+
+    ASTDEFAULT {      // Optional.
+      // Code for the "none of the above" case.
+    }
+
+    ASTENDCASE        // Required.
+  }
+
+Note that the *first* case must use the `ASTCASE` macro, while all
+others use `ASTNEXT`.  (This unfortunate irregularity is a consequence
+of having the macro expansions include `break` statements, which is done
+to avoid the ubiquitous "missing break" bug in languages that use C-like
+syntax, and the fact that they include additional opening and closing
+braces in order to limit the scope of the subclass pointer variables.)
+
+
+ASTENDCASED
+-----------
+
+The final macro in the sequence can be `ASTENDCASED` to mean there
+should be an empty default case:
+
+  ASTENDCASED
+
+is equivalent to:
+
+  ASTDEFAULT{} ASTENDCASE
+
+The main reason to use `ASTENDCASED` is when the switch does not cover
+all cases, since then, without a default, a compiler warning typically
+results (and we want that in cases when it *is* intended to be
+exhaustive).
+
+
+Variants that do not declare a pointer variable
+-----------------------------------------------
+
+If a particular case does not need access to the subclass pointer, then
+there are variations of `ASTCASE` and `ASTNEXT` with `1` appended to the
+name that do not declare them (since otherwise a compiler warning for an
+unused variable might be produced):
+
+  ASTCASE1(Subclass1) { ... }
+  ASTNEXT1(Subclass1) { ... }
+
+
+Const variants
+--------------
+
+In addition to the above usage, which switches on a non-const pointer,
+there are const versions of the swtich macros that accept a const
+pointer.  Their names have "C" appended:
+
+  ASTSWITCHC
+  ASTCASE[1]C
+  ASTNEXT[1]C
+  ASTDEFAULTC
+  ASTENDCASEC[D]
+
+
+Downcast methods
+----------------
+
+The `DECL_AST_DOWNCASTS` macro (discussed below) declares five
+superclass methods for each `Subclass`:
+
+  // If `this` is a `Subclass`, return a pointer to it with the
+  // proper type.  Otherwise return nullptr.
+  Subclass const *ifSubclassC() const;
+
+  // Same, but throw an exception if it is not `Subclass`.
+  Subclass const *asSubclassC() const;
+
+  // Non-const variants.
+  Subclass *ifSubclass();
+  Subclass *asSubclass();
+
+  // Boolean test.
+  bool isSubclass() const;
+
+These provide alternatives to various ways of using `dynamic_cast`,
+which still works, but can be verbose and ugly.
+
+
+ASTSWITCH2C
+-----------
+
+If you have two superclass pointers and are traversing them in parallel,
+for example as part of a structural comparison, then after having
+established they have the same subclass type (same `kind()`), it is
+useful to switch on their combined type and get appropriately-typed
+variables for each.  The `ASTSWITCH2C` set of macros will do this.
+Since this case is somewhat uncommon, I'll omit detailed explanation
+here, and direct the reader to their definitions in `ast-switch.h`
+instead.
+
+There is currently no non-const variant of `ASTSWITCH2C`.
+
+
+Requirements
+============
+
+To use these macros, Superclass must have:
+
+  * A `Kind` enumeration with enumerators for each subclass:
+
+      enum Kind { K_SUBCLASS1, K_SUBCLASS2, ... };
+
+    There is no required naming convention for the enumerators since
+    their names get explicitly passed to the other macros below.
+
+  * A `kind()` pure virtual function to get the kind for a subclass:
+
+      virtual Kind kind() const = 0;
+
+  * A set of "downcast" declarations, one for each subclass, generated
+    using the `DECL_AST_DOWNCASTS` macro inside the superclass body:
+
+      DECL_AST_DOWNCASTS(Subclass1, K_SUBCLASS1)
+      DECL_AST_DOWNCASTS(Subclass2, K_SUBCLASS2)
+      ...
+
+    These require that `Subclass1`, etc., already be forward-declared.
+
+  * A corresponding set of definitions outside the superclass body:
+
+      DEFN_AST_DOWNCASTS(Superclass, Subclass1, K_SUBCLASS1)
+      DEFN_AST_DOWNCASTS(Superclass, Subclass2, K_SUBCLASS2)
+      ...
+
+Additionally, each subclass must have:
+
+  * A compile-time constant called `TYPE_TAG` that is the value of
+    `kind()` for that class:
+
+      static Kind constexpr TYPE_TAG = K_SUBCLASS1;
+
+  * A definition of `kind()` that returns the appropriate tag:
+
+      virtual Kind kind() const override { return TYPE_TAG; }
+
+
+Relationship to astgen
+======================
+
+The name "AST switch" originated due to these macros being written for
+the "astgen" tool (https://github.com/smcpeak/ast), itself intended to
+be used to create Abstract Syntax Trees.  It has since become something
+of a misnomer because the tool and these macros are used for much more
+than representing syntax.  However, "AST" is not (IMO) so far off as to
+be misleading for the wider class of applications, and serves as a
+reasonably unique moniker.
+
+These macros are used by the code generated by "astgen", but can also be
+used independently of that tool.  The tool provides all of the
+requirements listed above, but they can also be provided manually
+without excessive effort.
+
+
+Discussion of alternatives
+==========================
+
+
+dynamic_cast
+------------
+
+The approach of using a "switch" statement to examine the run-time type
+of an object contrasts most readily with C++ using `dynamic_cast`.
+However, that requires testing each potential type sequentially, which
+can be slow when there are many subclasses.
+
+
+Visitor pattern
+---------------
+
+A somewhat common alternative is the "visitor pattern"
+(https://en.wikipedia.org/wiki/Visitor_pattern), in which (using the
+terminology choices of the Wikipedia article) the superclass would have
+a pure virtual "accept" method that has a "Visitor" parameter, and
+subclasses would implement it to call a Visitor method specific to each
+subclass.
+
+Personally, I find the visitor approach to be excessively verbose if the
+goal is to do a single "switch" operation, as each such operation
+requires a new class, into which all of the other inputs have to be
+copied as data members, with N "visit" methods, one for each subclass.
+The required boilerplate is large, and the requirement to put isolate
+every subclass handler into its own method can make the computation
+awkward due to having to communicate entirely through visitor class data
+members.
+
+Furthermore, the visitor approach interacts awkwardly with constness,
+basically requiring the entire thing to be duplicated in order to allow
+for both possibilities when using this pattern.
+
+I *do* prefer the visitor approach when it is combined with some sort of
+automatic tree traversal, since then the traversal logic can be easily
+reused, and the benefits of that reuse compensates for the above
+problems.  But absent a need for traversal, I think visitor is overkill.
+
+
+LLVM dyn_cast
+-------------
+
+LLVM `dyn_cast`
+(https://llvm.org/docs/ProgrammersManual.html#the-isa-cast-and-dyn-cast-templates)
+
+is an alternative to `dynamic_cast` that uses stored data (typically in
+a bitfield) instead of the vtable to do type discrimintation.  (I think
+that choice is primarily motivated by performance concerns.)  It does
+not have a "switch"-style interface, so for my purposes, has the same
+problem of doing sequential tests as `dynamic_cast`.
+
+However, is built using internal infrastructure that would make a
+"switch" interface feasible, and that is sometimes exploited in the
+Clang code base, but only in an ad-hoc way.  I could imagine adopting
+and extending `dyn_cast`, although I currently don't have any intention
+to do so.
+
+
+EOF

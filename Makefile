@@ -392,6 +392,7 @@ UNIT_TEST_OBJS :=
 UNIT_TEST_OBJS += array-test.o
 UNIT_TEST_OBJS += array2d-test.o
 UNIT_TEST_OBJS += arrayqueue-test.o
+UNIT_TEST_OBJS += ast-switch-test.o
 UNIT_TEST_OBJS += astlist-gdvalue-test.o
 UNIT_TEST_OBJS += astlist-test.o
 UNIT_TEST_OBJS += autofile-test.o
