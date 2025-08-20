@@ -256,6 +256,22 @@ void expectEqGDVSer(
                  toGDValue(actual), toGDValue(expect)) /* user ; */
 
 
+// Test `a==b`, but also verify that the result is the same if the
+// order is swapped, and that it is consistent with `a!=b`.
+template <typename T>
+bool op_eq(T const &a, T const &b)
+{
+  bool ret = (a == b);
+
+  xassert(ret == (b == a));
+
+  xassert(ret != (a != b));
+  xassert(ret != (b != a));
+
+  return ret;
+}
+
+
 // Check that evaluating `expr` throws an exception of type `ExnType`.
 #define EXPECT_EXN(expr, ExnType)                            \
   try {                                                      \

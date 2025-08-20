@@ -259,6 +259,14 @@ void test_envRandomizedTestIters()
 }
 
 
+void test_op_eq()
+{
+  // Just check that it works like `operator==`.
+  xassert(op_eq(1, 1) == true);
+  xassert(op_eq(1, 2) == false);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -273,6 +281,7 @@ void test_sm_test()
   test_EXPECT_EQ_GDV();
   test_EXPECT_EQ_GDVSER();
   test_envRandomizedTestIters();
+  test_op_eq();
 }
 
 
