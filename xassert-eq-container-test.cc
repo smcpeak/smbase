@@ -19,15 +19,15 @@ void test_basics()
 
   std::set b{1,3};
   EXPECT_EXN_SUBSTR(XASSERT_EQUAL_SETS(a, b),
-    XAssert, "Expected equal sets, but a has element 2 that b lacks.");
+    XAssert, "Expected equal sets, but `a` has element 2 that `b` lacks.");
   EXPECT_EXN_SUBSTR(XASSERT_EQUAL_SETS(b, a),
-    XAssert, "Expected equal sets, but a has element 2 that b lacks.");
+    XAssert, "Expected equal sets, but `a` has element 2 that `b` lacks.");
 
   std::set c{1,2,3,4};
   EXPECT_EXN_SUBSTR(XASSERT_EQUAL_SETS(a, c),
-    XAssert, "Expected equal sets, but c has element 4 that a lacks.");
+    XAssert, "Expected equal sets, but `c` has element 4 that `a` lacks.");
   EXPECT_EXN_SUBSTR(XASSERT_EQUAL_SETS(c, a),
-    XAssert, "Expected equal sets, but c has element 4 that a lacks.");
+    XAssert, "Expected equal sets, but `c` has element 4 that `a` lacks.");
 }
 
 

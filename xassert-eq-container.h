@@ -44,15 +44,15 @@ void xassertEqualOrderedContainersIAE(
 
   if (cmp < 0) {
     xfailure_stringbc(
-      "Expected equal sets, but " << aLabel <<
-      " has element " << toGDValue(*a) <<
-      " that " << bLabel << " lacks.");
+      "Expected equal sets, but `" << aLabel <<
+      "` has element " << toGDValue(*a) <<
+      " that `" << bLabel << "` lacks.");
   }
   else if (cmp > 0) {
     xfailure_stringbc(
-      "Expected equal sets, but " << bLabel <<
-      " has element " << toGDValue(*b) <<
-      " that " << aLabel << " lacks.");
+      "Expected equal sets, but `" << bLabel <<
+      "` has element " << toGDValue(*b) <<
+      " that `" << aLabel << "` lacks.");
   }
 }
 
