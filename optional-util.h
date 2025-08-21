@@ -60,6 +60,23 @@ void optAccumulateMax(std::optional<T> &opt, T const &t)
 }
 
 
+// This definition (and in fact signature) is not as general as it could
+// be, but I choose simplicity and lighter dependencies over full
+// generality.  See `optInvokeAlt` and its comments in
+// `optional-util-test.cc` for more.
+template <typename FUNC, typename T>
+auto optInvoke(FUNC &&f, std::optional<T> const &opt)
+  -> std::optional<decltype(f(*opt))>
+{
+  if (opt) {
+    return std::make_optional(f(*opt));
+  }
+  else {
+    return std::nullopt;
+  }
+}
+
+
 CLOSE_NAMESPACE(smbase)
 
 

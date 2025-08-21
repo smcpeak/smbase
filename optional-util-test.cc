@@ -8,7 +8,9 @@
 #include "smbase/sm-test.h"            // EXPECT_EQ
 
 #include <algorithm>                   // std::{min, max}
+#include <functional>                  // std::invoke
 #include <optional>                    // std::optional
+#include <type_traits>                 // std::{invoke_result_t, remove_reference_t}
 
 using namespace smbase;
 
@@ -78,6 +80,92 @@ void test_optAccumulateMax()
 }
 
 
+std::string intToString(int n)
+{
+  return stringb(n);
+}
+
+
+void test_optInvoke()
+{
+  std::optional<int> n;
+  std::optional<std::string> s = optInvoke(intToString, n);
+  EXPECT_EQ(s.has_value(), false);
+
+  n = 3;
+  s = optInvoke(intToString, n);
+  EXPECT_EQ(s.has_value(), true);
+  EXPECT_EQ(*s, "3");
+}
+
+
+struct Data {
+  int m_x;
+  int method() const { return 5; }
+};
+
+
+/* This alternative definition is uses `std::invoke` so it works with
+   pointer-to-member (PTM) values, as illustrated below, whereas my
+   `optInvoke` does not.
+
+   The main downside is the heavier dependencies, as `std::invoke` is
+   in `<functional>` which is quite large (>30kLOC).  Since I don't need
+   PTM support, at least not right now, I'll just keep this here in
+   reserve.
+
+   Should I need PTM, I think I could just add another overload too.
+*/
+template <typename FUNC, typename T>
+auto optInvokeAlt(FUNC &&f, std::optional<T> const &opt)
+  -> std::optional<std::remove_reference_t<std::invoke_result_t<FUNC, T>>>
+{
+  if (opt) {
+    return std::make_optional(std::invoke(f, *opt));
+  }
+  else {
+    return std::nullopt;
+  }
+}
+
+
+void test_optInvokeAlt()
+{
+  // The same things as above work.
+  std::optional<int> n;
+  std::optional<std::string> s = optInvokeAlt(intToString, n);
+  EXPECT_EQ(s.has_value(), false);
+  n = 3;
+  s = optInvokeAlt(intToString, n);
+  EXPECT_EQ(s.has_value(), true);
+  EXPECT_EQ(*s, "3");
+
+  // But in addition you can use a pointer-to-member function.
+  std::optional<Data> d;
+  n = optInvokeAlt(&Data::method, d);
+  EXPECT_EQ(n.has_value(), false);
+  d = Data{4};
+  n = optInvokeAlt(&Data::method, d);
+  EXPECT_EQ(n.has_value(), true);
+  EXPECT_EQ(*n, 5);
+
+  // This does not work with my definition.
+  //n = optInvoke(&Data::method, d);
+
+  // And even pointer-to-member data.
+  d = std::nullopt;
+  n = optInvokeAlt(&Data::m_x, d);
+  EXPECT_EQ(n.has_value(), false);
+  d = Data{4};
+  n = optInvokeAlt(&Data::m_x, d);
+  EXPECT_EQ(n.has_value(), true);
+  EXPECT_EQ(*n, 4);
+
+  // This also would not work with mine.
+  //n = optInvoke(&Data::m_x, d);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -87,6 +175,8 @@ void test_optional_util()
   testOptionalToString();
   testLiftToOptional();
   test_optAccumulateMax();
+  test_optInvoke();
+  test_optInvokeAlt();
 }
 
 

@@ -40,6 +40,13 @@ template <typename T>
 void optAccumulateMax(std::optional<T> &opt, T const &t);
 
 
+// If `opt` has no value, return `nullopt`.  Otherwise, call `f(*opt)`
+// and return that wrapped as an optional.
+template <typename FUNC, typename T>
+auto optInvoke(FUNC &&f, std::optional<T> const &opt)
+  -> std::optional<decltype(f(*opt))>;
+
+
 CLOSE_NAMESPACE(smbase)
 
 
