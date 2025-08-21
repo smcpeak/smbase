@@ -493,6 +493,7 @@ UNIT_TEST_OBJS += stringf-test.o
 UNIT_TEST_OBJS += stringset-test.o
 UNIT_TEST_OBJS += strutil-test.o
 UNIT_TEST_OBJS += svdict-test.o
+UNIT_TEST_OBJS += swap-util-test.o
 UNIT_TEST_OBJS += syserr-test.o
 UNIT_TEST_OBJS += system-error-code-test.o
 UNIT_TEST_OBJS += taillist-test.o

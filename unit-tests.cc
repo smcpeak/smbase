@@ -183,6 +183,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(stringset);
   RUN_TEST(strutil);
   RUN_TEST(svdict);
+  RUN_TEST(swap_util);
   RUN_TEST(syserr);
   RUN_TEST(system_error_code);
   RUN_TEST(taillist);
