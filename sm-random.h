@@ -8,6 +8,7 @@
 
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 #include "smbase/sm-sized-int.h"       // SM_FOREACH_SIZED_INT
+#include "smbase/std-string-fwd.h"     // std::string [n]
 
 
 OPEN_NAMESPACE(smbase)
@@ -44,6 +45,16 @@ PRIM sm_randomPrim();
 SM_FOREACH_SIZED_INT(DECLARE_RANDOM_PRIM)
 
 #undef DECLARE_RANDOM_PRIM
+
+
+// Return a random string of length up to `n-1`, where each character
+// has a 1/20 chance of being a newline if `withNL`.  The non-newline
+// characters are all the same, with the exact character in ['A','Z'].
+std::string randomString(int n, bool withNL);
+
+// Variants with `withNL` as true and false, respectively.
+std::string randomStringWithNL(int n);
+std::string randomStringNoNL(int n);
 
 
 // Facilitate making a weighted random choice, especially in the context

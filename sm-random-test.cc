@@ -310,6 +310,21 @@ void test_RandomChoice()
 }
 
 
+// This is primarily meant to be validated by manual inspection.
+void test_randomString()
+{
+  TEST_CASE("test_randomString");
+
+  VPVAL(randomStringWithNL(20));
+  VPVAL(randomStringWithNL(20));
+  VPVAL(randomStringWithNL(20));
+
+  VPVAL(randomStringNoNL(20));
+  VPVAL(randomStringNoNL(20));
+  VPVAL(randomStringNoNL(20));
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -322,6 +337,7 @@ void test_sm_random()
   test_sm_randomPrim();
   test_sm_random_intercept();
   test_RandomChoice();
+  test_randomString();
 }
 
 

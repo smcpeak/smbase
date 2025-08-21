@@ -10,6 +10,7 @@
 
 #include <limits>                      // std::numeric_limits
 #include <random>                      // std::{mt19937, uniform_int_distribution}
+#include <string>                      // std::string
 
 
 OPEN_NAMESPACE(smbase)
@@ -60,6 +61,38 @@ PRIM sm_randomPrim()
 SM_FOREACH_SIZED_INT(DEFINE_RANDOM_PRIM)
 
 #undef DEFINE_RANDOM_PRIM
+
+
+std::string randomString(int n, bool withNL)
+{
+  std::string ret;
+
+  // The non-newline character.
+  char const c = 'A' + sm_random(26);
+
+  int const len = sm_random(n);
+  smbase_loopi(len) {
+    if (withNL && sm_random(20) == 0) {
+      ret.push_back('\n');
+    }
+    else {
+      ret.push_back(c);
+    }
+  }
+
+  return ret;
+}
+
+
+std::string randomStringWithNL(int n)
+{
+  return randomString(n, true /*withNL*/);
+}
+
+std::string randomStringNoNL(int n)
+{
+  return randomString(n, false /*withNL*/);
+}
 
 
 // --------------------------- RandomChoice ----------------------------
