@@ -114,6 +114,10 @@ int indexOfSubstring(
   SubstringSearchFlags flags = SubstringSearchFlags::SSF_NONE);
 
 
+// Return the number of times `c` occurs in `s`.
+int numOccurrences(std::string const &s, char c);
+
+
 // ------------------ Manipulating vectors of strings ------------------
 // Return elements of 'vec' separated by 'sep'.
 std::string join(stdfwd::vector<std::string> const &vec,

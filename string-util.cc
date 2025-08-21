@@ -16,7 +16,7 @@
 #include "smbase/vector-util.h"        // vecAccumulateWith
 #include "smbase/xassert.h"            // xassert, xassertdb, xassertPrecondition
 
-#include <algorithm>                   // std::{binary_search, remove_if}
+#include <algorithm>                   // std::{binary_search, remove_if, count}
 #include <cctype>                      // std::isspace
 #include <cstdlib>                     // std::abs
 #include <cstring>                     // std::{strchr, strrchr, strlen}
@@ -276,6 +276,12 @@ int indexOfSubstring(
   else {
     return safeToInt(i);
   }
+}
+
+
+int numOccurrences(std::string const &s, char c)
+{
+  return std::count(s.begin(), s.end(), c);
 }
 
 

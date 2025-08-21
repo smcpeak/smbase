@@ -1076,6 +1076,19 @@ void test_eraseEmptyStrings()
 }
 
 
+void test_numOccurrences()
+{
+  EXPECT_EQ(numOccurrences("", 'a'), 0);
+  EXPECT_EQ(numOccurrences("", '\0'), 0);
+  EXPECT_EQ(numOccurrences("a", 'a'), 1);
+  EXPECT_EQ(numOccurrences("aa", 'a'), 2);
+  EXPECT_EQ(numOccurrences("aabaa", 'a'), 4);
+  EXPECT_EQ(numOccurrences("zzzzazzzzza", 'a'), 2);
+  EXPECT_EQ(numOccurrences(std::string("\0\0\0", 3), '\0'), 3);
+  EXPECT_EQ(numOccurrences("a\nb\nc", '\n'), 2);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -1121,6 +1134,7 @@ void test_string_util()
   test_compactFileAndLine();
   test_replaceAllMultiple();
   test_eraseEmptyStrings();
+  test_numOccurrences();
 }
 
 
