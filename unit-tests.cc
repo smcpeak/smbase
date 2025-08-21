@@ -198,6 +198,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(vptrmap);
   RUN_TEST(windows_handle_ostream);
   RUN_TEST(xassert);
+  RUN_TEST(xassert_eq_container);
 
   #undef RUN_TEST
 

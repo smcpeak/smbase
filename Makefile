@@ -507,6 +507,7 @@ UNIT_TEST_OBJS += vector-util-test.o
 UNIT_TEST_OBJS += voidlist-test.o
 UNIT_TEST_OBJS += vptrmap-test.o
 UNIT_TEST_OBJS += windows-handle-ostream-test.o
+UNIT_TEST_OBJS += xassert-eq-container-test.o
 UNIT_TEST_OBJS += xassert-test.o
 
 # Master unit test module.
