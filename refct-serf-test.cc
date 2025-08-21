@@ -959,6 +959,30 @@ void testEditorWindowIssue()
 }
 
 
+void test_reset()
+{
+  Integer i1(1);
+  Integer i2(2);
+
+  EXPECT_EQ(i1.getRefCount(), 0);
+  EXPECT_EQ(i2.getRefCount(), 0);
+
+  RCSerf<Integer> p1(&i1);
+  EXPECT_EQ(i1.getRefCount(), 1);
+
+  p1.reset();
+  EXPECT_EQ(i1.getRefCount(), 0);
+  xassert(p1 == nullptr);
+
+  p1.reset(&i2);
+  EXPECT_EQ(i2.getRefCount(), 1);
+  xassert(p1 == &i2);
+
+  p1.reset();
+  EXPECT_EQ(i2.getRefCount(), 0);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -993,6 +1017,7 @@ void test_refct_serf()
   testMultipleInheritance(true /*failure*/);
   test_RCSerf_compare();
   testEditorWindowIssue();
+  test_reset();
 }
 
 

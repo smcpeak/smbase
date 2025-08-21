@@ -240,6 +240,12 @@ public:      // funcs
     return m_ptr != nullptr;
   }
 
+  // Interface compatibility with `std::unique_ptr`.
+  void reset(T *p = nullptr)
+  {
+    *this = p;
+  }
+
   // Set m_ptr to NULL, decrementing refct if not already NULL.
   // Return the value m_ptr had before the call, which may be NULL.
   //
