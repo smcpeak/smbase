@@ -670,11 +670,20 @@ char const * NULLABLE lastSlashOrBackslash(char const *fname)
 }
 
 
-std::string compactFileAndLine(char const *fname, int line)
+char const *withoutDirectoryPrefix(char const *fname)
 {
   if (char const *slash = lastSlashOrBackslash(fname)) {
-    fname = slash+1;
+    return slash+1;
   }
+  else {
+    return fname;
+  }
+}
+
+
+std::string compactFileAndLine(char const *fname, int line)
+{
+  fname = withoutDirectoryPrefix(fname);
   return stringb(fname << ':' << line);
 }
 

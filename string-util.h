@@ -260,6 +260,12 @@ std::string stripExtension(std::string const &fname);
 // in `fname`, or null if neither occurs.
 char const * NULLABLE lastSlashOrBackslash(char const *fname);
 
+// If `fname` has a slash or backslash, return a pointer to just past
+// the last one.  Note that if the last character in the string is a
+// slash or backslash, then this will return a pointer to the NUL
+// terminator.  Otherwise (no slashes), return `fname`.
+char const *withoutDirectoryPrefix(char const *fname);
+
 // Return "<fname>:<line>", except discard any path information in
 // `fname` first.  The primary intended use is for when `fname` is the
 // expansion of __FILE__.

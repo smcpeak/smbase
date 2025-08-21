@@ -7,7 +7,7 @@
 #include "dev-warning.h"               // DEV_WARNING
 #include "sm-iostream.h"               // clog
 #include "sm-macros.h"                 // DMEMB, CMEMB
-#include "string-util.h"               // join
+#include "string-util.h"               // join, withoutDirectoryPrefix
 
 #include <cstdlib>                     // std::min
 
@@ -192,6 +192,11 @@ std::string XAssert::getConflict() const
 // failure function, declared in xassert.h
 void x_assert_fail(char const *cond, char const *file, int line)
 {
+  // The `file` that I get from `__FILE__` can have directory
+  // information, but that should never be needed for disambiguation, so
+  // I want to remove the clutter.
+  file = withoutDirectoryPrefix(file);
+
   THROW(XAssert(cond, file, line));
 }
 

@@ -979,6 +979,15 @@ void test_lastSlashOrBackslash()
 }
 
 
+void test_withoutDirectoryPrefix()
+{
+  EXPECT_EQ(withoutDirectoryPrefix(""), "");
+  EXPECT_EQ(withoutDirectoryPrefix("abc"), "abc");
+  EXPECT_EQ(withoutDirectoryPrefix("abc/def"), "def");
+  EXPECT_EQ(withoutDirectoryPrefix("abc/"), "");
+}
+
+
 void test_compactFileAndLine()
 {
   EXPECT_EQ(compactFileAndLine("foo.cc", 3), "foo.cc:3");
@@ -1131,6 +1140,7 @@ void test_string_util()
   testShellDoubleQuote();
   test_shellDoubleQuoteCommand();
   test_lastSlashOrBackslash();
+  test_withoutDirectoryPrefix();
   test_compactFileAndLine();
   test_replaceAllMultiple();
   test_eraseEmptyStrings();
