@@ -217,6 +217,72 @@ ConstIterAndEnd<CONTAINER> constIterAndEnd(CONTAINER const &c)
 }
 
 
+// Compare the values pointed to by `a` and `b` using `isLessThan`,
+// except that if either is empty, consider the non-empty one to be
+// less; and if they are both empty, then they are equal.
+template <typename COMPARATOR, typename ITER_AND_END>
+int compareIterAndEnds(
+  COMPARATOR const &isLessThan,
+  ITER_AND_END const &a,
+  ITER_AND_END const &b)
+{
+  // If one is empty and the other is not, the non-empty one is
+  // considered less.
+  bool aEmpty = a.empty();
+  bool bEmpty = b.empty();
+  if (aEmpty < bEmpty) {
+    // `aEmpty` is false and `bEmpty` is true, so `b` is empty, thus `a`
+    // is treater as less.
+    return -1;
+  }
+  else if (aEmpty > bEmpty) {
+    return +1;
+  }
+
+  if (aEmpty) {
+    // Both are empty.
+    return 0;
+  }
+  else {
+    // Both are non-empty, so compare elements.
+    if (isLessThan(*a, *b)) {
+      return -1;
+    }
+    else if (isLessThan(*b, *a)) {
+      return +1;
+    }
+    else {
+      return 0;
+    }
+  }
+}
+
+
+// Compare the contents of `a` and `b` lexicographically.  If they are
+// not equal, `a` and `b` will left at the first point of difference.
+template <typename COMPARATOR, typename ITER_AND_END>
+int compareLexicographicallyIAE(
+  COMPARATOR const &isLessThan,
+  ITER_AND_END &a /*INOUT*/,
+  ITER_AND_END &b /*INOUT*/)
+{
+  // Traverse the iterators in parallel, comparing elements.
+  while (!( a.empty() && b.empty() )) {
+    int res = compareIterAndEnds(isLessThan, a, b);
+    if (res != 0) {
+      // Either exactly one container is exhausted, or the corresponding
+      // elements are unequal.
+      return res;
+    }
+
+    ++a;
+    ++b;
+  }
+
+  return 0;
+}
+
+
 CLOSE_NAMESPACE(smbase)
 
 

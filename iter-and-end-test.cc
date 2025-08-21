@@ -3,13 +3,18 @@
 
 #include "smbase/iter-and-end.h"       // module under test
 
+#include "smbase/gdvalue-vector.h"     // gdv::toGDValue(std::vector)
+#include "smbase/gdvalue.h"            // needed for TEST_CASE_EXPRS
+#include "smbase/get-type-name.h"      // smbase::GetTypeName
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
-#include "smbase/sm-test.h"            // EXPECT_EQ
+#include "smbase/sm-test.h"            // EXPECT_EQ, TEST_CASE_EXPRS
 #include "smbase/xassert.h"            // xassert
 
-#include <vector>                      // std::vector
+#include <functional>                  // std::{less, greater}
 #include <list>                        // std::list
+#include <vector>                      // std::vector
 
+using namespace gdv;
 using namespace smbase;
 
 
@@ -272,6 +277,149 @@ void testc_iterAndEnd()
 }
 
 
+// ------------------------------- Other -------------------------------
+void test_compareIterAndEnds()
+{
+  std::vector<int> a{};
+  std::vector<int> b{1};
+  std::vector<int> c{2};
+
+  {
+    std::less<int> isLessThan;
+
+    {
+      auto itea = iterAndEnd(a);
+      auto iteb = iterAndEnd(b);
+      auto itec = iterAndEnd(c);
+
+      EXPECT_EQ(compareIterAndEnds(isLessThan, itea, itea), 0);
+      EXPECT_EQ(compareIterAndEnds(isLessThan, iteb, iteb), 0);
+      EXPECT_EQ(compareIterAndEnds(isLessThan, itea, iteb), +1);
+      EXPECT_EQ(compareIterAndEnds(isLessThan, iteb, itea), -1);
+
+      EXPECT_EQ(compareIterAndEnds(isLessThan, iteb, itec), -1);
+      EXPECT_EQ(compareIterAndEnds(isLessThan, itec, iteb), +1);
+    }
+
+    {
+      auto itea = constIterAndEnd(a);
+      auto iteb = constIterAndEnd(b);
+      auto itec = constIterAndEnd(c);
+
+      EXPECT_EQ(compareIterAndEnds(isLessThan, itea, itea), 0);
+      EXPECT_EQ(compareIterAndEnds(isLessThan, iteb, iteb), 0);
+      EXPECT_EQ(compareIterAndEnds(isLessThan, itea, iteb), +1);
+      EXPECT_EQ(compareIterAndEnds(isLessThan, iteb, itea), -1);
+
+      EXPECT_EQ(compareIterAndEnds(isLessThan, iteb, itec), -1);
+      EXPECT_EQ(compareIterAndEnds(isLessThan, itec, iteb), +1);
+    }
+  }
+
+  {
+    // Swap the order.
+    std::greater<int> isLessThan;
+
+    {
+      auto itea = iterAndEnd(a);
+      auto iteb = iterAndEnd(b);
+      auto itec = iterAndEnd(c);
+
+      EXPECT_EQ(compareIterAndEnds(isLessThan, itea, itea), 0);
+      EXPECT_EQ(compareIterAndEnds(isLessThan, iteb, iteb), 0);
+      EXPECT_EQ(compareIterAndEnds(isLessThan, itea, iteb), +1);
+      EXPECT_EQ(compareIterAndEnds(isLessThan, iteb, itea), -1);
+
+      // Here is where the swapped order is relevant.
+      EXPECT_EQ(compareIterAndEnds(isLessThan, iteb, itec), +1);
+      EXPECT_EQ(compareIterAndEnds(isLessThan, itec, iteb), -1);
+    }
+  }
+}
+
+
+template <typename COMPARATOR>
+void testOne_compareLexicographicallyIAE(
+  COMPARATOR const &isLessThan,
+  std::vector<int> const &a,
+  std::vector<int> const &b,
+  int expectRes,
+  int expectPos)
+{
+  std::string_view comparatorName = GetTypeName<COMPARATOR>::name();
+  TEST_CASE_EXPRS("testOne_compareLexicographicallyIAE",
+    comparatorName, a, b);
+
+  auto itea = constIterAndEnd(a);
+  auto iteb = constIterAndEnd(b);
+
+  int actual = compareLexicographicallyIAE(
+                 isLessThan, itea /*INOUT*/, iteb /*INOUT*/);
+  EXPECT_EQ(actual, expectRes);
+
+  int actualPos = itea.m_iter - a.begin();
+  EXPECT_EQ(actualPos, expectPos);
+  xassert(iteb.m_iter - b.begin() == actualPos);
+}
+
+
+// Test symmetry and reflexivity.
+template <typename COMPARATOR>
+void testOneSym_compareLexicographcallyIAE(
+  COMPARATOR const &isLessThan,
+  std::vector<int> const &a,
+  std::vector<int> const &b,
+  int expectRes,
+  int expectPos)
+{
+  testOne_compareLexicographicallyIAE(isLessThan,
+    a, b, expectRes, expectPos);
+  testOne_compareLexicographicallyIAE(isLessThan,
+    b, a, -expectRes, expectPos);
+
+  testOne_compareLexicographicallyIAE(isLessThan,
+    a, a, 0, a.size());
+  testOne_compareLexicographicallyIAE(isLessThan,
+    b, b, 0, b.size());
+}
+
+
+void test_compareLexicographicallyIAE()
+{
+  std::less<int> isLessThan;
+
+  testOneSym_compareLexicographcallyIAE(isLessThan,
+    {},
+    {},
+    0,
+    0);
+
+  testOneSym_compareLexicographcallyIAE(isLessThan,
+    {1},
+    {},
+    -1,
+    0);
+
+  testOneSym_compareLexicographcallyIAE(isLessThan,
+    {1},
+    {2},
+    -1,
+    0);
+
+  testOneSym_compareLexicographcallyIAE(isLessThan,
+    {2, 1},
+    {2},
+    -1,
+    1);
+
+  testOneSym_compareLexicographcallyIAE(isLessThan,
+    {1,    3},
+    {1, 2, 3},
+    +1,
+    1);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -292,6 +440,9 @@ void test_iter_and_end()
   testc_begin_end_and_empty();
   testc_increment_operators();
   testc_iterAndEnd();
+
+  test_compareIterAndEnds();
+  test_compareLexicographicallyIAE();
 }
 
 
