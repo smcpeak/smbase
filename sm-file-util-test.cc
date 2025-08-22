@@ -303,6 +303,13 @@ void test_hasNormalizedPathSeparators()
   EXPECT_EQ(sfu.hasNormalizedPathSeparators("\\/"), false);
   EXPECT_EQ(sfu.hasNormalizedPathSeparators("/a/b/c"), true);
 
+  EXPECT_EQ(sfu.isAbsolutePathWithNormalizedPathSeparators(""), false);
+  EXPECT_EQ(sfu.isAbsolutePathWithNormalizedPathSeparators("/"), true);
+  EXPECT_EQ(sfu.isAbsolutePathWithNormalizedPathSeparators("x"), false);
+  EXPECT_EQ(sfu.isAbsolutePathWithNormalizedPathSeparators("/x"), true);
+  EXPECT_EQ(sfu.isAbsolutePathWithNormalizedPathSeparators("\\x"), false);
+  EXPECT_EQ(sfu.isAbsolutePathWithNormalizedPathSeparators("/x\\y"), false);
+
   sfu.m_windowsPathSemantics = false;
 
   EXPECT_EQ(sfu.hasNormalizedPathSeparators(""), true);
@@ -310,6 +317,13 @@ void test_hasNormalizedPathSeparators()
   EXPECT_EQ(sfu.hasNormalizedPathSeparators("\\"), true);
   EXPECT_EQ(sfu.hasNormalizedPathSeparators("\\/"), true);
   EXPECT_EQ(sfu.hasNormalizedPathSeparators("/a/b/c"), true);
+
+  EXPECT_EQ(sfu.isAbsolutePathWithNormalizedPathSeparators(""), false);
+  EXPECT_EQ(sfu.isAbsolutePathWithNormalizedPathSeparators("/"), true);
+  EXPECT_EQ(sfu.isAbsolutePathWithNormalizedPathSeparators("x"), false);
+  EXPECT_EQ(sfu.isAbsolutePathWithNormalizedPathSeparators("/x"), true);
+  EXPECT_EQ(sfu.isAbsolutePathWithNormalizedPathSeparators("\\x"), false);
+  EXPECT_EQ(sfu.isAbsolutePathWithNormalizedPathSeparators("/x\\y"), true);
 }
 
 

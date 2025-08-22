@@ -586,6 +586,14 @@ bool SMFileUtil::isAbsolutePath(string const &path) const
 }
 
 
+bool SMFileUtil::isAbsolutePathWithNormalizedPathSeparators(
+  string const &path) const
+{
+  return isAbsolutePath(path) &&
+         hasNormalizedPathSeparators(path);
+}
+
+
 string SMFileUtil::getAbsolutePath(string const &path) const
 {
   if (isAbsolutePath(path)) {

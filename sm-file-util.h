@@ -273,6 +273,11 @@ public:      // funcs
   // "<letter>:/", or the equivalent with backslash.
   virtual bool isAbsolutePath(string const &path) const;
 
+  // True if `isAbsolutePath(path)` and
+  // `hasNormalizedPathSeparators(path)`.
+  bool isAbsolutePathWithNormalizedPathSeparators(
+    string const &path) const;
+
   // Convert 'path' to an absolute path.  If it is relative, we
   // prepend 'currentDirectory()'.
   virtual string getAbsolutePath(string const &path) const;
