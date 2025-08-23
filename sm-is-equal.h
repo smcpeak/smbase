@@ -1,6 +1,6 @@
 // sm-is-equal.h
 // Check if two values are equal, returning false if exactly one is
-// a negative integral type, and using `operator==` otherwise.
+// negative, and using `operator==` otherwise.
 
 /* This file is CC BY-SA 4.0:
 
