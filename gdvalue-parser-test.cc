@@ -74,7 +74,7 @@ void test_bool()
   EXPECT_EQ(GDVP_TO(bool, GDValue(true)), true);
   EXPECT_EQ(GDVP_TO(bool, GDValue(false)), false);
   EXPECT_ERROR_SUBSTR(GDVP_TO(bool, GDValue()),
-    "expected symbol `true` or `false`, not null");
+    "Expected symbol `true` or `false`, not null.");
 }
 
 
@@ -86,12 +86,12 @@ void test_int()
     // Too big.
     GDVSmallInteger maxGSI = std::numeric_limits<GDVSmallInteger>::max();
     EXPECT_ERROR_SUBSTR(GDVP_TO(int, GDValue(maxGSI)),
-      "number too large");
+      "Number too large");
   }
 
   // Not an integer.
   EXPECT_ERROR_SUBSTR(GDVP_TO(int, GDValue()),
-    "expected small integer, not symbol");
+    "Expected small integer, not symbol.");
 }
 
 
@@ -100,12 +100,12 @@ void test_string()
   EXPECT_EQ(GDVP_TO(std::string, GDValue("abc")), "abc");
 
   EXPECT_ERROR_SUBSTR(GDVP_TO(std::string, GDValue(GDVSymbol("abc"))),
-    "expected string, not symbol");
+    "Expected string, not symbol.");
 
   EXPECT_EQ(GDValueParser(GDValue("xyz")).stringGet(), "xyz");
 
   EXPECT_ERROR_SUBSTR(GDValueParser("xyz"_sym).stringGet(),
-    "expected string, not symbol");
+    "Expected string, not symbol.");
 }
 
 
@@ -124,15 +124,15 @@ void test_unique_ptr()
 
   // Non-existent key.
   EXPECT_ERROR_SUBSTR(p.mapGetValueAtSym("z"),
-    "key z, but it does not");
+    "key z, but it does not.");
 
   // Wrong container type.
   EXPECT_ERROR_SUBSTR(p.tupleGetValueAt(0),
-    "tuple, not tagged map");
+    "tuple, not tagged map.");
 
   // Wrong scalar kind at a key; demonstrates showing the path.
   EXPECT_ERROR_SUBSTR(p.mapGetValueAtSym("x").symbolGet(),
-    "<top>.x: expected symbol, not small integer");
+    "<top>.x: Expected symbol, not small integer.");
 }
 
 
@@ -164,13 +164,13 @@ void test_vector()
   GDValueParser p(v);
 
   EXPECT_ERROR_SUBSTR(p.sequenceGetValueAt(2),
-    "index 2, but it only has 2 elements");
+    "index 2, but it only has 2 elements.");
 
   EXPECT_ERROR_SUBSTR(p.sequenceGetValueAt(1).sequenceGetValueAt(0),
-    "<top>[1]: expected sequence, not tagged map");
+    "<top>[1]: Expected sequence, not tagged map.");
 
   EXPECT_ERROR_SUBSTR(p.sequenceGetValueAt(1).mapGetValueAtSym("x").symbolGet(),
-    "<top>[1].x: expected symbol, not small integer");
+    "<top>[1].x: Expected symbol, not small integer.");
 }
 
 
@@ -188,7 +188,7 @@ void test_vector_of_unique()
 
   GDValueParser p(v);
   EXPECT_ERROR_SUBSTR(p.sequenceGetValueAt(1).mapGetValueAtSym("x").symbolGet(),
-    "<top>[1].x: expected symbol, not small integer");
+    "<top>[1].x: Expected symbol, not small integer.");
 }
 
 
@@ -255,7 +255,7 @@ void test_mapGetValueAtSymOpt()
   {
     GDValue v;
     EXPECT_ERROR_SUBSTR(GDValueParser(v).mapGetValueAtSymOpt("foo"),
-      "expected (possibly ordered) map, not symbol");
+      "Expected (possibly ordered) map, not symbol.");
   }
 
   {
@@ -380,70 +380,70 @@ void test_parserPaths()
   // but this might happen if we are enumerating all keys.
   EXPECT_ERROR_SUBSTR(
     p.mapGetKeyAt(1).checkIsSymbol(),
-    "path <top>@1: expected symbol, not small integer");
+    "path <top>@1: Expected symbol, not small integer.");
 
   EXPECT_ERROR_SUBSTR(
     p.mapGetKeyAt(GDVSequence{1,2,3}).sequenceGetValueAt(0).checkIsSymbol(),
-    "path <top>@[1 2 3][0]: expected symbol, not small integer");
+    "path <top>@[1 2 3][0]: Expected symbol, not small integer.");
 
   EXPECT_ERROR_SUBSTR(
     p.mapGetValueAt(1).checkIsSymbol(),
-    "path <top>.1: expected symbol, not small integer");
+    "path <top>.1: Expected symbol, not small integer.");
 
   EXPECT_ERROR_SUBSTR(
     p.mapGetKeyAt("three"_sym).checkIsInteger(),
-    "path <top>@three: expected integer, not symbol");
+    "path <top>@three: Expected integer, not symbol.");
 
   EXPECT_ERROR_SUBSTR(
     p.mapGetValueAt("three"_sym).checkIsInteger(),
-    "path <top>.three: expected integer, not string");
+    "path <top>.three: Expected integer, not string.");
 
   EXPECT_ERROR_SUBSTR(
     p.mapGetValueAt(bigInt).checkIsMap(),
-    "path <top>.1234567890123456789012345678901234567890: expected map, not small integer");
+    "path <top>.1234567890123456789012345678901234567890: Expected map, not small integer.");
 
   EXPECT_ERROR_SUBSTR(
     p.mapGetValueAtSym("seq").sequenceGetValueAt(1).checkIsInteger(),
-    "path <top>.seq[1]: expected integer, not symbol");
+    "path <top>.seq[1]: Expected integer, not symbol.");
 
   EXPECT_ERROR_SUBSTR(
     p.mapGetValueAtSym("seq").sequenceGetValueAt(3).checkIsInteger(),
-    "path <top>.seq[3]: expected integer, not tuple");
+    "path <top>.seq[3]: Expected integer, not tuple.");
 
   EXPECT_ERROR_SUBSTR(
     p.mapGetValueAtSym("seq").sequenceGetValueAt(3).tupleGetValueAt(0)
      .checkIsSymbol(),
-    "path <top>.seq[3][0]: expected symbol, not small integer");
+    "path <top>.seq[3][0]: Expected symbol, not small integer.");
 
   EXPECT_ERROR_SUBSTR(
     p.mapGetValueAtSym("seq").sequenceGetValueAt(3).tupleGetValueAt(0)
      .checkIsSymbol(),
-    "path <top>.seq[3][0]: expected symbol, not small integer");
+    "path <top>.seq[3][0]: Expected symbol, not small integer.");
 
   EXPECT_ERROR_SUBSTR(
     p.mapGetValueAtSym("seq").sequenceGetValueAt(3).tupleGetValueAt(2)
      .checkIsSymbol(),
-    "path <top>.seq[3][2]: expected symbol, not set");
+    "path <top>.seq[3][2]: Expected symbol, not set.");
 
   EXPECT_ERROR_SUBSTR(
     p.mapGetValueAtSym("seq").sequenceGetValueAt(3).tupleGetValueAt(2)
      .setGetValue(6).checkIsSymbol(),
-    "path <top>.seq[3][2]@6: expected symbol, not small integer");
+    "path <top>.seq[3][2]@6: Expected symbol, not small integer.");
 
   EXPECT_ERROR_SUBSTR(
     p.mapGetValueAtSym("seq").sequenceGetValueAt(3).tupleGetValueAt(2)
      .setGetValue(GDVOrderedMap{{8,"nine"}}).checkIsSymbol(),
-    "path <top>.seq[3][2]@[8:\"nine\"]: expected symbol, not ordered map");
+    "path <top>.seq[3][2]@[8:\"nine\"]: Expected symbol, not ordered map.");
 
   EXPECT_ERROR_SUBSTR(
     p.mapGetValueAtSym("seq").sequenceGetValueAt(3).tupleGetValueAt(2)
      .setGetValue(GDVOrderedMap{{8,"nine"}}).orderedMapGetValueAt(8)
      .checkIsSymbol(),
-    "path <top>.seq[3][2]@[8:\"nine\"].8: expected symbol, not string");
+    "path <top>.seq[3][2]@[8:\"nine\"].8: Expected symbol, not string.");
 
   EXPECT_EQ(p.mapGetValueAt(1).integerGet(), 2);
   EXPECT_ERROR_SUBSTR(p.mapGetValueAtSym("three").integerGet(),
-    "<top>.three: expected integer, not string");
+    "<top>.three: Expected integer, not string.");
   EXPECT_EQ(p.mapGetValueAt(1).integerIsNegative(), false);
   EXPECT_EQ(p.mapGetValueAt(bigInt).integerIsNegative(), true);
   EXPECT_EQ(p.mapGetKeyAt(bigInt).integerIsNegative(), false);
@@ -452,13 +452,13 @@ void test_parserPaths()
   xassert(p.mapGetValueAtSym("seq").sequenceGetValueAt(3).tupleGet()[0] == 4);
   EXPECT_ERROR_SUBSTR(
     p.mapGetValueAtSym("seq").sequenceGetValueAt(2).tupleGet()[0],
-    "<top>.seq[2]: expected tuple, not small integer");
+    "<top>.seq[2]: Expected tuple, not small integer.");
 
   xassert(p.mapGetValueAtSym("seq").sequenceGetValueAt(3)
            .tupleGetValueAt(2).isSet());
   EXPECT_ERROR_SUBSTR(
     p.mapGetValueAtSym("seq").sequenceGetValueAt(3).tupleGetValueAt(3),
-    "<top>.seq[3]: expected tuple to have element at index 3, but it only has 3 elements");
+    "<top>.seq[3]: Expected tuple to have element at index 3, but it only has 3 elements.");
 
   EXPECT_EQ(
     p.mapGetValueAtSym("seq").sequenceGetValueAt(3)
@@ -467,11 +467,11 @@ void test_parserPaths()
   EXPECT_ERROR_SUBSTR(
     p.mapGetValueAtSym("seq").sequenceGetValueAt(3)
      .tupleGetValueAt(2).setGetValue(66).smallIntegerGet(),
-    "<top>.seq[3][2]: expected set to have element 66, but it does not");
+    "<top>.seq[3][2]: Expected set to have element 66, but it does not.");
 
   EXPECT_ERROR_SUBSTR(
     p.mapGetKeyAt("nonexist"_sym),
-    "<top>: expected map to have key nonexist, but it does not");
+    "<top>: Expected map to have key nonexist, but it does not.");
 
   xassert(p.mapContainsSym("seq"));
   xassert(!p.mapContainsSym("nonexist"));
@@ -481,19 +481,19 @@ void test_parserPaths()
   p.mapGetValueAtSym("omap").checkIsPOMap();
   EXPECT_ERROR_SUBSTR(
     p.mapGetValueAtSym("seq").checkIsPOMap(),
-    "<top>.seq: expected (possibly ordered) map, not sequence");
+    "<top>.seq: Expected (possibly ordered) map, not sequence.");
   EXPECT_EQ(
     p.mapGetValueAtSym("omap").orderedMapGetKeyAt(1).getValue(),
     GDValue(1));
   EXPECT_ERROR_SUBSTR(
     p.mapGetValueAtSym("omap").orderedMapGetKeyAt(4).getValue(),
-    "<top>.omap: expected ordered map to have key 4, but it does not");
+    "<top>.omap: Expected ordered map to have key 4, but it does not.");
   EXPECT_EQ(
     p.mapGetValueAtSym("omap").orderedMapGetValueAt(1).getValue(),
     GDValue("one"));
   EXPECT_ERROR_SUBSTR(
     p.mapGetValueAtSym("omap").orderedMapGetValueAt(4).getValue(),
-    "<top>.omap: expected ordered map to have key 4, but it does not");
+    "<top>.omap: Expected ordered map to have key 4, but it does not.");
   xassert(!p.mapGetValueAtSym("omap").orderedMapContainsSym("x"));
   EXPECT_EQ(
     p.mapGetValueAtSym("omap").orderedMapGetValueAtSym("zero").getValue(),
@@ -504,11 +504,11 @@ void test_parserPaths()
     "tmaptag"_sym);
   EXPECT_ERROR_SUBSTR(
     p.mapGetValueAtSym("tmap").checkContainerTag("z"),
-    "<top>.tmap: expected container to have tag z, but it instead has tag tmaptag");
+    "<top>.tmap: Expected container to have tag z, but it instead has tag tmaptag.");
 
   EXPECT_ERROR_SUBSTR(
     p.mapGetValueAtSym("tmap").checkTaggedOrderedMapTag("tomaptag"),
-    "<top>.tmap: expected tagged ordered map, not tagged map");
+    "<top>.tmap: Expected tagged ordered map, not tagged map.");
   p.mapGetValueAtSym("tomap").checkTaggedOrderedMapTag("tomaptag");
 
   // Do a test using a temporary object and parser to exercise the case
@@ -517,11 +517,11 @@ void test_parserPaths()
   // which carried a copy of the `GDValueParser` object.
   EXPECT_ERROR_SUBSTR(
     GDValueParser(GDVMap{{1,2}}).mapGetValueAt(1).checkIsTaggedOrderedMap(),
-    "<top>.1: expected tagged ordered map, not small integer");
+    "<top>.1: Expected tagged ordered map, not small integer.");
 
   EXPECT_ERROR_SUBSTR(
     p.mapGetValueAtSym("tmap").checkTaggedOrderedMapTag("tomaptag"),
-    "<top>.tmap: expected tagged ordered map, not tagged map");
+    "<top>.tmap: Expected tagged ordered map, not tagged map.");
 
   // Exercise some simple queries.
   EXPECT_EQ(p.getKindName(), "GDVK_MAP");
@@ -644,7 +644,7 @@ void test_orderedMapAsMap()
 
   p.checkIsPOMap();
   EXPECT_ERROR_SUBSTR(p.checkIsMap(),
-    "expected map, not ordered map");
+    "Expected map, not ordered map.");
 
   xassert(p.mapContains(1));
   xassert(!p.mapContains(2));
@@ -687,7 +687,7 @@ void test_errorHandler()
   std::map<int, Data> m = gdvpTo<std::map<int, Data>>(parser);
   EXPECT_EQ(errorHandler.m_path, "<top>.2");
   EXPECT_EQ(errorHandler.m_message,
-    "expected map to have key y, but it does not");
+    "Expected map to have key y, but it does not.");
   EXPECT_EQ_GDV(m, fromGDVN("{ 1: Data{x:1 y:2} }"));
 }
 

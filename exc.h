@@ -177,8 +177,18 @@ public:      // methods
   //
   virtual std::string getMessage() const;
 
-  /* Return a properly punctuated English sentence that explains the
-     conflict, i.e., what was expected and what was observed.
+  /* Return a properly punctuated English sentence (starting with a
+     capital letter and ending in (typically) a period) that explains
+     the conflict, i.e., what was expected and what was observed.
+
+     The sentence-ending puntuation is important because this message
+     might be followed by additional instructions to the user about what
+     to do next, and the code that produces those instructions will only
+     use whitespace to separate them from the conflict message.
+
+     Note: Despite the above instruction, I have not been entirely
+     consistent in following them due to my own evolving strategies.
+     Deviations should be regarded as bugs.
 
      Beware: This is generally called at the location that an exception
      is caught, which might be many levels above where it was thrown.

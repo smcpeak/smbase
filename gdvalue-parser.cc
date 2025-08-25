@@ -306,8 +306,8 @@ void GDValueParser::checkKind(GDValueKind kind) const
 {
   if (getKind() != kind) {
     throwError_stringb(
-      "expected " << kindCommonName(kind) <<
-      ", not " << getKindCommonName());
+      "Expected " << kindCommonName(kind) <<
+      ", not " << getKindCommonName() << ".");
   }
 }
 
@@ -315,13 +315,13 @@ void GDValueParser::checkKind(GDValueKind kind) const
 // Define a check function that calls `isXXX()` rather than checking the
 // kind directly, perhaps because there is more than one kind code that
 // qualifies (or just for uniformity).
-#define DEFINE_CHECK_IS_KIND(Kind, desc)                   \
-  void GDValueParser::checkIs##Kind() const                \
-  {                                                        \
-    if (!is##Kind()) {                                     \
-      throwError_stringb(                                  \
-        "expected " desc ", not " << getKindCommonName()); \
-    }                                                      \
+#define DEFINE_CHECK_IS_KIND(Kind, desc)                          \
+  void GDValueParser::checkIs##Kind() const                       \
+  {                                                               \
+    if (!is##Kind()) {                                            \
+      throwError_stringb(                                         \
+        "Expected " desc ", not " << getKindCommonName() << "."); \
+    }                                                             \
   }
 
 
@@ -395,8 +395,8 @@ GDValueParser GDValueParser::sequenceGetValueAt(GDVIndex index) const
 
   if (!( index < containerSize() )) {
     throwError_stringb(
-      "expected sequence to have element at index " << index <<
-      ", but it only has " << containerSize() << " elements");
+      "Expected sequence to have element at index " << index <<
+      ", but it only has " << containerSize() << " elements.");
   }
 
   return GDValueParser(*this,
@@ -416,8 +416,8 @@ GDValueParser GDValueParser::tupleGetValueAt(GDVIndex index) const
 
   if (!( index < containerSize() )) {
     throwError_stringb(
-      "expected tuple to have element at index " << index <<
-      ", but it only has " << containerSize() << " elements");
+      "Expected tuple to have element at index " << index <<
+      ", but it only has " << containerSize() << " elements.");
   }
 
   return GDValueParser(*this,
@@ -436,8 +436,8 @@ GDValueParser GDValueParser::setGetValue(GDValue const &elt) const
 {
   if (!setContains(elt)) {
     throwError_stringb(
-      "expected set to have element " << elt <<
-      ", but it does not");
+      "Expected set to have element " << elt <<
+      ", but it does not.");
   }
 
   return GDValueParser(*this,
@@ -458,8 +458,8 @@ GDValueParser GDValueParser::mapGetKeyAt(GDValue const &key) const
 {
   if (!mapContains(key)) {
     throwError_stringb(
-      "expected map to have key " << key <<
-      ", but it does not");
+      "Expected map to have key " << key <<
+      ", but it does not.");
   }
 
   return GDValueParser(*this,
@@ -472,8 +472,8 @@ GDValueParser GDValueParser::mapGetValueAt(GDValue const &key) const
 {
   if (!mapContains(key)) {
     throwError_stringb(
-      "expected map to have key " << key <<
-      ", but it does not");
+      "Expected map to have key " << key <<
+      ", but it does not.");
   }
 
   // This is perhaps a little confusing:
@@ -551,8 +551,8 @@ GDValueParser GDValueParser::orderedMapGetKeyAt(GDValue const &key) const
 {
   if (!orderedMapContains(key)) {
     throwError_stringb(
-      "expected ordered map to have key " << key <<
-      ", but it does not");
+      "Expected ordered map to have key " << key <<
+      ", but it does not.");
   }
 
   return GDValueParser(*this,
@@ -565,8 +565,8 @@ GDValueParser GDValueParser::orderedMapGetValueAt(GDValue const &key) const
 {
   if (!orderedMapContains(key)) {
     throwError_stringb(
-      "expected ordered map to have key " << key <<
-      ", but it does not");
+      "Expected ordered map to have key " << key <<
+      ", but it does not.");
   }
 
   return GDValueParser(*this,
@@ -598,8 +598,8 @@ void GDValueParser::checkContainerTag(char const *symName) const
 {
   if (taggedContainerGetTagName() != symName) {
     throwError_stringb(
-      "expected container to have tag " << GDVSymbol(symName) <<
-      ", but it instead has tag " << taggedContainerGetTag());
+      "Expected container to have tag " << GDVSymbol(symName) <<
+      ", but it instead has tag " << taggedContainerGetTag() << ".");
   }
 }
 
@@ -675,7 +675,7 @@ bool GDVPTo<bool>::f(GDValueParser const &p)
   }
   else {
     p.throwError(stringb(
-      "expected symbol `true` or `false`, not " << p.valueGDVN()));
+      "Expected symbol `true` or `false`, not " << p.valueGDVN() << "."));
     return false;  // not reached
   }
 }
@@ -688,7 +688,7 @@ int GDVPTo<int>::f(GDValueParser const &p)
   }
   else {
     p.throwError(stringb(
-      "number too large to represent as `int`: " << p.valueGDVN()));
+      "Number too large to represent as `int`: " << p.valueGDVN() << "."));
     return 0;  // not reached
   }
 }

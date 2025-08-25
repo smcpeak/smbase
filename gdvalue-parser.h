@@ -332,7 +332,8 @@ public:      // data
   std::string m_path;
 
   // The conflict between what was expected and what was actually found
-  // in the primary value at `m_path`.
+  // in the primary value at `m_path`.  This should be a complete
+  // sentence, starting with a capitalized word and ending in a period.
   std::string m_message;
 
 public:      // methods
