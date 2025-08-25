@@ -38,15 +38,7 @@ extern int verbose;
 extern char const * NULLABLE g_argv0;
 
 
-// "Test output", which goes nowhere unless `verbose` is true.
-#define tout getTout()
-std::ostream &getTout();
-
-
-// "Test printf", which goes nowhere unless `verbose` is true.
-#define tprintf (verbose? printf : dummy_printf)
-
-
+// ---------------------------- Entry point ----------------------------
 // reports uncaught exceptions
 //
 // 12/30/02: I used to print "uncaught exception: " before
@@ -113,6 +105,16 @@ int main(int argc, char *argv[])                \
   }
 
 
+// ------------------------- Diagnostic output -------------------------
+// "Test output", which goes nowhere unless `verbose` is true.
+#define tout getTout()
+std::ostream &getTout();
+
+
+// "Test printf", which goes nowhere unless `verbose` is true.
+#define tprintf (verbose? printf : dummy_printf)
+
+
 // convenient for printing the value of a variable or expression
 #define PVAL(val) cout << #val << " = " << (val) << endl
 
@@ -149,6 +151,7 @@ int main(int argc, char *argv[])                \
 // used.
 
 
+// ----------------------------- EXPECT_EQ -----------------------------
 // Throw an exception if `actual` does not equal `expect`.  This uses
 // `is_equal` to deal with the possibility that exactly one of the types
 // is a signed integral type.  According to that function, a negative
@@ -183,6 +186,7 @@ void expectEq(char const *label, TA const &actual, TE const &expect)
 void expectEq(char const *label, char const *actual, char const *expect);
 
 
+// ----------------------- EXPECT_HAS_SUBSTRING ------------------------
 // Check that 'hasSubstring(actual, expectSubstring)'.
 void expectHasSubstring(
   char const *label,
@@ -193,6 +197,7 @@ void expectHasSubstring(
   expectHasSubstring(#actual, actual, expectSubstring) /* user ; */
 
 
+// ----------------------- EXPECT_MATCHES_REGEX ------------------------
 // Check that 'matchesRegex(actual, expectRegex)'.
 void expectMatchesRegex(
   char const *label,
@@ -203,6 +208,7 @@ void expectMatchesRegex(
   expectMatchesRegex(#actual, actual, expectRegex) /* user ; */
 
 
+// --------------------------- EXPECT_EQ_GDV ---------------------------
 // Check that `actual` equals `expect`.
 void expectEqGDV(
   char const *label,
@@ -220,6 +226,7 @@ void expectEqGDV(
   expectEqGDV(#actual, toGDValue(actual), toGDValue(expect)) /* user ; */
 
 
+// ------------------------- EXPECT_EQ_GDVSER --------------------------
 // If `origCompare`, check that `actualGDV==expectGDV` and return.  If
 // the latter do not match, throw XMessage.  If `origCompare==false`,
 // throw XMessage due to the originals being different.
@@ -256,22 +263,7 @@ void expectEqGDVSer(
                  toGDValue(actual), toGDValue(expect)) /* user ; */
 
 
-// Test `a==b`, but also verify that the result is the same if the
-// order is swapped, and that it is consistent with `a!=b`.
-template <typename T>
-bool op_eq(T const &a, T const &b)
-{
-  bool ret = (a == b);
-
-  xassert(ret == (b == a));
-
-  xassert(ret != (a != b));
-  xassert(ret != (b != a));
-
-  return ret;
-}
-
-
+// ---------------------------- EXPECT_EXN -----------------------------
 // Check that evaluating `expr` throws an exception of type `ExnType`.
 #define EXPECT_EXN(expr, ExnType)                            \
   try {                                                      \
@@ -306,6 +298,24 @@ bool op_eq(T const &a, T const &b)
   }
 
 
+// ------------------------ Comparison testing -------------------------
+// Test `a==b`, but also verify that the result is the same if the
+// order is swapped, and that it is consistent with `a!=b`.
+template <typename T>
+bool op_eq(T const &a, T const &b)
+{
+  bool ret = (a == b);
+
+  xassert(ret == (b == a));
+
+  xassert(ret != (a != b));
+  xassert(ret != (b != a));
+
+  return ret;
+}
+
+
+// ----------------------------- TEST_CASE -----------------------------
 /*
   Print `stuff` in verbose mode, and push it onto the exception context
   stack.
@@ -332,6 +342,7 @@ bool op_eq(T const &a, T const &b)
   TEST_CASE(label ": " << GDVN_OMAP_EXPRS(__VA_ARGS__)) /* user ; */
 
 
+// -------------------- Randomized testing support ---------------------
 // If `name` is set as an environment variable, return its value as
 // interpreted by `atoi`, otherwise return `defaultValue`.
 //
