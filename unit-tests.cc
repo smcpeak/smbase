@@ -162,6 +162,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(sm_span_util);
   RUN_TEST(sm_stristr);
   RUN_TEST(sm_test);
+  RUN_TEST(sm_test_order);
   RUN_TEST(sm_trace);
   RUN_TEST(sm_unique_ptr);
   RUN_TEST(sobjlist);

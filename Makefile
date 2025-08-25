@@ -470,6 +470,7 @@ UNIT_TEST_OBJS += sm-regex-test.o
 UNIT_TEST_OBJS += sm-span-test.o
 UNIT_TEST_OBJS += sm-span-util-test.o
 UNIT_TEST_OBJS += sm-stristr-test.o
+UNIT_TEST_OBJS += sm-test-order-test.o
 UNIT_TEST_OBJS += sm-test-test.o
 UNIT_TEST_OBJS += sm-trace-test.o
 UNIT_TEST_OBJS += sm-unique-ptr-test.o
