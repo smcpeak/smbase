@@ -161,6 +161,38 @@
 #define SM_PP_MAP(macro, ...) SM_PP_EVAL(SM_PP_PRIVATE_MAP_IMPL(macro, __VA_ARGS__))
 
 
+// --------------------- SM_PP_MAP_WITH_SEPARATOR ----------------------
+#define SM_PP_PRIVATE_MAP_WITH_SEPARATOR_IMPL(macro, sep, first, ...)                            \
+  SM_PP_IF_ELSE(SM_PP_PRIVATE_FIRST_IS_EMPTY(first))                                             \
+    ()                                                                                           \
+    (macro(first) __VA_OPT__(sep)                                                                \
+       SM_PP_PRIVATE_DEFER2(SM_PP_PRIVATE_MAP_WITH_SEPARATOR_HELPER)()(macro, sep, __VA_ARGS__))
+
+#define SM_PP_PRIVATE_MAP_WITH_SEPARATOR_HELPER() SM_PP_PRIVATE_MAP_WITH_SEPARATOR_IMPL
+
+// Like `SM_PP_MAP`, but inserting something between elements:
+//
+//   SM_PP_MAP_WITH_SEPARATOR(foo, sep, 1, 2, 3) -> foo(1) sep foo(2) sep foo(3)
+//
+// Note: `sep` cannot expand to something that has a comma.  (It gets
+// expanded too early for that, and I don't know how to fix it.)
+//
+#define SM_PP_MAP_WITH_SEPARATOR(macro, sep, ...) \
+  SM_PP_EVAL(SM_PP_PRIVATE_MAP_WITH_SEPARATOR_IMPL(macro, sep, __VA_ARGS__))
+
+
+// ----------------------- SM_PP_STRINGIFY_ARGS ------------------------
+// Stringify a single argument.
+#define SM_PP_STRINGIFY(arg) #arg
+
+// Stringify an entire argument list with separating commas:
+//
+//   SM_PP_STRINGIFY_ARGS(a, b, c) -> "a" ", " "b" ", " "c" -> "a, b, c"
+//
+#define SM_PP_STRINGIFY_ARGS(...) \
+  SM_PP_MAP_WITH_SEPARATOR(SM_PP_STRINGIFY, ", ", __VA_ARGS__)
+
+
 // -------------------------- SM_PP_COMMA_MAP --------------------------
 #define SM_PP_PRIVATE_COMMA_MAP_IMPL(macro, first, ...)                            \
   SM_PP_IF_ELSE(SM_PP_PRIVATE_FIRST_IS_EMPTY(first))                               \

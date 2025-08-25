@@ -139,6 +139,12 @@ static void test_comma_map()
 }
 
 
+static void test_stringify_args()
+{
+  EXPECT_EQ(SM_PP_STRINGIFY_ARGS(a, b, c), "a, b, c");
+}
+
+
 enum E {
   E_ZERO,
   E_ONE,
@@ -292,6 +298,7 @@ void test_sm_pp_util()
   test_map_parend_args();
   test_comma_map_apply_list();
   test_comma_map();
+  test_stringify_args();
   test_getEName();
   test_getAEName();
   test_map_list();
