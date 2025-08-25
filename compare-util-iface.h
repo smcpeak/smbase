@@ -18,12 +18,12 @@ OPEN_NAMESPACE(smbase)
 
 // Return -1 if a<b, +1 if a>b, and 0 otherwise.
 template <class NUM>
-int compare(NUM const &a, NUM const &b);
+inline int compare(NUM const &a, NUM const &b);
 
 
 // Compare two sequence containers lexicographically.
 template <class CONTAINER>
-int compareSequences(CONTAINER const &a, CONTAINER const &b);
+inline int compareSequences(CONTAINER const &a, CONTAINER const &b);
 
 
 // Return the value of `expr` if it is nonzero.
