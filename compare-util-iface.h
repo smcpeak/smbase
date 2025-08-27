@@ -16,6 +16,7 @@
 OPEN_NAMESPACE(smbase)
 
 
+// ----------------------- Comparison functions ------------------------
 // Return -1 if a<b, +1 if a>b, and 0 otherwise.
 template <class NUM>
 inline int compare(NUM const &a, NUM const &b);
@@ -26,6 +27,7 @@ template <class CONTAINER>
 inline int compareSequences(CONTAINER const &a, CONTAINER const &b);
 
 
+// --------------- Macros to use in comparison functions ---------------
 // Return the value of `expr` if it is nonzero.
 #define RET_IF_NONZERO(expr) \
   if (int ret = (expr)) {    \
@@ -81,6 +83,7 @@ inline int compareSequences(CONTAINER const &a, CONTAINER const &b);
 #define RET_ZERO_IF_EQUAL_MEMB(memb) RET_ZERO_IF_EQUAL(a.memb, b.memb)
 
 
+// -------------------- Define relational operators --------------------
 // Define a single friend relational operator in terms of `compare`.
 //
 // Mark it "maybe_unused" because I typically generate all six for
@@ -125,6 +128,57 @@ inline int compareSequences(CONTAINER const &a, CONTAINER const &b);
   friend int compare(Class const &a, Class const &b)    \
     { return a.compareTo(b); }                          \
   DEFINE_FRIEND_RELATIONAL_OPERATORS(Class)
+
+
+// ---------------- Heterogeneous comparison operators -----------------
+// These macros define relational operators that compare two different
+// types.  They are meant to be used within the body of `Class`, for
+// the purpose of comparing it to `Other`.  They generate operators that
+// work in either order, all in terms of a single `compareTo` method,
+// that must be defined elsewhere by the user.
+
+// Define one operator that compares this `Class` to `Other` in either
+// direction.
+#define DEFINE_ONE_FRIEND_RELATIONAL_TO_OTHER_OPERATOR(Class, Other, op) \
+  [[maybe_unused]]                                                       \
+  friend bool operator op (Class const &a, Other const &b)               \
+    { return compare(a,b) op 0; }                                        \
+  [[maybe_unused]]                                                       \
+  friend bool operator op (Other const &a, Class const &b)               \
+    { return compare(a,b) op 0; }
+
+
+// Declare a set of friend comparison-to-other operators, *excluding*
+// the equality operators, assuming that two suitable 'compare'
+// functions exist.
+#define DEFINE_FRIEND_NON_EQUALITY_RELATIONAL_TO_OTHER_OPERATORS(Class, Other) \
+  DEFINE_ONE_FRIEND_RELATIONAL_TO_OTHER_OPERATOR(Class, Other, < )             \
+  DEFINE_ONE_FRIEND_RELATIONAL_TO_OTHER_OPERATOR(Class, Other, <=)             \
+  DEFINE_ONE_FRIEND_RELATIONAL_TO_OTHER_OPERATOR(Class, Other, > )             \
+  DEFINE_ONE_FRIEND_RELATIONAL_TO_OTHER_OPERATOR(Class, Other, >=)
+
+
+// Declare a set of friend comparison-to-other operators, assuming that
+// 'compare' exists.
+#define DEFINE_FRIEND_RELATIONAL_TO_OTHER_OPERATORS(Class, Other)        \
+  DEFINE_ONE_FRIEND_RELATIONAL_TO_OTHER_OPERATOR(Class, Other, ==)       \
+  DEFINE_ONE_FRIEND_RELATIONAL_TO_OTHER_OPERATOR(Class, Other, !=)       \
+  DEFINE_FRIEND_NON_EQUALITY_RELATIONAL_TO_OTHER_OPERATORS(Class, Other)
+
+
+/* Declare a `compareTo` method, to compare to an `Other` type, that
+   must be implemented elsewhere.  Then, define friend `compare` methods
+   terms of it, and friend relational operators in terms of that.
+*/
+#define DECLARE_COMPARETO_AND_DEFINE_RELATIONALS_TO_OTHER(Class, Other) \
+  int compareTo(Other const &b) const;                                  \
+  [[maybe_unused]]                                                      \
+  friend int compare(Class const &a, Other const &b)                    \
+    { return a.compareTo(b); }                                          \
+  [[maybe_unused]]                                                      \
+  friend int compare(Other const &a, Class const &b)                    \
+    { return -(b.compareTo(a)); }                                       \
+  DEFINE_FRIEND_RELATIONAL_TO_OTHER_OPERATORS(Class, Other)
 
 
 CLOSE_NAMESPACE(smbase)
