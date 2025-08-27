@@ -194,6 +194,9 @@ bool isShellMetacharacter(CodePoint c, bool afterProgram=false);
 // True if `c` is a (forward) slash or backslash.
 bool isSlashOrBackslash(CodePoint c);
 
+// True of space (0x20) and tab (0x09).
+bool isSpaceOrTab(CodePoint c);
+
 
 // ---------------------------- Conversions ----------------------------
 // If 'c' encodes a lowercase letter in US-ASCII, return the

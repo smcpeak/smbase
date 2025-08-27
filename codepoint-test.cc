@@ -117,6 +117,15 @@ void test_isSlashOrBackslash()
 }
 
 
+void test_isSpaceOrTab()
+{
+  EXPECT_EQ(isSpaceOrTab(0), false);
+  EXPECT_EQ(isSpaceOrTab('x'), false);
+  EXPECT_EQ(isSpaceOrTab(' '), true);
+  EXPECT_EQ(isSpaceOrTab('\t'), true);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -128,6 +137,7 @@ void test_codepoint()
   test_various();
   test_isShellMetaCharacter();
   test_isSlashOrBackslash();
+  test_isSpaceOrTab();
 }
 
 

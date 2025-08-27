@@ -248,6 +248,12 @@ bool isSlashOrBackslash(CodePoint c)
 }
 
 
+bool isSpaceOrTab(CodePoint c)
+{
+  return c == ' ' || c == '\t';
+}
+
+
 int convertUSASCIIToUpper(int c)
 {
   if (0x61 /*'a'*/ <= c && c <= 0x7a /*'z'*/) {
