@@ -37,11 +37,15 @@ public:      // methods
 };
 
 
+// Build a `LabeledValue`.
+#define LABELED(value) LabeledValue((value), #value)
+
+
 // Check that comparing `a` and `b`, in that order, yields `expect`.
-template <typename T>
+template <typename T1, typename T2>
 void expectCompareOneWay(
-  LabeledValue<T> const &a,
-  LabeledValue<T> const &b,
+  LabeledValue<T1> const &a,
+  LabeledValue<T2> const &b,
   int expect)
 {
   EXN_CONTEXT("a=" << a.m_label << "=" << *a);
@@ -62,10 +66,10 @@ void expectCompareOneWay(
 
 // Check that comparing `a` and `b` yields `expect`, and that comparing
 // them in the opposite order yields the opposite result.
-template <typename T>
+template <typename T1, typename T2>
 void expectCompare(
-  LabeledValue<T> const &a,
-  LabeledValue<T> const &b,
+  LabeledValue<T1> const &a,
+  LabeledValue<T2> const &b,
   int expect)
 {
   expectCompareOneWay(a, b, expect);
@@ -75,7 +79,7 @@ void expectCompare(
 
 // Macro to stringify arguments.
 #define EXPECT_COMPARE(a, b, expect) \
-  expectCompare(LabeledValue(a, #a), LabeledValue(b, #b), expect)
+  expectCompare(LABELED(a), LABELED(b), expect)
 
 
 // Check that the elements of `vec` are in strictly increasing order by
