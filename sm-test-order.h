@@ -102,7 +102,7 @@ void checkStrictlyOrdered(
 }
 
 
-// Macro to stringify arguments.
+// Check that the arguments after the type `T` are strictly ordered.
 #define EXPECT_STRICTLY_ORDERED(T, ...)                           \
   checkStrictlyOrdered(                                           \
     SM_PP_STRINGIFY_ARGS(__VA_ARGS__),                            \
