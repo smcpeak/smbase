@@ -263,6 +263,12 @@ void expectEqGDVSer(
                  toGDValue(actual), toGDValue(expect)) /* user ; */
 
 
+// ------------------------- EXPECT_TRUE/FALSE -------------------------
+// ChatGPT likes to generate tests that use these.
+#define EXPECT_TRUE(expr) EXPECT_EQ((expr), true)
+#define EXPECT_FALSE(expr) EXPECT_EQ((expr), false)
+
+
 // ---------------------------- EXPECT_EXN -----------------------------
 // Check that evaluating `expr` throws an exception of type `ExnType`.
 #define EXPECT_EXN(expr, ExnType)                            \

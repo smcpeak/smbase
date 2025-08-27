@@ -65,6 +65,24 @@ void test_EXPECT_EQ()
 }
 
 
+void test_EXPECT_TRUE()
+{
+  EXPECT_EXN_SUBSTR(EXPECT_TRUE(false),
+    XMessage, "actual: 0");
+
+  EXPECT_TRUE(true);
+}
+
+
+void test_EXPECT_FALSE()
+{
+  EXPECT_EXN_SUBSTR(EXPECT_FALSE(true),
+    XMessage, "actual: 1");
+
+  EXPECT_FALSE(false);
+}
+
+
 void sampleTest_expectHasSubstring()
 {
   EXPECT_HAS_SUBSTRING("actual", "expectSubstring");
@@ -276,6 +294,8 @@ void test_sm_test()
   test_TEST_CASE();
   test_TEST_CASE_EXPRS();
   test_EXPECT_EQ();
+  test_EXPECT_TRUE();
+  test_EXPECT_FALSE();
   test_EXPECT_HAS_SUBSTRING();
   test_EXPECT_MATCHES_REGEX();
   test_EXPECT_EQ_GDV();
