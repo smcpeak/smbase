@@ -3,12 +3,13 @@
 
 #include "overflow.h"                  // this module
 
-#include "exc.h"                       // xassert
-#include "save-restore.h"              // SET_RESTORE
-#include "sm-iostream.h"               // cout
-#include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
-#include "sm-test.h"                   // PVAL, DIAG, EXPECT_EQ_NUMBERS, verbose
-#include "str.h"                       // streq
+#include "smbase/exc.h"                // xassert
+#include "smbase/gdvalue.h"            // GDVN_OMAP_EXPRS for TEST_CASE_EXPRS
+#include "smbase/save-restore.h"       // SET_RESTORE
+#include "smbase/sm-iostream.h"        // cout
+#include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
+#include "smbase/sm-test.h"            // PVAL, DIAG, EXPECT_EQ_NUMBERS, verbose
+#include "smbase/str.h"                // streq
 
 #include <cstdlib>                     // std::getenv
 #include <optional>                    // std::optional
@@ -16,6 +17,7 @@
 #include <stdint.h>                    // int64_t, uint64_t, INT64_C, int32_t
 #include <limits.h>                    // INT_MIN, INT_MIN
 
+using namespace gdv;
 using namespace smbase;
 
 
@@ -576,6 +578,69 @@ void test_preIncrement()
 }
 
 
+// Test computing `a*b + c`.
+//
+// If `exnSubstr`, expect it to overflow with that as a substring of the
+// exception message.  Otherwise expect it to succeed.
+template <class SMALL_NUM>
+void testOneMultiplyAddSmallUsingInt64(
+  SMALL_NUM a, SMALL_NUM b, SMALL_NUM c,
+  char const * NULLABLE exnSubstr)
+{
+  TEST_CASE_EXPRS("testOneMultiplyAddSmallUsingInt64",
+    +a, +b, +c);
+
+  int64_t largeA(a);
+  int64_t largeB(b);
+  int64_t largeC(c);
+  int64_t result(largeA * largeB + largeC);
+
+  int64_t minValue(std::numeric_limits<SMALL_NUM>::min());
+  int64_t maxValue(std::numeric_limits<SMALL_NUM>::max());
+
+  if (minValue <= result && result <= maxValue) {
+    // Should not overflow.
+    SMALL_NUM actual = multiplyAddWithOverflowCheck(a, b, c);
+
+    // Check for correctness using the larger type.
+    int64_t largeActual(actual);
+    EXPECT_EQ_NUMBERS(largeActual, result);
+
+    EXPECT_EQ_NUMBERS(
+      static_cast<int64_t>(multiplyAddWithOverflowCheckOpt(a, b, c).value()),
+      result);
+
+    xassert(exnSubstr == nullptr);
+  }
+  else {
+    // Should overflow.
+    xassert(exnSubstr != nullptr);
+    EXPECT_EXN_SUBSTR(multiplyAddWithOverflowCheck(a, b, c),
+      XOverflow, exnSubstr);
+
+    auto res = multiplyAddWithOverflowCheckOpt(a, b, c);
+    xassert(!res.has_value());
+  }
+}
+
+
+void test_multiplyAdd()
+{
+  // These will not overflow.
+  testOneMultiplyAddSmallUsingInt64<int8_t>(0, 0, 0, nullptr);
+  testOneMultiplyAddSmallUsingInt64<int8_t>(1, 2, 3, nullptr);
+  testOneMultiplyAddSmallUsingInt64<int8_t>(4, 5, 6, nullptr);
+  testOneMultiplyAddSmallUsingInt64<int8_t>(-7, -8, -9, nullptr);
+
+  // Overflow the multiplication.
+  testOneMultiplyAddSmallUsingInt64<int8_t>(40, 50, 6, "40 * 50");
+
+  // Overflow the addition.
+  testOneMultiplyAddSmallUsingInt64<int8_t>(127, 1, 6, "127 + 6");
+  testOneMultiplyAddSmallUsingInt64<int8_t>(63, 2, 2, "126 + 2");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -595,6 +660,7 @@ void test_overflow()
   RUNTEST(testConvertNumber);
   RUNTEST(test_postIncrement);
   RUNTEST(test_preIncrement);
+  RUNTEST(test_multiplyAdd);
 
   #undef RUNTEST
 }

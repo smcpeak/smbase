@@ -7,7 +7,7 @@
 #include "smbase/codepoint.h"          // isASCIIPrintable, isShellMetacharacter, isSlashOrBackslash
 #include "smbase/exc.h"                // smbase::xmessage
 #include "smbase/optional-util.h"      // liftToOptional
-#include "smbase/overflow.h"           // safeToInt, multiplyWithOverflowCheck[Opt], addWithOverflowCheckOpt
+#include "smbase/overflow.h"           // safeToInt, multiply[Add]WithOverflowCheck[Opt], addWithOverflowCheckOpt
 #include "smbase/sm-regex.h"           // smbase::Regex
 #include "smbase/sm-span.h"            // smbase::Span
 #include "smbase/strcmp-compare.h"     // StrcmpCompare
@@ -152,28 +152,6 @@ std::size_t numLeadingChars(std::string const &s, char c)
   }
 
   return i;
-}
-
-
-// Compute `a*b + c`.  Return nullopt if that (or the intermediate
-// product) cannot be represented as `int`.
-//
-// This is a candidate to move into the `overflow` module, but I'd like
-// to see it used in at least one more place first.
-//
-template <typename NUM>
-std::optional<NUM> multiplyAddWithOverflowCheckOpt(
-  NUM a,
-  NUM b,
-  NUM c)
-{
-  if (std::optional<NUM> product = multiplyWithOverflowCheckOpt(a,b)) {
-    if (std::optional<NUM> sum = addWithOverflowCheckOpt(*product, c)) {
-      return *sum;
-    }
-  }
-
-  return std::nullopt;
 }
 
 

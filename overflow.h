@@ -225,6 +225,40 @@ NUM multiplyWithOverflowCheck(NUM a, NUM b)
 }
 
 
+// Compute `a*b + c`.  Return nullopt if that, or the intermediate
+// product, cannot be represented as `NUM`.
+//
+// It would be possible to do a more sophisticated analysis, and only
+// fail when the final result is not representable, but I have no need
+// for that refinement currently.
+template <typename NUM>
+std::optional<NUM> multiplyAddWithOverflowCheckOpt(
+  NUM a,
+  NUM b,
+  NUM c)
+{
+  if (std::optional<NUM> product = multiplyWithOverflowCheckOpt(a,b)) {
+    if (std::optional<NUM> sum = addWithOverflowCheckOpt(*product, c)) {
+      return *sum;
+    }
+  }
+
+  return std::nullopt;
+}
+
+
+// Return `a*b + c`.
+template <class NUM>
+NUM multiplyAddWithOverflowCheck(NUM a, NUM b, NUM c)
+{
+  // If I call `multiplyAddWithOverflowCheckOpt` here, then the
+  // exception will not indicate which of the addtion or multiplication
+  // overflowed.  That's not a huge deal, but not great either.  So,
+  // just repeat the composition.
+  return addWithOverflowCheck(multiplyWithOverflowCheck(a, b), c);
+}
+
+
 // Get quotient and remainder, returning false on overflow or division
 // by zero.
 template <class NUM>
