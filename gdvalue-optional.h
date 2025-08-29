@@ -45,6 +45,25 @@ struct GDVPTo<std::optional<T>> {
 };
 
 
+// Allow serializing `std::nullopt` for uniformity.
+inline GDValue toGDValue(std::nullopt_t const &)
+{
+  return GDValue();
+}
+
+
+template <>
+struct GDVPTo<std::nullopt_t> {
+  static std::nullopt_t f(GDValueParser const &p)
+  {
+    if (!p.isNull()) {
+      p.throwError("Value must be `null` to make a `nullopt_t`.");
+    }
+    return std::nullopt;
+  }
+};
+
+
 CLOSE_NAMESPACE(gdv)
 
 

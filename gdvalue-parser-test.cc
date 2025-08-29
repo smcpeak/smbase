@@ -630,6 +630,8 @@ void test_optional()
                 GDValue());
   testRoundtrip(std::optional<int>(3),
                 GDValue(3));
+  testRoundtrip(std::nullopt,
+                GDValue());
 }
 
 
