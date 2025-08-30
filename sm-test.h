@@ -270,38 +270,49 @@ void expectEqGDVSer(
 
 
 // ---------------------------- EXPECT_EXN -----------------------------
-// Check that evaluating `expr` throws an exception of type `ExnType`.
-#define EXPECT_EXN(expr, ExnType)                            \
-  try {                                                      \
-    expr;                                                    \
-    x_assert_fail("Expected exception", __FILE__, __LINE__); \
-  }                                                          \
-  catch (ExnType &e) {                                       \
-    if (verbose) {                                           \
-      cout << "As expected: " << e.what() << "\n";           \
-    }                                                        \
+// Common core of `EXPECT_EXN` and `EXPECT_EXN_SUBSTR`
+#define EXPECT_EXN_COMMON_CORE(expr, ExnType, additionalCheck)    \
+  {                                                               \
+    bool evalFinished = false;                                    \
+    try {                                                         \
+      expr;                                                       \
+      evalFinished = true;                                        \
+    }                                                             \
+    catch (ExnType &e) {                                          \
+      char const *w = e.what();                                   \
+      additionalCheck                                             \
+      if (verbose) {                                              \
+        cout << "As expected: " << w << "\n";                     \
+      }                                                           \
+    }                                                             \
+    catch (std::exception &e) {                                   \
+      xfailure_stringbc(                                          \
+        "Expected exception of type `" #ExnType "`, but instead " \
+        "got exception of different type, with message: " <<      \
+        doubleQuote(e.what()) << ".");                            \
+    }                                                             \
+    if (evalFinished) {                                           \
+      x_assert_fail("Expected exception, but none was thrown.",   \
+        __FILE__, __LINE__);                                      \
+    }                                                             \
   }
+
+
+// Check that evaluating `expr` throws an exception of type `ExnType`.
+#define EXPECT_EXN(expr, ExnType)                    \
+  EXPECT_EXN_COMMON_CORE(expr, ExnType, /*nothing*/)
 
 
 // Check that evaluating `expr` throws an exception of type `ExnType`
 // whose `what` string contains `substring`.
 #define EXPECT_EXN_SUBSTR(expr, ExnType, substring)                \
-  try {                                                            \
-    expr;                                                          \
-    xfailure("Expected " #ExnType " exception");                   \
-  }                                                                \
-  catch (ExnType &e) {                                             \
-    char const *w = e.what();                                      \
+  EXPECT_EXN_COMMON_CORE(expr, ExnType,                            \
     if (!std::strstr(w, (substring))) {                            \
       xfailure_stringbc(                                           \
         "Expected exception to have " << doubleQuote(substring) << \
         " as a substring of its what string " << doubleQuote(w) << \
         " but it did not.");                                       \
-    }                                                              \
-    else if (verbose) {                                            \
-      cout << "As expected: " << w << "\n";                        \
-    }                                                              \
-  }
+    })
 
 
 // ------------------------ Comparison testing -------------------------

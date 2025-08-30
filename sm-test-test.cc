@@ -285,6 +285,34 @@ void test_op_eq()
 }
 
 
+void test_no_exn()
+{
+  EXPECT_EXN_SUBSTR(
+    EXPECT_EXN((void)0, XAssert),
+    XAssert, "Expected exception, but none was thrown.");
+
+  EXPECT_EXN_SUBSTR(
+    EXPECT_EXN_SUBSTR((void)0, XAssert, "irrelevant"),
+    XAssert, "Expected exception, but none was thrown.");
+}
+
+
+void test_wrong_exn()
+{
+  EXPECT_EXN_SUBSTR(
+    EXPECT_EXN(xmessage("blah"), XAssert),
+    XAssert, "Expected exception of type `XAssert`, but instead "
+             "got exception of different type, with message: "
+             "\"blah\".");
+
+  EXPECT_EXN_SUBSTR(
+    EXPECT_EXN_SUBSTR(xmessage("blah"), XAssert, "irrelevant"),
+    XAssert, "Expected exception of type `XAssert`, but instead "
+             "got exception of different type, with message: "
+             "\"blah\".");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -302,6 +330,8 @@ void test_sm_test()
   test_EXPECT_EQ_GDVSER();
   test_envRandomizedTestIters();
   test_op_eq();
+  test_no_exn();
+  test_wrong_exn();
 }
 
 
