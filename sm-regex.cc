@@ -37,6 +37,9 @@ std::string XRegexSyntaxError::getConflict() const
 }
 
 
+DEFINE_EXN_GET_TYPE_NAME(XRegexSyntaxError)
+
+
 // ------------------------------- Regex -------------------------------
 // Properly-typed 'm_compiled_regex_ptr'.
 #define M_COMPILED_REGEX_PTR(obj) \

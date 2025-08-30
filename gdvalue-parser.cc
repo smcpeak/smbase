@@ -652,6 +652,9 @@ std::string XGDValueError::getConflict() const
 }
 
 
+DEFINE_EXN_GET_TYPE_NAME(XGDValueError)
+
+
 // ------------------------ HandleXGDValueError ------------------------
 HandleXGDValueError::~HandleXGDValueError()
 {}

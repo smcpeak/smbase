@@ -65,6 +65,7 @@ public:      // methods
 
   // XBase methods.
   virtual std::string getConflict() const override;
+  virtual char const *getTypeName() const noexcept override;
 
   // Old methods and their new replacements.
 #if 0

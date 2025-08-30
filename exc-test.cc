@@ -90,6 +90,14 @@ void test_prependContextWithExnContext()
 }
 
 
+void test_getExceptionTypeName()
+{
+  EXPECT_EQ(getExceptionTypeName(XMessage("msg")), "XMessage");
+  EXPECT_EQ(getExceptionTypeName(XAssert("cond", "fname", 1)), "XAssert");
+  EXPECT_EQ(getExceptionTypeName(std::exception()), "std::exception");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -100,6 +108,7 @@ void test_exc()
   test_getExnContextString();
   test_EXN_CONTEXT_FILE_LINE();
   test_prependContextWithExnContext();
+  test_getExceptionTypeName();
 }
 
 

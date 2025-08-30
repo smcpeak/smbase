@@ -69,6 +69,9 @@ std::string XExclusiveWriteFileConflict::getConflict() const
 }
 
 
+DEFINE_EXN_GET_TYPE_NAME(XExclusiveWriteFileConflict)
+
+
 // --------------------- ExclusiveWriteFilePrivate ---------------------
 #if PLATFORM_IS_WINDOWS
 

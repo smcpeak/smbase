@@ -110,6 +110,8 @@ public:      // methods
   // copy of the name so that calling code can unambiguously retrieve
   // it.
   virtual std::string getConflict() const override;
+
+  virtual char const *getTypeName() const noexcept override;
 };
 
 

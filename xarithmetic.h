@@ -16,7 +16,10 @@ OPEN_NAMESPACE(smbase)
 // Exception thrown when some sort of invalid numeric arithmetic
 // operation is attempted.  Examples include overflow, conversion
 // errors, and division by zero.
-class XArithmetic : public XBase {};
+class XArithmetic : public XBase {
+public:
+  virtual char const *getTypeName() const noexcept override;
+};
 
 
 // Attempt to divide by zero.
@@ -32,6 +35,7 @@ public:      // methods
   /*AUTO_CTC*/ XDivideByZero &operator=(XDivideByZero const &obj) noexcept;
 
   virtual std::string getConflict() const override;
+  virtual char const *getTypeName() const noexcept override;
 };
 
 

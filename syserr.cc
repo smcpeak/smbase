@@ -90,6 +90,9 @@ std::string XSysError::getConflict() const
 }
 
 
+DEFINE_EXN_GET_TYPE_NAME(XSysError)
+
+
 void xsyserror(char const *syscallName)
 {
   xsyserror(syscallName, std::string(""));

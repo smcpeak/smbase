@@ -7,6 +7,9 @@
 OPEN_NAMESPACE(smbase)
 
 
+DEFINE_EXN_GET_TYPE_NAME(XArithmetic)
+
+
 // create-tuple-class: definitions for XDivideByZero
 /*AUTO_CTC*/ XDivideByZero::XDivideByZero(
 /*AUTO_CTC*/   std::string const &dividend)
@@ -35,6 +38,9 @@ std::string XDivideByZero::getConflict() const
   return stringb(
     "Attempt to divide " << m_dividend << " by zero.");
 }
+
+
+DEFINE_EXN_GET_TYPE_NAME(XDivideByZero)
 
 
 CLOSE_NAMESPACE(smbase)

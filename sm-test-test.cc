@@ -302,13 +302,13 @@ void test_wrong_exn()
   EXPECT_EXN_SUBSTR(
     EXPECT_EXN(xmessage("blah"), XAssert),
     XAssert, "Expected exception of type `XAssert`, but instead "
-             "got exception of different type, with message: "
+             "got exception of type `XMessage`, with message: "
              "\"blah\".");
 
   EXPECT_EXN_SUBSTR(
     EXPECT_EXN_SUBSTR(xmessage("blah"), XAssert, "irrelevant"),
     XAssert, "Expected exception of type `XAssert`, but instead "
-             "got exception of different type, with message: "
+             "got exception of type `XMessage`, with message: "
              "\"blah\".");
 }
 

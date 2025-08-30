@@ -18,7 +18,10 @@ OPEN_NAMESPACE(smbase)
 
 // Exception thrown when there would be an arithmetic overflow due to
 // limited range of the representation type.
-class XOverflow : public XArithmetic {};
+class XOverflow : public XArithmetic {
+public:
+  virtual char const *getTypeName() const noexcept override;
+};
 
 
 // Overflow due to a binary arithmetic operation.
@@ -42,11 +45,15 @@ public:      // methods
   /*AUTO_CTC*/ XBinaryOpOverflow &operator=(XBinaryOpOverflow const &obj) noexcept;
 
   virtual std::string getConflict() const override;
+  virtual char const *getTypeName() const noexcept override;
 };
 
 
 // Conversion from one type to another fails.
-class XNumericConversion : public XOverflow {};
+class XNumericConversion : public XOverflow {
+public:
+  virtual char const *getTypeName() const noexcept override;
+};
 
 
 // Conversion from one type to another loses information, in that a
@@ -84,6 +91,7 @@ public:      // methods
   /*AUTO_CTC*/ XNumericConversionNoRTIP &operator=(XNumericConversionNoRTIP const &obj) noexcept;
 
   virtual std::string getConflict() const override;
+  virtual char const *getTypeName() const noexcept override;
 };
 
 
@@ -113,6 +121,7 @@ public:      // methods
   /*AUTO_CTC*/ XNumericConversionOutsideRange &operator=(XNumericConversionOutsideRange const &obj) noexcept;
 
   virtual std::string getConflict() const override;
+  virtual char const *getTypeName() const noexcept override;
 };
 
 
@@ -139,6 +148,7 @@ public:      // methods
   /*AUTO_CTC*/ XNumericConversionFromAP &operator=(XNumericConversionFromAP const &obj) noexcept;
 
   virtual std::string getConflict() const override;
+  virtual char const *getTypeName() const noexcept override;
 };
 
 

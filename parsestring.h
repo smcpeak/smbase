@@ -31,6 +31,8 @@ public:      // funcs
     std::string const &conflict);
   XParseString(XParseString const &obj);
   ~XParseString();
+
+  virtual char const *getTypeName() const noexcept override;
 };
 
 

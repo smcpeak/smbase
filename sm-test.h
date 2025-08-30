@@ -288,8 +288,8 @@ void expectEqGDVSer(
     catch (std::exception &e) {                                   \
       xfailure_stringbc(                                          \
         "Expected exception of type `" #ExnType "`, but instead " \
-        "got exception of different type, with message: " <<      \
-        doubleQuote(e.what()) << ".");                            \
+        "got exception of type `" << getExceptionTypeName(e) <<   \
+        "`, with message: " << doubleQuote(e.what()) << ".");     \
     }                                                             \
     if (evalFinished) {                                           \
       x_assert_fail("Expected exception, but none was thrown.",   \

@@ -347,6 +347,8 @@ public:      // methods
 
   // This combines information in `m_path` with `m_conflict`.
   virtual std::string getConflict() const override;
+
+  virtual char const *getTypeName() const noexcept override;
 };
 
 

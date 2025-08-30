@@ -50,6 +50,9 @@ XParseString::~XParseString()
 {}
 
 
+DEFINE_EXN_GET_TYPE_NAME(XParseString)
+
+
 // ------------------------- ParseString ----------------------------
 ParseString::~ParseString()
 {}

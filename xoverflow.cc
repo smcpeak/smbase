@@ -10,6 +10,9 @@
 OPEN_NAMESPACE(smbase)
 
 
+DEFINE_EXN_GET_TYPE_NAME(XOverflow)
+
+
 // create-tuple-class: definitions for XBinaryOpOverflow
 /*AUTO_CTC*/ XBinaryOpOverflow::XBinaryOpOverflow(
 /*AUTO_CTC*/   TypeNameAndSize const &type,
@@ -51,6 +54,12 @@ std::string XBinaryOpOverflow::getConflict() const
     "Arithmetic overflow of type " << m_type.toString() << ": " <<
     m_lhs << ' ' << m_op << ' ' << m_rhs << " would overflow.");
 }
+
+
+DEFINE_EXN_GET_TYPE_NAME(XBinaryOpOverflow)
+
+
+DEFINE_EXN_GET_TYPE_NAME(XNumericConversion)
 
 
 // create-tuple-class: definitions for XNumericConversionNoRTIP
@@ -103,6 +112,9 @@ std::string XNumericConversionNoRTIP::getConflict() const
 }
 
 
+DEFINE_EXN_GET_TYPE_NAME(XNumericConversionNoRTIP)
+
+
 // create-tuple-class: definitions for XNumericConversionOutsideRange
 /*AUTO_CTC*/ XNumericConversionOutsideRange::XNumericConversionOutsideRange(
 /*AUTO_CTC*/   std::string const &sourceValue,
@@ -142,6 +154,9 @@ std::string XNumericConversionOutsideRange::getConflict() const
     " cannot be represented with type " << m_destType.toString() <<
     ".");
 }
+
+
+DEFINE_EXN_GET_TYPE_NAME(XNumericConversionOutsideRange)
 
 
 // create-tuple-class: definitions for XNumericConversionFromAP
@@ -187,6 +202,9 @@ std::string XNumericConversionFromAP::getConflict() const
     (m_destIsSigned? "a signed " : "an unsigned ") <<
     (m_destSizeBytes*8) << "-bit integer type, but it does not fit.");
 }
+
+
+DEFINE_EXN_GET_TYPE_NAME(XNumericConversionFromAP)
 
 
 CLOSE_NAMESPACE(smbase)

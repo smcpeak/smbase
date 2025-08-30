@@ -121,9 +121,23 @@ void XBase::appendContext(std::string const &context)
 }
 
 
+DEFINE_EXN_GET_TYPE_NAME(XBase)
+
+
 void XBase::insert(ostream &os) const
 {
   os << getMessage();
+}
+
+
+char const *getExceptionTypeName(std::exception const &x)
+{
+  if (XBase const *xbase = dynamic_cast<XBase const *>(&x)) {
+    return xbase->getTypeName();
+  }
+  else {
+    return "std::exception";
+  }
 }
 
 
@@ -154,6 +168,9 @@ std::string XMessage::getConflict() const
 {
   return m_message;
 }
+
+
+DEFINE_EXN_GET_TYPE_NAME(XMessage)
 
 
 void xmessage(std::string const &msg)
@@ -189,6 +206,9 @@ std::string XAssert::getConflict() const
 }
 
 
+DEFINE_EXN_GET_TYPE_NAME(XAssert)
+
+
 // failure function, declared in xassert.h
 void x_assert_fail(char const *cond, char const *file, int line)
 {
@@ -212,6 +232,9 @@ XFormat::XFormat(XFormat const &obj)
 
 XFormat::~XFormat()
 {}
+
+
+DEFINE_EXN_GET_TYPE_NAME(XFormat)
 
 
 void xformat(rostring condition)
@@ -242,6 +265,9 @@ XUnimp::~XUnimp()
 {}
 
 
+DEFINE_EXN_GET_TYPE_NAME(XUnimp)
+
+
 void throw_XUnimp(rostring msg)
 {
   XUnimp x(msg);
@@ -270,6 +296,9 @@ XFatal::XFatal(XFatal const &obj)
 
 XFatal::~XFatal()
 {}
+
+
+DEFINE_EXN_GET_TYPE_NAME(XFatal)
 
 
 void throw_XFatal(rostring msg)

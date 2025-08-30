@@ -1,8 +1,10 @@
-// exc.h            see license.txt for copyright and terms of use
+// exc.h
 // Various exception classes.  The intent is derive everything from
 // XBase, so a program can catch this one exception type in main() and
 // be assured no exception will propagate out of the program (or any
 // other unit of granularity you want).
+
+// See license.txt for copyright and terms of use.
 
 #ifndef SMBASE_EXC_H
 #define SMBASE_EXC_H
@@ -236,6 +238,17 @@ public:      // methods
   // Default: Append `context` to `m_contexts`.
   virtual void appendContext(std::string const &context);
 
+  // Get the name of this exception type.  This is meant primarily as
+  // debugging assistance, *not* something to be seen by the end user;
+  // the conflict message should have everything the user needs to see.
+  // The default returns "XBase".
+  //
+  // Although this will almost always be a pointer to a string literal,
+  // clients should assume it is only valid until a non-const method is
+  // invoked (the same lifetime guarantee as the `what()` string).
+  //
+  virtual char const *getTypeName() const noexcept;
+
   // This is a legacy alias for `getMessage()`.
   std::string why() const
     { return getMessage(); }
@@ -245,6 +258,26 @@ public:      // methods
   friend std::ostream& operator << (std::ostream &os, XBase const &obj)
     { obj.insert(os); return os; }
 };
+
+
+// This can be used in the .cc file to define `getTypeName`.
+#define DEFINE_EXN_GET_TYPE_NAME(ClassName)           \
+  char const *ClassName::getTypeName() const noexcept \
+  {                                                   \
+    return #ClassName;                                \
+  }
+
+
+// Get the name of the type of `e`.  This attempts a `dynamic_cast` to
+// `XBase` to call `getTypeName`.  If that fails, it returns
+// "std::exception".  (In the future, I might extend that logic to check
+// for other kinds of exceptions.)  Because of that, and because an
+// `XBase` subclass might forget to override `getTypeName`, the most
+// that can be assured is that this is the name of a superclass of `x`.
+//
+// Ensures: return != nullptr
+//
+char const *getExceptionTypeName(std::exception const &x);
 
 
 // This is used when we do not expect an exception to be thrown, and
@@ -305,6 +338,8 @@ public:      // methods
 
   // Returns `m_message`.
   virtual std::string getConflict() const override;
+
+  virtual char const *getTypeName() const noexcept override;
 };
 
 
@@ -353,6 +388,7 @@ public:
 
   // XBase methods.
   virtual std::string getConflict() const override;
+  virtual char const *getTypeName() const noexcept override;
 };
 
 
@@ -377,6 +413,8 @@ public:      // methods
 
   // Compatibility alias.
   std::string cond() const { return getMessage(); }
+
+  virtual char const *getTypeName() const noexcept override;
 };
 
 // compact way to throw an XFormat
@@ -407,6 +445,8 @@ public:
   XUnimp(std::string const &msg);
   XUnimp(XUnimp const &obj);
   ~XUnimp();
+
+  virtual char const *getTypeName() const noexcept override;
 };
 
 void throw_XUnimp(std::string const &msg) NORETURN;
@@ -425,6 +465,8 @@ public:
   XFatal(std::string const &msg);
   XFatal(XFatal const &obj);
   ~XFatal();
+
+  virtual char const *getTypeName() const noexcept override;
 };
 
 void throw_XFatal(std::string const &msg) NORETURN;
