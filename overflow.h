@@ -333,10 +333,15 @@ std::optional<DEST> convertWithRTIPOpt(SRC const &src)
 }
 
 
-// Convert 'src' to type 'DEST', throwing XOverflow if it cannot be
-// converted back without loss of information.
+// Convert `src` to type `DEST`, throwing XOverflow if it cannot be
+// converted back without loss of information.  This is mainly intended
+// to be used in binary serialization code to ensure information is
+// preserved in the serialized form, assuming the deserializer does the
+// opposite conversion.
 //
-// TODO: Change this to return `dest` instead of passing by reference.
+// This takes `dest` by reference in order to deduce `DEST` at the call
+// sites.
+//
 template <class DEST, class SRC>
 void convertWithRTIP(DEST &dest, SRC const &src)
 {
@@ -410,6 +415,15 @@ DEST convertNumber(SRC const &src)
     stringb(+src),
     smbase::makeTypeNameAndSizeForType<SRC>(),
     smbase::makeTypeNameAndSizeForType<DEST>()));
+}
+
+
+// Write the converted number to `dest`.  This is useful when we want to
+// deduce the destination type.
+template <class DEST, class SRC>
+void writeConvertedNumber(DEST &dest, SRC const &src)
+{
+  dest = convertNumber<DEST, SRC>(src);
 }
 
 

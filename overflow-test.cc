@@ -8,7 +8,7 @@
 #include "smbase/save-restore.h"       // SET_RESTORE
 #include "smbase/sm-iostream.h"        // cout
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
-#include "smbase/sm-test.h"            // PVAL, DIAG, EXPECT_EQ_NUMBERS, verbose
+#include "smbase/sm-test.h"            // PVAL, DIAG, EXPECT_EQ_NUMBERS, EXPECT_EXN_SUBSTR, verbose
 #include "smbase/str.h"                // streq
 
 #include <cstdlib>                     // std::getenv
@@ -511,21 +511,28 @@ void testConvertWithRTIP()
 template <class DEST, class SRC>
 void cnSuccess(SRC src)
 {
-  DEST dest = convertNumber<DEST>(src);
-  xassert(dest == src);
+  {
+    DEST dest = convertNumber<DEST>(src);
+    xassert(dest == src);
+  }
+
+  {
+    DEST dest = 0;
+    writeConvertedNumber(dest, src);
+    xassert(dest == src);
+  }
 }
 
 
 template <class DEST, class SRC>
 void cnFail(SRC src)
 {
-  try {
-    convertNumber<DEST>(src);
-    xfailure("should have failed");
-  }
-  catch (XNumericConversionOutsideRange &x) {
-    DIAG("as expected: " << x);
-  }
+  EXPECT_EXN_SUBSTR(convertNumber<DEST>(src),
+    XNumericConversionOutsideRange, "cannot be represented");
+
+  DEST dest;
+  EXPECT_EXN_SUBSTR(writeConvertedNumber(dest, src),
+    XNumericConversionOutsideRange, "cannot be represented");
 }
 
 
