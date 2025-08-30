@@ -50,15 +50,18 @@ class XNumericConversion : public XOverflow {};
 
 
 // Conversion from one type to another loses information, in that a
-// conversion back to the original type yields a different value.  The
-// check that throws this tolerates cases where the source and
+// conversion back to the original type yields a different value.  That
+// is, the conversion does not have Round Trip Information Preservation
+// (RTIP).
+//
+// The check that throws this tolerates cases where the source and
 // destination values are different, but the conversion to the source
 // type yields the original value, so this exception is *not* thrown for
 // a case like that, such as:
 //
 //   (signed char)-1 -> (unsigned char)255 -> (signed char)-1
 //
-class XNumericConversionLosesInformation : public XNumericConversion {
+class XNumericConversionNoRTIP : public XNumericConversion {
 public:      // data
   // Starting value.
   std::string m_sourceValue;
@@ -75,10 +78,10 @@ public:      // data
   TypeNameAndSize m_destType;
 
 public:      // methods
-  // create-tuple-class: declarations for XNumericConversionLosesInformation
-  /*AUTO_CTC*/ explicit XNumericConversionLosesInformation(std::string const &sourceValue, std::string const &destValue, std::string const &roundTripValue, TypeNameAndSize const &sourceType, TypeNameAndSize const &destType);
-  /*AUTO_CTC*/ XNumericConversionLosesInformation(XNumericConversionLosesInformation const &obj) noexcept;
-  /*AUTO_CTC*/ XNumericConversionLosesInformation &operator=(XNumericConversionLosesInformation const &obj) noexcept;
+  // create-tuple-class: declarations for XNumericConversionNoRTIP
+  /*AUTO_CTC*/ explicit XNumericConversionNoRTIP(std::string const &sourceValue, std::string const &destValue, std::string const &roundTripValue, TypeNameAndSize const &sourceType, TypeNameAndSize const &destType);
+  /*AUTO_CTC*/ XNumericConversionNoRTIP(XNumericConversionNoRTIP const &obj) noexcept;
+  /*AUTO_CTC*/ XNumericConversionNoRTIP &operator=(XNumericConversionNoRTIP const &obj) noexcept;
 
   virtual std::string getConflict() const override;
 };

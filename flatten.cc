@@ -8,7 +8,7 @@
 
 // smbase
 #include "exc.h"                       // formatAssert, smbase::xformat
-#include "overflow.h"                  // convertWithoutLoss
+#include "overflow.h"                  // convertWithRTIP
 #include "xassert.h"                   // xassert
 
 // libc
@@ -49,10 +49,10 @@ void Flatten::xferInt32(int &intValue)
 
   if (reading()) {
     xfer_int32_t(i32);
-    convertWithoutLoss(intValue, i32);
+    convertWithRTIP(intValue, i32);
   }
   else {
-    convertWithoutLoss(i32, intValue);
+    convertWithRTIP(i32, intValue);
     xfer_int32_t(i32);
   }
 }
@@ -63,10 +63,10 @@ void Flatten::xferLong64(long &intValue)
   int64_t i64 = 0 /*unused*/;
   if (reading()) {
     xfer_int64_t(i64);
-    convertWithoutLoss(intValue, i64);
+    convertWithRTIP(intValue, i64);
   }
   else {
-    convertWithoutLoss(i64, intValue);
+    convertWithRTIP(i64, intValue);
     xfer_int64_t(i64);
   }
 }

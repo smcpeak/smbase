@@ -456,23 +456,23 @@ void testDivide()
 
 
 template <class DEST, class SRC>
-void cwlSuccess(SRC src)
+void cwrSuccess(SRC src)
 {
   DEST dest = 0;
-  convertWithoutLoss(dest, src);
+  convertWithRTIP(dest, src);
   xassert(static_cast<SRC>(dest) == src);
 }
 
 
 template <class DEST, class SRC>
-void cwlFail(SRC src)
+void cwrFail(SRC src)
 {
   DEST dest = 0;
   try {
-    convertWithoutLoss(dest, src);
+    convertWithRTIP(dest, src);
     xfailure("should have failed");
   }
-  catch (XNumericConversionLosesInformation &x) {
+  catch (XNumericConversionNoRTIP &x) {
     DIAG("as expected: " << x);
   }
 }
@@ -487,24 +487,24 @@ enum SomeEnum {
 };
 
 
-void testConvertWithoutLoss()
+void testConvertWithRTIP()
 {
-  cwlSuccess<int, int>(3);
-  cwlFail<char, int>(12345);
+  cwrSuccess<int, int>(3);
+  cwrFail<char, int>(12345);
 
-  cwlSuccess<unsigned, int>(-3);
-  cwlFail<unsigned char, int>(-3);
-  cwlSuccess<unsigned, signed char>(-3);
+  cwrSuccess<unsigned, int>(-3);
+  cwrFail<unsigned char, int>(-3);
+  cwrSuccess<unsigned, signed char>(-3);
 
-  cwlSuccess<int, SomeEnum>(SE2);
-  cwlSuccess<int, SomeEnum>(SE_MAX);
-  cwlSuccess<int, SomeEnum>(SE_MIN);
-  cwlSuccess<unsigned, SomeEnum>(SE2);
-  cwlSuccess<unsigned, SomeEnum>(SE_MAX);
-  cwlSuccess<unsigned, SomeEnum>(SE_MIN);
+  cwrSuccess<int, SomeEnum>(SE2);
+  cwrSuccess<int, SomeEnum>(SE_MAX);
+  cwrSuccess<int, SomeEnum>(SE_MIN);
+  cwrSuccess<unsigned, SomeEnum>(SE2);
+  cwrSuccess<unsigned, SomeEnum>(SE_MAX);
+  cwrSuccess<unsigned, SomeEnum>(SE_MIN);
 
-  cwlSuccess<unsigned char, SomeEnum>(SE2);
-  cwlFail<unsigned char, SomeEnum>(SE_MAX);
+  cwrSuccess<unsigned char, SomeEnum>(SE2);
+  cwrFail<unsigned char, SomeEnum>(SE_MAX);
 }
 
 
@@ -656,7 +656,7 @@ void test_overflow()
 
   RUNTEST(testAddAndMultiply);
   RUNTEST(testDivide);
-  RUNTEST(testConvertWithoutLoss);
+  RUNTEST(testConvertWithRTIP);
   RUNTEST(testConvertNumber);
   RUNTEST(test_postIncrement);
   RUNTEST(test_preIncrement);

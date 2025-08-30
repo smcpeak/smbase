@@ -6,7 +6,7 @@
 
 #include "flatten.h"                   // underlying module
 #include "objlist.h"                   // ObjList
-#include "overflow.h"                  // convertWithoutLoss
+#include "overflow.h"                  // convertWithRTIP
 #include "xassert.h"                   // xassert
 
 #include <vector>                      // std::vector
@@ -93,7 +93,7 @@ void xferObjList(Flatten &flat, ObjList<T> &list, bool noteOwner = false)
 
 
 // 2022-07-12: I removed 'value_cast'.  Its replacement is
-// 'convertWithoutLoss', defined in overflow.h.
+// 'convertWithRTIP', defined in overflow.h.
 
 
 // Transfer an enum value.  This is safer than just casting to int
@@ -104,12 +104,12 @@ void xferEnum(Flatten &flat, E &e)
 {
   int32_t i = 0;
   if (flat.writing()) {
-    convertWithoutLoss(i, e);
+    convertWithRTIP(i, e);
     flat.xfer_int32_t(i);
   }
   else {
     flat.xfer_int32_t(i);
-    convertWithoutLoss(e, i);
+    convertWithRTIP(e, i);
   }
 }
 
@@ -124,7 +124,7 @@ void xferVectorSize(Flatten &flat, std::vector<T> &vec)
 
   if (flat.writing()) {
     // Write length in elements.
-    convertWithoutLoss(numElements, vec.size());
+    convertWithRTIP(numElements, vec.size());
     flat.xfer_int64_t(numElements);
   }
 
@@ -134,7 +134,7 @@ void xferVectorSize(Flatten &flat, std::vector<T> &vec)
 
     // Convert to size_t with overflow check.
     size_t st_ne;
-    convertWithoutLoss(st_ne, numElements);
+    convertWithRTIP(st_ne, numElements);
 
     // Set vector size accordingly.
     vec.resize(st_ne);

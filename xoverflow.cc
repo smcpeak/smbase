@@ -53,8 +53,8 @@ std::string XBinaryOpOverflow::getConflict() const
 }
 
 
-// create-tuple-class: definitions for XNumericConversionLosesInformation
-/*AUTO_CTC*/ XNumericConversionLosesInformation::XNumericConversionLosesInformation(
+// create-tuple-class: definitions for XNumericConversionNoRTIP
+/*AUTO_CTC*/ XNumericConversionNoRTIP::XNumericConversionNoRTIP(
 /*AUTO_CTC*/   std::string const &sourceValue,
 /*AUTO_CTC*/   std::string const &destValue,
 /*AUTO_CTC*/   std::string const &roundTripValue,
@@ -68,7 +68,7 @@ std::string XBinaryOpOverflow::getConflict() const
 /*AUTO_CTC*/     IMEMBFP(destType)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ XNumericConversionLosesInformation::XNumericConversionLosesInformation(XNumericConversionLosesInformation const &obj) noexcept
+/*AUTO_CTC*/ XNumericConversionNoRTIP::XNumericConversionNoRTIP(XNumericConversionNoRTIP const &obj) noexcept
 /*AUTO_CTC*/   : XNumericConversion(obj),
 /*AUTO_CTC*/     DMEMB(m_sourceValue),
 /*AUTO_CTC*/     DMEMB(m_destValue),
@@ -77,7 +77,7 @@ std::string XBinaryOpOverflow::getConflict() const
 /*AUTO_CTC*/     DMEMB(m_destType)
 /*AUTO_CTC*/ {}
 /*AUTO_CTC*/
-/*AUTO_CTC*/ XNumericConversionLosesInformation &XNumericConversionLosesInformation::operator=(XNumericConversionLosesInformation const &obj) noexcept
+/*AUTO_CTC*/ XNumericConversionNoRTIP &XNumericConversionNoRTIP::operator=(XNumericConversionNoRTIP const &obj) noexcept
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   if (this != &obj) {
 /*AUTO_CTC*/     XNumericConversion::operator=(obj);
@@ -92,7 +92,7 @@ std::string XBinaryOpOverflow::getConflict() const
 /*AUTO_CTC*/
 
 
-std::string XNumericConversionLosesInformation::getConflict() const
+std::string XNumericConversionNoRTIP::getConflict() const
 {
   return stringb(
     "Source value " << m_sourceValue <<

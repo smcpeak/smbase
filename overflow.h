@@ -17,7 +17,7 @@
 #include "smbase/exc.h"                          // DEFINE_XBASE_SUBCLASS
 #include "smbase/stringb.h"                      // stringb
 #include "smbase/type-name-and-size-ops.h"       // smbase::makeTypeNameAndSizeForType
-#include "smbase/xoverflow.h"                    // XBinaryOpOverflow, XNumericConversionLosesInformation, XNumericConversionOutsideRange
+#include "smbase/xoverflow.h"                    // XBinaryOpOverflow, XNumericConversionNoRTIP, XNumericConversionOutsideRange
 
 #include <limits>                                // std::numeric_limits
 #include <optional>                              // std::optional
@@ -311,13 +311,15 @@ void divideWithOverflowCheck(
 
 
 // Convert 'src' to type 'DEST', returning `std::nullopt` if it cannot
-// be converted back without loss of information.
+// be converted back without loss of information, i.e., it has Round
+// Trip Information Preservation (RTIP).
 //
-// This is not the same as being convertible without overflow, since
-// converting -1 to unsigned is a form of overflow, but does not lose
-// information.
+// This is not the same as being convertible without overflow, since,
+// e.g., converting -1 to unsigned is a form of overflow, but converting
+// back to the original type recovers the original value.
+//
 template <class DEST, class SRC>
-std::optional<DEST> convertWithoutLossOpt(SRC const &src)
+std::optional<DEST> convertWithRTIPOpt(SRC const &src)
 {
   DEST dest = static_cast<DEST>(src);
   SRC s2 = static_cast<SRC>(dest);
@@ -336,9 +338,9 @@ std::optional<DEST> convertWithoutLossOpt(SRC const &src)
 //
 // TODO: Change this to return `dest` instead of passing by reference.
 template <class DEST, class SRC>
-void convertWithoutLoss(DEST &dest, SRC const &src)
+void convertWithRTIP(DEST &dest, SRC const &src)
 {
-  std::optional<DEST> destOpt(convertWithoutLossOpt<DEST>(src));
+  std::optional<DEST> destOpt(convertWithRTIPOpt<DEST>(src));
   if (!destOpt.has_value()) {
     // I'm repeating myself here in order to compute values used in the
     // exception object...
@@ -347,7 +349,7 @@ void convertWithoutLoss(DEST &dest, SRC const &src)
 
     // Printing '+src', etc., ensures that types like 'char' will print
     // as numbers.
-    THROW(smbase::XNumericConversionLosesInformation(
+    THROW(smbase::XNumericConversionNoRTIP(
       stringb(+src),
       stringb(+dest),
       stringb(+s2),
@@ -362,12 +364,13 @@ void convertWithoutLoss(DEST &dest, SRC const &src)
 // Convert 'src' to 'dest', ensuring the value is exactly representable
 // in the destination type.  If not, return `std::nullopt`.
 //
-// This is different from 'convertWithoutLossOpt' in that it requires
-// the sign to be preserved.
+// This is different from 'convertWithRTIPOpt' in that it requires the
+// full value, including sign, to be preserved.
+//
 template <class DEST, class SRC>
 std::optional<DEST> convertNumberOpt(SRC const &src)
 {
-  std::optional<DEST> ret(convertWithoutLossOpt<DEST>(src));
+  std::optional<DEST> ret(convertWithRTIPOpt<DEST>(src));
 
   if (ret.has_value()) {
     DEST dest = ret.value();
@@ -385,8 +388,9 @@ std::optional<DEST> convertNumberOpt(SRC const &src)
 // Convert 'src' to 'dest', ensuring the value is exactly representable
 // in the destination type.
 //
-// This is different from 'convertWithoutLoss' in that it requires the
-// sign to be preserved.
+// This is different from 'convertWithRTIP' in that it requires the sign
+// to be preserved.
+//
 template <class DEST, class SRC>
 DEST convertNumber(SRC const &src)
 {
