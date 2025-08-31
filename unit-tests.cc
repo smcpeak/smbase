@@ -108,6 +108,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(dict);
   RUN_TEST(distinct_number);
   RUN_TEST(dni_vector);
+  RUN_TEST(either);
   RUN_TEST(exc);
   RUN_TEST(exclusive_write_file);
   RUN_TEST(functional_set);

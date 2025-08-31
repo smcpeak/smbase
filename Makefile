@@ -416,6 +416,7 @@ UNIT_TEST_OBJS += datetime-test.o
 UNIT_TEST_OBJS += dict-test.o
 UNIT_TEST_OBJS += distinct-number-test.o
 UNIT_TEST_OBJS += dni-vector-test.o
+UNIT_TEST_OBJS += either-test.o
 UNIT_TEST_OBJS += exc-test.o
 UNIT_TEST_OBJS += exclusive-write-file-test.o
 UNIT_TEST_OBJS += functional-set-test.o
