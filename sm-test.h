@@ -334,11 +334,11 @@ bool op_eq(T const &a, T const &b)
 
 // ----------------------------- TEST_CASE -----------------------------
 /*
-  Print `stuff` in verbose mode, and push it onto the exception context
-  stack.
+  Print `stuff` in verbose mode preceded by "-- " as a visual separator,
+  and push it onto the exception context stack.
 */
-#define TEST_CASE(stuff) \
-  DIAG(stuff);           \
+#define TEST_CASE(stuff)          \
+  DIAG("-- " << stuff);           \
   EXN_CONTEXT(stuff) /* user ; */
 
 
