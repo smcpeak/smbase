@@ -11,6 +11,8 @@
 #ifndef SMBASE_PORTABLE_ERROR_CODE_H
 #define SMBASE_PORTABLE_ERROR_CODE_H
 
+#include "portable-error-code-fwd.h"   // fwds for this module
+
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 
 #include <iosfwd>                      // std::ostream
