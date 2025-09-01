@@ -6,6 +6,8 @@
 #ifndef SMBASE_EITHER_H
 #define SMBASE_EITHER_H
 
+#include "either-fwd.h"                // fwds for this module
+
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 #include "smbase/xassert.h"            // xassert
 
