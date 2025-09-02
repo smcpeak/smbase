@@ -18,16 +18,17 @@
 #include "smbase/save-restore.h"       // SAVE_RESTORE
 #include "smbase/sm-file-util.h"       // SMFileUtil
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
-#include "smbase/sm-test.h"            // EXPECT_EQ, EXPECT_MATCHES_REGEX, VPVAL, DIAG, verbose, tout
+#include "smbase/sm-test.h"            // EXPECT_EQ, EXPECT_MATCHES_REGEX, VPVAL, DIAG, verbose, tout, EXPECT_FALSE, TEST_CASE
 #include "smbase/strutil.h"            // hasSubstring
 #include "smbase/string-util.h"        // doubleQuote
 #include "smbase/syserr.h"             // smbase::XSysError
 #include "smbase/utf8-writer.h"        // smbase::utf8EncodeVector
 #include "smbase/xassert.h"            // xassert
+#include "smbase/xoverflow.h"          // smbase::XNumericConversion
 
 // libc++
 #include <cmath>                       // INFINITY, NAN
-#include <cstdint>                     // INT64_C
+#include <cstdint>                     // INT64_C, std::int8_t
 #include <cstdlib>                     // std::{atoi, exit}
 #include <iostream>                    // std::cout
 #include <limits>                      // std::numeric_limits
@@ -2684,6 +2685,46 @@ void test_binary64Float_parseErrors()
 }
 
 
+void test_integerGetAs()
+{
+  TEST_CASE(__func__);
+
+  {
+    GDValue n(123);
+    EXPECT_EQ(n.integerGetAs<int>(), 123);
+    EXPECT_EQ(n.integerGetAsOpt<int>().value(), 123);
+    EXPECT_EQ(n.integerGetAs<std::int8_t>(), 123);
+    EXPECT_EQ(n.integerGetAsOpt<std::int8_t>().value(), 123);
+  }
+
+  {
+    GDValue n(123456);
+    EXPECT_EQ(n.integerGetAs<int>(), 123456);
+    EXPECT_EQ(n.integerGetAsOpt<int>().value(), 123456);
+    EXPECT_EXN_SUBSTR(n.integerGetAs<std::int8_t>(),
+      XNumericConversion, "Source value 123456 of type");
+    EXPECT_FALSE(n.integerGetAsOpt<std::int8_t>().has_value());
+  }
+
+  {
+    GDValue n(GDVInteger::fromDigits("1234567890123456789"));
+    EXPECT_EXN_SUBSTR(n.integerGetAs<int>(),
+      XNumericConversion, "Source value 1234567890123456789 of type");
+    EXPECT_FALSE(n.integerGetAsOpt<int>().has_value());
+  }
+
+  {
+    GDValue n(GDVInteger::fromDigits("12345678901234567890123456789"));
+    EXPECT_EXN_SUBSTR(n.integerGetAs<int>(),
+      XNumericConversion,
+      "Attempted to convert the GDVInteger value "
+      "12345678901234567890123456789 to a signed 32-bit integer type, "
+      "but it does not fit.");
+    EXPECT_FALSE(n.integerGetAsOpt<int>().has_value());
+  }
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -2743,6 +2784,7 @@ void test_gdvalue()
     test_span();
     test_binary64Float();
     test_binary64Float_parseErrors();
+    test_integerGetAs();
 
     // Some interesting values for the particular data used.
     testPrettyPrint(0);

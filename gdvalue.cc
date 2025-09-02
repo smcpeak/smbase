@@ -3,29 +3,32 @@
 
 // This file is in the public domain.
 
-#include "gdvalue.h"                   // this module
+#include "gdvalue.h"                             // this module
 
 // this dir
-#include "smbase/compare-util.h"       // smbase::compare, RET_IF_COMPARE
-#include "smbase/exc.h"                // GENERIC_CATCH_{BEGIN,END}
-#include "smbase/gdv-binary64-float.h" // gdv::GDVBinary64Float
-#include "smbase/gdv-ordered-map.h"    // gdv::GDVOrderedMap
-#include "smbase/gdvalue-reader.h"     // gdv::GDValueReader
-#include "smbase/gdvalue-writer.h"     // gdv::GDValueWriter
-#include "smbase/gdvsymbol.h"          // gdv::GDVSymbol
-#include "smbase/safe-int-conv.h"      // smbase::IsSafelyConvertible_v
-#include "smbase/sm-trace.h"           // INIT_TRACE, etc.
-#include "smbase/syserr.h"             // smbase::xsyserror
-#include "smbase/xassert.h"            // xassert
+#include "smbase/compare-util.h"                 // smbase::compare, RET_IF_COMPARE
+#include "smbase/exc.h"                          // GENERIC_CATCH_{BEGIN,END}
+#include "smbase/gdv-binary64-float.h"           // gdv::GDVBinary64Float
+#include "smbase/gdv-ordered-map.h"              // gdv::GDVOrderedMap
+#include "smbase/gdvalue-reader.h"               // gdv::GDValueReader
+#include "smbase/gdvalue-writer.h"               // gdv::GDValueWriter
+#include "smbase/gdvsymbol.h"                    // gdv::GDVSymbol
+#include "smbase/overflow.h"                     // convertNumberOpt
+#include "smbase/safe-int-conv.h"                // smbase::IsSafelyConvertible_v
+#include "smbase/sm-trace.h"                     // INIT_TRACE, etc.
+#include "smbase/syserr.h"                       // smbase::xsyserror
+#include "smbase/type-name-and-size-ops.h"       // makeTypeNameAndSizeForType
+#include "smbase/xassert.h"                      // xassert
+#include "smbase/xoverflow.h"                    // smbase::XNumericConversion{OutsideRange,FromAP}
 
 // libc++
-#include <cmath>                       // std::isfinite
-#include <cstring>                     // std::strcmp
-#include <fstream>                     // std::{ifstream, ofstream}
-#include <new>                         // placement `new`
-#include <sstream>                     // std::ostringstream
-#include <string_view>                 // std::string_view
-#include <utility>                     // std::move, std::swap, std::make_pair
+#include <cmath>                                 // std::isfinite
+#include <cstring>                               // std::strcmp
+#include <fstream>                               // std::{ifstream, ofstream}
+#include <new>                                   // placement `new`
+#include <sstream>                               // std::ostringstream
+#include <string_view>                           // std::string_view
+#include <utility>                               // std::move, std::swap, std::make_pair
 
 using namespace smbase;
 
@@ -957,6 +960,75 @@ GDVInteger const &GDValue::largeIntegerGet() const
 
   return *(m_value.m_integer);
 }
+
+
+template <typename T,
+          typename>
+T GDValue::integerGetAs() const
+{
+  if (std::optional<T> value = integerGetAsOpt<T>()) {
+    return *value;
+  }
+  else {
+    if (isSmallInteger()) {
+      THROW(XNumericConversionOutsideRange(
+        stringb(smallIntegerGet()),
+        makeTypeNameAndSizeForType<GDVSmallInteger>(),
+        makeTypeNameAndSizeForType<T>()
+      ));
+    }
+    else {
+      THROW(XNumericConversionFromAP(
+        "GDVInteger",
+        largeIntegerGet().toString(),
+        std::is_signed_v<T>,
+        sizeof(T)
+      ));
+    }
+  }
+
+  // Not reached.
+  return T();
+}
+
+
+template <typename T,
+          typename>
+std::optional<T> GDValue::integerGetAsOpt() const
+{
+  if (isSmallInteger()) {
+    return convertNumberOpt<T>(smallIntegerGet());
+  }
+  else {
+    return largeIntegerGet().getAsOpt<T>();
+  }
+}
+
+
+// -------------------- integerGetAs specialization --------------------
+// Define the specializations we want.
+#define DEFINE_INTEGER_GET_AS_METHOD_SPECIALIZATIONS(PRIM) \
+  template                                                 \
+  PRIM GDValue::integerGetAs() const;                      \
+                                                           \
+  template                                                 \
+  std::optional<PRIM> GDValue::integerGetAsOpt() const;
+
+
+DEFINE_INTEGER_GET_AS_METHOD_SPECIALIZATIONS(char)
+DEFINE_INTEGER_GET_AS_METHOD_SPECIALIZATIONS(signed char)
+DEFINE_INTEGER_GET_AS_METHOD_SPECIALIZATIONS(unsigned char)
+DEFINE_INTEGER_GET_AS_METHOD_SPECIALIZATIONS(short)
+DEFINE_INTEGER_GET_AS_METHOD_SPECIALIZATIONS(unsigned short)
+DEFINE_INTEGER_GET_AS_METHOD_SPECIALIZATIONS(int)
+DEFINE_INTEGER_GET_AS_METHOD_SPECIALIZATIONS(unsigned)
+DEFINE_INTEGER_GET_AS_METHOD_SPECIALIZATIONS(long)
+DEFINE_INTEGER_GET_AS_METHOD_SPECIALIZATIONS(unsigned long)
+DEFINE_INTEGER_GET_AS_METHOD_SPECIALIZATIONS(long long)
+DEFINE_INTEGER_GET_AS_METHOD_SPECIALIZATIONS(unsigned long long)
+
+
+#undef DEFINE_INTEGER_GET_AS_METHOD_SPECIALIZATIONS
 
 
 // --------------------------- SmallInteger ----------------------------

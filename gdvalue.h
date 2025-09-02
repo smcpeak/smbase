@@ -550,6 +550,18 @@ public:      // methods
   // Requires `isInteger() && !isSmallInteger()`.
   GDVInteger const &largeIntegerGet() const;
 
+  // Allow converting to specific integer types.  This throws
+  // `smbase::XNumericConversion` (`xoverflow.h`) if the value does not
+  // fit.
+  template <typename T,
+            typename = std::enable_if<std::is_integral_v<T>>>
+  T integerGetAs() const;
+
+  // Return `nullopt` if the value does not fit.
+  template <typename T,
+            typename = std::enable_if<std::is_integral_v<T>>>
+  std::optional<T> integerGetAsOpt() const;
+
 
   // ---- SmallInteger ----
   // GDValue does not have a character type, so constructing one with a
@@ -965,6 +977,35 @@ DEFINE_GDV_KIND_ITERABLE(GDVOrderedMap, orderedMap)
 FOR_EACH_GDV_CONTAINER(DEFER_INSTANTIATE)
 
 #undef DEFER_INSTANTIATE
+
+
+// -------------------- integerGetAs specialization --------------------
+// Explicit instantiation declaration for the `integerGetAs` method
+// templates.  This tells the compiler *not* to instantiate them
+// implicitly.  There are explicit instantiations in the implementation
+// file.
+#define DECLARE_INTEGER_GET_AS_METHOD_SPECIALIZATIONS(PRIM) \
+  extern template                                           \
+  PRIM GDValue::integerGetAs() const;                       \
+                                                            \
+  extern template                                           \
+  std::optional<PRIM> GDValue::integerGetAsOpt() const;
+
+
+DECLARE_INTEGER_GET_AS_METHOD_SPECIALIZATIONS(char)
+DECLARE_INTEGER_GET_AS_METHOD_SPECIALIZATIONS(signed char)
+DECLARE_INTEGER_GET_AS_METHOD_SPECIALIZATIONS(unsigned char)
+DECLARE_INTEGER_GET_AS_METHOD_SPECIALIZATIONS(short)
+DECLARE_INTEGER_GET_AS_METHOD_SPECIALIZATIONS(unsigned short)
+DECLARE_INTEGER_GET_AS_METHOD_SPECIALIZATIONS(int)
+DECLARE_INTEGER_GET_AS_METHOD_SPECIALIZATIONS(unsigned)
+DECLARE_INTEGER_GET_AS_METHOD_SPECIALIZATIONS(long)
+DECLARE_INTEGER_GET_AS_METHOD_SPECIALIZATIONS(unsigned long)
+DECLARE_INTEGER_GET_AS_METHOD_SPECIALIZATIONS(long long)
+DECLARE_INTEGER_GET_AS_METHOD_SPECIALIZATIONS(unsigned long long)
+
+
+#undef DECLARE_INTEGER_GET_AS_METHOD_SPECIALIZATIONS
 
 
 // ----------------------------- toGDValue -----------------------------
