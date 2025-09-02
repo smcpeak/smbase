@@ -488,6 +488,7 @@ UNIT_TEST_OBJS += std-optional-fwd-test.o
 UNIT_TEST_OBJS += std-set-fwd-test.o
 UNIT_TEST_OBJS += std-string-fwd-test.o
 UNIT_TEST_OBJS += std-string-view-fwd-test.o
+UNIT_TEST_OBJS += std-tuple-fwd-test.o
 UNIT_TEST_OBJS += std-variant-fwd-test.o
 UNIT_TEST_OBJS += std-vector-fwd-test.o
 UNIT_TEST_OBJS += str-test.o
