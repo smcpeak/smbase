@@ -817,6 +817,12 @@ FileLineCol const &GDValueReader::getLocation() const
 }
 
 
+void GDValueReader::skipWhitespaceAndComments()
+{
+  putback(readCharAfterWhitespaceAndComments());
+}
+
+
 std::optional<GDValue> GDValueReader::readNextValue()
 {
   // TODO: This just reads one byte at a time, whereas my spec says

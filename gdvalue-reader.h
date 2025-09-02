@@ -121,6 +121,18 @@ public:      // methods
   // any non-const method.
   smbase::FileLineCol const &getLocation() const;
 
+  /* Advance past any whitespace and comments, such that `getLocation()`
+     is the location of whatever follows them.  The intent is to use
+     this as part of a sequence like:
+
+       reader.skipWhitespaceAndComments();
+       FileLineCol flc = reader.getLocation();
+       if (auto valueOpt = reader.readNextValue()) {
+         // Use `valueOpt`, knowing that `flc` is where it begins.
+       }
+  */
+  void skipWhitespaceAndComments();
+
   // Read the next value from 'm_is'.  It must read enough to determine
   // that the value is complete, and will block if it is not.  It will
   // leave the input stream at the character after the last in the
