@@ -38,7 +38,7 @@ GDValueReader::~GDValueReader()
 
 void GDValueReader::readEOFOrErr()
 {
-  int c = skipWhitespaceAndComments();
+  int c = readCharAfterWhitespaceAndComments();
   if (c != eofCode()) {
     unexpectedCharErr(c, "looking for the end of a file that should only have one value");
   }
@@ -86,7 +86,7 @@ void GDValueReader::putbackAfterValueOrErr(int c)
 }
 
 
-int GDValueReader::skipWhitespaceAndComments()
+int GDValueReader::readCharAfterWhitespaceAndComments()
 {
   while (true) {
     int c = readChar();
@@ -247,7 +247,7 @@ GDValue GDValueReader::readNextPossibleMap(bool ordered)
   char const closingDelim = (ordered? ']' : '}');
 
   // Check first character after opening delimiter for something special.
-  int firstChar = skipWhitespaceAndComments();
+  int firstChar = readCharAfterWhitespaceAndComments();
 
   if (firstChar == closingDelim) {
     // Empty set or sequence.
@@ -262,7 +262,7 @@ GDValue GDValueReader::readNextPossibleMap(bool ordered)
   if (firstChar == ':') {
     // Empty map or ordered map; but need to confirm the following
     // closing delimiter.
-    processCharOrErr(skipWhitespaceAndComments(), closingDelim,
+    processCharOrErr(readCharAfterWhitespaceAndComments(), closingDelim,
       ordered?
         "looking for ']' after ':' of empty ordered map" :
         "looking for '}' after ':' of empty map");
@@ -279,7 +279,7 @@ GDValue GDValueReader::readNextPossibleMap(bool ordered)
   }
 
   // Check the character after that value.
-  int charAfterValue = skipWhitespaceAndComments();
+  int charAfterValue = readCharAfterWhitespaceAndComments();
   if (charAfterValue == ':') {
     // Commit to the map or ordered map interpretation.
     return readPossiblyOrderedMapAfterFirstKey(
@@ -333,7 +333,7 @@ GDValue GDValueReader::readPossiblyOrderedMapAfterFirstKey(
   // Read second and later key/value entries.
   while (true) {
     // Skip leading whitespace.
-    int firstKeyChar = skipWhitespaceAndComments();
+    int firstKeyChar = readCharAfterWhitespaceAndComments();
 
     // Save this location as the key location in case we need to report
     // a duplicate key error below.
@@ -351,7 +351,7 @@ GDValue GDValueReader::readPossiblyOrderedMapAfterFirstKey(
       return ret;
     }
 
-    int colon = skipWhitespaceAndComments();
+    int colon = readCharAfterWhitespaceAndComments();
 
     processCharOrErr(colon, ':', ordered?
       "looking for ':' in ordered map entry" :
@@ -823,7 +823,7 @@ std::optional<GDValue> GDValueReader::readNextValue()
   // it is UTF-8.
 
   while (true) {
-    int c = skipWhitespaceAndComments();
+    int c = readCharAfterWhitespaceAndComments();
     if (c == eofCode()) {
       // Restore 'm_location' to that of the EOF.
       putback(c);

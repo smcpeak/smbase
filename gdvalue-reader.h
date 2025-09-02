@@ -36,7 +36,7 @@ protected:   // methods
 
   // Skip whitespace and comments, returning the first character after
   // them, or 'eofCode()'.
-  int skipWhitespaceAndComments();
+  int readCharAfterWhitespaceAndComments();
 
   // Having seen and consumed "/*", scan the comment while balancing
   // those delimiters until the corresponding "*/" is found, then
