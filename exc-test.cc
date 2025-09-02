@@ -98,6 +98,58 @@ void test_getExceptionTypeName()
 }
 
 
+void test_trimLeadingContext()
+{
+  std::string innerMessage;
+  std::string trimmedMessage;
+  std::string outerMessage;
+
+  {
+    EXN_CONTEXT("a");
+
+    try {
+      EXN_CONTEXT("b");
+
+      std::size_t const exnContextSize = getExnContextSize();
+      VPVAL(exnContextSize);
+      try {
+        EXN_CONTEXT("c");
+
+        THROW(XMessage("conflict"));
+      }
+      catch (XBase &x) {
+        innerMessage = x.getMessage();
+
+        x.trimLeadingContext(exnContextSize);
+
+        trimmedMessage = x.getMessage();
+
+        THROW(XMessage(stringb("wrapped(" << x.getMessage() << ")")));
+      }
+    }
+    catch (XBase &x) {
+      outerMessage = x.getMessage();
+    }
+  }
+
+  EXPECT_EQ(innerMessage, "a: b: c: conflict");
+  EXPECT_EQ(trimmedMessage, "c: conflict");
+  EXPECT_EQ(outerMessage, "a: b: wrapped(c: conflict)");
+}
+
+
+// Try to trim more context than there is.
+void test_trimTooMuchLeadingContext()
+{
+  EXN_CONTEXT("a");
+  XMessage x("conflict");
+  EXPECT_EQ(x.getMessage(), "a: conflict");
+
+  x.trimLeadingContext(2);
+  EXPECT_EQ(x.getMessage(), "conflict");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -109,6 +161,8 @@ void test_exc()
   test_EXN_CONTEXT_FILE_LINE();
   test_prependContextWithExnContext();
   test_getExceptionTypeName();
+  test_trimLeadingContext();
+  test_trimTooMuchLeadingContext();
 }
 
 

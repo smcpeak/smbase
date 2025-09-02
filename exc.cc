@@ -4,12 +4,13 @@
 
 #include "exc.h"                       // this module
 
-#include "dev-warning.h"               // DEV_WARNING
-#include "sm-iostream.h"               // clog
-#include "sm-macros.h"                 // DMEMB, CMEMB
-#include "string-util.h"               // join, withoutDirectoryPrefix
+#include "smbase/dev-warning.h"        // DEV_WARNING
+#include "smbase/sm-iostream.h"        // clog
+#include "smbase/sm-macros.h"          // DMEMB, CMEMB
+#include "smbase/string-util.h"        // join, withoutDirectoryPrefix
+#include "smbase/vector-util.h"        // vecEraseFirstN
 
-#include <cstdlib>                     // std::min
+#include <algorithm>                   // std::min
 
 #include <ctype.h>                     // toupper, tolower
 #include <stdarg.h>                    // va_xxx
@@ -77,8 +78,8 @@ XBase::~XBase()
 char const *XBase::what() const noexcept
 {
   // We recompute this every time in order to ensure that a derived
-  // class that it reflects the current information.  There is no need
-  // to optimize the speed of exception stringification.
+  // class reflects the current information.  There is no need to
+  // optimize the speed of exception stringification.
   m_whatStorage = getMessage();
 
   return m_whatStorage.c_str();
@@ -109,7 +110,7 @@ void XBase::prependContext(std::string const &context)
   // safety, limit it to the bounds of `m_contexts`.
   std::size_t index = std::min(m_contexts.size(), getExnContextSize());
 
-  // Insert `contex` after any context still on the stack, but before
+  // Insert `context` after any context still on the stack, but before
   // whatever was added closer to the throw site.
   m_contexts.insert(m_contexts.begin() + index, context);
 }
@@ -118,6 +119,18 @@ void XBase::prependContext(std::string const &context)
 void XBase::appendContext(std::string const &context)
 {
   m_contexts.push_back(context);
+}
+
+
+void XBase::trimLeadingContext(std::size_t n)
+{
+  // The expectation here is that the first `n` elements of `m_contexts`
+  // match the first `n` elements of `getExnContextVector()`.  However,
+  // I will just strip up to the first `n` without confirming that
+  // expectation.
+
+  n = std::min(n, m_contexts.size());
+  vecEraseFirstN(m_contexts, n);
 }
 
 

@@ -238,6 +238,27 @@ public:      // methods
   // Default: Append `context` to `m_contexts`.
   virtual void appendContext(std::string const &context);
 
+  /* Remove the first `n` elements of `m_contexts`.  This is meant to be
+     used to remove redundant context in the case of a rethrow, for
+     example:
+
+       std::size_t const exnContextSize = getExnContextSize();
+       try {
+         // Something that might throw.
+       }
+       catch (XBase &x) {
+         x.trimLeadingContext(exnContextSize);
+         THROW(XMessage(x.getMessage()));
+       }
+
+     Without the trim, any context present when we start the `try` will
+     be copied into `x` when it is created, then copied into its
+     `getMessage()`.  Then it will be duplicated when the second
+     exception object is created.  By trimming `x`, it will only retain
+     context that was added inside the `try`.
+  */
+  virtual void trimLeadingContext(std::size_t n);
+
   // Get the name of this exception type.  This is meant primarily as
   // debugging assistance, *not* something to be seen by the end user;
   // the conflict message should have everything the user needs to see.
