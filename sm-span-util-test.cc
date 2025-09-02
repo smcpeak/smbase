@@ -33,6 +33,18 @@ void test_spanSum()
 }
 
 
+void test_joinTerminate()
+{
+  std::vector<std::string> vec{"a", "b", "c"};
+
+  using StrSpan = Span<std::string>;
+
+  EXPECT_EQ(joinTerminate(StrSpan(), "_"), "");
+  EXPECT_EQ(joinTerminate(StrSpan(vec), "_"), "a_b_c_");
+  EXPECT_EQ(joinTerminate(StrSpan(vec).subspan(1), "_"), "b_c_");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -40,6 +52,7 @@ CLOSE_ANONYMOUS_NAMESPACE
 void test_sm_span_util()
 {
   test_spanSum();
+  test_joinTerminate();
 }
 
 

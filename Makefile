@@ -327,6 +327,7 @@ SRCS += sm-integer.cc
 SRCS += sm-random.cc
 SRCS += sm-rc-obj.cc
 SRCS += sm-regex.cc
+SRCS += sm-span-util.cc
 SRCS += sm-stristr.cc
 SRCS += sm-test.cc
 SRCS += sm-trace.cc
