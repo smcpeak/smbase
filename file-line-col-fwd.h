@@ -6,7 +6,6 @@
 #ifndef SMBASE_FILE_LINE_COL_FWD_H
 #define SMBASE_FILE_LINE_COL_FWD_H
 
-class LineCol;
 class FileLineCol;
 
 #endif // SMBASE_FILE_LINE_COL_FWD_H

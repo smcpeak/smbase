@@ -1,0 +1,84 @@
+// line-col.h
+// `LineCol` class, carrying a line and column number.
+
+// See license.txt for copyright and terms of use.
+
+#ifndef SMBASE_LINE_COL_H
+#define SMBASE_LINE_COL_H
+
+#include "line-col-fwd.h"              // fwds for this module
+
+#include "smbase/compare-util-iface.h" // DECLARE_COMPARETO_AND_DEFINE_RELATIONALS
+#include "smbase/std-string-fwd.h"     // std::string [n]
+
+#include <cstddef>                     // std::size_t
+#include <iosfwd>                      // std::ostream [n]
+
+
+// TODO: Put into `smbase` namespace.
+
+
+// A line and column number.
+class LineCol {
+public:      // data
+  // 1-based line number of the location where the error occurred.
+  //
+  // Invariant: m_line >= 1
+  int m_line;
+
+  // 1-based column number of the error location.
+  //
+  // A 0 value can be used to represent the character before the first
+  // on a line in situations where the previous line's length is
+  // unavailable.
+  //
+  // Currently, the way this class is used by Reader, it actually tracks
+  // a *byte* count from the line start rather than a character count.
+  //
+  // Invariant: m_column >= 0
+  int m_column;
+
+  // Byte offset from the start of the data.
+  std::size_t m_byteOffset;
+
+public:      // methods
+  LineCol(
+    int line = 1, int column = 1, std::size_t byteOffset = 0) noexcept;
+
+  LineCol(LineCol const &obj) = default;
+  LineCol& operator=(LineCol const &obj) = default;
+
+  // Assert invariants.
+  void selfCheck() const;
+
+  // Lexicographic comparison: line, col, byte.
+  DECLARE_COMPARETO_AND_DEFINE_RELATIONALS(LineCol);
+
+  // Write as 1-based "<line>:<col>".
+  void write(std::ostream &os) const;
+  friend std::ostream &operator<<(std::ostream &os, LineCol const &obj)
+    { obj.write(os); return os; }
+
+  // Return what `write` writes.
+  std::string asString() const;
+
+  // If `c` is '\n' then increment the line and reset the column to 1.
+  // Otherwise, increment the column.  Always increments `m_byteOffset`.
+  void incrementForChar(int c);
+
+  // Decrement the column number unless it is already zero.  Does not
+  // change the line number.  Always decrements `m_byteOffset`.
+  void decrementColumn();
+
+  // Try to undo the effect of `incrementForChar(c)`.  Specifically, if
+  // `c` is '\n', then decrement `m_line`, set `m_column` to 0 (since we
+  // do not know the length of the previous line), and decrement
+  // `m_byteOffset`.  Otherwise, behave like `decrementColumn()`.
+  //
+  // This would be used along with something like
+  // 'std::istream::putback(c)'.
+  void decrementForChar(int c);
+};
+
+
+#endif // SMBASE_LINE_COL_H

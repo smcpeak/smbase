@@ -303,6 +303,7 @@ SRCS += growbuf.cc
 SRCS += hashline.cc
 SRCS += hashtbl.cc
 SRCS += indexed-string-table.cc
+SRCS += line-col.cc
 SRCS += missing.cc
 SRCS += most-sig-bit.cc
 SRCS += mypopen.c

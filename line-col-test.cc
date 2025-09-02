@@ -1,8 +1,7 @@
 // line-col-test.cc
 // Tests for `line-col` module.
 
-// TODO: Split `line-col` off.
-#include "smbase/file-line-col.h"      // module under test
+#include "smbase/line-col.h"           // module under test
 
 #include "smbase/compare-util.h"       // smbase::compare
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
