@@ -18,6 +18,7 @@
 
 #include "smbase/gdv-ordered-map.h"              // gdv::GDVOrderedMap
 #include "smbase/gdvalue.h"                      // gdv::GDValue
+#include "smbase/gdvn-test-roundtrip.h"          // gdvnTestRoundtrip
 #include "smbase/sm-macros.h"                    // {OPEN,CLOSE}_ANONYMOUS_NAMESPACE
 #include "smbase/sm-test.h"                      // EXPECT_EQ
 
@@ -75,6 +76,9 @@ void test_bool()
   EXPECT_EQ(GDVP_TO(bool, GDValue(false)), false);
   EXPECT_ERROR_SUBSTR(GDVP_TO(bool, GDValue()),
     "Expected symbol `true` or `false`, not null.");
+
+  gdvnTestRoundtripEq(true, "true");
+  gdvnTestRoundtripEq(false, "false");
 }
 
 
@@ -92,6 +96,10 @@ void test_int()
   // Not an integer.
   EXPECT_ERROR_SUBSTR(GDVP_TO(int, GDValue()),
     "Expected small integer, not symbol.");
+
+  gdvnTestRoundtripEq(0, "0");
+  gdvnTestRoundtripEq(123, "123");
+  gdvnTestRoundtripEq(-456, "-456");
 }
 
 
@@ -106,6 +114,9 @@ void test_string()
 
   EXPECT_ERROR_SUBSTR(GDValueParser("xyz"_sym).stringGet(),
     "Expected string, not symbol.");
+
+  gdvnTestRoundtripEq(std::string("abc"), "\"abc\"");
+  gdvnTestRoundtripEq(std::string(""), "\"\"");
 }
 
 
@@ -133,6 +144,8 @@ void test_unique_ptr()
   // Wrong scalar kind at a key; demonstrates showing the path.
   EXPECT_ERROR_SUBSTR(p.mapGetValueAtSym("x").symbolGet(),
     "<top>.x: Expected symbol, not small integer.");
+
+  gdvnTestRoundtrip(std::make_unique<Data>(5,6), "Data{x:5 y:6}");
 }
 
 
@@ -148,6 +161,8 @@ void test_null_unique_ptr()
 
   // Both are nullptr.
   xassert(d1 == d2);
+
+  gdvnTestRoundtrip(d1, "null");
 }
 
 
@@ -171,6 +186,8 @@ void test_vector()
 
   EXPECT_ERROR_SUBSTR(p.sequenceGetValueAt(1).mapGetValueAtSym("x").symbolGet(),
     "<top>[1].x: Expected symbol, not small integer.");
+
+  gdvnTestRoundtrip(vec1, "[Data{x:1 y:2} Data{x:3 y:4}]");
 }
 
 
@@ -189,6 +206,8 @@ void test_vector_of_unique()
   GDValueParser p(v);
   EXPECT_ERROR_SUBSTR(p.sequenceGetValueAt(1).mapGetValueAtSym("x").symbolGet(),
     "<top>[1].x: Expected symbol, not small integer.");
+
+  gdvnTestRoundtrip(vec1, "[Data{x:1 y:2} Data{x:3 y:4}]");
 }
 
 
@@ -204,6 +223,8 @@ void test_map()
 
   std::map<int, int> m2(GDVP_TO(map_int_int, v));
   EXPECT_EQ(toGDValue(m2), v);
+
+  gdvnTestRoundtrip(m1, "{1:2 3:4}");
 }
 
 
@@ -213,8 +234,10 @@ void test_set()
   GDValue v(toGDValue(s1));
   EXPECT_EQ(v.asString(), "{2 3 5 7}");
 
-  std::set<int> m2(GDVP_TO(std::set<int>, v));
-  EXPECT_EQ(toGDValue(m2), v);
+  std::set<int> s2(GDVP_TO(std::set<int>, v));
+  EXPECT_EQ(toGDValue(s2), v);
+
+  gdvnTestRoundtrip(s1, "{2 3 5 7}");
 }
 
 
@@ -246,6 +269,10 @@ void test_map_of_vector_of_unique()
 
   DataVecMap m2(GDVP_TO(DataVecMap, v));
   EXPECT_EQ(toGDValue(m2), v);
+
+  gdvnTestRoundtrip(m1,
+    "{\"bar\":[Data{x:5 y:6}] "
+     "\"foo\":[Data{x:1 y:2} Data{x:3 y:4}]}");
 }
 
 
@@ -277,7 +304,7 @@ void test_gdvpOptTo()
 }
 
 
-class Data2 {
+class Data2 final {
 public:      // data
   // Uses a symbol as a key.
   std::string m_s1;
@@ -321,6 +348,12 @@ void testWithData2()
 
   Data2 d{GDValueParser(serialized)};
   EXPECT_EQ(toGDValue(d), serialized);
+
+  gdvnTestRoundtrip(d, "{"
+    "s1:\"s1value\" "
+    "\"intList\":[1 2 3] "
+    "\"s2\":\"s2value\""
+  "}");
 }
 
 
@@ -607,31 +640,13 @@ void test_move_parsedObject()
 }
 
 
-// I should have been using this function above too ...
-template <typename T>
-void testRoundtrip(T const &orig, GDValue expectGDV)
-{
-  // Check that serialization gets what we expect.
-  EXPECT_EQ(toGDValue(orig), expectGDV);
-
-  // Deserialize.
-  T deserialized(gdvpTo<T>(GDValueParser(expectGDV)));
-
-  // Essentially I want to check that `deserialized==orig`, but I may be
-  // working with a type that does not have `operator==`.  Since I know
-  // it can serialize to GDV, do that and compare to `expectGDV` again.
-  EXPECT_EQ(toGDValue(deserialized), expectGDV);
-}
-
-
 void test_optional()
 {
-  testRoundtrip(std::optional<int>(),
-                GDValue());
-  testRoundtrip(std::optional<int>(3),
-                GDValue(3));
-  testRoundtrip(std::nullopt,
-                GDValue());
+  gdvnTestRoundtripEq(std::optional<int>(),  "null");
+  gdvnTestRoundtripEq(std::optional<int>(3), "3");
+
+  // Interestingly, `nullopt_t` does not allow `operator==`.
+  gdvnTestRoundtrip  (std::nullopt,          "null");
 }
 
 
