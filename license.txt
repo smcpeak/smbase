@@ -8,3 +8,4 @@ Except:
     places, with various open source licenses prepended, by searching
     for phrases in its comments, so at least I'm not the only one being
     sloppy about attribution for this file.
+  - std-*-fwd.h: See std-fwds.txt.
