@@ -1272,6 +1272,12 @@ void testTaggedSequence()
     v2.sequenceAppend(1);
     EXPECT_EQ(v2, v);
   }
+
+  {
+    // Test direct construction.
+    GDValue v3(GDVTaggedSequence("x"_sym, {1}));
+    EXPECT_EQ(v3, v);
+  }
 }
 
 
@@ -1335,6 +1341,11 @@ void testTaggedTuple()
   EXPECT_EQ(v.asString(), "x(1 2)");
   testSerializeRoundtrip(v);
   writeAsMapElementManyWidths(v);
+
+  {
+    GDValue v2(GDVTaggedTuple("x"_sym, {1, 2}));
+    EXPECT_EQ(v2, v);
+  }
 }
 
 
@@ -1362,6 +1373,11 @@ void testTaggedSet()
     // Test ctor that accepts kind and tag.
     GDValue v2(GDVK_TAGGED_SET, "x"_sym);
     v2.setInsert(1);
+    EXPECT_EQ(v2, v);
+  }
+
+  {
+    GDValue v2(GDVTaggedSet("x"_sym, {1}));
     EXPECT_EQ(v2, v);
   }
 }

@@ -864,6 +864,9 @@ public:      // methods
   // tagged container.
   explicit GDValue(GDValueKind kind, GDVSymbol tag);
 
+  // Note: Every tagged container can be constructed from a
+  // `GDVTagged<Container>` using the ctor declared below.
+
   // These methods require `isTaggedContainer()`.
 
   void taggedContainerSetTag(GDVSymbol tag);
