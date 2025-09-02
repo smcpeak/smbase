@@ -9,6 +9,7 @@
 #include "line-col-fwd.h"              // fwds for this module
 
 #include "smbase/compare-util-iface.h" // DECLARE_COMPARETO_AND_DEFINE_RELATIONALS
+#include "smbase/gdvalue-fwd.h"        // gdv::GDValue [n]
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 #include "smbase/std-string-fwd.h"     // std::string [n]
 
@@ -62,6 +63,9 @@ public:      // methods
 
   // Return what `write` writes.
   std::string asString() const;
+
+  // Returns a tagged ordered map of fields.
+  operator gdv::GDValue() const;
 
   // If `c` is '\n' then increment the line and reset the column to 1.
   // Otherwise, increment the column.  Always increments `m_byteOffset`.

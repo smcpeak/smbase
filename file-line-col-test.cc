@@ -4,12 +4,14 @@
 #include "smbase/file-line-col.h"      // module under test
 
 #include "smbase/compare-util.h"       // smbase::compare
+#include "smbase/gdvalue.h"            // gdv::GDValue
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
 #include "smbase/sm-test-order.h"      // EXPECT_STRICTLY_ORDERED
 #include "smbase/sm-test.h"            // EXPECT_EQ, EXPECT_TRUE, EXPECT_FALSE
 
 #include <sstream>                     // std::ostringstream
 
+using namespace gdv;
 using namespace smbase;
 
 
@@ -140,6 +142,19 @@ void test_get_set_LineCol()
 }
 
 
+void test_GDValue()
+{
+  TEST_CASE(__func__);
+
+  FileLineCol flc("fname", 1,2,3);
+  EXPECT_EQ(toGDValue(flc).asString(),
+    "FileLineCol["
+      "fileName:\"fname\" "
+      "lc:LineCol[line:1 column:2 byteOffset:3]"
+    "]");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -152,6 +167,7 @@ void test_file_line_col()
   test_asString_and_write();
   test_linecol_delegation();
   test_get_set_LineCol();
+  test_GDValue();
 }
 
 

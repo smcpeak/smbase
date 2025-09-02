@@ -4,12 +4,14 @@
 #include "smbase/line-col.h"           // module under test
 
 #include "smbase/compare-util.h"       // smbase::compare
+#include "smbase/gdvalue.h"            // gdv::GDValue
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
 #include "smbase/sm-test-order.h"      // EXPECT_STRICTLY_ORDERED
 #include "smbase/sm-test.h"            // EXPECT_EQ, EXPECT_TRUE, EXPECT_FALSE
 
 #include <sstream>                     // std::ostringstream
 
+using namespace gdv;
 using namespace smbase;
 
 
@@ -168,6 +170,16 @@ void test_decrementForChar()
 }
 
 
+void test_GDValue()
+{
+  TEST_CASE(__func__);
+
+  LineCol lc(1,2,3);
+  EXPECT_EQ(toGDValue(lc).asString(),
+    "LineCol[line:1 column:2 byteOffset:3]");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -181,6 +193,7 @@ void test_line_col()
   test_incrementForChar();
   test_decrementColumn();
   test_decrementForChar();
+  test_GDValue();
 }
 
 
