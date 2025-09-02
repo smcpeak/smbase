@@ -150,6 +150,44 @@ void test_trimTooMuchLeadingContext()
 }
 
 
+void test_getRelayMessage()
+{
+  std::string innerMessage;
+  std::string innerRelayMessage;
+  std::string innerRelayContext;
+  std::string outerMessage;
+
+  {
+    EXN_CONTEXT("a");
+
+    try {
+      EXN_CONTEXT("b");
+
+      try {
+        EXN_CONTEXT("c");
+
+        THROW(XMessage("conflict"));
+      }
+      catch (XBase &x) {
+        innerMessage = x.getMessage();
+        innerRelayMessage = x.getRelayMessage();
+        innerRelayContext = x.getRelayContext();
+
+        THROW(XMessage(stringb("wrapped(" << x.getRelayMessage() << ")")));
+      }
+    }
+    catch (XBase &x) {
+      outerMessage = x.getMessage();
+    }
+  }
+
+  EXPECT_EQ(innerMessage, "a: b: c: conflict");
+  EXPECT_EQ(innerRelayMessage, "c: conflict");
+  EXPECT_EQ(innerRelayContext, "c: ");
+  EXPECT_EQ(outerMessage, "a: b: wrapped(c: conflict)");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -163,6 +201,7 @@ void test_exc()
   test_getExceptionTypeName();
   test_trimLeadingContext();
   test_trimTooMuchLeadingContext();
+  test_getRelayMessage();
 }
 
 

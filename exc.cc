@@ -7,6 +7,8 @@
 #include "smbase/dev-warning.h"        // DEV_WARNING
 #include "smbase/sm-iostream.h"        // clog
 #include "smbase/sm-macros.h"          // DMEMB, CMEMB
+#include "smbase/sm-span-util.h"       // smbase::joinTerminate
+#include "smbase/sm-span.h"            // smbase::Span
 #include "smbase/string-util.h"        // join, withoutDirectoryPrefix
 #include "smbase/vector-util.h"        // vecEraseFirstN
 
@@ -119,6 +121,28 @@ void XBase::prependContext(std::string const &context)
 void XBase::appendContext(std::string const &context)
 {
   m_contexts.push_back(context);
+}
+
+
+std::string XBase::getRelayContext() const
+{
+  // Compute the length of the common prefix.  Normally this is the
+  // same as `getExnContextSize()`.
+  std::size_t prefixLen =
+    vecCommonPrefixLength(m_contexts, getExnContextVector());
+
+  // Get a span that excludes the common prefix.
+  auto afterPrefix =
+    Span<std::string const>(m_contexts).subspan(prefixLen);
+
+  // Join/terminate that with colons.
+  return joinTerminate(afterPrefix, ": ");
+}
+
+
+std::string XBase::getRelayMessage() const
+{
+  return getRelayContext() + getConflict();
 }
 
 

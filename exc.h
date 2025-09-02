@@ -203,11 +203,13 @@ public:      // methods
   */
   virtual std::string getConflict() const = 0;
 
-  // Return a context string for this exception, or the empty string if
-  // there is no context available.
-  //
-  // Default: Return the strings in `m_contexts` separated by ": ".
-  //
+  /* Return a context string for this exception, or the empty string if
+     there is no context available.
+
+     TODO: Change this to return the strings *terminated* by ": ".
+
+     Default: Return the strings in `m_contexts` separated by ": ".
+  */
   virtual std::string getContext() const;
 
   // This is meant to be called from within a `catch` block that ends
@@ -238,6 +240,35 @@ public:      // methods
   // Default: Append `context` to `m_contexts`.
   virtual void appendContext(std::string const &context);
 
+  /* Return a relay context string for this exception.  A "relay
+     context" is one that describes the context at the throw site,
+     *excluding* context also present at the "relay" point.
+
+     Default: Return the strings in `m_contexts`, omitting the prefix it
+     has in common with `getExnContextVector()`, separated and
+     terminated by ": ".
+  */
+  virtual std::string getRelayContext() const;
+
+  /* Return a complete message suitable for use when relaying
+     information from one exception to another.  For example:
+
+       try {
+         // Something that might throw.
+       }
+       catch (XBase &x) {
+         THROW(XMessage(x.getRelayMessage()));
+       }
+
+     The `THROW` here will not duplicate the context that exists at the
+     starting `try` because it is excluded from `x.getRelayMessage()`,
+     so only contributes to the final message once, via the second
+     exception object.
+
+     Default: Return `getRelayContext()+getConflict()`.
+  */
+  virtual std::string getRelayMessage() const;
+
   /* Remove the first `n` elements of `m_contexts`.  This is meant to be
      used to remove redundant context in the case of a rethrow, for
      example:
@@ -256,6 +287,9 @@ public:      // methods
      `getMessage()`.  Then it will be duplicated when the second
      exception object is created.  By trimming `x`, it will only retain
      context that was added inside the `try`.
+
+     This is an experimental alternative strategy to using
+     `getRelayMessage`.  I may delete it.
   */
   virtual void trimLeadingContext(std::size_t n);
 
