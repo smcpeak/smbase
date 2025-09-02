@@ -79,6 +79,26 @@ void test_bool()
 
   gdvnTestRoundtripEq(true, "true");
   gdvnTestRoundtripEq(false, "false");
+
+  {
+    GDValue t(true);
+    GDValueParser p(t);
+    p.checkIsSymbol();
+    EXPECT_TRUE(p.isBool());
+    EXPECT_TRUE(p.boolGet());
+    EXPECT_EQ(p.symbolGet(), "true"_sym);
+    EXPECT_EQ(p.symbolGetName(), "true");
+  }
+
+  {
+    GDValue f(false);
+    GDValueParser p(f);
+    p.checkIsSymbol();
+    EXPECT_TRUE(p.isBool());
+    EXPECT_FALSE(p.boolGet());
+    EXPECT_EQ(p.symbolGet(), "false"_sym);
+    EXPECT_EQ(p.symbolGetName(), "false");
+  }
 }
 
 

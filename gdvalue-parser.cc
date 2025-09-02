@@ -352,6 +352,7 @@ void GDValueParser::checkIsSymbol() const
 
 RELAY_QUERY(bool, isNull)
 RELAY_QUERY(bool, isBool)
+RELAY_QUERY(bool, boolGet)
 
 RELAY_KIND_SPECIFIC_QUERY0(Symbol, GDVSymbol, symbolGet)
 RELAY_KIND_SPECIFIC_QUERY0(Symbol, std::string_view, symbolGetName)
