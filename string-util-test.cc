@@ -1098,6 +1098,17 @@ void test_numOccurrences()
 }
 
 
+void test_joinTerminate()
+{
+  EXPECT_EQ(
+    joinTerminate((std::vector<string>{}), "_"),
+    "");
+  EXPECT_EQ(
+    joinTerminate((std::vector<string>{"a", "b", "c"}), "_"),
+    "a_b_c_");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -1145,6 +1156,7 @@ void test_string_util()
   test_replaceAllMultiple();
   test_eraseEmptyStrings();
   test_numOccurrences();
+  test_joinTerminate();
 }
 
 

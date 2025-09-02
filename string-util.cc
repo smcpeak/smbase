@@ -276,6 +276,18 @@ std::string join(std::vector<std::string> const &vec,
 }
 
 
+std::string joinTerminate(stdfwd::vector<std::string> const &vec,
+                          std::string const &sep)
+{
+  if (vec.empty()) {
+    return std::string();
+  }
+  else {
+    return join(vec, sep) + sep;
+  }
+}
+
+
 std::vector<std::string> prefixAll(std::vector<std::string> const &vec,
                                    std::string const &prefix)
 {

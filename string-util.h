@@ -123,6 +123,11 @@ int numOccurrences(std::string const &s, char c);
 std::string join(stdfwd::vector<std::string> const &vec,
                  std::string const &sep);
 
+// Return elements of 'vec' separated and terminated by 'sep'.  For
+// example, `joinTerminate({"a", "b", "c"}, "_")` = "a_b_c_".
+std::string joinTerminate(stdfwd::vector<std::string> const &vec,
+                          std::string const &sep);
+
 // Return 'vec' except with each element prefixed by 'prefix'.
 stdfwd::vector<std::string> prefixAll(
   stdfwd::vector<std::string> const &vec,
