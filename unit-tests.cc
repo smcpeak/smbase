@@ -125,6 +125,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(hashline);
   RUN_TEST(indexed_string_table);
   RUN_TEST(iter_and_end);
+  RUN_TEST(list_util);
   RUN_TEST(map_util);
   RUN_TEST(most_sig_bit);
   RUN_TEST_NO_DECL(mypopen);
