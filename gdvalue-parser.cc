@@ -3,12 +3,13 @@
 
 #include "smbase/gdvalue-parser.h"     // this module
 
-#include "smbase/exc.h"                // THROW
+#include "smbase/exc.h"                // THROW, smbase::getExnContextSize
 #include "smbase/gdvalue.h"            // GDValue
 #include "smbase/overflow.h"           // convertNumberOpt
 #include "smbase/sm-macros.h"          // DMEMB, MDMEMB
 #include "smbase/stringb.h"            // stringb
 #include "smbase/xassert.h"            // xassert
+#include "smbase/xoverflow.h"          // smbase::XNumericConversion
 
 #include <optional>                    // std::optional
 #include <sstream>                     // std::ostringstream
@@ -364,6 +365,22 @@ RELAY_KIND_SPECIFIC_QUERY0(Integer, bool, integerIsNegative)
 RELAY_KIND_SPECIFIC_QUERY0(Integer, GDVInteger const &, largeIntegerGet)
 
 
+template <typename T,
+          typename>
+T GDValueParser::integerGetAs() const
+{
+  try {
+    return getValue().integerGetAs<T>();
+  }
+  catch (smbase::XNumericConversion &x) {
+    throwError(x.getRelayMessage());
+
+    // Not reached.
+    return T();
+  }
+}
+
+
 // ---- SmallInteger ----
 DEFINE_CHECK_IS_KIND(SmallInteger, "small integer")
 
@@ -624,6 +641,27 @@ void GDValueParser::checkTaggedOrderedMapTag(char const *symName) const
   checkIsTaggedOrderedMap();
   checkContainerTag(symName);
 }
+
+
+// -------------------- integerGetAs specialization --------------------
+// Define the specializations we want.
+#define DEFINE_GDVP_GET_AS_METHOD_SPECIALIZATIONS(PRIM) \
+  template                                              \
+  PRIM GDValueParser::integerGetAs() const;
+
+DEFINE_GDVP_GET_AS_METHOD_SPECIALIZATIONS(char)
+DEFINE_GDVP_GET_AS_METHOD_SPECIALIZATIONS(signed char)
+DEFINE_GDVP_GET_AS_METHOD_SPECIALIZATIONS(unsigned char)
+DEFINE_GDVP_GET_AS_METHOD_SPECIALIZATIONS(short)
+DEFINE_GDVP_GET_AS_METHOD_SPECIALIZATIONS(unsigned short)
+DEFINE_GDVP_GET_AS_METHOD_SPECIALIZATIONS(int)
+DEFINE_GDVP_GET_AS_METHOD_SPECIALIZATIONS(unsigned)
+DEFINE_GDVP_GET_AS_METHOD_SPECIALIZATIONS(long)
+DEFINE_GDVP_GET_AS_METHOD_SPECIALIZATIONS(unsigned long)
+DEFINE_GDVP_GET_AS_METHOD_SPECIALIZATIONS(long long)
+DEFINE_GDVP_GET_AS_METHOD_SPECIALIZATIONS(unsigned long long)
+
+#undef DEFINE_GDVP_GET_AS_METHOD_SPECIALIZATIONS
 
 
 // --------------------------- XGDValueError ---------------------------

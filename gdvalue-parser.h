@@ -240,6 +240,11 @@ public:      // methods
   bool integerIsNegative() const;
   GDVInteger const &largeIntegerGet() const;
 
+  // Convert to specific primitive integer types.
+  template <typename T,
+            typename = std::enable_if<std::is_integral_v<T>>>
+  T integerGetAs() const;
+
   // ---- SmallInteger ----
   void checkIsSmallInteger() const;
   GDVSmallInteger smallIntegerGet() const;
@@ -317,6 +322,30 @@ public:      // methods
   void checkIsTaggedOrderedMap() const;
   void checkTaggedOrderedMapTag(char const *symName) const;
 };
+
+
+// -------------------- integerGetAs specialization --------------------
+// Explicit instantiation declaration for the `integerGetAs` method
+// templates.  This tells the compiler *not* to instantiate them
+// implicitly.  There are explicit instantiations in the implementation
+// file.
+#define DECLARE_GDVP_GET_AS_METHOD_SPECIALIZATIONS(PRIM) \
+  extern template                                        \
+  PRIM GDValueParser::integerGetAs() const;
+
+DECLARE_GDVP_GET_AS_METHOD_SPECIALIZATIONS(char)
+DECLARE_GDVP_GET_AS_METHOD_SPECIALIZATIONS(signed char)
+DECLARE_GDVP_GET_AS_METHOD_SPECIALIZATIONS(unsigned char)
+DECLARE_GDVP_GET_AS_METHOD_SPECIALIZATIONS(short)
+DECLARE_GDVP_GET_AS_METHOD_SPECIALIZATIONS(unsigned short)
+DECLARE_GDVP_GET_AS_METHOD_SPECIALIZATIONS(int)
+DECLARE_GDVP_GET_AS_METHOD_SPECIALIZATIONS(unsigned)
+DECLARE_GDVP_GET_AS_METHOD_SPECIALIZATIONS(long)
+DECLARE_GDVP_GET_AS_METHOD_SPECIALIZATIONS(unsigned long)
+DECLARE_GDVP_GET_AS_METHOD_SPECIALIZATIONS(long long)
+DECLARE_GDVP_GET_AS_METHOD_SPECIALIZATIONS(unsigned long long)
+
+#undef DECLARE_GDVP_GET_AS_METHOD_SPECIALIZATIONS
 
 
 // --------------------------- XGDValueError ---------------------------

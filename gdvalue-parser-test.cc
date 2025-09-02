@@ -694,6 +694,44 @@ void test_errorHandler()
 }
 
 
+void test_integerGetAs()
+{
+  TEST_CASE(__func__);
+
+  {
+    GDValue n(123);
+    GDValueParser p(n);
+    EXPECT_EQ(p.integerGetAs<int>(), 123);
+    EXPECT_EQ(p.integerGetAs<std::int8_t>(), 123);
+  }
+
+  {
+    GDValue n(123456);
+    GDValueParser p(n);
+    EXPECT_EQ(p.integerGetAs<int>(), 123456);
+    EXPECT_EXN_SUBSTR(p.integerGetAs<std::int8_t>(),
+      XGDValueError, "Source value 123456 of type");
+  }
+
+  {
+    GDValue n(GDVInteger::fromDigits("1234567890123456789"));
+    GDValueParser p(n);
+    EXPECT_EXN_SUBSTR(p.integerGetAs<int>(),
+      XGDValueError, "Source value 1234567890123456789 of type");
+  }
+
+  {
+    GDValue n(GDVInteger::fromDigits("12345678901234567890123456789"));
+    GDValueParser p(n);
+    EXPECT_EXN_SUBSTR(p.integerGetAs<int>(),
+      XGDValueError,
+      "Attempted to convert the GDVInteger value "
+      "12345678901234567890123456789 to a signed 32-bit integer type, "
+      "but it does not fit.");
+  }
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -721,6 +759,7 @@ void test_gdvalue_parser()
   test_optional();
   test_orderedMapAsMap();
   test_errorHandler();
+  test_integerGetAs();
 }
 
 
