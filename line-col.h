@@ -9,13 +9,14 @@
 #include "line-col-fwd.h"              // fwds for this module
 
 #include "smbase/compare-util-iface.h" // DECLARE_COMPARETO_AND_DEFINE_RELATIONALS
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 #include "smbase/std-string-fwd.h"     // std::string [n]
 
 #include <cstddef>                     // std::size_t
 #include <iosfwd>                      // std::ostream [n]
 
 
-// TODO: Put into `smbase` namespace.
+OPEN_NAMESPACE(smbase)
 
 
 // A line and column number.
@@ -79,6 +80,9 @@ public:      // methods
   // 'std::istream::putback(c)'.
   void decrementForChar(int c);
 };
+
+
+CLOSE_NAMESPACE(smbase)
 
 
 #endif // SMBASE_LINE_COL_H

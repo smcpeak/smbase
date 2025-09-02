@@ -10,7 +10,8 @@
 #include "file-line-col-fwd.h"         // fwds for this module
 
 #include "smbase/compare-util-iface.h" // DECLARE_COMPARETO_AND_DEFINE_RELATIONALS
-#include "smbase/line-col.h"           // LineCol
+#include "smbase/line-col.h"           // smbase::LineCol
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 
 #include <cstddef>                     // std::size_t
 #include <iosfwd>                      // std::ostream [n]
@@ -18,7 +19,7 @@
 #include <string>                      // std::string
 
 
-// TODO: Put into `smbase` namespace.
+OPEN_NAMESPACE(smbase)
 
 
 // A location in a file or stream that may or may not have a name.
@@ -72,6 +73,9 @@ public:      // methods
   // Set the line/col.
   void setLineCol(LineCol const &lc) { m_lc = lc; }
 };
+
+
+CLOSE_NAMESPACE(smbase)
 
 
 #endif // SMBASE_FILE_LINE_COL_H

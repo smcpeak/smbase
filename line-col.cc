@@ -4,12 +4,14 @@
 #include "line-col.h"                  // this module
 
 #include "smbase/compare-util.h"       // RET_IF_COMPARE_MEMBERS, smbase::compare
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 #include "smbase/stringb.h"            // stringb
 #include "smbase/xassert.h"            // xassert
 
 #include <iostream>                    // std::ostream
 
-using namespace smbase;
+
+OPEN_NAMESPACE(smbase)
 
 
 LineCol::LineCol(int line, int column, std::size_t byteOffset) noexcept
@@ -87,6 +89,9 @@ void LineCol::decrementForChar(int c)
     decrementColumn();
   }
 }
+
+
+CLOSE_NAMESPACE(smbase)
 
 
 // EOF

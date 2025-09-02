@@ -6,7 +6,7 @@
 #ifndef GDVALUE_READER_H
 #define GDVALUE_READER_H
 
-#include "smbase/file-line-col.h"      // FileLineCol
+#include "smbase/file-line-col.h"      // smbase::FileLineCol
 #include "smbase/gdvalue.h"            // GDValue
 #include "smbase/reader.h"             // smbase::Reader
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
@@ -120,7 +120,7 @@ public:      // methods
 
   // Get the current location.  The reference is invalidated by calling
   // any non-const method.
-  FileLineCol const &getLocation() const;
+  smbase::FileLineCol const &getLocation() const;
 
   // Read the next value from 'm_is'.  It must read enough to determine
   // that the value is complete, and will block if it is not.  It will
