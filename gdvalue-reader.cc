@@ -809,6 +809,12 @@ GDValue GDValueReader::readNextSymbolOrTaggedContainer(int firstChar)
 }
 
 
+FileLineCol const &GDValueReader::getLocation() const
+{
+  return m_location;
+}
+
+
 std::optional<GDValue> GDValueReader::readNextValue()
 {
   // TODO: This just reads one byte at a time, whereas my spec says

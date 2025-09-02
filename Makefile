@@ -426,6 +426,7 @@ UNIT_TEST_OBJS += gcc-options-test.o
 UNIT_TEST_OBJS += gdv-binary64-float-test.o
 UNIT_TEST_OBJS += gdvalue-json-test.o
 UNIT_TEST_OBJS += gdvalue-parser-test.o
+UNIT_TEST_OBJS += gdvalue-reader-test.o
 UNIT_TEST_OBJS += gdvalue-test.o
 UNIT_TEST_OBJS += gdvsymbol-test.o
 UNIT_TEST_OBJS += gdvtuple-test.o

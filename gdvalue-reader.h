@@ -118,6 +118,10 @@ public:      // methods
                 std::optional<std::string> fileName);
   ~GDValueReader();
 
+  // Get the current location.  The reference is invalidated by calling
+  // any non-const method.
+  FileLineCol const &getLocation() const;
+
   // Read the next value from 'm_is'.  It must read enough to determine
   // that the value is complete, and will block if it is not.  It will
   // leave the input stream at the character after the last in the
