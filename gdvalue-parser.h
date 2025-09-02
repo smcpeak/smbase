@@ -266,7 +266,7 @@ public:      // methods
 
   // ---- Tuple ----
   void checkIsTuple() const;
-  void checkIsTaggedTuple(char const *tag, GDVSize size) const;
+  void checkTaggedTupleSize(char const *tag, GDVSize size) const;
   GDVTuple const &tupleGet() const;
   GDValueParser tupleGetValueAt(GDVIndex index) const;
 

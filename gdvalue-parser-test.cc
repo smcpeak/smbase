@@ -788,14 +788,14 @@ void test_checkIsTaggedTuple()
     t.tupleSet(GDVTuple{1, 2, 3});
     GDValueParser p(t);
 
-    p.checkIsTaggedTuple("mytag", 3);
+    p.checkTaggedTupleSize("mytag", 3);
 
-    EXPECT_EXN_SUBSTR(p.checkIsTaggedTuple("othertag", 3),
+    EXPECT_EXN_SUBSTR(p.checkTaggedTupleSize("othertag", 3),
       XGDValueError,
       "Expected container to have tag othertag, "
       "but it instead has tag mytag.");
 
-    EXPECT_EXN_SUBSTR(p.checkIsTaggedTuple("mytag", 2),
+    EXPECT_EXN_SUBSTR(p.checkTaggedTupleSize("mytag", 2),
       XGDValueError,
       "Expected container to have 2 elements, "
       "but it instead has 3 elements.");
@@ -803,7 +803,7 @@ void test_checkIsTaggedTuple()
 
   EXPECT_EXN_SUBSTR(
     GDValueParser(GDValue(GDVTuple{1, 2, 3})).
-      checkIsTaggedTuple("mytag", 3),
+      checkTaggedTupleSize("mytag", 3),
     XGDValueError,
     "Expected tagged tuple, not tuple.");
 }

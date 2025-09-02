@@ -439,7 +439,7 @@ DEFINE_CHECK_IS_KIND(Tuple, "tuple")
 RELAY_KIND_SPECIFIC_QUERY0(Tuple, GDVTuple const &, tupleGet)
 
 
-void GDValueParser::checkIsTaggedTuple(char const *tag, GDVSize size) const
+void GDValueParser::checkTaggedTupleSize(char const *tag, GDVSize size) const
 {
   checkKind(GDVK_TAGGED_TUPLE);
   checkContainerTag(tag);
