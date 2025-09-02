@@ -146,18 +146,6 @@ std::string XBase::getRelayMessage() const
 }
 
 
-void XBase::trimLeadingContext(std::size_t n)
-{
-  // The expectation here is that the first `n` elements of `m_contexts`
-  // match the first `n` elements of `getExnContextVector()`.  However,
-  // I will just strip up to the first `n` without confirming that
-  // expectation.
-
-  n = std::min(n, m_contexts.size());
-  vecEraseFirstN(m_contexts, n);
-}
-
-
 DEFINE_EXN_GET_TYPE_NAME(XBase)
 
 
