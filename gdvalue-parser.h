@@ -255,6 +255,7 @@ public:      // methods
 
   // ---- Container ----
   void checkIsContainer() const;
+  void checkContainerSize(GDVSize size) const;
   GDVSize containerSize() const;
   bool containerIsEmpty() const;
 
@@ -265,6 +266,7 @@ public:      // methods
 
   // ---- Tuple ----
   void checkIsTuple() const;
+  void checkIsTaggedTuple(char const *tag, GDVSize size) const;
   GDVTuple const &tupleGet() const;
   GDValueParser tupleGetValueAt(GDVIndex index) const;
 

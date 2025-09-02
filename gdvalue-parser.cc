@@ -400,6 +400,17 @@ RELAY_KIND_SPECIFIC_QUERY0(Container, GDVSize, containerSize)
 RELAY_KIND_SPECIFIC_QUERY0(Container, bool, containerIsEmpty)
 
 
+void GDValueParser::checkContainerSize(GDVSize size) const
+{
+  if (containerSize() != size) {
+    throwError_stringb(
+      "Expected container to have " << size <<
+      " elements, but it instead has " << containerSize() <<
+      " elements.");
+  }
+}
+
+
 // ---- Sequence ----
 DEFINE_CHECK_IS_KIND(Sequence, "sequence")
 
@@ -425,6 +436,14 @@ GDValueParser GDValueParser::sequenceGetValueAt(GDVIndex index) const
 DEFINE_CHECK_IS_KIND(Tuple, "tuple")
 
 RELAY_KIND_SPECIFIC_QUERY0(Tuple, GDVTuple const &, tupleGet)
+
+
+void GDValueParser::checkIsTaggedTuple(char const *tag, GDVSize size) const
+{
+  checkKind(GDVK_TAGGED_TUPLE);
+  checkContainerTag(tag);
+  checkContainerSize(size);
+}
 
 
 GDValueParser GDValueParser::tupleGetValueAt(GDVIndex index) const

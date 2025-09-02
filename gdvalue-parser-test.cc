@@ -732,6 +732,48 @@ void test_integerGetAs()
 }
 
 
+void test_checkContainerSize()
+{
+  GDValue t(GDVTuple{1, 2});
+  GDValueParser p(t);
+
+  p.checkContainerSize(2);
+
+  EXPECT_EXN_SUBSTR(p.checkContainerSize(1),
+    XGDValueError,
+    "Expected container to have 1 elements, "
+    "but it instead has 2 elements.");
+}
+
+
+void test_checkIsTaggedTuple()
+{
+  {
+    GDValue t(GDVK_TAGGED_TUPLE, "mytag"_sym);
+    t.tupleSet(GDVTuple{1, 2, 3});
+    GDValueParser p(t);
+
+    p.checkIsTaggedTuple("mytag", 3);
+
+    EXPECT_EXN_SUBSTR(p.checkIsTaggedTuple("othertag", 3),
+      XGDValueError,
+      "Expected container to have tag othertag, "
+      "but it instead has tag mytag.");
+
+    EXPECT_EXN_SUBSTR(p.checkIsTaggedTuple("mytag", 2),
+      XGDValueError,
+      "Expected container to have 2 elements, "
+      "but it instead has 3 elements.");
+  }
+
+  EXPECT_EXN_SUBSTR(
+    GDValueParser(GDValue(GDVTuple{1, 2, 3})).
+      checkIsTaggedTuple("mytag", 3),
+    XGDValueError,
+    "Expected tagged tuple, not tuple.");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -760,6 +802,8 @@ void test_gdvalue_parser()
   test_orderedMapAsMap();
   test_errorHandler();
   test_integerGetAs();
+  test_checkContainerSize();
+  test_checkIsTaggedTuple();
 }
 
 
