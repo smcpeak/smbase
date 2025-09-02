@@ -14,7 +14,7 @@
 #include "smbase/gdv-binary64-float.h" // gdv::GDVBinary64Float
 #include "smbase/gdv-ordered-map.h"    // gdv::GDVOrderedMap
 #include "smbase/gdvsymbol.h"          // gdv::GDVSymbol
-#include "smbase/reader.h"             // smbase::ReaderException
+#include "smbase/reader.h"             // smbase::XReader
 #include "smbase/save-restore.h"       // SAVE_RESTORE
 #include "smbase/sm-file-util.h"       // SMFileUtil
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
@@ -76,7 +76,7 @@ void checkParse(GDValue const &expect, std::string const &ser)
 
     actual.selfCheck();
   }
-  catch (ReaderException const &e) {
+  catch (XReader const &e) {
     cout << "During checkParse, caught exception:\n"
          << "---- expect ----\n"
          << expect.asLinesString()
@@ -1584,7 +1584,7 @@ void testOneErrorSubstrOrRegex(
     GDValue::readFromString(input);
     xfailure("should have failed");
   }
-  catch (ReaderException &e) {
+  catch (XReader &e) {
     EXPECT_EQ(e.m_location.m_lc.m_line, expectLine);
     EXPECT_EQ(e.m_location.m_lc.m_column, expectColumn);
     if (expectErrorSubstring) {

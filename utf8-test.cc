@@ -167,14 +167,14 @@ static void testAllPointsRoundtrip()
 
 static void testOneError(
   std::vector<int> encoding,
-  UTF8ReaderException::Kind kind,
+  XUTF8Reader::Kind kind,
   char const *regex)
 {
   try {
     decodeVector(encoding);
     xfailure("that should have failed");
   }
-  catch (UTF8ReaderException &e) {
+  catch (XUTF8Reader &e) {
     EXPECT_EQ(e.m_kind, kind);
     EXPECT_MATCHES_REGEX(e.getMessage(), regex);
   }
@@ -183,33 +183,33 @@ static void testOneError(
 
 static void testErrors()
 {
-  testOneError({0xC2}, UTF8ReaderException::K_TRUNCATED_STREAM,
+  testOneError({0xC2}, XUTF8Reader::K_TRUNCATED_STREAM,
     "stops in the middle");
 
-  testOneError({0xE0}, UTF8ReaderException::K_TRUNCATED_STREAM,
+  testOneError({0xE0}, XUTF8Reader::K_TRUNCATED_STREAM,
     "stops in the middle");
-  testOneError({0xEF, 0x80}, UTF8ReaderException::K_TRUNCATED_STREAM,
-    "stops in the middle");
-
-  testOneError({0xF0}, UTF8ReaderException::K_TRUNCATED_STREAM,
-    "stops in the middle");
-  testOneError({0xF1, 0x90}, UTF8ReaderException::K_TRUNCATED_STREAM,
-    "stops in the middle");
-  testOneError({0xF4, 0x90, 0x80}, UTF8ReaderException::K_TRUNCATED_STREAM,
+  testOneError({0xEF, 0x80}, XUTF8Reader::K_TRUNCATED_STREAM,
     "stops in the middle");
 
-  testOneError({0xEF, 0xC0}, UTF8ReaderException::K_INVALID_CONTINUATION,
+  testOneError({0xF0}, XUTF8Reader::K_TRUNCATED_STREAM,
+    "stops in the middle");
+  testOneError({0xF1, 0x90}, XUTF8Reader::K_TRUNCATED_STREAM,
+    "stops in the middle");
+  testOneError({0xF4, 0x90, 0x80}, XUTF8Reader::K_TRUNCATED_STREAM,
+    "stops in the middle");
+
+  testOneError({0xEF, 0xC0}, XUTF8Reader::K_INVALID_CONTINUATION,
     "byte 0xC0 is");
-  testOneError({0xF4, 0x90, 0x80, 0xCF}, UTF8ReaderException::K_INVALID_CONTINUATION,
+  testOneError({0xF4, 0x90, 0x80, 0xCF}, XUTF8Reader::K_INVALID_CONTINUATION,
     "byte 0xCF is");
 
   // I do not currently prohibit *encoding* surrogate pair values ...
-  testOneError(encodeVector({0xD800}), UTF8ReaderException::K_SURROGATE_PAIR,
+  testOneError(encodeVector({0xD800}), XUTF8Reader::K_SURROGATE_PAIR,
     "is U.D800,");
-  testOneError(encodeVector({0xDFFF}), UTF8ReaderException::K_SURROGATE_PAIR,
+  testOneError(encodeVector({0xDFFF}), XUTF8Reader::K_SURROGATE_PAIR,
     "is U.DFFF,");
 
-  testOneError({0xF5}, UTF8ReaderException::K_BYTE_TOO_LARGE,
+  testOneError({0xF5}, XUTF8Reader::K_BYTE_TOO_LARGE,
     "0xF5 is too large");
 }
 

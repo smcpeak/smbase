@@ -12,18 +12,18 @@
 OPEN_NAMESPACE(smbase)
 
 
-// ------------------------ UTF8ReaderException ------------------------
-UTF8ReaderException::UTF8ReaderException(
+// ------------------------ XUTF8Reader ------------------------
+XUTF8Reader::XUTF8Reader(
   FileLineCol const &location,
   std::string const &syntaxError,
   Kind kind)
-  : ReaderException(location, syntaxError),
+  : XReader(location, syntaxError),
     m_kind(kind)
 {}
 
 
 // ---------------------------- UTF8Reader -----------------------------
-void UTF8Reader::err(UTF8ReaderException::Kind kind,
+void UTF8Reader::err(XUTF8Reader::Kind kind,
                      std::size_t adjust,
                      std::string const &utf8Details) const
 {
@@ -35,7 +35,7 @@ void UTF8Reader::err(UTF8ReaderException::Kind kind,
     loc.decrementColumn();
   }
 
-  THROW(UTF8ReaderException(loc, utf8Details, kind));
+  THROW(XUTF8Reader(loc, utf8Details, kind));
 }
 
 
@@ -43,7 +43,7 @@ unsigned char UTF8Reader::readContinuationByte()
 {
   int c = readChar();
   if (c == eofCode()) {
-    err(UTF8ReaderException::K_TRUNCATED_STREAM, 0 /*adjust*/,
+    err(XUTF8Reader::K_TRUNCATED_STREAM, 0 /*adjust*/,
       "The byte stream stops in the middle of a character encoding.");
   }
 
@@ -51,7 +51,7 @@ unsigned char UTF8Reader::readContinuationByte()
   unsigned char b = (unsigned char)c;
 
   if ((b & 0xC0) != 0x80) {
-    err(UTF8ReaderException::K_INVALID_CONTINUATION, 1 /*adjust*/,
+    err(XUTF8Reader::K_INVALID_CONTINUATION, 1 /*adjust*/,
       stringf("The byte 0x%02X is supposed to be a continuation byte "
               "but its 7th bit is set.", b));
   }
@@ -100,7 +100,7 @@ int UTF8Reader::readCodePointSlow(unsigned char b1)
               continuationByte(b3, 0);
 
     if (0xD800 <= ret && ret <= 0xDFFF) {
-      err(UTF8ReaderException::K_SURROGATE_PAIR, 3 /*adjust*/,
+      err(XUTF8Reader::K_SURROGATE_PAIR, 3 /*adjust*/,
         stringf("The decoded code point is U+%04X, which is in the "
                 "surrogate pair region.", ret));
     }
@@ -126,7 +126,7 @@ int UTF8Reader::readCodePointSlow(unsigned char b1)
   }
 
   else {
-    err(UTF8ReaderException::K_BYTE_TOO_LARGE, 1 /*adjust*/,
+    err(XUTF8Reader::K_BYTE_TOO_LARGE, 1 /*adjust*/,
       stringf("The byte value 0x%02X is too large.", b1));
     return 0;      // Not reached.
   }

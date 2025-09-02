@@ -53,7 +53,7 @@ static void testError()
     r.err("blah");
     xfailure("should have thrown");
   }
-  catch (ReaderException &x) {
+  catch (XReader &x) {
     EXPECT_HAS_SUBSTRING(x.getMessage(), "blah");
     EXPECT_EQ(x.m_location.m_lc.m_line, 1);
     EXPECT_EQ(x.m_location.m_lc.m_column, 1);

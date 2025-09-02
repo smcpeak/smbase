@@ -7,7 +7,7 @@
 #define SMBASE_UTF8_READER_H
 
 #include "exc.h"                       // XBase
-#include "reader.h"                    // Reader, ReaderException
+#include "reader.h"                    // Reader, XReader
 #include "xassert.h"                   // xassert
 
 #include <cstddef>                     // std::size_t
@@ -25,7 +25,7 @@ static_assert(sizeof(int) >= 4);
 
 
 // Report an issue with UTF-8 input.
-class UTF8ReaderException : public ReaderException {
+class XUTF8Reader : public XReader {
 public:      // types
   enum Kind {
     K_UNKNOWN,
@@ -50,13 +50,13 @@ public:      // data
   Kind m_kind;
 
 public:      // methods
-  UTF8ReaderException(
+  XUTF8Reader(
     FileLineCol const &location,
     std::string const &syntaxError,
     Kind kind);
 
-  UTF8ReaderException(UTF8ReaderException const &obj) = default;
-  UTF8ReaderException &operator=(UTF8ReaderException const &obj) = default;
+  XUTF8Reader(XUTF8Reader const &obj) = default;
+  XUTF8Reader &operator=(XUTF8Reader const &obj) = default;
 };
 
 
@@ -67,7 +67,7 @@ private:     // methods
   //
   // Adjust `m_curByteOffset` by subtracting `adjust` before putting it
   // into the exception object.
-  void err(UTF8ReaderException::Kind kind,
+  void err(XUTF8Reader::Kind kind,
            std::size_t adjust,
            std::string const &utf8Details) const;
 

@@ -106,7 +106,7 @@ public:      // methods
    unescaped occurrence of that character.  If `allowNewlines` is false,
    it is an error to have an unescaped newline.
 
-   Throw `ReaderException` if there is a problem with the syntax.
+   Throw `XReader` if there is a problem with the syntax.
 
    Ideally `str` would be a `string_view` rather than a `string`, but
    the implementation uses `istringstream`, which does not work with
@@ -128,7 +128,7 @@ std::string decodeCStringEscapesToString(
 // string literal escape sequences, yield the denoted string.
 //
 // This throws `smbase::XFormat` if the enclosing double-quotes are
-// missing, and `smbase::ReaderException` if there is a problem with the
+// missing, and `smbase::XReader` if there is a problem with the
 // interior.  (That is an unfortunate artifact of the implementation,
 // but there's little value in rectifying it.)
 std::string parseQuotedCString(std::string const &text,

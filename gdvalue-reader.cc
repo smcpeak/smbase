@@ -494,7 +494,7 @@ int GDValueReader::readNextUniversalCharacterEscape()
           decoded2));
       }
     }
-    catch (ReaderException &e) {
+    catch (XReader &e) {
       // We do not compute the more detailed context above
       // because we do not yet know we will report an error.
       e.prependErrorContext(stringf(
@@ -647,8 +647,7 @@ GDValue GDValueReader::readNextNumber(int const firstChar)
   }
   catch (XFormat &x) {       // gcov-ignore
     // We already validated the syntax, so this should not be possible.
-    // But if it happens, map it into a `ReaderException` for
-    // uniformity.
+    // But if it happens, map it into an `XReader` for uniformity.
     err(x.getMessage());     // gcov-ignore
     return GDValue();        // Not reached.
   }

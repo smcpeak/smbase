@@ -5,7 +5,7 @@
 
 #include "exc.h"                       // smbase::XFormat
 #include "sm-test.h"                   // EXPECT_EQ, tprintf
-#include "reader.h"                    // smbase::ReaderException
+#include "reader.h"                    // smbase::XReader
 
 #include <string>                      // std::string
 
@@ -37,7 +37,7 @@ static void testDecodeEscapes()
     decodeCStringEscapesToString("\"", '"');
     xfailure("should have failed");
   }
-  catch (ReaderException &x) {
+  catch (XReader &x) {
     EXPECT_HAS_SUBSTRING(x.getMessage(), "delimiter");
   }
 
@@ -50,7 +50,7 @@ static void testDecodeEscapes()
     decodeCStringEscapesToString("a\nb");
     xfailure("should have failed");
   }
-  catch (ReaderException &x) {
+  catch (XReader &x) {
     EXPECT_HAS_SUBSTRING(x.getMessage(), "newline");
   }
 
@@ -63,7 +63,7 @@ static void testDecodeEscapes()
     decodeCStringEscapesToString("\\xFFFFFFFF");
     xfailure("should have failed");
   }
-  catch (ReaderException &x) {
+  catch (XReader &x) {
     EXPECT_HAS_SUBSTRING(x.getMessage(), "larger than 0x10FFFF");
   }
 

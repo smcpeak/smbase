@@ -15,8 +15,8 @@
 OPEN_NAMESPACE(smbase)
 
 
-// -------------------------- ReaderException --------------------------
-ReaderException::ReaderException(
+// ------------------------------ XReader ------------------------------
+XReader::XReader(
   FileLineCol const &location,
   std::string const &syntaxError) noexcept
   : XBase(),
@@ -32,17 +32,17 @@ ReaderException::ReaderException(
 }
 
 
-ReaderException::~ReaderException()
+XReader::~XReader()
 {}
 
 
-void ReaderException::prependErrorContext(std::string const &context)
+void XReader::prependErrorContext(std::string const &context)
 {
   m_syntaxError = stringb(context << ": " << m_syntaxError);
 }
 
 
-std::string ReaderException::getConflict() const
+std::string XReader::getConflict() const
 {
   return m_syntaxError;
 }
@@ -76,7 +76,7 @@ void Reader::locErr(FileLineCol const &loc,
   FileLineCol prev(loc);
   prev.decrementColumn();
 
-  THROW(ReaderException(prev, syntaxError));
+  THROW(XReader(prev, syntaxError));
 }
 
 

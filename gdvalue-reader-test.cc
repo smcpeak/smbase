@@ -3,7 +3,7 @@
 
 #include "smbase/gdvalue-reader.h"     // module under test
 
-#include "smbase/reader.h"             // ReaderException
+#include "smbase/reader.h"             // XReader
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
 #include "smbase/sm-test.h"            // EXPECT_EQ, EXPECT_FALSE
 
@@ -58,7 +58,7 @@ void test_error()
   EXPECT_EQ(reader.getLocation(), FileLineCol(fname, 1, 2, 1));
 
   EXPECT_EXN_SUBSTR(reader.readNextValue(),
-    ReaderException,
+    XReader,
     "fn:1:3: Unexpected ':' while looking for the start of a value.");
 }
 

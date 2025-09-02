@@ -131,8 +131,8 @@ public:      // methods
   // without finding any value, returns 'nullopt'.  Note that this is
   // different from a GDValue that 'isNull()'.
   //
-  // If a syntax error is encountered, throws `ReaderException'
-  // (declared in `reader.h`).
+  // If a syntax error is encountered, throws `XReader' (declared in
+  // `reader.h`).
   //
   std::optional<GDValue> readNextValue();
 

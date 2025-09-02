@@ -24,7 +24,7 @@ OPEN_NAMESPACE(smbase)
 
 // An exception thrown to indicate there is a problem with the input
 // being read by a `Reader`.
-class ReaderException : public XBase {
+class XReader : public XBase {
 public:      // data
   // Where the error occurred.
   FileLineCol m_location;
@@ -33,13 +33,13 @@ public:      // data
   std::string m_syntaxError;
 
 public:      // methods
-  ~ReaderException();
+  ~XReader();
 
-  ReaderException(FileLineCol const &location,
-                  std::string const &syntaxError) noexcept;
+  XReader(FileLineCol const &location,
+          std::string const &syntaxError) noexcept;
 
-  ReaderException(ReaderException const &obj) = default;
-  ReaderException &operator=(ReaderException const &obj) = default;
+  XReader(XReader const &obj) = default;
+  XReader &operator=(XReader const &obj) = default;
 
   // Prepend "context: " to `m_syntaxError`.
   void prependErrorContext(std::string const &context);
@@ -100,7 +100,7 @@ public:      // methods
   static constexpr int eofCode()
     { return std::istream::traits_type::eof(); }
 
-  // Throw ReaderException with 'm_location'-1 and 'syntaxError'.
+  // Throw XReader with 'm_location'-1 and 'syntaxError'.
   //
   // Naming convention: Any method that can call `err` in a fairly
   // direct way has an name that ends in "Err".  That way, it is easy to
