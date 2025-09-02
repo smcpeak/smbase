@@ -296,6 +296,17 @@ void vecEraseAt(std::vector<T> &vec, std::size_t index)
 }
 
 
+// Remove the first `n` elements.
+//
+// Requires: n <= vec.size()
+template <typename T, typename A>
+void vecEraseFirstN(std::vector<T,A> &vec, std::size_t n)
+{
+  xassertPrecondition(n <= vec.size());
+  vec.erase(vec.begin(), vec.begin() + n);
+}
+
+
 // Insert `t` into position `index`, which must be in [0, vec.size()].
 template <class T>
 void vecInsertAt(std::vector<T> &vec, std::size_t index, T const &t)

@@ -178,6 +178,21 @@ void test_vecContains()
 }
 
 
+void test_vecEraseFirstN()
+{
+  std::vector<int> v{0,1,2,3,4};
+
+  vecEraseFirstN(v, 0);
+  xassert(v == (std::vector<int>{0,1,2,3,4}));
+
+  vecEraseFirstN(v, 2);
+  xassert(v == (std::vector<int>{2,3,4}));
+
+  vecEraseFirstN(v, 3);
+  xassert(v == (std::vector<int>{}));
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -194,6 +209,7 @@ void test_vector_util()
   test_vecSumSlice();
   test_vecSlice();
   test_vecContains();
+  test_vecEraseFirstN();
 }
 
 
