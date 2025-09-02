@@ -7,15 +7,23 @@
 #ifndef SMBASE_FILE_LINE_COL_H
 #define SMBASE_FILE_LINE_COL_H
 
+#include "smbase/compare-util-iface.h" // DECLARE_COMPARETO_AND_DEFINE_RELATIONALS
+
 #include <cstddef>                     // std::size_t
+#include <iosfwd>                      // std::ostream [n]
 #include <optional>                    // std::optional
 #include <string>                      // std::string
+
+
+// TODO: Put into `smbase` namespace.
 
 
 // A line and column number.
 class LineCol {
 public:      // data
   // 1-based line number of the location where the error occurred.
+  //
+  // Invariant: m_line >= 1
   int m_line;
 
   // 1-based column number of the error location.
@@ -26,27 +34,49 @@ public:      // data
   //
   // Currently, the way this class is used by Reader, it actually tracks
   // a *byte* count from the line start rather than a character count.
+  //
+  // Invariant: m_column >= 0
   int m_column;
 
   // Byte offset from the start of the data.
   std::size_t m_byteOffset;
 
 public:      // methods
-  LineCol(int line, int column, std::size_t byteOffset) noexcept;
+  LineCol(
+    int line = 1, int column = 1, std::size_t byteOffset = 0) noexcept;
 
   LineCol(LineCol const &obj) = default;
   LineCol& operator=(LineCol const &obj) = default;
 
-  // If 'c' is '\n' then increment the line and reset the column to 1.
-  // Otherwise, increment the column.
+  // Assert invariants.
+  void selfCheck() const;
+
+  // Lexicographic comparison: line, col, byte.
+  DECLARE_COMPARETO_AND_DEFINE_RELATIONALS(LineCol);
+
+  // Write as 1-based "<line>:<col>".
+  void write(std::ostream &os) const;
+  friend std::ostream &operator<<(std::ostream &os, LineCol const &obj)
+    { obj.write(os); return os; }
+
+  // Return what `write` writes.
+  std::string asString() const;
+
+  // If `c` is '\n' then increment the line and reset the column to 1.
+  // Otherwise, increment the column.  Always increments `m_byteOffset`.
   void incrementForChar(int c);
 
   // Decrement the column number unless it is already zero.  Does not
-  // change the line number.
+  // change the line number.  Always decrements `m_byteOffset`.
   void decrementColumn();
 
-  // Try to undo the effect of 'incrementForChar(c)'.  This would be
-  // used along with something like 'std::istream::putback(c)'.
+  // Try to undo the effect of `incrementForChar(c)`.  Specifically, if
+  // `c` is '\n', then decrement `m_line`, set `m_column` to 0 (since we
+  // do not know the length of the previous line), and decrement
+  // `m_byteOffset`.  Otherwise, behave like `decrementColumn()`.
+  //
+  // This would be used along with something like
+  // 'std::istream::putback(c)'.
   void decrementForChar(int c);
 };
 
@@ -72,6 +102,24 @@ public:      // methods
               int column = 1,
               std::size_t byteOffset = 0) noexcept;
   ~FileLineCol();
+
+  FileLineCol(FileLineCol const &obj) = default;
+  FileLineCol &operator=(FileLineCol const &obj) = default;
+
+  // Assert invariants.
+  void selfCheck() const;
+
+  // Lexicographic comparison: file, lc
+  DECLARE_COMPARETO_AND_DEFINE_RELATIONALS(FileLineCol);
+
+  // If `m_fileName.has_value()`, write as "<file>: <line>:<col>".
+  // Otherwise, write as "<line>:<col>".
+  void write(std::ostream &os) const;
+  friend std::ostream &operator<<(std::ostream &os, FileLineCol const &obj)
+    { obj.write(os); return os; }
+
+  // Return what `write` writes.
+  std::string asString() const;
 
   // Manipulate the line/col.
   void incrementForChar(int c)         { m_lc.incrementForChar(c); }

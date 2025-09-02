@@ -111,6 +111,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(either);
   RUN_TEST(exc);
   RUN_TEST(exclusive_write_file);
+  RUN_TEST(file_line_col);
   RUN_TEST(functional_set);
   RUN_TEST(gcc_options);
   RUN_TEST(gdv_binary64_float);
@@ -125,6 +126,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(hashline);
   RUN_TEST(indexed_string_table);
   RUN_TEST(iter_and_end);
+  RUN_TEST(line_col);
   RUN_TEST(list_util);
   RUN_TEST(map_util);
   RUN_TEST(most_sig_bit);
