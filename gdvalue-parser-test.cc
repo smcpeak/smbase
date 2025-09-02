@@ -781,13 +781,15 @@ void test_checkContainerSize()
 }
 
 
-void test_checkIsTaggedTuple()
+// Also test `checkTupleSize`.
+void test_checkTaggedTupleSize()
 {
   {
     GDValue t(GDVK_TAGGED_TUPLE, "mytag"_sym);
     t.tupleSet(GDVTuple{1, 2, 3});
     GDValueParser p(t);
 
+    p.checkTupleSize(3);
     p.checkTaggedTupleSize("mytag", 3);
 
     EXPECT_EXN_SUBSTR(p.checkTaggedTupleSize("othertag", 3),
@@ -801,11 +803,22 @@ void test_checkIsTaggedTuple()
       "but it instead has 3 elements.");
   }
 
-  EXPECT_EXN_SUBSTR(
-    GDValueParser(GDValue(GDVTuple{1, 2, 3})).
-      checkTaggedTupleSize("mytag", 3),
-    XGDValueError,
-    "Expected tagged tuple, not tuple.");
+  {
+    GDValue t(GDVTuple{1, 2, 3});
+    GDValueParser p(t);
+
+    EXPECT_EXN_SUBSTR(
+      p.checkTaggedTupleSize("mytag", 3),
+      XGDValueError,
+      "Expected tagged tuple, not tuple.");
+
+    p.checkTupleSize(3);
+    EXPECT_EXN_SUBSTR(
+      p.checkTupleSize(2),
+      XGDValueError,
+      "Expected container to have 2 elements, "
+      "but it instead has 3 elements.");
+  }
 }
 
 
@@ -838,7 +851,7 @@ void test_gdvalue_parser()
   test_errorHandler();
   test_integerGetAs();
   test_checkContainerSize();
-  test_checkIsTaggedTuple();
+  test_checkTaggedTupleSize();
 }
 
 
