@@ -3,11 +3,14 @@
 
 #include "smbase/gdvalue-reader.h"     // module under test
 
+#include "smbase/gdvalue.h"            // GDValue
 #include "smbase/reader.h"             // XReader
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
 #include "smbase/sm-test.h"            // EXPECT_EQ, EXPECT_FALSE
 
+#include <optional>                    // std::optional [h]
 #include <sstream>                     // std::istringstream
+#include <string>                      // std::string
 
 using namespace gdv;
 using namespace smbase;

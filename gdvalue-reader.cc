@@ -8,6 +8,7 @@
 #include "smbase/codepoint.h"          // isWhitespace, decodeRadixIndicatorLetter, isASCIIRadixDigit
 #include "smbase/exc.h"                // THROW
 #include "smbase/gdv-binary64-float.h" // gdv::GDVBinary64Float
+#include "smbase/gdvalue.h"            // GDValue
 #include "smbase/gdvsymbol.h"          // GDVSymbol
 #include "smbase/overflow.h"           // addWithOverflowCheck, multiplyWithOverflowCheck
 #include "smbase/sm-env.h"             // smbase::envAsBool
@@ -15,6 +16,8 @@
 #include "smbase/string-util.h"        // possiblyTruncatedWithEllipsis
 #include "smbase/utf8-writer.h"        // smbase::UTF8Writer
 
+#include <optional>                    // std::optional
+#include <string>                      // std::string
 #include <utility>                     // std::move
 
 using namespace smbase;

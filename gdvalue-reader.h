@@ -6,13 +6,12 @@
 #ifndef GDVALUE_READER_H
 #define GDVALUE_READER_H
 
-#include "smbase/file-line-col.h"      // smbase::FileLineCol
-#include "smbase/gdvalue.h"            // GDValue
+#include "smbase/file-line-col-fwd.h"  // smbase::FileLineCol [n]
+#include "smbase/gdvalue-fwd.h"        // GDValue [n]
 #include "smbase/reader.h"             // smbase::Reader
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
-
-#include <optional>                    // std::optional
-#include <string>                      // std::string
+#include "smbase/std-optional-fwd.h"   // std::optional [n]
+#include "smbase/std-string-fwd.h"     // std::string [n]
 
 
 OPEN_NAMESPACE(gdv)
