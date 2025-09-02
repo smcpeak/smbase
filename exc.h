@@ -149,14 +149,15 @@ protected:   // data
   std::vector<std::string> m_contexts;
 
 public:      // methods
-  // The `XBase` constructor does not take any arguments.  In the past
-  // it accepted a `string` argument.  If you are porting older code
-  // that relied on that, you probably want to inherit `XMessage`
-  // instead.
-  //
-  // This constructor copies the global exception context into the
-  // object's `m_context` member.  Afterward, you can call
-  // `prependContext` and `appendContext` to further augment it.
+  /* The `XBase` constructor does not take any arguments.  In the past
+     it accepted a `string` argument.  If you are porting older code
+     that relied on that, you probably want to inherit `XMessage`
+     instead.
+
+     This constructor copies the global exception context into the
+     object's `m_context` member.  Afterward, you can call
+     `prependContext` and `appendContext` to further augment it.
+  */
   XBase() noexcept;
 
   XBase(XBase const &m) noexcept;
@@ -164,19 +165,23 @@ public:      // methods
 
   virtual ~XBase();
 
-  // `std::exception` overrides.  This is not meant to be further
-  // overridden by subclasses.  It populates `m_whatStorage` with
-  // `getMessage()` and returns `m_whatStorage.c_str()`.
+  /* `std::exception` overrides.  This is not meant to be further
+     overridden by subclasses.  It populates `m_whatStorage` with
+     `getMessage()` and returns `m_whatStorage.c_str()`.
+  */
   virtual char const *what() const noexcept override;
 
-  // Construct a message suitable to be delivered to a human user in the
-  // event that this exception is the cause of a user-visible error
-  // (which may or may not be fatal).
-  //
-  // Default: Returns `getContext()` + ": =" + `getConflict()`, unless
-  // the context is the empty string, in which case it returns only the
-  // conflict.
-  //
+  /* Construct a message suitable to be delivered to a human user in the
+     event that this exception is the cause of a user-visible error
+     (which may or may not be fatal).  All else being equal, it's better
+     to call this method than `what()` since it avoids saving an extra
+     copy of the string in a data member.
+
+     But see `getRelayMessage()`, which is better when the message will
+     be included in another thrown exception.
+
+     Default: Returns `getContext()+getConflict()`.
+  */
   virtual std::string getMessage() const;
 
   /* Return a properly punctuated English sentence (starting with a
@@ -206,38 +211,38 @@ public:      // methods
   /* Return a context string for this exception, or the empty string if
      there is no context available.
 
-     TODO: Change this to return the strings *terminated* by ": ".
-
-     Default: Return the strings in `m_contexts` separated by ": ".
+     Default: Return the strings in `m_contexts` separated and
+     terminated by ": ".
   */
   virtual std::string getContext() const;
 
-  // This is meant to be called from within a `catch` block that ends
-  // with `throw;` in order to augment the exception object with
-  // additional context.  It should be called with the innermost context
-  // first and outermost context last so the final result begins with
-  // the outermost context.
-  //
-  // Context strings can be simple nouns like file names, line:col
-  // locations, etc.  They can also be phrases that describe what user
-  // request or intermediate task was being performed.  The context is
-  // *not* meant to be a tool for debugging--it should only contain
-  // information that is meaningful and useful to the end user.  (Of
-  // course, if the exception arises in a context where only a developer
-  // could see it, like in unit tests, then debug information can be
-  // appropriate.)
-  //
-  // The default behavior inserts `context` into `m_contexts` at
-  // position `getExnContextSize()`.  This is "prepend" with respect to
-  // context gathered closer to the throw site (hence the name), but
-  // "append" w.r.t. context from higher up.
-  //
+  /* This is meant to be called from within a `catch` block that ends
+     with `throw;` in order to augment the exception object with
+     additional context.  It should be called with the innermost context
+     first and outermost context last so the final result begins with
+     the outermost context.
+
+     Context strings can be simple nouns like file names, line:col
+     locations, etc.  They can also be phrases that describe what user
+     request or intermediate task was being performed.  The context is
+     *not* meant to be a tool for debugging--it should only contain
+     information that is meaningful and useful to the end user.  (Of
+     course, if the exception arises in a context where only a developer
+     could see it, like in unit tests, then debug information can be
+     appropriate.)
+
+     The default behavior inserts `context` into `m_contexts` at
+     position `getExnContextSize()`.  This is "prepend" with respect to
+     context gathered closer to the throw site (hence the name), but
+     "append" w.r.t. context from higher up.
+  */
   virtual void prependContext(std::string const &context);
 
-  // Although unusual, there may be cases where some piece of context
-  // should be inserted as the new innermost context.
-  //
-  // Default: Append `context` to `m_contexts`.
+  /* Although unusual, there may be cases where some piece of context
+     should be inserted as the new innermost context.
+
+     Default: Append `context` to `m_contexts`.
+  */
   virtual void appendContext(std::string const &context);
 
   /* Return a relay context string for this exception.  A "relay
@@ -269,15 +274,15 @@ public:      // methods
   */
   virtual std::string getRelayMessage() const;
 
-  // Get the name of this exception type.  This is meant primarily as
-  // debugging assistance, *not* something to be seen by the end user;
-  // the conflict message should have everything the user needs to see.
-  // The default returns "XBase".
-  //
-  // Although this will almost always be a pointer to a string literal,
-  // clients should assume it is only valid until a non-const method is
-  // invoked (the same lifetime guarantee as the `what()` string).
-  //
+  /* Get the name of this exception type.  This is meant primarily as
+     debugging assistance, *not* something to be seen by the end user;
+     the conflict message should have everything the user needs to see.
+     The default returns "XBase".
+
+     Although this will almost always be a pointer to a string literal,
+     clients should assume it is only valid until a non-const method is
+     invoked (the same lifetime guarantee as the `what()` string).
+  */
   virtual char const *getTypeName() const noexcept;
 
   // This is a legacy alias for `getMessage()`.

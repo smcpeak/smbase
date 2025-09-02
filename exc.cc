@@ -90,19 +90,13 @@ char const *XBase::what() const noexcept
 
 std::string XBase::getMessage() const
 {
-  std::string context = getContext();
-  if (context.empty()) {
-    return getConflict();
-  }
-  else {
-    return context + ": " + getConflict();
-  }
+  return getContext() + getConflict();
 }
 
 
 std::string XBase::getContext() const
 {
-  return join(m_contexts, ": ");
+  return joinTerminate(m_contexts, ": ");
 }
 
 
