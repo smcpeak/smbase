@@ -5,6 +5,7 @@
 #include "smbase/gdvalue-map-fwd.h"              // gdv::toGDValue(std::map)
 #include "smbase/gdvalue-optional-fwd.h"         // gdv::toGDValue(std::optional)
 #include "smbase/gdvalue-set-fwd.h"              // gdv::toGDValue(std::set)
+#include "smbase/gdvalue-tuple-fwd.h"            // gdv::toGDValue(std::tuple)
 #include "smbase/gdvalue-unique-ptr-fwd.h"       // gdv::toGDValue(std::unique_ptr)
 #include "smbase/gdvalue-vector-fwd.h"           // gdv::toGDValue(std::vector)
 
@@ -13,6 +14,7 @@
 #include "smbase/gdvalue-optional.h"             // module under test
 #include "smbase/gdvalue-parser-ops.h"           // module under test
 #include "smbase/gdvalue-set.h"                  // module under test
+#include "smbase/gdvalue-tuple.h"                // module under test
 #include "smbase/gdvalue-unique-ptr.h"           // module under test
 #include "smbase/gdvalue-vector.h"               // module under test
 
@@ -25,6 +27,8 @@
 #include <limits>                                // std::numeric_limits
 #include <list>                                  // std::list
 #include <optional>                              // std::optional
+#include <tuple>                                 // std::tuple
+#include <vector>                                // std::vector
 
 using namespace gdv;
 using namespace smbase;
@@ -822,6 +826,75 @@ void test_checkTaggedTupleSize()
 }
 
 
+// Test `GDValue` <-> `std::tuple`.
+void test_tuple()
+{
+  using Tuple = std::tuple<int, std::string, Data>;
+
+  {
+    // `std::tuple` -> `GDValue`
+    Tuple tup(3, "foo", Data(4,5));
+    GDValue v(toGDValue(tup));
+    EXPECT_EQ(v.asString(), "(3 \"foo\" Data{x:4 y:5})");
+
+    // `GDValue` -> `std::tuple`
+    {
+      Tuple tup2(GDVP_TO(Tuple, v));
+      EXPECT_EQ(toGDValue(tup2), v);
+    }
+
+    // Again with the convenience function.
+    {
+      Tuple tup2(gdvpToTuple<int, std::string, Data>(GDValueParser(v)));
+      EXPECT_EQ(toGDValue(tup2), v);
+    }
+
+    // Both in one call.
+    gdvnTestRoundtrip(tup, "(3 \"foo\" Data{x:4 y:5})");
+  }
+
+  // Try to parse an element with the wrong type.
+  {
+    GDValue v(fromGDVN("(3 4 Data{x:4 y:5})"));
+    GDValueParser p(v);
+
+    EXPECT_ERROR_SUBSTR(GDVP_TO(Tuple, v),
+      "At GDV path <top>[1]: Expected string, not small integer.");
+  }
+
+  // Try to parse a tuple with too many elements.
+  {
+    GDValue v(fromGDVN("(3 \"foo\" Data{x:4 y:5} 6)"));
+    GDValueParser p(v);
+
+    EXPECT_ERROR_SUBSTR(GDVP_TO(Tuple, v),
+      "At GDV path <top>: Expected container to have 3 elements, but it instead has 4 elements.");
+  }
+
+  // Try to parse a tuple with too few elements.
+  {
+    GDValue v(fromGDVN("(3)"));
+    GDValueParser p(v);
+
+    EXPECT_ERROR_SUBSTR(GDVP_TO(Tuple, v),
+      "At GDV path <top>: Expected container to have 3 elements, but it instead has 1 elements.");
+  }
+
+  // We can parse tagged tuples too, discarding the tag.
+  {
+    GDValue v(fromGDVN("Tag(3 \"foo\" Data{x:4 y:5})"));
+    GDValueParser p(v);
+    Tuple tup(GDVP_TO(Tuple, v));
+
+    EXPECT_EQ(toGDValue(tup).asString(),
+      "(3 \"foo\" Data{x:4 y:5})");
+  }
+}
+
+
+// TODO: GDValueParser for floats!
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -852,6 +925,7 @@ void test_gdvalue_parser()
   test_integerGetAs();
   test_checkContainerSize();
   test_checkTaggedTupleSize();
+  test_tuple();
 }
 
 

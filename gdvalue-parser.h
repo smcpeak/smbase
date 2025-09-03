@@ -17,15 +17,15 @@
 #include "smbase/gdvalue-parser-fwd.h"           // fwds for this file
 
 #include "smbase/exc.h"                          // smbase::XBase
-#include "smbase/gdvalue-fwd.h"                  // gdv::GDValue
+#include "smbase/gdvalue-fwd.h"                  // gdv::GDValue [n]
 #include "smbase/gdvalue-kind.h"                 // gdv::GDValueKind
 #include "smbase/gdvalue-types.h"                // gdv::GDVIndex
-#include "smbase/gdvsymbol-fwd.h"                // gdv::GDVSymbol
-#include "smbase/gdvtuple-fwd.h"                 // gdv::GDVTuple
+#include "smbase/gdvsymbol-fwd.h"                // gdv::GDVSymbol [n]
+#include "smbase/gdvtuple-fwd.h"                 // gdv::GDVTuple [n]
 #include "smbase/sm-macros.h"                    // OPEN_NAMESPACE, NORETURN
 
-#include "smbase/std-optional-fwd.h"             // std::optional
-#include "smbase/std-string-view-fwd.h"          // std::string_view
+#include "smbase/std-optional-fwd.h"             // std::optional [n]
+#include "smbase/std-string-view-fwd.h"          // std::string_view [n]
 
 #include <string>                                // std::string
 #include <type_traits>                           // std::{enable_if_t, is_final, is_constructible}
