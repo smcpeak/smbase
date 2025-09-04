@@ -1,6 +1,7 @@
 // gdvalue-parser-test.cc
 // Code for `gdvaluer-parse`.
 
+#include "smbase/gdvalue-either-fwd.h"           // gdv::toGDValue(smbase::Either)
 #include "smbase/gdvalue-list-fwd.h"             // gdv::toGDValue(std::list)
 #include "smbase/gdvalue-map-fwd.h"              // gdv::toGDValue(std::map)
 #include "smbase/gdvalue-optional-fwd.h"         // gdv::toGDValue(std::optional)
@@ -9,6 +10,7 @@
 #include "smbase/gdvalue-unique-ptr-fwd.h"       // gdv::toGDValue(std::unique_ptr)
 #include "smbase/gdvalue-vector-fwd.h"           // gdv::toGDValue(std::vector)
 
+#include "smbase/gdvalue-either.h"               // module under test
 #include "smbase/gdvalue-list.h"                 // module under test
 #include "smbase/gdvalue-map.h"                  // module under test
 #include "smbase/gdvalue-optional.h"             // module under test
@@ -892,6 +894,38 @@ void test_tuple()
 }
 
 
+void test_Either()
+{
+  using E = Either<int, std::string>;
+
+  {
+    E e(3);
+    GDValue v(toGDValue(e));
+    EXPECT_EQ(v.asString(), "left(3)");
+
+    E e2(gdvpTo<E>(GDValueParser(v)));
+    EXPECT_EQ(e2.left(), 3);
+
+    gdvnTestRoundtrip(e, "left(3)");
+  }
+
+  gdvnTestRoundtrip(E("hello"), "right(\"hello\")");
+
+  EXPECT_ERROR_SUBSTR(GDVP_TO(E, fromGDVN("4")),
+    "At GDV path <top>: Expected tuple, not small integer.");
+  EXPECT_ERROR_SUBSTR(GDVP_TO(E, fromGDVN("left[3]")),
+    "At GDV path <top>: Expected tuple, not tagged sequence.");
+  EXPECT_ERROR_SUBSTR(GDVP_TO(E, fromGDVN("foo(3)")),
+    "At GDV path <top>: Expected tuple tag `left` or `right`, not foo.");
+  EXPECT_ERROR_SUBSTR(GDVP_TO(E, fromGDVN("(3)")),
+    "At GDV path <top>: Expected tagged container, not tuple.");
+  EXPECT_ERROR_SUBSTR(GDVP_TO(E, fromGDVN("right(3 4)")),
+    "At GDV path <top>: Expected container to have 1 elements, but it instead has 2 elements.");
+  EXPECT_ERROR_SUBSTR(GDVP_TO(E, fromGDVN("right(3)")),
+    "At GDV path <top>[0]: Expected string, not small integer.");
+}
+
+
 // TODO: GDValueParser for floats!
 
 
@@ -926,6 +960,7 @@ void test_gdvalue_parser()
   test_checkContainerSize();
   test_checkTaggedTupleSize();
   test_tuple();
+  test_Either();
 }
 
 
