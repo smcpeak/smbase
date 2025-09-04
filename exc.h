@@ -9,6 +9,8 @@
 #ifndef SMBASE_EXC_H
 #define SMBASE_EXC_H
 
+#include "exc-fwd.h"                   // fwds for this module
+
 #include "smbase/breaker.h"            // breaker
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE, NORETURN
 #include "smbase/sm-pp-util.h"         // SM_PP_MAP, SM_PP_APPLY
@@ -16,6 +18,7 @@
 #include "smbase/stringb.h"            // stringb
 #include "smbase/vector-push-pop.h"    // VECTOR_PUSH_POP
 
+#include <cstddef>                     // std::size_t
 #include <exception>                   // std::exception
 #include <iosfwd>                      // std::ostream
 #include <string>                      // std::string

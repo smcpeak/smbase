@@ -14,7 +14,6 @@
 #include "smbase/xassert.h"                      // xassertdb
 
 // libc++
-#include <cstring>                               // std::strcmp
 #include <iostream>                              // std::ostream
 #include <string>                                // std::string
 #include <string_view>                           // std::string_view

@@ -7,6 +7,7 @@
 
 #include "smbase/dev-warning.h"        // devWarning
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
+#include "smbase/str.h"                // string
 #include "smbase/string-util.h"        // doubleQuote
 #include "smbase/system-error-code.h"  // SystemErrorCode
 

@@ -5,6 +5,7 @@
 
 #include "smbase/codepoint.h"          // isASCIIDigit
 #include "smbase/overflow.h"           // multiplyWithOverflowCheck
+#include "smbase/str.h"                // stringBuilder
 #include "smbase/string-util.h"        // doubleQuote, singleQuoteChar
 #include "smbase/stringb.h"            // stringb
 #include "smbase/xassert.h"            // xassert

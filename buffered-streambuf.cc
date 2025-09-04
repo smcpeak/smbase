@@ -11,6 +11,7 @@
 
 #include <cstddef>                     // std::size_t
 #include <cstring>                     // std::memmove
+#include <exception>                   // std::exception
 
 
 OPEN_NAMESPACE(smbase)

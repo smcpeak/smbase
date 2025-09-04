@@ -7,13 +7,13 @@
 // It is partly based the box model described at
 // http://caml.inria.fr/FAQ/format-eng.html
 
-#ifndef BOXPRINT_H
-#define BOXPRINT_H
+#ifndef SMBASE_BOXPRINT_H
+#define SMBASE_BOXPRINT_H
 
-#include "array.h"                     // ObjArrayStack
-#include "astlist.h"                   // ASTList
-#include "sm-iostream.h"               // ostream
-#include "str.h"                       // stringBuilder
+#include "smbase/array.h"              // ObjArrayStack
+#include "smbase/astlist.h"            // ASTList
+#include "smbase/sm-iostream.h"        // ostream
+#include "smbase/str.h"                // stringBuilder
 
 
 // fwd
@@ -288,4 +288,4 @@ public:      // funcs
 };
 
 
-#endif // BOXPRINT_H
+#endif // SMBASE_BOXPRINT_H

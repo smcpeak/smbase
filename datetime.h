@@ -127,7 +127,7 @@ public:      // funcs
 
   // Get the current date, time, and local time zone from the OS (or
   // a specified provider) and populate this object with them.
-  void fromCurrentTime(DateTimeProvider *provider = NULL);
+  void fromCurrentTime(DateTimeProvider *provider = nullptr);
 
   // Validate that the fields conform to their documented ranges.  If
   // one does not, throw XFormat.

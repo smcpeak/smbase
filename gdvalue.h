@@ -15,8 +15,7 @@
 
 #include "gdvalue-fwd.h"                         // fwds for this module
 
-// this dir
-#include "smbase/compare-util.h"                 // DEFINE_FRIEND_RELATIONAL_OPERATORS
+// IWYU pragma: begin_exports
 #include "smbase/gdv-binary64-float-fwd.h"       // gdv::GDVBinary64Float
 #include "smbase/gdv-ordered-map-iface.h"        // gdv::GDVOrderedMap
 #include "smbase/gdvalue-kind.h"                 // GDValueKind
@@ -25,8 +24,14 @@
 #include "smbase/gdvsymbol.h"                    // gdv::GDVSymbol
 #include "smbase/gdvtuple.h"                     // gdv::GDVTuple
 #include "smbase/sm-integer.h"                   // smbase::Integer
+// IWYU pragma: end_exports
+
+// this dir
+#include "smbase/compare-util-iface.h"           // DEFINE_FRIEND_RELATIONAL_OPERATORS
 #include "smbase/sm-macros.h"                    // OPEN_NAMESPACE, NULLABLE
 #include "smbase/sm-pp-util.h"                   // SM_PP_COMMA_MAP
+#include "smbase/std-optional-fwd.h"             // std::optional
+#include "smbase/std-string-fwd.h"               // std::string::{iterator,const_iterator}
 #include "smbase/std-string-view-fwd.h"          // std::string_view
 
 // libc++

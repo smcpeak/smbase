@@ -7,12 +7,13 @@
 #define SMBASE_GDVALUE_WRITER_H
 
 // this dir
-#include "smbase/gdvalue.h"            // gdv::GDValueWriteOptions
-#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
+#include "smbase/gdvalue.h"                      // gdv::GDValueWriteOptions
+#include "smbase/sm-macros.h"                    // OPEN_NAMESPACE
+#include "smbase/std-string-view-fwd.h"          // std::string_view
 
 // libc++
-#include <iosfwd>                      // std::ostream
-#include <optional>                    // std::optional
+#include <iosfwd>                                // std::ostream
+#include <optional>                              // std::optional
 
 
 OPEN_NAMESPACE(gdv)

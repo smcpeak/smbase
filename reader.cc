@@ -5,6 +5,7 @@
 
 #include "codepoint.h"                 // isASCIIPrintable
 #include "sm-macros.h"                 // OPEN_NAMESPACE
+#include "str.h"                       // string
 #include "stringb.h"                   // stringbc, stringb
 
 #include <iomanip>                     // std::hex

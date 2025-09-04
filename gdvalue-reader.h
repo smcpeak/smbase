@@ -12,6 +12,9 @@
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 #include "smbase/std-optional-fwd.h"   // std::optional [n]
 #include "smbase/std-string-fwd.h"     // std::string [n]
+#include "smbase/std-vector-fwd.h"     // std::vector [n]
+
+#include <iosfwd>                      // std::istream [n]
 
 
 OPEN_NAMESPACE(gdv)

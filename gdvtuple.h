@@ -9,7 +9,7 @@
 #include "gdvtuple-fwd.h"              // fwds for this module
 
 // this dir
-#include "smbase/compare-util.h"       // DEFINE_FRIEND_RELATIONAL_OPERATORS
+#include "smbase/compare-util-iface.h" // DEFINE_FRIEND_RELATIONAL_OPERATORS
 #include "smbase/gdvalue-fwd.h"        // GDValue
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 

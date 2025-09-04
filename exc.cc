@@ -9,14 +9,12 @@
 #include "smbase/sm-macros.h"          // DMEMB, CMEMB
 #include "smbase/sm-span-util.h"       // smbase::joinTerminate
 #include "smbase/sm-span.h"            // smbase::Span
+#include "smbase/str.h"                // rostring
 #include "smbase/string-util.h"        // join, withoutDirectoryPrefix
 #include "smbase/vector-util.h"        // vecEraseFirstN
+#include "smbase/xassert.h"            // x_assert_fail
 
 #include <algorithm>                   // std::min
-
-#include <ctype.h>                     // toupper, tolower
-#include <stdarg.h>                    // va_xxx
-#include <string.h>                    // strlen, strcpy
 
 
 OPEN_NAMESPACE(smbase)

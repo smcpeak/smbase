@@ -16,19 +16,18 @@
 #include "smbase/overflow.h"                     // convertNumberOpt
 #include "smbase/safe-int-conv.h"                // smbase::IsSafelyConvertible_v
 #include "smbase/sm-trace.h"                     // INIT_TRACE, etc.
+#include "smbase/stringb.h"                      // stringb
 #include "smbase/syserr.h"                       // smbase::xsyserror
 #include "smbase/type-name-and-size-ops.h"       // makeTypeNameAndSizeForType
 #include "smbase/xassert.h"                      // xassert
 #include "smbase/xoverflow.h"                    // smbase::XNumericConversion{OutsideRange,FromAP}
 
 // libc++
-#include <cmath>                                 // std::isfinite
-#include <cstring>                               // std::strcmp
 #include <fstream>                               // std::{ifstream, ofstream}
-#include <new>                                   // placement `new`
 #include <sstream>                               // std::ostringstream
 #include <string_view>                           // std::string_view
 #include <utility>                               // std::move, std::swap, std::make_pair
+#include <vector>                                // std::vector
 
 using namespace smbase;
 

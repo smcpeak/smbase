@@ -7,9 +7,10 @@
 #include "flatten.h"                   // this module
 
 // smbase
-#include "exc.h"                       // formatAssert, smbase::xformat
-#include "overflow.h"                  // convertWithRTIP
-#include "xassert.h"                   // xassert
+#include "smbase/exc.h"                // formatAssert, smbase::xformat
+#include "smbase/overflow.h"           // convertWithRTIP
+#include "smbase/stringb.h"            // stringb
+#include "smbase/xassert.h"            // xassert
 
 // libc
 #include <limits.h>                    // INT_MAX

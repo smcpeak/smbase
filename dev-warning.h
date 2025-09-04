@@ -4,7 +4,7 @@
 #ifndef DEV_WARNING_H
 #define DEV_WARNING_H
 
-#include "str.h"                       // stringbc
+#include "smbase/stringb.h"            // stringbc
 
 
 // When true, and 'g_devWarningHandler' is NULL, any call to
@@ -30,7 +30,6 @@ void devWarning(char const *file, int line, char const *msg);
 // Macro for convenient usage.
 #define DEV_WARNING(msg) \
   devWarning(__FILE__, __LINE__, stringbc(msg)) /* user ; */
-
 
 
 #endif // DEV_WARNING_H

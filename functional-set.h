@@ -4,9 +4,9 @@
 #ifndef SMBASE_FUNCTIONAL_SET_H
 #define SMBASE_FUNCTIONAL_SET_H
 
-#include "sm-compare.h"                // StrongOrdering
-#include "sm-macros.h"                 // NO_OBJECT_COPIES
-#include "sm-rc-ptr.h"                 // RefCountObject, RCPtr
+#include "smbase/sm-compare.h"         // StrongOrdering
+#include "smbase/sm-macros.h"          // NO_OBJECT_COPIES
+#include "smbase/sm-rc-ptr.h"          // RefCountObject, RCPtr
 
 #include <cstddef>                     // std::size_t
 #include <iosfwd>                      // std::ostream

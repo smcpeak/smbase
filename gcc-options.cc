@@ -3,14 +3,13 @@
 
 #include "gcc-options.h"               // this module
 
-#include "binary-lookup.h"             // binary_lookup
-#include "container-util.h"            // insertUnique
-#include "sm-file-util.h"              // SMFileUtil
-#include "sm-macros.h"                 // EMEMB, DEFINE_ENUMERATION_TO_STRING
-#include "strcmp-compare.h"            // StrcmpCompare, etc.
-#include "strictly-sorted.h"           // is_strictly_sorted
-#include "string-util.h"               // stripExtension, stringInSortedArray, join, beginsWith, doubleQuote
-#include "xassert.h"                   // xassert
+#include "smbase/binary-lookup.h"      // binary_lookup
+#include "smbase/sm-file-util.h"       // SMFileUtil
+#include "smbase/sm-macros.h"          // EMEMB, DEFINE_ENUMERATION_TO_STRING
+#include "smbase/strcmp-compare.h"     // StrcmpCompare, etc.
+#include "smbase/strictly-sorted.h"    // is_strictly_sorted
+#include "smbase/string-util.h"        // stripExtension, stringInSortedArray, join, beginsWith, doubleQuote
+#include "smbase/xassert.h"            // xassert
 
 #include <sstream>                     // std::ostringstream
 #include <utility>                     // std::move

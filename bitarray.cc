@@ -1,10 +1,12 @@
 // bitarray.cc            see license.txt for copyright and terms of use
 // code for bitarray.h
 
-#include "bitarray.h"     // this module
-#include "flatten.h"      // Flatten
+#include "smbase/bitarray.h"           // this module
+#include "smbase/flatten.h"            // Flatten
+#include "smbase/str.h"                // stringBuilder, string
+#include "smbase/xassert.h"            // xassert
 
-#include <string.h>       // memset
+#include <string.h>                    // memset
 
 
 BitArray::BitArray(int n)

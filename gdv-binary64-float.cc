@@ -7,6 +7,7 @@
 #include "smbase/exc.h"                // xformatsb
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 #include "smbase/string-util.h"        // doubleQuote
+#include "smbase/stringb.h"            // stringb
 #include "smbase/xassert.h"            // xassert
 
 #include <charconv>                    // std::from_chars

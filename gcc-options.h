@@ -4,6 +4,7 @@
 #ifndef GCC_OPTIONS_H
 #define GCC_OPTIONS_H
 
+#include <cstddef>                     // std::size_t
 #include <iosfwd>                      // std::ostream
 #include <string>                      // std::string
 #include <vector>                      // std::vector
@@ -39,7 +40,7 @@ private:     // types
     std::vector<std::string> const &m_args;
 
     // Index of next element in 'm_argv' to process.
-    size_t m_index;
+    std::size_t m_index;
 
   public:
     WordIterator(std::vector<std::string> const &args);
@@ -215,7 +216,7 @@ public:      // types
 
     // Current option index.  Equals 'm_options.size()' when
     // '!hasMore()'.
-    size_t m_index;
+    std::size_t m_index;
 
     // Current "-x" setting, or the empty string if none is set, which
     // is the case initially and after "-xnone".
@@ -298,15 +299,15 @@ public:      // methods
     { return !operator==(obj); }
 
   // Number of parsed options.
-  size_t size() const
+  std::size_t size() const
     { return m_options.size(); }
 
   bool empty() const
     { return m_options.empty(); }
 
   // Get one option.
-  Option const &at(size_t index) const;
-  Option const &operator[](size_t index) const
+  Option const &at(std::size_t index) const;
+  Option const &operator[](std::size_t index) const
     { return at(index); }
 
   // Get entire vector.

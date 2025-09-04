@@ -8,6 +8,7 @@
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE, NULLABLE
 
 #include <optional>                    // std::optional
+#include <string>                      // std::string
 #include <string_view>                 // std::string_view
 
 

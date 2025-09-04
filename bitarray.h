@@ -4,10 +4,10 @@
 #ifndef SMBASE_BITARRAY_H
 #define SMBASE_BITARRAY_H
 
-#include "xassert.h"      // xassert
-#include "str.h"          // string
+#include "flatten-fwd.h"               // Flatten [n]
+#include "str.h"                       // string
+#include "xassert.h"                   // xassert
 
-class Flatten;            // flatten.h
 
 class BitArray {
 private:    // data

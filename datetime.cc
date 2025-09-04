@@ -3,10 +3,17 @@
 
 #include "datetime.h"                  // this module
 
-#include "exc.h"                       // checkFormat
-#include "syserr.h"                    // xsyserror
-#include "xassert.h"                   // xassert
+#include "smbase/exc.h"                // checkFormat
+#include "smbase/sm-macros.h"          // CMEMB, DMEMB, EMEMB
+#include "smbase/str.h"                // string
+#include "smbase/stringb.h"            // stringb
+#include "smbase/stringf.h"            // stringf
+#include "smbase/syserr.h"             // xsyserror
+#include "smbase/xassert.h"            // xassert
 
+#include <iostream>                    // std::ostream
+
+#include <stdint.h>                    // int64_t
 #include <time.h>                      // time_t, time()
 
 #ifdef __MINGW32__
@@ -20,14 +27,14 @@ using namespace smbase;
 // ------------------------ OSDateTimeProvider ----------------------
 class OSDateTimeProvider : public DateTimeProvider {
 public:      // funcs
-  UnixTime getCurrentUnixTime() OVERRIDE;
-  int getLocalTzOffsetMinutes() OVERRIDE;
+  UnixTime getCurrentUnixTime() override;
+  int getLocalTzOffsetMinutes() override;
 };
 
 
 UnixTime OSDateTimeProvider::getCurrentUnixTime()
 {
-  time_t t = time(NULL);
+  time_t t = time(nullptr);
   xassert(t != ((time_t)-1));          // this never fails in practice
 
   // I will just assume this is unix time.
@@ -58,7 +65,7 @@ int OSDateTimeProvider::getLocalTzOffsetMinutes()
 
 #elif defined(__TM_GMTOFF)
   // On GNU libc, 'struct tm' has a field with the required info.
-  time_t unixtime = time(NULL);
+  time_t unixtime = time(nullptr);
   struct tm *tm = localtime(&unixtime);
   return tm->__TM_GMTOFF / 60;
 
@@ -74,7 +81,7 @@ int OSDateTimeProvider::getLocalTzOffsetMinutes()
   // However, I think this is wrong when the current time is close to
   // the DST/STD cutover since we're asking mktime about a time other
   // than "now".
-  time_t utNow = time(NULL);
+  time_t utNow = time(nullptr);
   struct tm *ptm = gmtime(&utNow);
   // Request that mktime() looksup dst in timezone database.
   ptm->tm_isdst = -1;

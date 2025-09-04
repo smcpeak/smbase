@@ -8,6 +8,8 @@
 #include "smbase/exc.h"                          // EXN_CONTEXT, GENERIC_CATCH_BEGIN, OPEN_NAMESPACE
 #include "smbase/sm-env.h"                       // smbase::envAsIntOr
 #include "smbase/sm-macros.h"                    // IMEMBFP
+#include "smbase/string-util.h"                  // doubleQuote
+#include "smbase/stringb.h"                      // stringb
 #include "smbase/syserr.h"                       // xsyserror
 
 #include <iostream>                              // std::ostream

@@ -3,9 +3,10 @@
 
 #include "boxprint.h"                  // this module
 
-#include "string-util.h"               // doubleQuote
-#include "stringb.h"                   // stringb
-#include "xassert.h"                   // xassert
+#include "smbase/astlist.h"            // ASTListIterNC, ASTListIter, ASTList
+#include "smbase/string-util.h"        // doubleQuote
+#include "smbase/stringb.h"            // stringb
+#include "smbase/xassert.h"            // xassert
 
 #include <string.h>                    // strlen
 

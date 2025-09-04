@@ -4,9 +4,10 @@
 #ifndef SMBASE_GDVALUE_JSON_H
 #define SMBASE_GDVALUE_JSON_H
 
-#include "smbase/gdvalue-fwd.h"                  // gdv::GDValue
+#include "smbase/gdvalue-fwd.h"                  // gdv::GDValue [n]
 #include "smbase/gdvalue-write-options.h"        // GDValueWriteOptions
 #include "smbase/sm-macros.h"                    // OPEN_NAMESPACE, NULLABLE
+#include "smbase/std-string-fwd.h"               // std::string
 #include "smbase/std-string-view-fwd.h"          // std::string_view
 
 #include <cstdint>                               // std::int64_t, INT64_C

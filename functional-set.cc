@@ -3,7 +3,8 @@
 
 #include "functional-set.h"            // this module
 
-#include "xassert.h"                   // xassert
+#include "smbase/sm-rc-ptr.h"          // RCPtr
+#include "smbase/xassert.h"            // xassert
 
 #include <iostream>                    // std::ostream
 #include <sstream>                     // std::ostringstream

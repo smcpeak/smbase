@@ -11,8 +11,11 @@
 
 #include <cstdlib>                     // std::exit
 #include <functional>                  // std::function
+#include <iostream>                    // std::cout
 
 using namespace smbase;
+
+using std::cout;
 
 
 // Call `failingCall`, expecting that it will return false, meaning it
@@ -29,7 +32,7 @@ static int tryFail(std::function<bool ()> failingCall,
 {
   try {
     if (failingCall()) {
-      std::cout << "ERROR: " << failingCallText << " should have failed\n";
+      cout << "ERROR: " << failingCallText << " should have failed\n";
       return 1;
     }
     else {

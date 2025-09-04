@@ -3,10 +3,12 @@
 
 #include "c-string-reader.h"           // this module
 
-#include "codepoint.h"                 // isASCIIHexDigit, decodeASCIIHexDigit, decodeASCIIOctDigit
-#include "exc.h"                       // xformat
-#include "sm-macros.h"                 // OPEN_NAMESPACE
-#include "string-util.h"               // singleQuoteChar
+#include "smbase/codepoint.h"          // isASCIIHexDigit, decodeASCIIHexDigit, decodeASCIIOctDigit
+#include "smbase/exc.h"                // xformat
+#include "smbase/reader.h"             // Reader
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
+#include "smbase/string-util.h"        // singleQuoteChar
+#include "smbase/stringb.h"            // stringb
 
 #include <sstream>                     // std::{istringstream, ostringstream}
 #include <string>                      // std::string

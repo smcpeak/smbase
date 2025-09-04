@@ -17,6 +17,7 @@
 #include "smbase/gdvalue-parser-fwd.h"           // fwds for this file
 
 #include "smbase/exc.h"                          // smbase::XBase
+#include "smbase/gdv-ordered-map-fwd.h"          // gdv::GDVOrderedMap [n]
 #include "smbase/gdvalue-fwd.h"                  // gdv::GDValue [n]
 #include "smbase/gdvalue-kind.h"                 // gdv::GDValueKind
 #include "smbase/gdvalue-types.h"                // gdv::GDVIndex

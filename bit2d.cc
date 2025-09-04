@@ -8,7 +8,7 @@
 #include "smbase/sm-macros.h"          // smbase_loopi, ASSERT_TABLESIZE
 #include "smbase/xassert.h"            // xassert
 
-#include <stdio.h>                     // printf
+#include <stdio.h>                     // printf, stdout
 #include <string.h>                    // memset, memcpy
 
 

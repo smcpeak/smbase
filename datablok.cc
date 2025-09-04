@@ -2,19 +2,20 @@
 // code for datablok.h
 // Scott McPeak, 1998-2000  This file is public domain.
 
-#include "datablok.h"     // this module
-#include "exc.h"          // xassert, CAUTIOUS_RELAY
-#include "crc.h"          // crc32
-#include "syserr.h"       // xsyserror
-#include "xassert.h"      // xassert
+#include "datablok.h"                  // this module
 
-#include <algorithm>      // std::{min, max}
+#include "smbase/exc.h"                // xassert, CAUTIOUS_RELAY
+#include "smbase/crc.h"                // crc32
+#include "smbase/syserr.h"             // xsyserror
+#include "smbase/xassert.h"            // xassert
 
-#include <limits.h>       // INT_MAX
-#include <stdio.h>        // printf
-#include <stdlib.h>       // abort
-#include <string.h>       // memcpy
-#include <ctype.h>        // isprint
+#include <algorithm>                   // std::{min, max}
+
+#include <ctype.h>                     // isprint
+#include <limits.h>                    // INT_MAX
+#include <stdio.h>                     // printf, stdout, stderr
+#include <stdlib.h>                    // abort
+#include <string.h>                    // memcpy
 
 using namespace smbase;
 

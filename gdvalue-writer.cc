@@ -15,12 +15,13 @@
 #include "smbase/save-restore.h"       // SAVE_RESTORE, SET_RESTORE
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 #include "smbase/sm-trace.h"           // INIT_TRACE
-#include "smbase/string-util.h"        // doubleQuote
 #include "smbase/stringf.h"            // stringf
 #include "smbase/xassert.h"            // xfailure
 
 // libc++
+#include <cstddef>                     // std::size_t
 #include <iostream>                    // std::ostream
+#include <string>                      // std::string
 
 
 OPEN_NAMESPACE(gdv)
