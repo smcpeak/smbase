@@ -1,9 +1,9 @@
 // xassert-test.cc
 // Tests for `xassert` module.
 
-#include "smbase/exc.h"                // XBase
+#include "smbase/exc.h"                // smbase::{XBase, XAssert}
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
-#include "smbase/sm-test.h"            // EXPECT_EQ
+#include "smbase/sm-test.h"            // EXPECT_EQ, EXPECT_EXN_SUBSTR
 
 using namespace smbase;
 
@@ -31,6 +31,16 @@ void testXassertPtr()
 }
 
 
+void test_xassertPostcondition()
+{
+  EXPECT_EXN_SUBSTR(xassertPostcondition(false),
+    XAssert, "false");
+
+  EXPECT_EXN_SUBSTR(xfailurePostcondition("something"),
+    XAssert, "something");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -38,6 +48,7 @@ CLOSE_ANONYMOUS_NAMESPACE
 void test_xassert()
 {
   testXassertPtr();
+  test_xassertPostcondition();
 }
 
 

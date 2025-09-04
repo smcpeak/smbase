@@ -123,6 +123,14 @@ T *xassertPtr(T *ptr)
 #define xfailureInvariant(why) xfailure(why)
 
 
+// Similar to `xassertPrecondition`, but for postconditions.  This would
+// typically be used shortly before a function returns its value, such
+// that a tool should be able to readily connect it to the actual return
+// value.
+#define xassertPostcondition(cond) xassert(cond)
+#define xfailurePostcondition(why) xfailure(why)
+
+
 // Quick note: one prominent book on writing code recommends that
 // assertions *not* include the failure condition, since the file
 // and line number are sufficient, and the condition string uses
