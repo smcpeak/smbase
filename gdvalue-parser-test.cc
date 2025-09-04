@@ -20,12 +20,14 @@
 #include "smbase/gdvalue-unique-ptr.h"           // module under test
 #include "smbase/gdvalue-vector.h"               // module under test
 
+#include "smbase/gdv-binary64-float.h"           // gdv::GDVBinary64Float
 #include "smbase/gdv-ordered-map.h"              // gdv::GDVOrderedMap
 #include "smbase/gdvalue.h"                      // gdv::GDValue
 #include "smbase/gdvn-test-roundtrip.h"          // gdvnTestRoundtrip
 #include "smbase/sm-macros.h"                    // {OPEN,CLOSE}_ANONYMOUS_NAMESPACE
 #include "smbase/sm-test.h"                      // EXPECT_EQ
 
+#include <cmath>                                 // std::pow
 #include <limits>                                // std::numeric_limits
 #include <list>                                  // std::list
 #include <optional>                              // std::optional
@@ -926,7 +928,25 @@ void test_Either()
 }
 
 
-// TODO: GDValueParser for floats!
+void test_binary64Float()
+{
+  gdvnTestRoundtrip(GDVBinary64Float(0.0), "0.0");
+  gdvnTestRoundtrip(GDVBinary64Float(4.5), "4.5");
+
+  gdvnTestRoundtrip(GDVBinary64Float(-0.0), "-0.0");
+
+  // Moderately large and small values that have exact representations
+  // in base 2.
+  double large = std::pow(2.0, 100.0);
+  double small = std::pow(2.0, -100.0);
+
+  gdvnTestRoundtrip(GDVBinary64Float(large), "1.2676506002282294e+30");
+  gdvnTestRoundtrip(GDVBinary64Float(small), "7.8886090522101181e-31");
+
+  gdvnTestRoundtrip(
+    std::tuple{GDVBinary64Float(4.5), 6, std::string("seven")},
+    "(4.5 6 \"seven\")");
+}
 
 
 CLOSE_ANONYMOUS_NAMESPACE
@@ -961,6 +981,7 @@ void test_gdvalue_parser()
   test_checkTaggedTupleSize();
   test_tuple();
   test_Either();
+  test_binary64Float();
 }
 
 

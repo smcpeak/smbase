@@ -17,6 +17,7 @@
 #include "smbase/gdvalue-parser-fwd.h"           // fwds for this file
 
 #include "smbase/exc.h"                          // smbase::XBase
+#include "smbase/gdv-binary64-float-fwd.h"       // gdv::GDVBinary64Float [n]
 #include "smbase/gdv-ordered-map-fwd.h"          // gdv::GDVOrderedMap [n]
 #include "smbase/gdvalue-fwd.h"                  // gdv::GDValue [n]
 #include "smbase/gdvalue-kind.h"                 // gdv::GDValueKind
@@ -198,6 +199,7 @@ public:      // methods
   bool isSymbol() const;
   bool isInteger() const;
   bool isSmallInteger() const;
+  bool isBinary64Float() const;
   bool isString() const;
   bool isSequence() const;
   bool isTaggedSequence() const;
@@ -249,6 +251,10 @@ public:      // methods
   // ---- SmallInteger ----
   void checkIsSmallInteger() const;
   GDVSmallInteger smallIntegerGet() const;
+
+  // ---- Binary64Float ----
+  void checkIsBinary64Float() const;
+  GDVBinary64Float binary64FloatGet() const;
 
   // ---- String ----
   void checkIsString() const;
@@ -452,6 +458,13 @@ template <>
 struct GDVPTo<int> {
   // Requires that `p` be a small integer.
   static int f(GDValueParser const &p);
+};
+
+
+template <>
+struct GDVPTo<GDVBinary64Float> {
+  // Requires that `p` be a binary64 float.
+  static GDVBinary64Float f(GDValueParser const &p);
 };
 
 

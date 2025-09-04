@@ -4,6 +4,7 @@
 #include "smbase/gdvalue-parser.h"     // this module
 
 #include "smbase/exc.h"                // THROW, smbase::getExnContextSize
+#include "smbase/gdv-binary64-float.h" // gdv::GDVBinary64Float
 #include "smbase/gdvalue.h"            // GDValue
 #include "smbase/overflow.h"           // convertNumberOpt
 #include "smbase/sm-macros.h"          // DMEMB, MDMEMB
@@ -264,6 +265,7 @@ RELAY_QUERY(GDValueKind, getSuperKind)
 RELAY_QUERY(bool, isSymbol)
 RELAY_QUERY(bool, isInteger)
 RELAY_QUERY(bool, isSmallInteger)
+RELAY_QUERY(bool, isBinary64Float)
 RELAY_QUERY(bool, isString)
 RELAY_QUERY(bool, isSequence)
 RELAY_QUERY(bool, isTaggedSequence)
@@ -386,6 +388,12 @@ T GDValueParser::integerGetAs() const
 DEFINE_CHECK_IS_KIND(SmallInteger, "small integer")
 
 RELAY_KIND_SPECIFIC_QUERY0(SmallInteger, GDVSmallInteger, smallIntegerGet)
+
+
+// ---- Binary64Float ----
+DEFINE_CHECK_IS_KIND(Binary64Float, "binary64 float")
+
+RELAY_KIND_SPECIFIC_QUERY0(Binary64Float, GDVBinary64Float, binary64FloatGet)
 
 
 // ---- String ----
@@ -759,6 +767,12 @@ int GDVPTo<int>::f(GDValueParser const &p)
       "Number too large to represent as `int`: " << p.valueGDVN() << "."));
     return 0;  // not reached
   }
+}
+
+
+GDVBinary64Float GDVPTo<GDVBinary64Float>::f(GDValueParser const &p)
+{
+  return p.binary64FloatGet();
 }
 
 
