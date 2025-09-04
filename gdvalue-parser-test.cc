@@ -88,6 +88,11 @@ void test_bool()
   gdvnTestRoundtripEq(true, "true");
   gdvnTestRoundtripEq(false, "false");
 
+  EXPECT_ERROR_SUBSTR(GDValueParser(fromGDVN("foo")).boolGet(),
+    "Expected symbol `true` or `false`, not foo.");
+  EXPECT_ERROR_SUBSTR(GDValueParser(fromGDVN("`a b c`")).boolGet(),
+    "Expected symbol `true` or `false`, not `a b c`.");
+
   {
     GDValue t(true);
     GDValueParser p(t);

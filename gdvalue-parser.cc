@@ -354,7 +354,26 @@ void GDValueParser::checkIsSymbol() const
 
 RELAY_QUERY(bool, isNull)
 RELAY_QUERY(bool, isBool)
-RELAY_QUERY(bool, boolGet)
+
+
+bool GDValueParser::boolGet() const
+{
+  checkIsSymbol();
+
+  std::string_view symName = symbolGetName();
+  if (symName == "true") {
+    return true;
+  }
+  else if (symName == "false") {
+    return false;
+  }
+  else {
+    throwError(stringb(
+      "Expected symbol `true` or `false`, not " << valueGDVN() << "."));
+    return false;  // not reached
+  }
+}
+
 
 RELAY_KIND_SPECIFIC_QUERY0(Symbol, GDVSymbol, symbolGet)
 RELAY_KIND_SPECIFIC_QUERY0(Symbol, std::string_view, symbolGetName)
@@ -741,20 +760,7 @@ HandleXGDValueError::HandleXGDValueError()
 // ------------------------------ GDVPTo -------------------------------
 bool GDVPTo<bool>::f(GDValueParser const &p)
 {
-  p.checkIsSymbol();
-
-  std::string_view symName = p.symbolGetName();
-  if (symName == "true") {
-    return true;
-  }
-  else if (symName == "false") {
-    return false;
-  }
-  else {
-    p.throwError(stringb(
-      "Expected symbol `true` or `false`, not " << p.valueGDVN() << "."));
-    return false;  // not reached
-  }
+  return p.boolGet();
 }
 
 
