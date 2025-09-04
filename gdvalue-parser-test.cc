@@ -118,12 +118,12 @@ void test_int()
     // Too big.
     GDVSmallInteger maxGSI = std::numeric_limits<GDVSmallInteger>::max();
     EXPECT_ERROR_SUBSTR(GDVP_TO(int, GDValue(maxGSI)),
-      "Number too large");
+      "cannot be represented");
   }
 
   // Not an integer.
   EXPECT_ERROR_SUBSTR(GDVP_TO(int, GDValue()),
-    "Expected small integer, not symbol.");
+    "Expected integer, not symbol.");
 
   gdvnTestRoundtripEq(0, "0");
   gdvnTestRoundtripEq(123, "123");

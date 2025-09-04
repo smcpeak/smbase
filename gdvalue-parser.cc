@@ -372,6 +372,7 @@ template <typename T,
           typename>
 T GDValueParser::integerGetAs() const
 {
+  checkIsInteger();
   try {
     return getValue().integerGetAs<T>();
   }
@@ -759,14 +760,7 @@ bool GDVPTo<bool>::f(GDValueParser const &p)
 
 int GDVPTo<int>::f(GDValueParser const &p)
 {
-  if (std::optional<int> n = convertNumberOpt<int>(p.smallIntegerGet())) {
-    return *n;
-  }
-  else {
-    p.throwError(stringb(
-      "Number too large to represent as `int`: " << p.valueGDVN() << "."));
-    return 0;  // not reached
-  }
+  return p.integerGetAs<int>();
 }
 
 
