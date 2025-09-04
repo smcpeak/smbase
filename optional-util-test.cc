@@ -101,6 +101,8 @@ void test_optInvoke()
 
 struct Data {
   int m_x;
+
+  Data(int x) : m_x(x) {}
   int method() const { return 5; }
 };
 
@@ -166,6 +168,18 @@ void test_optInvokeAlt()
 }
 
 
+void test_optFromOpt()
+{
+  std::optional<int> i;
+  std::optional<Data> d = optFromOpt<Data>(i);
+  EXPECT_FALSE(d.has_value());
+
+  i = 3;
+  d = optFromOpt<Data>(i);
+  EXPECT_EQ(d->m_x, 3);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -177,6 +191,7 @@ void test_optional_util()
   test_optAccumulateMax();
   test_optInvoke();
   test_optInvokeAlt();
+  test_optFromOpt();
 }
 
 

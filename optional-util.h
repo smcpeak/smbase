@@ -77,6 +77,20 @@ auto optInvoke(FUNC &&f, std::optional<T> const &opt)
 }
 
 
+// If `s` has a value, construct `DEST(*s)` and wrap that in an
+// `optional`.  Otherwise return `nullopt`.
+template <typename DEST, typename SRC>
+std::optional<DEST> optFromOpt(std::optional<SRC> const &s)
+{
+  if (s.has_value()) {
+    return std::optional<DEST>(*s);
+  }
+  else {
+    return std::nullopt;
+  }
+}
+
+
 CLOSE_NAMESPACE(smbase)
 
 
