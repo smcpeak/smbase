@@ -1133,13 +1133,13 @@ GDVBinary64Float const &GDValue::binary64FloatGet() const
 
 float GDValue::binary64FloatGetAsFloat() const
 {
-  return float(binary64FloatGet().getValue());
+  return float(binary64FloatGet().getAsDouble());
 }
 
 
 double GDValue::binary64FloatGetAsDouble() const
 {
-  return binary64FloatGet().getValue();
+  return binary64FloatGet().getAsDouble();
 }
 
 

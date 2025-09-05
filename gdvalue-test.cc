@@ -2611,7 +2611,7 @@ void test_binary64Float()
   v.selfCheck();
   EXPECT_EQ(v.binary64FloatGet(), GDVBinary64Float(0));
   EXPECT_EQ(
-    compareDoublesRepresentationally(v.binary64FloatGet().getValue(), 0),
+    compareDoublesRepresentationally(v.binary64FloatGet().getAsDouble(), 0),
     0);
   testSerializeRoundtrip(v);
 
@@ -2640,12 +2640,12 @@ void test_binary64Float()
 
   v = fromGDVN("10.0");
   v.selfCheck();
-  EXPECT_EQ(v.binary64FloatGet().getValue(), 10.0);
+  EXPECT_EQ(v.binary64FloatGet().getAsDouble(), 10.0);
   testSerializeRoundtrip(v);
 
   v = fromGDVN("3e300");
   v.selfCheck();
-  EXPECT_EQ(v.binary64FloatGet().getValue(), 3e300);
+  EXPECT_EQ(v.binary64FloatGet().getAsDouble(), 3e300);
   testSerializeRoundtrip(v);
 
   v = fromGDVN("[1e100 -0.0 3.1415926535897931]");

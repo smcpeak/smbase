@@ -68,8 +68,10 @@ public:      // methods
   /*AUTO_CTC*/ void write(std::ostream &os) const;
   /*AUTO_CTC*/ friend std::ostream &operator<<(std::ostream &os, GDVBinary64Float const &obj);
 
-  double getValue() const { return m_value; }
-  void setValue(double value);
+  // Convert to/from `double`, which might not have the same range and
+  // precision as IEEE binary64 float.
+  double getAsDouble() const { return m_value; }
+  void setFromDouble(double value);
 
   /* Comparison of `GDVBinary64Float` is like comparing as floats except
      that -0 < +0 (whereas for floats they are equal).  That is because

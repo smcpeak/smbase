@@ -97,7 +97,7 @@ void GDVBinary64Float::selfCheck() const
 }
 
 
-void GDVBinary64Float::setValue(double value)
+void GDVBinary64Float::setFromDouble(double value)
 {
   *this = GDVBinary64Float(value);
 }

@@ -21,7 +21,13 @@ OPEN_ANONYMOUS_NAMESPACE
 void test_basics()
 {
   GDVBinary64Float f;
-  EXPECT_EQ(f.getValue(), 0.0);
+  EXPECT_EQ(f.getAsDouble(), 0.0);
+
+  f.setFromDouble(3.5);
+  EXPECT_EQ(f.getAsDouble(), 3.5);
+
+  f = GDVBinary64Float(11.0);
+  EXPECT_EQ(f.getAsDouble(), 11.0);
 }
 
 
@@ -138,7 +144,7 @@ void testOneValue_serialization(char const *name, double n)
     xassert(s == after.toString());
 
     // Verify bitwise identity.
-    double afterDouble = after.getValue();
+    double afterDouble = after.getAsDouble();
     xassert(0==std::memcmp(&afterDouble, &n, sizeof(n)));
 
     // Require that the serialized form have a decimal or exponent.
@@ -241,7 +247,7 @@ void testOne_deserialization(
   EXN_CONTEXT_EXPR(text);
 
   GDVBinary64Float actual = GDVBinary64Float::parseString(text);
-  EXPECT_EQ(actual.getValue(), expect);
+  EXPECT_EQ(actual.getAsDouble(), expect);
 }
 
 
