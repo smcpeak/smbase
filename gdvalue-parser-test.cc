@@ -954,6 +954,29 @@ void test_binary64Float()
 }
 
 
+void test_float()
+{
+  // The template argument would be deduced, but I'll be explicit.
+  gdvnTestRoundtripEq<float>(3.5f, "3.5");
+
+  // Confirm deduction.
+  gdvnTestRoundtripEq(-3.5f, "-3.5");
+
+  EXPECT_ERROR_SUBSTR(GDVP_TO(float, fromGDVN("3")),
+    "At GDV path <top>: Expected binary64 float, not small integer.");
+}
+
+
+void test_double()
+{
+  gdvnTestRoundtripEq<double>(3.5, "3.5");
+  gdvnTestRoundtripEq(-0.0, "-0.0");
+
+  EXPECT_ERROR_SUBSTR(GDVP_TO(double, fromGDVN("3")),
+    "At GDV path <top>: Expected binary64 float, not small integer.");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -987,6 +1010,8 @@ void test_gdvalue_parser()
   test_tuple();
   test_Either();
   test_binary64Float();
+  test_float();
+  test_double();
 }
 
 

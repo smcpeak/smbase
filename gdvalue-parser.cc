@@ -414,6 +414,8 @@ RELAY_KIND_SPECIFIC_QUERY0(SmallInteger, GDVSmallInteger, smallIntegerGet)
 DEFINE_CHECK_IS_KIND(Binary64Float, "binary64 float")
 
 RELAY_KIND_SPECIFIC_QUERY0(Binary64Float, GDVBinary64Float, binary64FloatGet)
+RELAY_KIND_SPECIFIC_QUERY0(Binary64Float, float, binary64FloatGetAsFloat)
+RELAY_KIND_SPECIFIC_QUERY0(Binary64Float, double, binary64FloatGetAsDouble)
 
 
 // ---- String ----
@@ -773,6 +775,18 @@ int GDVPTo<int>::f(GDValueParser const &p)
 GDVBinary64Float GDVPTo<GDVBinary64Float>::f(GDValueParser const &p)
 {
   return p.binary64FloatGet();
+}
+
+
+float GDVPTo<float>::f(GDValueParser const &p)
+{
+  return p.binary64FloatGetAsFloat();
+}
+
+
+double GDVPTo<double>::f(GDValueParser const &p)
+{
+  return p.binary64FloatGetAsDouble();
 }
 
 

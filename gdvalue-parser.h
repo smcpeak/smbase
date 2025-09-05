@@ -255,6 +255,8 @@ public:      // methods
   // ---- Binary64Float ----
   void checkIsBinary64Float() const;
   GDVBinary64Float binary64FloatGet() const;
+  float binary64FloatGetAsFloat() const;
+  double binary64FloatGetAsDouble() const;
 
   // ---- String ----
   void checkIsString() const;
@@ -465,6 +467,20 @@ template <>
 struct GDVPTo<GDVBinary64Float> {
   // Requires that `p` be a binary64 float.
   static GDVBinary64Float f(GDValueParser const &p);
+};
+
+
+template <>
+struct GDVPTo<float> {
+  // Requires that `p` be a binary64 float.
+  static float f(GDValueParser const &p);
+};
+
+
+template <>
+struct GDVPTo<double> {
+  // Requires that `p` be a binary64 float.
+  static double f(GDValueParser const &p);
 };
 
 
