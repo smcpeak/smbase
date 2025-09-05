@@ -10,7 +10,7 @@
 #include "sm-macros.h"                 // NO_OBJECT_COPIES
 #include "xassert.h"                   // xfailure
 
-#include <algorithm>                   // std::remove
+#include <algorithm>                   // std::{all_of, remove}
 #include <cstddef>                     // std::size_t
 #include <iostream>                    // std::ostream
 #include <iterator>                    // std::make_move_iterator
@@ -457,6 +457,14 @@ template <typename T, typename A>
 T vecSum(std::vector<T,A> const &vec)
 {
   return std::accumulate(vec.begin(), vec.end(), T());
+}
+
+
+// True if every element in `vec` satisfies `pred`.
+template <typename T, typename A, typename UnaryPred>
+bool vecForAllElements(std::vector<T,A> const &vec, UnaryPred pred)
+{
+  return std::all_of(vec.begin(), vec.end(), pred);
 }
 
 

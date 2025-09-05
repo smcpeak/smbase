@@ -193,6 +193,22 @@ void test_vecEraseFirstN()
 }
 
 
+void test_vecForAllElements()
+{
+  std::vector<int> v{0,2,4};
+
+  EXPECT_TRUE(vecForAllElements(v,
+    [](int i) -> bool {
+      return i % 2 == 0;
+    }));
+
+  EXPECT_FALSE(vecForAllElements(v,
+    [](int i) -> bool {
+      return i < 3;
+    }));
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -210,6 +226,7 @@ void test_vector_util()
   test_vecSlice();
   test_vecContains();
   test_vecEraseFirstN();
+  test_vecForAllElements();
 }
 
 
