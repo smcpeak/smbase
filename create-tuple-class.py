@@ -45,6 +45,10 @@ recognized:
 
     Declare (but do not define) `selfCheck`, and emit calls to it in
     the ctors and assignment operators.
+
+  +gdvWrite
+
+    Generate `operator GDValue()`.
 """
 
 import argparse              # argparse
@@ -131,6 +135,7 @@ class ClassOptions:
     self.noWriteDefn: bool = False
     self.move:        bool = False
     self.selfCheck:   bool = False
+    self.gdvWrite:    bool = False
 
   @classmethod
   def parse(cls, optionsString: str) -> "ClassOptions":
@@ -154,6 +159,9 @@ class ClassOptions:
 
       elif opt == "+selfCheck":
         opts.selfCheck = True
+
+      elif opt == "+gdvWrite":
+        opts.gdvWrite = True
 
       else:
         die(f"Unrecognized option: {opt}")
@@ -325,6 +333,13 @@ def generateDeclarations(
 
     # friend std::ostream &operator<<(std::ostream &os, Foo const &obj);
     out.append(f"friend std::ostream &operator<<(std::ostream &os, {curClass} const &obj);")
+
+  if options.gdvWrite:
+    # // For +gdvWrite:
+    out.append("// For +gdvWrite:")
+
+    # operator gdv::GDValue() const;
+    out.append("operator gdv::GDValue() const;")
 
   # Prepend prefixes.
   out = [curIndentation + "  " + addAutoPrefix(line) for line in out]
@@ -813,6 +828,27 @@ def generateDefinitions(
       "  return os;",
       "}",
       ""
+    ]
+
+  if options.gdvWrite:
+    # Foo::operator gdv::GDValue() const
+    # {
+    #    using namespace gdv;
+    #    GDValue m(GDVK_TAGGED_ORDERED_MAP, "Foo"_sym);
+    #    GDV_WRITE_MEMBER_SYM(m_x);
+    #    GDV_WRITE_MEMBER_SYM(m_y);
+    #    GDV_WRITE_MEMBER_SYM(m_z);
+    #    return m;
+    # }
+    out += [
+      f"{curClass}::operator gdv::GDValue() const",
+       "{",
+       "  using namespace gdv;",
+      f"  GDValue m(GDVK_TAGGED_ORDERED_MAP, \"{curClass}\"_sym);"
+    ] + generateCallsPerField(fields, "GDV_WRITE_MEMBER_SYM") + [
+       "  return m;",
+       "}",
+       ""
     ]
 
   # Prepend prefixes.

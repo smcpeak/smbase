@@ -5,6 +5,7 @@
 #define FOO_H
 
 #include "compare-util.h"              // DEFINE_FRIEND_RELATIONAL_OPERATORS
+#include "gdvalue-fwd.h"               // gdv::GDValue [n]
 
 #include <iostream>                    // std::ostream
 #include <string>                      // std::string
@@ -16,7 +17,7 @@ public:
   std::string m_z;
 
 public:
-  // ---- create-tuple-class: declarations for Foo +compare +write +move +selfCheck -writeDefn
+  // ---- create-tuple-class: declarations for Foo +compare +write +move +selfCheck -writeDefn +gdvWrite
   /*AUTO_CTC*/ explicit Foo(int x, float y, std::string const &z);
   /*AUTO_CTC*/ explicit Foo(int x, float y, std::string &&z);
   /*AUTO_CTC*/ Foo(Foo const &obj) noexcept;
@@ -31,6 +32,8 @@ public:
   /*AUTO_CTC*/ std::string toString() const;
   /*AUTO_CTC*/ void write(std::ostream &os) const;
   /*AUTO_CTC*/ friend std::ostream &operator<<(std::ostream &os, Foo const &obj);
+  /*AUTO_CTC*/ // For +gdvWrite:
+  /*AUTO_CTC*/ operator gdv::GDValue() const;
 };
 
 class EmptyBase {};

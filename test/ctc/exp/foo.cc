@@ -4,6 +4,7 @@
 #include "foo.h"                       // this module
 
 #include "compare-util.h"              // RET_IF_COMPARE_MEMBERS
+#include "gdvalue.h"                   // gdv::GDValue
 #include "sm-macros.h"                 // DMEMB, CMEMB, etc.
 
 #include <iostream>                    // std::ostream
@@ -94,6 +95,16 @@ using namespace smbase;
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   obj.write(os);
 /*AUTO_CTC*/   return os;
+/*AUTO_CTC*/ }
+/*AUTO_CTC*/
+/*AUTO_CTC*/ Foo::operator gdv::GDValue() const
+/*AUTO_CTC*/ {
+/*AUTO_CTC*/   using namespace gdv;
+/*AUTO_CTC*/   GDValue m(GDVK_TAGGED_ORDERED_MAP, "Foo"_sym);
+/*AUTO_CTC*/   GDV_WRITE_MEMBER_SYM(m_x);
+/*AUTO_CTC*/   GDV_WRITE_MEMBER_SYM(m_y);
+/*AUTO_CTC*/   GDV_WRITE_MEMBER_SYM(m_z);
+/*AUTO_CTC*/   return m;
 /*AUTO_CTC*/ }
 /*AUTO_CTC*/
 

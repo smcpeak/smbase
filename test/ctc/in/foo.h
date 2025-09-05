@@ -5,6 +5,7 @@
 #define FOO_H
 
 #include "compare-util.h"              // DEFINE_FRIEND_RELATIONAL_OPERATORS
+#include "gdvalue-fwd.h"               // gdv::GDValue [n]
 
 #include <iostream>                    // std::ostream
 #include <string>                      // std::string
@@ -16,7 +17,7 @@ public:
   std::string m_z;
 
 public:
-  // ---- create-tuple-class: declarations for Foo +compare +write +move +selfCheck -writeDefn
+  // ---- create-tuple-class: declarations for Foo +compare +write +move +selfCheck -writeDefn +gdvWrite
 };
 
 class EmptyBase {};
