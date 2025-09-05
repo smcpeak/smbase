@@ -1119,6 +1119,30 @@ GDVBinary64Float const &GDValue::binary64FloatGet() const
 }
 
 
+/*static*/ GDValue GDValue::fromFloat(float d)
+{
+  return GDValue(GDVBinary64Float(d));
+}
+
+
+/*static*/ GDValue GDValue::fromDouble(double d)
+{
+  return GDValue(GDVBinary64Float(d));
+}
+
+
+float GDValue::binary64FloatGetAsFloat() const
+{
+  return float(binary64FloatGet().getValue());
+}
+
+
+double GDValue::binary64FloatGetAsDouble() const
+{
+  return binary64FloatGet().getValue();
+}
+
+
 // ------------------------------ String -------------------------------
 GDValue::GDValue(GDVString const &str)
   : INIT_AS_NULL()

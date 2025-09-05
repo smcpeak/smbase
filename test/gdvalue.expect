@@ -40,6 +40,8 @@ empty ordered map: [:]
 ["a":1 2:3 [10 11]:ten_eleven]
 x.getPortableConflict() = open (for writing): "out/gvdn/dir-does-not-exist/123.gdvn": File not found
 x.getPortableConflict() = open (for reading): "out/gvdn/file-does-not-exist.gdvn": File not found
+As expected: gdvalue.cc:1116: assertion failed: isBinary64Float()
+As expected: gdvalue.cc:1116: assertion failed: isBinary64Float()
 -- test_integerGetAs
 As expected: test_integerGetAs: convertNumber: Source value 123456 of type "long long int" (64 bits) cannot be represented with type "signed char" (8 bits).
 As expected: test_integerGetAs: convertNumber: Source value 1234567890123456789 of type "long long int" (64 bits) cannot be represented with type "int" (32 bits).

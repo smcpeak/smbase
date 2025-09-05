@@ -607,6 +607,16 @@ public:      // methods
   // Requires `isBinary64Float()`.
   GDVBinary64Float const &binary64FloatGet() const;
 
+  // Allow making binary64Float out of `float` and `double`.  (For the
+  // moment I do not allow `long double` because it would not preserve
+  // information on typical C++ implementations.)
+  static GDValue fromFloat(float d);
+  static GDValue fromDouble(double d);
+
+  // Converting back to language floats.
+  float binary64FloatGetAsFloat() const;
+  double binary64FloatGetAsDouble() const;
+
 
   // ---- String ----
   /*implicit*/ GDValue(GDVString const &str);
@@ -1074,6 +1084,30 @@ typename std::enable_if<std::is_same<BOOL, bool>::value,
 toGDValue(BOOL const &b)
 {
   return GDValue::makeBool(b);
+}
+
+
+// `toGDValue(double)` without implicit conversions.
+template <typename DOUBLE>
+typename std::enable_if<std::is_same<DOUBLE, double>::value,
+                        GDValue>::type
+                     // ^^^^^^^ Return type of this function.
+toGDValue(DOUBLE const &d)
+{
+  return GDValue::fromDouble(d);
+}
+
+
+// `toGDValue(float)` without implicit conversions.
+//
+// TODO: Should I have a templated `from` method?
+template <typename FLOAT>
+typename std::enable_if<std::is_same<FLOAT, float>::value,
+                        GDValue>::type
+                     // ^^^^^^^ Return type of this function.
+toGDValue(FLOAT const &d)
+{
+  return GDValue::fromFloat(d);
 }
 
 

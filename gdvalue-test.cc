@@ -2701,6 +2701,28 @@ void test_binary64Float_parseErrors()
 }
 
 
+void test_float()
+{
+  GDValue d = toGDValue(3.5f);
+  EXPECT_EQ(d.binary64FloatGetAsFloat(), 3.5f);
+
+  EXPECT_EXN_SUBSTR(GDValue().binary64FloatGetAsFloat(),
+    XAssert,
+    "assertion failed: isBinary64Float()");
+}
+
+
+void test_double()
+{
+  GDValue d = toGDValue(3.5);
+  EXPECT_EQ(d.binary64FloatGetAsDouble(), 3.5);
+
+  EXPECT_EXN_SUBSTR(GDValue().binary64FloatGetAsDouble(),
+    XAssert,
+    "assertion failed: isBinary64Float()");
+}
+
+
 void test_integerGetAs()
 {
   TEST_CASE(__func__);
@@ -2800,6 +2822,8 @@ void test_gdvalue()
     test_span();
     test_binary64Float();
     test_binary64Float_parseErrors();
+    test_float();
+    test_double();
     test_integerGetAs();
 
     // Some interesting values for the particular data used.
