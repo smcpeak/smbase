@@ -359,6 +359,11 @@ bool op_eq(T const &a, T const &b)
   TEST_CASE(label ": " << GDVN_OMAP_EXPRS(__VA_ARGS__)) /* user ; */
 
 
+// Variant of the above that gets the function name automatically.
+#define TEST_FUNC_EXPRS(...) \
+  TEST_CASE(__func__ << ": " << GDVN_OMAP_EXPRS(__VA_ARGS__)) /* user ; */
+
+
 // -------------------- Randomized testing support ---------------------
 // If `name` is set as an environment variable, return its value as
 // interpreted by `atoi`, otherwise return `defaultValue`.

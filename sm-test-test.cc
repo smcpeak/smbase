@@ -48,6 +48,17 @@ void test_TEST_CASE_EXPRS()
 }
 
 
+void test_TEST_FUNC_EXPRS()
+{
+  TEST_FUNC_EXPRS(5, "bee");
+
+  EXPECT_EXN_SUBSTR(sampleTest_testCase(),
+    XMessage,
+    "test_TEST_FUNC_EXPRS: [`5`:5 `\"bee\"`:\"bee\"]: "
+    "sampleTest_testCase: some error from sampleTest_testCase");
+}
+
+
 void sampleTest_expectEq()
 {
   EXPECT_EQ(3, 4);
@@ -321,6 +332,7 @@ void test_sm_test()
 {
   test_TEST_CASE();
   test_TEST_CASE_EXPRS();
+  test_TEST_FUNC_EXPRS();
   test_EXPECT_EQ();
   test_EXPECT_TRUE();
   test_EXPECT_FALSE();
