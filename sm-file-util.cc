@@ -701,6 +701,21 @@ bool SMFileUtil::pathExists(string const &path) const
 }
 
 
+void SMFileUtil::createDirectory(string const &path_)
+{
+  string path = stripTrailingDirectorySeparator(path_);
+
+  int res = mkdir(path.c_str()
+    #ifndef __WIN32__
+      , 0755
+    #endif
+  );
+  if (res != 0) {
+    xsyserror("mkdir", path);
+  }
+}
+
+
 void SMFileUtil::createDirectoryAndParents(string const &path_)
 {
   string path = stripTrailingDirectorySeparator(path_);
@@ -716,14 +731,7 @@ void SMFileUtil::createDirectoryAndParents(string const &path_)
     createDirectoryAndParents(dir);
   }
 
-  int res = mkdir(path.c_str()
-    #ifndef __WIN32__
-      , 0755
-    #endif
-  );
-  if (res != 0) {
-    xsyserror("mkdir", path);
-  }
+  createDirectory(path);
 }
 
 

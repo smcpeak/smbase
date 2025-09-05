@@ -304,6 +304,10 @@ public:      // funcs
   // True if 'path' exists, i.e., its file kind is not `FK_NONE`.
   virtual bool pathExists(string const &path) const;
 
+  // Create `path` as a directory.  A trailing directory separator is
+  // ignored.  Throws if the path already exists or cannot be created.
+  virtual void createDirectory(string const &path);
+
   // Create 'path' and any needed parents if it does not already exist.
   // If it, or any parent, already exists but is not a directory, throw
   // 'XSysError' with reason PEC_ALREADY_EXISTS.  Any other problem also

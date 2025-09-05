@@ -792,6 +792,60 @@ void rm_rf(char const *path)
 }
 
 
+void testCreateDirectory()
+{
+  SMFileUtil sfu;
+
+  // Start by clearing the test directory.
+  rm_rf("tmpdir");
+
+  // Make tmpdir itself.
+  sfu.createDirectory("tmpdir");
+  xassert(sfu.directoryExists("tmpdir"));
+
+  // Try to create it again.
+  try {
+    sfu.createDirectory("tmpdir");
+    xfailure("that should have failed");
+  }
+  catch (XSysError &x) {
+    xassert(x.getPortableErrorCode() == PortableErrorCode::PEC_ALREADY_EXISTS);
+  }
+
+  // Try to make multiple directories at once.
+  try {
+    sfu.createDirectory("tmpdir/a/b");
+    xfailure("that should have failed");
+  }
+  catch (XSysError &x) {
+    xassert(x.getPortableErrorCode() == PortableErrorCode::PEC_FILE_NOT_FOUND);
+  }
+
+  // Make the first.
+  sfu.createDirectory("tmpdir/a");
+  xassert(sfu.directoryExists("tmpdir/a"));
+
+  // Make the second, exercising discarding of trailing slash.
+  sfu.createDirectory("tmpdir/a/b/");
+  xassert(sfu.directoryExists("tmpdir/a/b"));
+
+  // Make 'c' as a regular file.
+  RunProcess::check_run(std::vector<string>{"touch", "tmpdir/a/c"});
+
+  // Try to create when it is a regular file.
+  try {
+    sfu.createDirectory("tmpdir/a/c");
+    xfailure("that should have failed");
+  }
+  catch (XSysError &x) {
+    xassert(x.getPortableErrorCode() == PortableErrorCode::PEC_ALREADY_EXISTS);
+  }
+
+  // Clean up.
+  rm_rf("tmpdir");
+}
+
+
 void testCreateDirectoryAndParents()
 {
   SMFileUtil sfu;
@@ -1091,6 +1145,7 @@ void test_sm_file_util()
   testCollapseDots();
   testGetFileKind();
   testAtomicallyRenameFile();
+  testCreateDirectory();
   testCreateDirectoryAndParents();
   testCreateParentDirectories();
   testReadAndWriteFile();
