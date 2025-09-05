@@ -180,6 +180,64 @@ void test_optFromOpt()
 }
 
 
+void test_OPT_INVOKE_METHOD()
+{
+  std::optional<std::string> strOpt = "hi";
+  EXPECT_EQ(*OPT_INVOKE_METHOD(strOpt, size), 2);
+
+  EXPECT_EQ(*OPT_INVOKE_METHOD(strOpt, substr, 1), "i");
+
+  std::optional<std::size_t> sizeOpt =
+    OPT_INVOKE_METHOD(strOpt, size);
+  EXPECT_EQ(*sizeOpt, 2);
+
+  strOpt = std::nullopt;
+  sizeOpt = OPT_INVOKE_METHOD(strOpt, size);
+  EXPECT_FALSE(sizeOpt.has_value());
+}
+
+
+// This is a different way to define `OPT_INVOKE_METHOD`.  I think this
+// is not as good but I'm keeping it here in case I need it later.
+#if 0
+
+// If `opt` has a value, invoke zero-arg `method` and wrap the result as
+// an `optional`.  Otherwise return `nullopt`.
+//
+// We remove references from `RESULT` to handle the case where `method`
+// returns a reference (e.g.) to a data member.
+template <typename RESULT, typename T>
+std::optional<std::remove_reference_t<RESULT>> optInvokeMethod(
+  std::optional<T> const &opt, RESULT (T::*method)() const)
+{
+  if (opt) {
+    return std::optional<std::remove_reference_t<RESULT>>(
+             ((*opt).*method)());
+  }
+  else {
+    return std::nullopt;
+  }
+}
+
+// Given a `expr` and `method` such that `expr.method()` would be valid,
+// get a pointer-to-member for `method` without explicitly mentioning
+// the class that `expr` is (or is a reference to).
+#define GET_PTR_TO_MEMBER_FROM_EXPR(expr, method) \
+  (&std::remove_reference_t<decltype(expr)>::method)
+
+/* Equivalent to:
+
+     (opt? std::make_optional(opt->method()) : std::nullopt)
+
+   but less verbose.
+*/
+#define OPT_INVOKE_METHOD(opt, method) \
+  optInvokeMethod(opt, GET_PTR_TO_MEMBER_FROM_EXPR(*opt, method))
+
+#endif
+
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -192,6 +250,7 @@ void test_optional_util()
   test_optInvoke();
   test_optInvokeAlt();
   test_optFromOpt();
+  test_OPT_INVOKE_METHOD();
 }
 
 

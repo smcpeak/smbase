@@ -91,6 +91,12 @@ std::optional<DEST> optFromOpt(std::optional<SRC> const &s)
 }
 
 
+// If `opt` has a value, invoke `method(args)` on it, then wrap the
+// result in an `optional`.  Otherwise return `nullopt`.
+#define OPT_INVOKE_METHOD(opt, method, ...) \
+   (opt? std::make_optional(opt->method(__VA_ARGS__)) : std::nullopt)
+
+
 CLOSE_NAMESPACE(smbase)
 
 
