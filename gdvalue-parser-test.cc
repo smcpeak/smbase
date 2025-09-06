@@ -977,6 +977,17 @@ void test_double()
 }
 
 
+void test_parseToGDValue()
+{
+  GDValue v(GDVSequence{1,2,3});
+  GDValueParser p(v);
+
+  // Trivially "parse" the GDValue as a GDValue.
+  GDValue v2 = gdvpTo<GDValue>(p);
+  EXPECT_EQ(v2, v);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -1012,6 +1023,7 @@ void test_gdvalue_parser()
   test_binary64Float();
   test_float();
   test_double();
+  test_parseToGDValue();
 }
 
 

@@ -760,6 +760,12 @@ HandleXGDValueError::HandleXGDValueError()
 
 
 // ------------------------------ GDVPTo -------------------------------
+GDValue GDVPTo<GDValue>::f(GDValueParser const &p)
+{
+  return p.getValue();
+}
+
+
 bool GDVPTo<bool>::f(GDValueParser const &p)
 {
   return p.boolGet();
