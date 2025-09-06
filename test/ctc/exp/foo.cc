@@ -4,6 +4,7 @@
 #include "foo.h"                       // this module
 
 #include "compare-util.h"              // RET_IF_COMPARE_MEMBERS
+#include "gdvalue-parser.h"            // gdv::GDValueParser
 #include "gdvalue.h"                   // gdv::GDValue
 #include "sm-macros.h"                 // DMEMB, CMEMB, etc.
 
@@ -105,6 +106,14 @@ using namespace smbase;
 /*AUTO_CTC*/   GDV_WRITE_MEMBER_SYM(m_y);
 /*AUTO_CTC*/   GDV_WRITE_MEMBER_SYM(m_z);
 /*AUTO_CTC*/   return m;
+/*AUTO_CTC*/ }
+/*AUTO_CTC*/
+/*AUTO_CTC*/ Foo::Foo(gdv::GDValueParser const &p)
+/*AUTO_CTC*/   : GDVP_READ_MEMBER_SYM(m_x),
+/*AUTO_CTC*/     GDVP_READ_MEMBER_SYM(m_y),
+/*AUTO_CTC*/     GDVP_READ_MEMBER_SYM(m_z)
+/*AUTO_CTC*/ {
+/*AUTO_CTC*/   p.checkTaggedMapTag("Foo");
 /*AUTO_CTC*/ }
 /*AUTO_CTC*/
 

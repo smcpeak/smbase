@@ -49,6 +49,10 @@ recognized:
   +gdvWrite
 
     Generate `operator GDValue()`.
+
+  +gdvRead
+
+    Generate a ctor that accepts `GDValueParser`.
 """
 
 import argparse              # argparse
@@ -136,6 +140,7 @@ class ClassOptions:
     self.move:        bool = False
     self.selfCheck:   bool = False
     self.gdvWrite:    bool = False
+    self.gdvRead:     bool = False
 
   @classmethod
   def parse(cls, optionsString: str) -> "ClassOptions":
@@ -162,6 +167,9 @@ class ClassOptions:
 
       elif opt == "+gdvWrite":
         opts.gdvWrite = True
+
+      elif opt == "+gdvRead":
+        opts.gdvRead = True
 
       else:
         die(f"Unrecognized option: {opt}")
@@ -340,6 +348,13 @@ def generateDeclarations(
 
     # operator gdv::GDValue() const;
     out.append("operator gdv::GDValue() const;")
+
+  if options.gdvRead:
+    # // For +gdvRead:
+    out.append("// For +gdvRead:")
+
+    # explicit Foo(gdv::GDValueParser const &p);
+    out.append(f"explicit {curClass}(gdv::GDValueParser const &p);")
 
   # Prepend prefixes.
   out = [curIndentation + "  " + addAutoPrefix(line) for line in out]
@@ -847,6 +862,24 @@ def generateDefinitions(
       f"  GDValue m(GDVK_TAGGED_ORDERED_MAP, \"{curClass}\"_sym);"
     ] + generateCallsPerField(fields, "GDV_WRITE_MEMBER_SYM") + [
        "  return m;",
+       "}",
+       ""
+    ]
+
+  if options.gdvRead:
+    # Foo::Foo(gdv::GDValueParser const &p)
+    #   : GDVP_READ_MEMBER_SYM(m_x),
+    #     GDVP_READ_MEMBER_SYM(m_y),
+    #     GDVP_READ_MEMBER_SYM(m_z)
+    # {
+    #    p.checkTaggedMapTag("Foo");
+    # }
+    out.append(f"{curClass}::{curClass}(gdv::GDValueParser const &p)")
+    out.extend(generateCtorInits(
+      superclass, fields, "GDVP_READ_MEMBER_SYM"))
+    out += [
+       "{",
+      f"  p.checkTaggedMapTag(\"{curClass}\");",
        "}",
        ""
     ]

@@ -4,6 +4,7 @@
 #include "foo.h"                       // this module
 
 #include "compare-util.h"              // RET_IF_COMPARE_MEMBERS
+#include "gdvalue-parser.h"            // gdv::GDValueParser
 #include "gdvalue.h"                   // gdv::GDValue
 #include "sm-macros.h"                 // DMEMB, CMEMB, etc.
 
