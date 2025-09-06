@@ -113,7 +113,7 @@ using namespace smbase;
 /*AUTO_CTC*/     GDVP_READ_MEMBER_SYM(m_y),
 /*AUTO_CTC*/     GDVP_READ_MEMBER_SYM(m_z)
 /*AUTO_CTC*/ {
-/*AUTO_CTC*/   p.checkTaggedMapTag("Foo");
+/*AUTO_CTC*/   p.checkTaggedOrderedMapTag("Foo");
 /*AUTO_CTC*/ }
 /*AUTO_CTC*/
 

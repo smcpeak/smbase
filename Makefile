@@ -411,6 +411,7 @@ UNIT_TEST_OBJS += compare-util-test.o
 UNIT_TEST_OBJS += container-util-test.o
 UNIT_TEST_OBJS += counting-ostream-test.o
 UNIT_TEST_OBJS += crc-test.o
+UNIT_TEST_OBJS += ctc-test.o
 UNIT_TEST_OBJS += cycles-test.o
 UNIT_TEST_OBJS += d2vector-test.o
 UNIT_TEST_OBJS += datablok-test.o
@@ -856,6 +857,7 @@ check: check-ctc
 # -------------- check create-tuple-class.py outputs -------------------
 # Set of header files that use create-tuple-class.py.
 CTC_HEADERS :=
+CTC_HEADERS += ctc-test.h
 CTC_HEADERS += exclusive-write-file.h
 CTC_HEADERS += gdv-binary64-float.h
 CTC_HEADERS += type-name-and-size.h

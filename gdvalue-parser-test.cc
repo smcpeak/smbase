@@ -23,7 +23,7 @@
 #include "smbase/gdv-binary64-float.h"           // gdv::GDVBinary64Float
 #include "smbase/gdv-ordered-map.h"              // gdv::GDVOrderedMap
 #include "smbase/gdvalue.h"                      // gdv::GDValue
-#include "smbase/gdvn-test-roundtrip.h"          // gdvnTestRoundtrip
+#include "smbase/gdvn-test-roundtrip.h"          // gdvnTestRoundtrip[Eq]
 #include "smbase/sm-macros.h"                    // {OPEN,CLOSE}_ANONYMOUS_NAMESPACE
 #include "smbase/sm-test.h"                      // EXPECT_EQ
 

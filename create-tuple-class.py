@@ -872,14 +872,14 @@ def generateDefinitions(
     #     GDVP_READ_MEMBER_SYM(m_y),
     #     GDVP_READ_MEMBER_SYM(m_z)
     # {
-    #    p.checkTaggedMapTag("Foo");
+    #    p.checkTaggedOrderedMapTag("Foo");
     # }
     out.append(f"{curClass}::{curClass}(gdv::GDValueParser const &p)")
     out.extend(generateCtorInits(
       superclass, fields, "GDVP_READ_MEMBER_SYM"))
     out += [
        "{",
-      f"  p.checkTaggedMapTag(\"{curClass}\");",
+      f"  p.checkTaggedOrderedMapTag(\"{curClass}\");",
        "}",
        ""
     ]

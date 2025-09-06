@@ -101,6 +101,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(container_util);
   RUN_TEST(counting_ostream);
   RUN_TEST(crc);
+  RUN_TEST(ctc);
   RUN_TEST_NO_DECL(cycles);
   RUN_TEST_NO_DECL(d2vector);
   RUN_TEST(datablok);
