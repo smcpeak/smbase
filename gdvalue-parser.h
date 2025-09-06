@@ -564,24 +564,63 @@ T *gdvpToNew(GDValueParser const &p)
 
 
 // ---------------------- Member deserialization -----------------------
-// Initialize `<memb>` from a field `<memb>` of GDValueParser `p` that
-// has the same name except without the "m_" prefix.
+// Parse from map `p`, at a symbol key derived from the name of `memb`
+// (the same name, but without the "m_" prefix), a value with the same
+// type as `memb`.
+#define GDVP_GET_FOR_MEMBER_SYM(memb) \
+  (gdv::gdvpTo<decltype(memb)>(p.mapGetValueAtSym(gdv::stripMemberPrefix(#memb))))
+
+// Within a ctor initializer list, initialize `memb` from a
+// corresponding field of GDValueParser `p`.
 #define GDVP_READ_MEMBER_SYM(memb) \
-  memb(gdv::gdvpTo<decltype(memb)>(p.mapGetValueAtSym(gdv::stripMemberPrefix(#memb)))) /* user , */
+  memb(GDVP_GET_FOR_MEMBER_SYM(memb)) /* user , */
 
-// Same, but using a string as a key.
-#define GDVP_READ_MEMBER_STR(memb) \
-  memb(gdv::gdvpTo<decltype(memb)>(p.mapGetValueAtStr(gdv::stripMemberPrefix(#memb)))) /* user , */
+// In an ordinary statement context, set `memb` from the corresponding
+// field of `p`.
+#define GDVP_SET_MEMBER_SYM(memb) \
+  memb = (GDVP_GET_FOR_MEMBER_SYM(memb)) /* user ; */
 
 
-// Initialize `<memb>` from an optional field `<memb>` of GDValueParser
-// `p` that has the same name except without the "m_" prefix.
+// Like `GDVP_GET_FOR_MEMBER_SYM`, but allowing the map key to be
+// unmapped, in which case the returned value is the default-initialized
+// type of `memb`.
+#define GDVP_GET_OPT_FOR_MEMBER_SYM(memb) \
+  (gdv::gdvpOptTo<decltype(memb)>(p.mapGetValueAtSymOpt(gdv::stripMemberPrefix(#memb))))
+
+// Like `GDVP_READ_MEMBER_SYM`, but tolerating a missing map key.
 #define GDVP_READ_OPT_MEMBER_SYM(memb) \
-  memb(gdv::gdvpOptTo<decltype(memb)>(p.mapGetValueAtSymOpt(gdv::stripMemberPrefix(#memb)))) /* user , */
+  memb(GDVP_GET_OPT_FOR_MEMBER_SYM(memb))
 
-// This one uses a string key.
+// Like `GDVP_SET_MEMBER_SYM`, but tolerating a missing map key.
+#define GDVP_SET_OPT_MEMBER_SYM(memb) \
+  memb = (GDVP_GET_OPT_FOR_MEMBER_SYM(memb))
+
+
+// Like `GDVP_GET_FOR_MEMBER_SYM`, but using a string as a key rather
+// than a symbol.
+#define GDVP_GET_FOR_MEMBER_STR(memb) \
+  (gdv::gdvpTo<decltype(memb)>(p.mapGetValueAtStr(gdv::stripMemberPrefix(#memb))))
+
+// Like `GDVP_READ_MEMBER_SYM`, but using a string as a key.
+#define GDVP_READ_MEMBER_STR(memb) \
+  memb(GDVP_GET_FOR_MEMBER_STR(memb))
+
+// Like `GDVP_SET_MEMBER_SYM`, but using a string as a key.
+#define GDVP_SET_MEMBER_STR(memb) \
+  memb = (GDVP_GET_FOR_MEMBER_STR(memb))
+
+
+// Like `GDVP_GET_OPT_FOR_MEMBER_SYM`, but using a string as a key.
+#define GDVP_GET_OPT_FOR_MEMBER_STR(memb) \
+  (gdv::gdvpOptTo<decltype(memb)>(p.mapGetValueAtStrOpt(gdv::stripMemberPrefix(#memb))))
+
+// Like `GDVP_READ_OPT_MEMBER_SYM`, but using a string as a key.
 #define GDVP_READ_OPT_MEMBER_STR(memb) \
-  memb(gdv::gdvpOptTo<decltype(memb)>(p.mapGetValueAtStrOpt(gdv::stripMemberPrefix(#memb)))) /* user , */
+  memb(GDVP_GET_OPT_FOR_MEMBER_STR(memb))
+
+// Like `GDVP_SET_OPT_MEMBER_SYM`, but using a string as a key.
+#define GDVP_SET_OPT_MEMBER_STR(memb) \
+  memb = (GDVP_GET_OPT_FOR_MEMBER_STR(memb))
 
 
 CLOSE_NAMESPACE(gdv)

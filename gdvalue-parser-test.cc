@@ -24,7 +24,7 @@
 #include "smbase/gdv-ordered-map.h"              // gdv::GDVOrderedMap
 #include "smbase/gdvalue.h"                      // gdv::GDValue
 #include "smbase/gdvn-test-roundtrip.h"          // gdvnTestRoundtrip[Eq]
-#include "smbase/sm-macros.h"                    // {OPEN,CLOSE}_ANONYMOUS_NAMESPACE
+#include "smbase/sm-macros.h"                    // {OPEN,CLOSE}_ANONYMOUS_NAMESPACE, EMEMB
 #include "smbase/sm-test.h"                      // EXPECT_EQ
 
 #include <cmath>                                 // std::pow
@@ -41,6 +41,16 @@ using namespace smbase;
 OPEN_ANONYMOUS_NAMESPACE
 
 
+// Convert `GDValue srcValue` to `destType` using `GDValueParser`.
+#define GDVP_TO(destType, srcValue) \
+  gdvpTo<destType>(GDValueParser(srcValue))
+
+
+// Expect an `XGDValueError` with a certain substring in the message.
+#define EXPECT_ERROR_SUBSTR(expr, substr) \
+  EXPECT_EXN_SUBSTR(expr, XGDValueError, substr)
+
+
 class Data final {
 public:      // data
   int m_x;
@@ -48,6 +58,7 @@ public:      // data
 
 public:      // funcs
   Data(int x, int y) : m_x(x), m_y(y) {}
+
 
   operator GDValue() const
   {
@@ -59,23 +70,164 @@ public:      // funcs
     return m;
   }
 
+
   explicit Data(GDValueParser const &p)
     : GDVP_READ_MEMBER_SYM(m_x),
       GDVP_READ_MEMBER_SYM(m_y)
   {
     p.checkTaggedMapTag("Data");
   }
+
+  void setFromGDV(GDValueParser const &p)
+  {
+    GDVP_SET_MEMBER_SYM(m_x);
+    GDVP_SET_MEMBER_SYM(m_y);
+  }
+
+  static Data fromGDV(GDValueParser const &p)
+  {
+    Data d(0,0);
+    d.setFromGDV(p);
+    return d;
+  }
+
+
+  enum OptionalSymbolsTag { USE_OPTIONAL_SYMBOL_KEYS };
+  explicit Data(GDValueParser const &p, OptionalSymbolsTag)
+    : GDVP_READ_OPT_MEMBER_SYM(m_x),
+      GDVP_READ_OPT_MEMBER_SYM(m_y)
+  {
+    p.checkTaggedMapTag("Data");
+  }
+
+  void setFromGDV_optionalSymbols(GDValueParser const &p)
+  {
+    GDVP_SET_OPT_MEMBER_SYM(m_x);
+    GDVP_SET_OPT_MEMBER_SYM(m_y);
+  }
+
+  static Data fromGDV_optionalSymbols(GDValueParser const &p)
+  {
+    Data d(0,0);
+    d.setFromGDV_optionalSymbols(p);
+    return d;
+  }
+
+
+  GDValue asGDV_stringKeys() const
+  {
+    GDValue m(GDVK_TAGGED_MAP, "Data"_sym);
+
+    m.mapSetValueAt("x", m_x);
+    m.mapSetValueAt("y", m_y);
+
+    return m;
+  }
+
+
+  enum StringKeysTag { USE_STRING_KEYS };
+  explicit Data(GDValueParser const &p, StringKeysTag)
+    : GDVP_READ_MEMBER_STR(m_x),
+      GDVP_READ_MEMBER_STR(m_y)
+  {
+    p.checkTaggedMapTag("Data");
+  }
+
+  void setFromGDV_stringKeys(GDValueParser const &p)
+  {
+    GDVP_SET_MEMBER_STR(m_x);
+    GDVP_SET_MEMBER_STR(m_y);
+  }
+
+  static Data fromGDV_stringKeys(GDValueParser const &p)
+  {
+    Data d(0,0);
+    d.setFromGDV_stringKeys(p);
+    return d;
+  }
+
+
+  enum OptionalStringKeysTag { USE_OPTIONAL_STRING_KEYS };
+  explicit Data(GDValueParser const &p, OptionalStringKeysTag)
+    : GDVP_READ_OPT_MEMBER_STR(m_x),
+      GDVP_READ_OPT_MEMBER_STR(m_y)
+  {
+    p.checkTaggedMapTag("Data");
+  }
+
+  void setFromGDV_optionalStringKeys(GDValueParser const &p)
+  {
+    GDVP_SET_OPT_MEMBER_STR(m_x);
+    GDVP_SET_OPT_MEMBER_STR(m_y);
+  }
+
+  static Data fromGDV_optionalStringKeys(GDValueParser const &p)
+  {
+    Data d(0,0);
+    d.setFromGDV_optionalStringKeys(p);
+    return d;
+  }
+
+
+  [[maybe_unused]]   // clangd confused
+  friend std::ostream &operator<<(std::ostream &os, Data const &d)
+  {
+    // Deliberately different from GDVN to avoid confusion.
+    return os << "{ x=" << d.m_x << ", y=" << d.m_y << " }";
+  }
+
+  bool operator==(Data const &obj) const
+  {
+    return EMEMB(m_x) && EMEMB(m_y);
+  }
 };
 
 
-// Convert `GDValue srcValue` to `destType` using `GDValueParser`.
-#define GDVP_TO(destType, srcValue) \
-  gdvpTo<destType>(GDValueParser(srcValue))
+void test_Data()
+{
+  {
+    char const *gdvn = "Data{x:3 y:4}";
+    Data d1(GDValueParser(fromGDVN(gdvn)));
+    EXPECT_EQ(d1.m_x, 3);
+    EXPECT_EQ(d1.m_y, 4);
+    EXPECT_EQ(toGDValue(d1).asString(), gdvn);
 
+    Data d2 = Data::fromGDV(GDValueParser(fromGDVN(gdvn)));
+    EXPECT_EQ(d2, d1);
+    EXPECT_EQ(toGDValue(d1).asString(), gdvn);
+  }
 
-// Expect an `XGDValueError` with a certain substring in the message.
-#define EXPECT_ERROR_SUBSTR(expr, substr) \
-  EXPECT_EXN_SUBSTR(expr, XGDValueError, substr)
+  {
+    char const *gdvn = "Data{x:3}";
+    Data d1(GDValueParser(fromGDVN(gdvn)), Data::USE_OPTIONAL_SYMBOL_KEYS);
+    EXPECT_EQ(d1.m_x, 3);
+    EXPECT_EQ(d1.m_y, 0);
+
+    Data d2 = Data::fromGDV_optionalSymbols(GDValueParser(fromGDVN(gdvn)));
+    EXPECT_EQ(d2, d1);
+  }
+
+  {
+    char const *gdvn = "Data{\"x\":3 \"y\":4}";
+    Data d1(GDValueParser(fromGDVN(gdvn)), Data::USE_STRING_KEYS);
+    EXPECT_EQ(d1.m_x, 3);
+    EXPECT_EQ(d1.m_y, 4);
+    EXPECT_EQ(d1.asGDV_stringKeys().asString(), gdvn);
+
+    Data d2 = Data::fromGDV_stringKeys(GDValueParser(fromGDVN(gdvn)));
+    EXPECT_EQ(d2, d1);
+    EXPECT_EQ(d1.asGDV_stringKeys().asString(), gdvn);
+  }
+
+  {
+    char const *gdvn = "Data{\"x\":3}";
+    Data d1(GDValueParser(fromGDVN(gdvn)), Data::USE_OPTIONAL_STRING_KEYS);
+    EXPECT_EQ(d1.m_x, 3);
+
+    Data d2 = Data::fromGDV_optionalStringKeys(GDValueParser(fromGDVN(gdvn)));
+    EXPECT_EQ(d2, d1);
+  }
+}
 
 
 void test_bool()
@@ -996,6 +1148,7 @@ void test_gdvalue_parser()
   // Activate extensive self-checking.
   GDValueParser::s_selfCheckCtors = true;
 
+  test_Data();
   test_bool();
   test_int();
   test_string();
