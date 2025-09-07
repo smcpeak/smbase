@@ -1571,11 +1571,50 @@ GDValue &GDValue::mapGetValueAt(GDValue const &key)
 }
 
 
-void GDValue::mapSetValueAt(GDValue const &key, GDValue const &value)
+bool GDValue::mapInsertValueAt(GDValue const &key, GDValue const &value)
 {
   if (isOrderedMap()) {
-    orderedMapSetValueAt(key, value);
-    return;
+    return orderedMapInsertValueAt(key, value);
+  }
+
+  xassertPrecondition(isMap());
+
+  auto it = mapGetMutable().find(key);
+  if (it != mapGetMutable().end()) {
+    // Do not change the map if the key is already mapped.
+    return false;  // Means nothing happened.
+  }
+  else {
+    mapGetMutable().insert(std::make_pair(key, value));
+    return true;   // Means insertion happened.
+  }
+}
+
+
+bool GDValue::mapInsertValueAt(GDValue &&key, GDValue &&value)
+{
+  if (isOrderedMap()) {
+    return orderedMapInsertValueAt(std::move(key), std::move(value));
+  }
+
+  xassertPrecondition(isMap());
+
+  auto it = mapGetMutable().find(key);
+  if (it != mapGetMutable().end()) {
+    return false;
+  }
+  else {
+    mapGetMutable().emplace(
+      std::make_pair(std::move(key), std::move(value)));
+    return true;
+  }
+}
+
+
+bool GDValue::mapSetValueAt(GDValue const &key, GDValue const &value)
+{
+  if (isOrderedMap()) {
+    return orderedMapSetValueAt(key, value);
   }
 
   xassertPrecondition(isMap());
@@ -1583,18 +1622,19 @@ void GDValue::mapSetValueAt(GDValue const &key, GDValue const &value)
   auto it = mapGetMutable().find(key);
   if (it != mapGetMutable().end()) {
     (*it).second = value;
+    return false;  // Means assignment happened.
   }
   else {
     mapGetMutable().insert(std::make_pair(key, value));
+    return true;   // Means insertion happened.
   }
 }
 
 
-void GDValue::mapSetValueAt(GDValue &&key, GDValue &&value)
+bool GDValue::mapSetValueAt(GDValue &&key, GDValue &&value)
 {
   if (isOrderedMap()) {
-    orderedMapSetValueAt(std::move(key), std::move(value));
-    return;
+    return orderedMapSetValueAt(std::move(key), std::move(value));
   }
 
   xassertPrecondition(isMap());
@@ -1602,10 +1642,12 @@ void GDValue::mapSetValueAt(GDValue &&key, GDValue &&value)
   auto it = mapGetMutable().find(key);
   if (it != mapGetMutable().end()) {
     (*it).second = std::move(value);
+    return false;
   }
   else {
     mapGetMutable().emplace(
       std::make_pair(std::move(key), std::move(value)));
+    return true;
   }
 }
 
@@ -1715,19 +1757,36 @@ GDValue &GDValue::orderedMapGetValueAt(GDValue const &key)
 }
 
 
-void GDValue::orderedMapSetValueAt(GDValue const &key, GDValue const &value)
+bool GDValue::orderedMapInsertValueAt(GDValue const &key, GDValue const &value)
 {
   xassertPrecondition(isOrderedMap());
 
-  orderedMapGetMutable().setValueAtKey(key, value);
+  return orderedMapGetMutable().insert({key, value});
 }
 
 
-void GDValue::orderedMapSetValueAt(GDValue &&key, GDValue &&value)
+bool GDValue::orderedMapInsertValueAt(GDValue &&key, GDValue &&value)
 {
   xassertPrecondition(isOrderedMap());
 
-  orderedMapGetMutable().setValueAtKey(
+  return orderedMapGetMutable().insert({
+    std::move(key), std::move(value)});
+}
+
+
+bool GDValue::orderedMapSetValueAt(GDValue const &key, GDValue const &value)
+{
+  xassertPrecondition(isOrderedMap());
+
+  return orderedMapGetMutable().setValueAtKey(key, value);
+}
+
+
+bool GDValue::orderedMapSetValueAt(GDValue &&key, GDValue &&value)
+{
+  xassertPrecondition(isOrderedMap());
+
+  return orderedMapGetMutable().setValueAtKey(
     std::move(key), std::move(value));
 }
 
@@ -1779,6 +1838,15 @@ void GDValue::orderedMapSetValueAtSym(char const *symName, GDValue &&value)
 bool GDValue::orderedMapRemoveKeySym(char const *symName)
 {
   return orderedMapRemoveKey(GDVSymbol(symName));
+}
+
+
+GDValue const &GDValue::orderedMapGetKeyAtIndex(GDVIndex index) const
+{
+  xassertPrecondition(isOrderedMap());
+  xassertPrecondition(index < containerSize());
+
+  return orderedMapGet().entryAtIndex(index).first;
 }
 
 

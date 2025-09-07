@@ -801,10 +801,21 @@ public:      // methods
   GDValue const &mapGetValueAt(GDValue const &key) const;
   GDValue       &mapGetValueAt(GDValue const &key)      ;
 
-  // Insert or update (replace) a mapping.
-  void mapSetValueAt(GDValue const &key, GDValue const &value);
-  void mapSetValueAt(GDValue      &&key, GDValue      &&value);
+  // Insert a new mapping and return true, or if the key is already
+  // mapped, return false without changing the map.  This is similar to
+  // `std::map::insert`.
+  bool mapInsertValueAt(GDValue const &key, GDValue const &value);
+  bool mapInsertValueAt(GDValue      &&key, GDValue      &&value);
 
+  // Insert a new mapping and return true, or if the key is already
+  // mapped, update the value it is mapped to and return false.  This is
+  // similar to `std::map::insert_or_assign`.
+  bool mapSetValueAt(GDValue const &key, GDValue const &value);
+  bool mapSetValueAt(GDValue      &&key, GDValue      &&value);
+
+  // Remove the mapping for `key` and return true, or if the key is not
+  // mapped, then return false and do nothng.  This is similar to
+  // `std::map::erase`.
   bool mapRemoveKey(GDValue const &key);
 
   void mapClear();
@@ -838,6 +849,7 @@ public:      // methods
 
   DECLARE_GDV_KIND_ITERATORS(GDVOrderedMap, orderedMap)
 
+  // -- OrderedMap: Operations using keys
   bool orderedMapContains(GDValue const &key) const;
 
   GDVMapEntry const &orderedMapGetEntryAt(GDValue const &key) const;
@@ -848,13 +860,20 @@ public:      // methods
   GDValue const &orderedMapGetValueAt(GDValue const &key) const;
   GDValue       &orderedMapGetValueAt(GDValue const &key)      ;
 
+  // Insert a new mapping (appending it to the order) and return true,
+  // or if the key is already mapped, return false without changing the
+  // map.
+  bool orderedMapInsertValueAt(GDValue const &key, GDValue const &value);
+  bool orderedMapInsertValueAt(GDValue      &&key, GDValue      &&value);
+
   // If the key is not already mapped, then the new entry is appended to
-  // the order.
-  void orderedMapSetValueAt(GDValue const &key, GDValue const &value);
-  void orderedMapSetValueAt(GDValue      &&key, GDValue      &&value);
+  // the order, and true is returned.  Otherwise, overwrite the value
+  // for that key and return false.
+  bool orderedMapSetValueAt(GDValue const &key, GDValue const &value);
+  bool orderedMapSetValueAt(GDValue      &&key, GDValue      &&value);
 
-  // TODO: Insert unmapped key at index.
-
+  // Remove the mapping for `key`.  Return true if it was previously
+  // there, and false if it was not.
   bool orderedMapRemoveKey(GDValue const &key);
 
   void orderedMapClear();
@@ -877,6 +896,16 @@ public:      // methods
   //   * mapRemoveKey
   //   * mapClear
   //   * mapXXXSym
+
+  // -- OrderedMap: Operations using indices
+  // Get the key of the entry at `index`, which must be in [0,
+  // containerSize()].  The returned reference is invalidated by calling
+  // any non-const method.
+  GDValue const &orderedMapGetKeyAtIndex(GDVIndex index) const;
+
+  // TODO: More operations on indices.
+  // TODO: Insert unmapped key at index.
+
 
   // ---- TaggedContainer ----
   // Create a tagged container with its tag.  `kind` must identify a

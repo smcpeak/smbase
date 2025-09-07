@@ -698,9 +698,10 @@ void testMap()
   xassert(v2.containerSize() == 2);
   testSerializeRoundtrip(v2);
 
-  v2.mapRemoveKey(GDValue("one"));
+  xassert(v2.mapRemoveKey(GDValue("one")));
   xassert(v2.asString() == R"({"two":2})");
   xassert(!v2.mapContains(GDValue("one")));
+  xassert(!v2.mapRemoveKey(GDValue("one")));
   testSerializeRoundtrip(v2);
 
   v2.mapClear();
@@ -827,6 +828,25 @@ void testMap()
     };
     EXPECT_EQ(v2.asString(), R"({"abc":"x" "y":"abc"})");
   }
+}
+
+
+void test_mapInsertValueAt()
+{
+  GDValue m(GDVK_MAP);
+
+  // Move variant.
+  xassert(m.mapInsertValueAt(1, "one"));
+  xassert(!m.mapInsertValueAt(1, "another"));
+  EXPECT_EQ(m.mapGetValueAt(1), GDValue("one"));
+
+  // Copy variant.
+  GDValue const two(2);
+  GDValue const twoStr("two");
+  GDValue const anotherStr("another");
+  xassert(m.mapInsertValueAt(two, twoStr));
+  xassert(!m.mapInsertValueAt(two, twoStr));
+  EXPECT_EQ(m.mapGetValueAt(2), twoStr);
 }
 
 
@@ -993,7 +1013,7 @@ void testOrderedMap()
   xassert(v2.containerSize() == 2);
   testSerializeRoundtrip(v2);
 
-  v2.mapRemoveKey(GDValue("one"));
+  xassert(v2.mapRemoveKey(GDValue("one")));
   xassert(v2.asString() == R"(["two":2])");
   xassert(!v2.mapContains(GDValue("one")));
   testSerializeRoundtrip(v2);
@@ -2375,6 +2395,39 @@ void testOrderedMapSymbolOps()
 }
 
 
+void test_orderedMapInsertValueAt()
+{
+  GDValue m(GDVK_ORDERED_MAP);
+
+  // Move variant.
+  xassert(m.orderedMapInsertValueAt(1, "one"));
+  xassert(!m.orderedMapInsertValueAt(1, "another"));
+  EXPECT_EQ(m.mapGetValueAt(1), GDValue("one"));
+
+  // Copy variant.
+  GDValue const three(3);
+  GDValue const threeStr("three");
+  GDValue const anotherStr("another three");
+  xassert(m.orderedMapInsertValueAt(three, threeStr));
+  xassert(!m.orderedMapInsertValueAt(three, anotherStr));
+  EXPECT_EQ(m.mapGetValueAt(3), threeStr);
+
+  EXPECT_EQ(m.containerSize(), 2);
+  EXPECT_EQ(m.orderedMapGetKeyAtIndex(0), GDValue(1));
+  EXPECT_EQ(m.orderedMapGetKeyAtIndex(1), GDValue(3));
+
+  // Insert with key 2, which should get appended despite the intrinsic
+  // order placing it in the middle.
+  xassert(m.orderedMapInsertValueAt(2, "two"));
+  xassert(!m.orderedMapInsertValueAt(2, "another two"));
+
+  EXPECT_EQ(m.containerSize(), 3);
+  EXPECT_EQ(m.orderedMapGetKeyAtIndex(0), GDValue(1));
+  EXPECT_EQ(m.orderedMapGetKeyAtIndex(1), GDValue(3));
+  EXPECT_EQ(m.orderedMapGetKeyAtIndex(2), GDValue(2));
+}
+
+
 void testScopedSetIndent()
 {
   SET_RESTORE(GDValue::s_defaultWriteOptions.m_targetLineWidth, 20);
@@ -2820,6 +2873,7 @@ void test_gdvalue()
     testTaggedSequence();
     testTaggedTuple();
     testTaggedSet();
+    test_mapInsertValueAt();
     testTaggedMap();
     testTaggedOrderedMap();
     testSyntaxErrors();
@@ -2836,6 +2890,7 @@ void test_gdvalue()
     testDefaultWriteOptions();
     testMapSymbolOps();
     testOrderedMapSymbolOps();
+    test_orderedMapInsertValueAt();
     testScopedSetIndent();
     testSymbolLiteralOperator();
     testGDV_SKV();
