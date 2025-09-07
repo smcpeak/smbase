@@ -891,14 +891,12 @@ def generateDefinitions(
     if not options.noWriteDefn:
       # void Foo::write(std::ostream &os) const
       # {
-      #   operator gdv::GDValue().write(os,
-      #     gdv::GDValueWriteOptions().setEnableIndentation(true));
+      #   operator gdv::GDValue().writeIndented(os);
       # }
       out += [
         f"void {curClass}::write(std::ostream &os) const",
          "{",
-         "  operator gdv::GDValue().write(os,",
-         "    gdv::GDValueWriteOptions().setEnableIndentation(true));",
+         "  operator gdv::GDValue().writeIndented(os);",
          "}",
          ""
       ]

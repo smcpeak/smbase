@@ -112,8 +112,7 @@ using namespace smbase;
 /*AUTO_CTC*/
 /*AUTO_CTC*/ void CTCTest::write(std::ostream &os) const
 /*AUTO_CTC*/ {
-/*AUTO_CTC*/   operator gdv::GDValue().write(os,
-/*AUTO_CTC*/     gdv::GDValueWriteOptions().setEnableIndentation(true));
+/*AUTO_CTC*/   operator gdv::GDValue().writeIndented(os);
 /*AUTO_CTC*/ }
 /*AUTO_CTC*/
 /*AUTO_CTC*/ CTCTest::CTCTest(gdv::GDValueParser const &p)
