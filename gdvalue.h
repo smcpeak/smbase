@@ -435,6 +435,10 @@ public:      // methods
     int indentLevel,
     GDValueWriteOptions options = s_defaultWriteOptions) const;
 
+  // Enable indentation in the write options, then write to 'os'.
+  void writeIndented(std::ostream &os,
+                     GDValueWriteOptions options = s_defaultWriteOptions) const;
+
   // Enable indentation in the write options, then write to 'os', then
   // write a final newline.
   void writeLines(std::ostream &os,

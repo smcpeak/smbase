@@ -693,11 +693,18 @@ std::string GDValue::asIndentedStringLevel(
 }
 
 
-void GDValue::writeLines(std::ostream &os,
-                         GDValueWriteOptions options) const
+void GDValue::writeIndented(std::ostream &os,
+                            GDValueWriteOptions options) const
 {
   options.m_enableIndentation = true;
   write(os, options);
+}
+
+
+void GDValue::writeLines(std::ostream &os,
+                         GDValueWriteOptions options) const
+{
+  writeIndented(os, options);
   os << "\n";
 }
 

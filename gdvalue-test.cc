@@ -2763,6 +2763,33 @@ void test_integerGetAs()
 }
 
 
+void test_writeIndented()
+{
+  std::string longString =
+     "this is a long string that mostly fills a line";
+  GDValue v(GDVSequence{longString, longString});
+
+  {
+    std::ostringstream oss;
+    v.writeIndented(oss);
+    EXPECT_EQ(oss.str(), "[\n"
+    "  \"this is a long string that mostly fills a line\"\n"
+    "  \"this is a long string that mostly fills a line\"\n"
+    "]");
+  }
+
+  // `writeLines` is the same, except with a final newline.
+  {
+    std::ostringstream oss;
+    v.writeLines(oss);
+    EXPECT_EQ(oss.str(), "[\n"
+    "  \"this is a long string that mostly fills a line\"\n"
+    "  \"this is a long string that mostly fills a line\"\n"
+    "]\n");
+  }
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -2825,6 +2852,7 @@ void test_gdvalue()
     test_float();
     test_double();
     test_integerGetAs();
+    test_writeIndented();
 
     // Some interesting values for the particular data used.
     testPrettyPrint(0);
