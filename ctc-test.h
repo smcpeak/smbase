@@ -20,6 +20,10 @@ public:
   float m_y;
   std::string m_z;
 
+  // Make sure the script does not choke on `using` declarations that
+  // involve template specializations.
+  using SomeTypeAlias = std::basic_string<char>;
+
 public:
   // ---- create-tuple-class: declarations for CTCTest +compare +write +move +selfCheck +gdvWrite +gdvRead
   /*AUTO_CTC*/ explicit CTCTest(int x, float y, std::string const &z);

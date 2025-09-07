@@ -433,6 +433,9 @@ def processHeader(headerFname: str) -> None:
   # Match a line containing a field declaration.
   fieldDeclLineRE = re.compile(r"^ +([a-zA-Z_][^();]+);$")
 
+  # RE to exclude things that otherwise look like fields.
+  nonFieldRE = re.compile(r"\busing\b")
+
   # Match the last line.
   classDeclLastLineRE = re.compile(r"^( *)\};")
 
@@ -467,9 +470,10 @@ def processHeader(headerFname: str) -> None:
           classToSuperclass[curClass] = curSuperclass
 
       if m := fieldDeclLineRE.match(line):
-        typeAndName = m.group(1)
-        debugPrint(f"{i+1}: field: {typeAndName}")
-        curFields.append(parseTypeAndName(typeAndName))
+        if not nonFieldRE.search(line):
+          typeAndName = m.group(1)
+          debugPrint(f"{i+1}: field: {typeAndName}")
+          curFields.append(parseTypeAndName(typeAndName))
 
       if m := beginLineRE.match(line):
         directiveClass = m.group(1)
