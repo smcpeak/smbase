@@ -39,7 +39,7 @@ recognized:
 
   -writeDefn
 
-    Omit the definition of `write`.
+    Omit the definition of `write` with "+write" or "+gdvWrite".
 
   +selfCheck
 
@@ -48,7 +48,8 @@ recognized:
 
   +gdvWrite
 
-    Generate `operator GDValue()`.
+    Generate `operator GDValue()`, and use it for `write`, `toString`
+    and `operator<<`.  This flag is incompatible with "+write".
 
   +gdvRead
 
@@ -66,7 +67,7 @@ import time                  # time.sleep
 import traceback             # traceback.print_exc
 
 from boilerplate import *
-from typing import Optional
+from typing import List, Optional
 
 
 # If true, check that the generated code would be the same as what is
@@ -173,6 +174,9 @@ class ClassOptions:
 
       else:
         die(f"Unrecognized option: {opt}")
+
+    if opts.write and opts.gdvWrite:
+      die('The "+write" and "+gdvWrite" options are incompatible.')
 
     return opts
 
@@ -329,10 +333,7 @@ def generateDeclarations(
     # DEFINE_FRIEND_RELATIONAL_OPERATORS(Foo)
     out.append(f"DEFINE_FRIEND_RELATIONAL_OPERATORS({curClass})")
 
-  if options.write:
-    # // For +write:
-    out.append("// For +write:")
-
+  def common_write_methods() -> None:
     # std::string toString() const;
     out.append("std::string toString() const;")
 
@@ -342,12 +343,20 @@ def generateDeclarations(
     # friend std::ostream &operator<<(std::ostream &os, Foo const &obj);
     out.append(f"friend std::ostream &operator<<(std::ostream &os, {curClass} const &obj);")
 
+  if options.write:
+    # // For +write:
+    out.append("// For +write:")
+
+    common_write_methods()
+
   if options.gdvWrite:
     # // For +gdvWrite:
     out.append("// For +gdvWrite:")
 
     # operator gdv::GDValue() const;
     out.append("operator gdv::GDValue() const;")
+
+    common_write_methods()
 
   if options.gdvRead:
     # // For +gdvRead:
@@ -799,14 +808,14 @@ def generateDefinitions(
       ""
     ]
 
-  if options.write:
+  def emit_toString() -> List[str]:
     # std::string Foo::toString() const
     # {
     #   std::ostringstream oss;
     #   write(oss);
     #   return oss.str();
     # }
-    out += [
+    return [
       f"std::string {curClass}::toString() const",
       "{",
       "  std::ostringstream oss;",
@@ -815,6 +824,24 @@ def generateDefinitions(
       "}",
       ""
     ]
+
+  def emit_operator_ll() -> List[str]:
+    # std::ostream &operator<<(std::ostream &os, Foo const &obj)
+    # {
+    #   obj.write(os);
+    #   return os;
+    # }
+    return [
+      f"std::ostream &operator<<(std::ostream &os, {curClass} const &obj)",
+      "{",
+      "  obj.write(os);",
+      "  return os;",
+      "}",
+      ""
+    ]
+
+  if options.write:
+    out += emit_toString()
 
     if not options.noWriteDefn:
       # void Foo::write(std::ostream &os) const
@@ -835,21 +862,12 @@ def generateDefinitions(
         ""
       ]
 
-    # std::ostream &operator<<(std::ostream &os, Foo const &obj)
-    # {
-    #   obj.write(os);
-    #   return os;
-    # }
-    out += [
-      f"std::ostream &operator<<(std::ostream &os, {curClass} const &obj)",
-      "{",
-      "  obj.write(os);",
-      "  return os;",
-      "}",
-      ""
-    ]
+    out += emit_operator_ll()
 
   if options.gdvWrite:
+    out += emit_toString()
+    out += emit_operator_ll()
+
     # Foo::operator gdv::GDValue() const
     # {
     #    using namespace gdv;
@@ -869,6 +887,21 @@ def generateDefinitions(
        "}",
        ""
     ]
+
+    if not options.noWriteDefn:
+      # void Foo::write(std::ostream &os) const
+      # {
+      #   operator gdv::GDValue().write(os,
+      #     gdv::GDValueWriteOptions().setEnableIndentation(true));
+      # }
+      out += [
+        f"void {curClass}::write(std::ostream &os) const",
+         "{",
+         "  operator gdv::GDValue().write(os,",
+         "    gdv::GDValueWriteOptions().setEnableIndentation(true));",
+         "}",
+         ""
+      ]
 
   if options.gdvRead:
     # Foo::Foo(gdv::GDValueParser const &p)

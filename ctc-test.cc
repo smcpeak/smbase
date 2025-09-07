@@ -94,15 +94,6 @@ using namespace smbase;
 /*AUTO_CTC*/   return oss.str();
 /*AUTO_CTC*/ }
 /*AUTO_CTC*/
-/*AUTO_CTC*/ void CTCTest::write(std::ostream &os) const
-/*AUTO_CTC*/ {
-/*AUTO_CTC*/   os << "{";
-/*AUTO_CTC*/   WRITE_MEMBER(m_x);
-/*AUTO_CTC*/   WRITE_MEMBER(m_y);
-/*AUTO_CTC*/   WRITE_MEMBER(m_z);
-/*AUTO_CTC*/   os << " }";
-/*AUTO_CTC*/ }
-/*AUTO_CTC*/
 /*AUTO_CTC*/ std::ostream &operator<<(std::ostream &os, CTCTest const &obj)
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   obj.write(os);
@@ -117,6 +108,12 @@ using namespace smbase;
 /*AUTO_CTC*/   GDV_WRITE_MEMBER_SYM(m_y);
 /*AUTO_CTC*/   GDV_WRITE_MEMBER_SYM(m_z);
 /*AUTO_CTC*/   return m;
+/*AUTO_CTC*/ }
+/*AUTO_CTC*/
+/*AUTO_CTC*/ void CTCTest::write(std::ostream &os) const
+/*AUTO_CTC*/ {
+/*AUTO_CTC*/   operator gdv::GDValue().write(os,
+/*AUTO_CTC*/     gdv::GDValueWriteOptions().setEnableIndentation(true));
 /*AUTO_CTC*/ }
 /*AUTO_CTC*/
 /*AUTO_CTC*/ CTCTest::CTCTest(gdv::GDValueParser const &p)
@@ -139,17 +136,25 @@ OPEN_ANONYMOUS_NAMESPACE
 
 void test_basics()
 {
-  // For the moment I'm just concerned with GDV de/serialization.
-  gdvnTestRoundtripEq(
-    CTCTest(
-      3,
-      4.5,
-      "some string"),
+  CTCTest const ctcTest(
+    3,
+    4.5,
+    "some string");
+
+  // Check GDV de/serialization.
+  gdvnTestRoundtripEq(ctcTest,
     "CTCTest["
       "x:3 "
       "y:4.5 "
       "z:\"some string\""
     "]");
+
+  // Check `toString()`, which should now use GDVN.
+  EXPECT_EQ(ctcTest.toString(), "CTCTest["
+    "x:3 "
+    "y:4.5 "
+    "z:\"some string\""
+  "]");
 }
 
 

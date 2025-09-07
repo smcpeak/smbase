@@ -25,7 +25,7 @@ public:
   using SomeTypeAlias = std::basic_string<char>;
 
 public:
-  // ---- create-tuple-class: declarations for CTCTest +compare +write +move +selfCheck +gdvWrite +gdvRead
+  // ---- create-tuple-class: declarations for CTCTest +compare +move +selfCheck +gdvWrite +gdvRead
   /*AUTO_CTC*/ explicit CTCTest(int x, float y, std::string const &z);
   /*AUTO_CTC*/ explicit CTCTest(int x, float y, std::string &&z);
   /*AUTO_CTC*/ CTCTest(CTCTest const &obj) noexcept;
@@ -36,12 +36,11 @@ public:
   /*AUTO_CTC*/ // For +compare:
   /*AUTO_CTC*/ friend int compare(CTCTest const &a, CTCTest const &b);
   /*AUTO_CTC*/ DEFINE_FRIEND_RELATIONAL_OPERATORS(CTCTest)
-  /*AUTO_CTC*/ // For +write:
+  /*AUTO_CTC*/ // For +gdvWrite:
+  /*AUTO_CTC*/ operator gdv::GDValue() const;
   /*AUTO_CTC*/ std::string toString() const;
   /*AUTO_CTC*/ void write(std::ostream &os) const;
   /*AUTO_CTC*/ friend std::ostream &operator<<(std::ostream &os, CTCTest const &obj);
-  /*AUTO_CTC*/ // For +gdvWrite:
-  /*AUTO_CTC*/ operator gdv::GDValue() const;
   /*AUTO_CTC*/ // For +gdvRead:
   /*AUTO_CTC*/ explicit CTCTest(gdv::GDValueParser const &p);
 };
