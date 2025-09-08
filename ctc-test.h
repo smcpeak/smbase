@@ -19,6 +19,7 @@ public:
   int m_x;
   float m_y;
   std::string m_z;
+  int m_w = 5;
 
   // Make sure the script does not choke on `using` declarations that
   // involve template specializations.
@@ -26,8 +27,8 @@ public:
 
 public:
   // ---- create-tuple-class: declarations for CTCTest +compare +move +selfCheck +gdvWrite +gdvRead
-  /*AUTO_CTC*/ explicit CTCTest(int x, float y, std::string const &z);
-  /*AUTO_CTC*/ explicit CTCTest(int x, float y, std::string &&z);
+  /*AUTO_CTC*/ explicit CTCTest(int x, float y, std::string const &z, int w = 5);
+  /*AUTO_CTC*/ explicit CTCTest(int x, float y, std::string &&z, int w = 5);
   /*AUTO_CTC*/ CTCTest(CTCTest const &obj) noexcept;
   /*AUTO_CTC*/ CTCTest(CTCTest &&obj) noexcept;
   /*AUTO_CTC*/ void selfCheck() const;

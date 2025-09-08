@@ -22,10 +22,12 @@ using namespace smbase;
 /*AUTO_CTC*/ CTCTest::CTCTest(
 /*AUTO_CTC*/   int x,
 /*AUTO_CTC*/   float y,
-/*AUTO_CTC*/   std::string const &z)
+/*AUTO_CTC*/   std::string const &z,
+/*AUTO_CTC*/   int w)
 /*AUTO_CTC*/   : IMEMBFP(x),
 /*AUTO_CTC*/     IMEMBFP(y),
-/*AUTO_CTC*/     IMEMBFP(z)
+/*AUTO_CTC*/     IMEMBFP(z),
+/*AUTO_CTC*/     IMEMBFP(w)
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   selfCheck();
 /*AUTO_CTC*/ }
@@ -33,10 +35,12 @@ using namespace smbase;
 /*AUTO_CTC*/ CTCTest::CTCTest(
 /*AUTO_CTC*/   int x,
 /*AUTO_CTC*/   float y,
-/*AUTO_CTC*/   std::string &&z)
+/*AUTO_CTC*/   std::string &&z,
+/*AUTO_CTC*/   int w)
 /*AUTO_CTC*/   : IMEMBMFP(x),
 /*AUTO_CTC*/     IMEMBMFP(y),
-/*AUTO_CTC*/     IMEMBMFP(z)
+/*AUTO_CTC*/     IMEMBMFP(z),
+/*AUTO_CTC*/     IMEMBMFP(w)
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   selfCheck();
 /*AUTO_CTC*/ }
@@ -44,7 +48,8 @@ using namespace smbase;
 /*AUTO_CTC*/ CTCTest::CTCTest(CTCTest const &obj) noexcept
 /*AUTO_CTC*/   : DMEMB(m_x),
 /*AUTO_CTC*/     DMEMB(m_y),
-/*AUTO_CTC*/     DMEMB(m_z)
+/*AUTO_CTC*/     DMEMB(m_z),
+/*AUTO_CTC*/     DMEMB(m_w)
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   selfCheck();
 /*AUTO_CTC*/ }
@@ -52,7 +57,8 @@ using namespace smbase;
 /*AUTO_CTC*/ CTCTest::CTCTest(CTCTest &&obj) noexcept
 /*AUTO_CTC*/   : MDMEMB(m_x),
 /*AUTO_CTC*/     MDMEMB(m_y),
-/*AUTO_CTC*/     MDMEMB(m_z)
+/*AUTO_CTC*/     MDMEMB(m_z),
+/*AUTO_CTC*/     MDMEMB(m_w)
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   selfCheck();
 /*AUTO_CTC*/ }
@@ -63,6 +69,7 @@ using namespace smbase;
 /*AUTO_CTC*/     CMEMB(m_x);
 /*AUTO_CTC*/     CMEMB(m_y);
 /*AUTO_CTC*/     CMEMB(m_z);
+/*AUTO_CTC*/     CMEMB(m_w);
 /*AUTO_CTC*/     selfCheck();
 /*AUTO_CTC*/   }
 /*AUTO_CTC*/   return *this;
@@ -74,6 +81,7 @@ using namespace smbase;
 /*AUTO_CTC*/     MCMEMB(m_x);
 /*AUTO_CTC*/     MCMEMB(m_y);
 /*AUTO_CTC*/     MCMEMB(m_z);
+/*AUTO_CTC*/     MCMEMB(m_w);
 /*AUTO_CTC*/     selfCheck();
 /*AUTO_CTC*/   }
 /*AUTO_CTC*/   return *this;
@@ -84,6 +92,7 @@ using namespace smbase;
 /*AUTO_CTC*/   RET_IF_COMPARE_MEMBERS(m_x);
 /*AUTO_CTC*/   RET_IF_COMPARE_MEMBERS(m_y);
 /*AUTO_CTC*/   RET_IF_COMPARE_MEMBERS(m_z);
+/*AUTO_CTC*/   RET_IF_COMPARE_MEMBERS(m_w);
 /*AUTO_CTC*/   return 0;
 /*AUTO_CTC*/ }
 /*AUTO_CTC*/
@@ -107,6 +116,7 @@ using namespace smbase;
 /*AUTO_CTC*/   GDV_WRITE_MEMBER_SYM(m_x);
 /*AUTO_CTC*/   GDV_WRITE_MEMBER_SYM(m_y);
 /*AUTO_CTC*/   GDV_WRITE_MEMBER_SYM(m_z);
+/*AUTO_CTC*/   GDV_WRITE_MEMBER_SYM(m_w);
 /*AUTO_CTC*/   return m;
 /*AUTO_CTC*/ }
 /*AUTO_CTC*/
@@ -118,7 +128,8 @@ using namespace smbase;
 /*AUTO_CTC*/ CTCTest::CTCTest(gdv::GDValueParser const &p)
 /*AUTO_CTC*/   : GDVP_READ_MEMBER_SYM(m_x),
 /*AUTO_CTC*/     GDVP_READ_MEMBER_SYM(m_y),
-/*AUTO_CTC*/     GDVP_READ_MEMBER_SYM(m_z)
+/*AUTO_CTC*/     GDVP_READ_MEMBER_SYM(m_z),
+/*AUTO_CTC*/     GDVP_READ_MEMBER_SYM(m_w)
 /*AUTO_CTC*/ {
 /*AUTO_CTC*/   p.checkTaggedOrderedMapTag("CTCTest");
 /*AUTO_CTC*/ }
@@ -145,14 +156,16 @@ void test_basics()
     "CTCTest["
       "x:3 "
       "y:4.5 "
-      "z:\"some string\""
+      "z:\"some string\" "
+      "w:5"
     "]");
 
   // Check `toString()`, which should now use GDVN.
   EXPECT_EQ(ctcTest.toString(), "CTCTest["
     "x:3 "
     "y:4.5 "
-    "z:\"some string\""
+    "z:\"some string\" "
+    "w:5"
   "]");
 }
 

@@ -19,8 +19,12 @@ any options since they are specified in the line above):
 
   // ---- create-tuple-class: definitions for Foo
 
+The declaration parser is quite simple, expecting field declarations to
+be entirely contained on one line each.  If a field has an initializer,
+it is used as the default argument for the primary constructor.
+
 See test/ctc/in/foo.{h,cc} for example input and test/ctc/exp/foo.{h,cc}
-for the corresponding example output.
+for the corresponding example output.  See also ctc-test.{h,cc}.
 
 Within a directive to generate declarations, the following options are
 recognized:
@@ -67,7 +71,8 @@ import time                  # time.sleep
 import traceback             # traceback.print_exc
 
 from boilerplate import *
-from typing import List, Optional
+from enum import Enum
+from typing import Any, List, Optional
 
 
 # If true, check that the generated code would be the same as what is
@@ -199,16 +204,42 @@ def isIdentifierLetter(c: str) -> bool:
   return bool(identifierLetterRE.match(c))
 
 
-# A field is a tuple of its type and name.
-Field = tuple[str, str]
+class Field:
+  """Type, name, and optional default value."""
+  def __init__(self, type: str, name: str, init: Optional[str]) -> None:
+    # The elements partition the original declaration string.
+    self.type = type
+    self.name = name
+    self.init = init
+
+  def __eq__(self, other: Any) -> bool:
+    if not isinstance(other, Field):
+      return NotImplemented
+    return (self.type == other.type and
+            self.name == other.name and
+            self.init == other.init)
 
 
 def parseTypeAndName(typeAndName: str) -> Field:
-  """Separate `typeAndName` into `type` and `name` components."""
+  """Separate `typeAndName` into `type`, `name`, and optional
+  `defaultValue` components."""
 
-  # Go backward from the end to find the first character that is not
-  # part of an identifier.
-  i = len(typeAndName) - 1
+  # Index one beyond the last character that could be in the name.
+  end_of_name = len(typeAndName)
+
+  # Initializer?
+  init: Optional[str] = None
+  equals_index = typeAndName.rfind("=")
+  if equals_index >= 0:
+    # Include any spaces before "=" in the initializer.
+    while equals_index > 0 and typeAndName[equals_index-1] == " ":
+      equals_index -= 1
+    init = typeAndName[equals_index:]
+    end_of_name = equals_index
+
+  # Collect the variable name by working backward from the end to find
+  # the first character that is not part of an identifier.
+  i = end_of_name - 1
   while i >= 0 and isIdentifierLetter(typeAndName[i]):
     i -= 1
 
@@ -218,7 +249,27 @@ def parseTypeAndName(typeAndName: str) -> Field:
   # Make `i` the index of the first character in the name.
   i += 1
 
-  return (typeAndName[0:i], typeAndName[i:])
+  return Field(typeAndName[0:i], typeAndName[i:end_of_name], init)
+
+
+def test_parseTypeAndName() -> None:
+  """Unit tests for `parseTypeAndName`."""
+
+  def one(typeAndName: str, expect: Field) -> None:
+    actual = parseTypeAndName(typeAndName)
+    assert(actual == expect)
+
+  one("int x",
+      Field("int ", "x", None))
+
+  one("std::string str",
+      Field("std::string ", "str", None))
+
+  one("std::optional<int> m_intOpt = {}",
+      Field("std::optional<int> ", "m_intOpt", " = {}"))
+
+  one("std::optional<bool> m_wantDiagnostics = true",
+      Field("std::optional<bool> ", "m_wantDiagnostics", " = true"))
 
 
 # Generated line.
@@ -239,59 +290,68 @@ def generatePrimaryCtorParamName(fieldName: str) -> str:
     return fieldName + "_"
 
 
-def generatePrimaryCtorParam(type: str, name: str) -> str:
+# By "primary", I mean a ctor that takes a parameter list similar to the
+# set of data members, as opposed to the default (no-arg) ctor or the
+# copy or move ctors (which take a reference to the containing class).
+class CtorType(Enum):
+  """Which ctor we are generating."""
+  PRIMARY_COPY = 1      # Primary ctor that copies parameters.
+  PRIMARY_MOVE = 2      # Primary ctor that moves parameters.
+
+
+class WantDefaults(Enum):
+  """Whether to emit default values."""
+  TRUE = 1              # Emit defaults.
+  FALSE = 2             # Do not emit defaults.
+
+
+def generatePrimaryCtorParam(
+  field: Field,
+  ct: CtorType,
+  wantDefaults: WantDefaults) -> str:
+
   """Generate the declaration of a primary constructor parameter
-  corresponding to field `name` of a tuple class."""
+  corresponding to field `name` of a tuple class.  If `move`, this is
+  the move constructor.  If `withDefaults`, include default values when
+  present."""
 
   # Pass non-primitives by `const` reference.
+  type: str = field.type
   if not isPrimitiveType(type):
-    type = f"{type}const &"
+    if ct == CtorType.PRIMARY_MOVE:
+      type = f"{type}&&"
+    else:
+      type = f"{type}const &"
 
   # Remove leading "m_".
-  name = generatePrimaryCtorParamName(name)
+  name: str = generatePrimaryCtorParamName(field.name)
 
-  return f"{type}{name}";
+  init: str = ""
+  if wantDefaults == WantDefaults.TRUE and field.init:
+    init = field.init
 
-
-def generatePrimaryMoveCtorParam(type: str, name: str) -> str:
-  """Generate the declaration of a primary move constructor parameter
-  corresponding to field `name` of a tuple class."""
-
-  # Pass non-primitives by rvalue reference.
-  if not isPrimitiveType(type):
-    type = f"{type}&&"
-
-  # Remove leading "m_".
-  name = generatePrimaryCtorParamName(name)
-
-  return f"{type}{name}";
+  return f"{type}{name}{init}";
 
 
 def hasNonPrimitiveField(fields: list[Field]) -> bool:
   """True if any element of `fields` is not a primitive type."""
 
   for field in fields:
-    if not isPrimitiveType(field[0]):
+    if not isPrimitiveType(field.type):
       return True
 
   # All fields were primitive.
   return False
 
 
-def generatePrimaryCtorParams(fields: list[Field]) -> str:
+def generatePrimaryCtorParams(fields: list[Field], ct: CtorType) -> str:
   """Generate a string that contains the parameter declarations for the
   primary constructor of a tuple class containing `fields`."""
 
   return ", ".join(
-    [generatePrimaryCtorParam(type, name) for (type, name) in fields])
-
-
-def generatePrimaryMoveCtorParams(fields: list[Field]) -> str:
-  """Generate a string that contains the parameter declarations for the
-  primary move constructor of a tuple class containing `fields`."""
-
-  return ", ".join(
-    [generatePrimaryMoveCtorParam(type, name) for (type, name) in fields])
+    [generatePrimaryCtorParam(field, ct, WantDefaults.TRUE)
+     for field
+     in fields])
 
 
 def addAutoPrefix(line: str) -> str:
@@ -323,7 +383,8 @@ def generateDeclarations(
   out: list[str] = []
 
   # explicit Foo(int x, float y, std::string const &z);
-  out.append(f"explicit {curClass}({generatePrimaryCtorParams(fields)});")
+  out.append(f"explicit {curClass}(" +
+    f"{generatePrimaryCtorParams(fields, CtorType.PRIMARY_COPY)});")
 
   enableMoveOps: bool = options.move
 
@@ -335,7 +396,8 @@ def generateDeclarations(
     # which is a large jump in complexity to solve a minor problem.
     #
     # explicit Foo(int x, float y, std::string &&z);
-    out.append(f"explicit {curClass}({generatePrimaryMoveCtorParams(fields)});")
+    out.append(f"explicit {curClass}(" +
+      f"{generatePrimaryCtorParams(fields, CtorType.PRIMARY_MOVE)});")
 
   # Foo(Foo const &obj) noexcept;
   out.append(f"{curClass}({curClass} const &obj){noexcept};")
@@ -532,32 +594,22 @@ def processHeader(headerFname: str) -> None:
 
 
 # ------------------- Implementation file generation -------------------
-def generatePrimaryCtorParamsSeparateLines(fields: list[Field]) -> list[str]:
+def generatePrimaryCtorParamsSeparateLines(
+  fields: list[Field],
+  ct: CtorType) -> list[str]:
+
   """Generate a list that contains the parameter declarations for the
   primary constructor of a tuple class containing `fields`, where each
   parameter will go to its own line."""
 
   out = []
 
-  for i, (type, name) in enumerate(fields):
+  for i, field in enumerate(fields):
     terminator = "," if i+1 < len(fields) else ")"
 
-    out.append("  " + generatePrimaryCtorParam(type, name) + terminator)
-
-  return out
-
-
-def generatePrimaryMoveCtorParamsSeparateLines(fields: list[Field]) -> list[str]:
-  """Generate a list that contains the parameter declarations for the
-  primary move constructor of a tuple class containing `fields`, where each
-  parameter will go to its own line."""
-
-  out = []
-
-  for i, (type, name) in enumerate(fields):
-    terminator = "," if i+1 < len(fields) else ")"
-
-    out.append("  " + generatePrimaryMoveCtorParam(type, name) + terminator)
+    out.append("  " +
+      generatePrimaryCtorParam(field, ct, WantDefaults.FALSE) +
+      terminator)
 
   return out
 
@@ -598,12 +650,12 @@ def generateCtorInits(
   out: list[str] = []
 
   if superclass is not None:
-    fields = [("<dontcare>", superclass)] + fields
+    # The call to the base class is generated by pretending we have a
+    # field with the base class's name.
+    fields = [Field("<dontcare>", superclass, None)] + fields
 
   for i, field in enumerate(fields):
-    fieldName = field[1]
-
-    if fieldName == superclass:
+    if field.name == superclass:
       if kind == "primary":
         init = f"{superclass}()"
       elif kind == "MDMEMB":
@@ -612,13 +664,13 @@ def generateCtorInits(
         init = f"{superclass}(obj)"
 
     elif kind == "primary":
-      init = generatePrimaryCtorInit(fieldName)
+      init = generatePrimaryCtorInit(field.name)
 
     elif kind == "primaryMove":
-      init = generatePrimaryMoveCtorInit(fieldName)
+      init = generatePrimaryMoveCtorInit(field.name)
 
     else:
-      init = f"{kind}({fieldName})"
+      init = f"{kind}({field.name})"
 
     comma = "," if i+1 != len(fields) else ""
     leadIn = ": " if i == 0 else "  "
@@ -634,9 +686,7 @@ def generateCallsPerField(fields: list[Field], func: str) -> list[str]:
   out: list[str] = []
 
   for field in fields:
-    fieldName = field[1]
-
-    out.append(f"  {func}({fieldName});")
+    out.append(f"  {func}({field.name});")
 
   return out
 
@@ -691,7 +741,7 @@ def generateDefinitions(
   #   selfCheck();           // If +selfCheck.
   # }
   out.append(f"{curClass}::{curClass}(")
-  out.extend(generatePrimaryCtorParamsSeparateLines(fields))
+  out.extend(generatePrimaryCtorParamsSeparateLines(fields, CtorType.PRIMARY_COPY))
   out.extend(generateCtorInits(superclass, fields, "primary"))
   out.extend(generateCtorBody(options))
   out.append("")
@@ -710,7 +760,7 @@ def generateDefinitions(
     #   selfCheck();         // If +selfCheck.
     # }
     out.append(f"{curClass}::{curClass}(")
-    out.extend(generatePrimaryMoveCtorParamsSeparateLines(fields))
+    out.extend(generatePrimaryCtorParamsSeparateLines(fields, CtorType.PRIMARY_MOVE))
     out.extend(generateCtorInits(superclass, fields, "primaryMove"))
     out.extend(generateCtorBody(options))
     out.append("")
@@ -987,6 +1037,9 @@ def processImplementationFile(
 
 # -------------------------------- main --------------------------------
 def main() -> None:
+  # Run unit tests first.
+  test_parseTypeAndName()
+
   # Parse command line.
   parser = argparse.ArgumentParser()
   parser.add_argument("--check", action="store_true",
