@@ -181,7 +181,7 @@ class ClassOptions:
     return opts
 
 
-# -------------------------- Code generation ---------------------------
+# ------------------------------ Parsing -------------------------------
 # This is quite crude but may suffice for now.
 primitiveTypesRE = re.compile(r"\b(int|float|unsigned|bool)\b")
 
@@ -190,6 +190,42 @@ def isPrimitiveType(type: str) -> bool:
   return bool(primitiveTypesRE.match(type))
 
 
+identifierLetterRE = re.compile("^[a-zA-Z0-9_]$")
+
+def isIdentifierLetter(c: str) -> bool:
+  """True if `c` is a single-letter string where the letter could be
+  part of a C++ identifier."""
+
+  return bool(identifierLetterRE.match(c))
+
+
+# A field is a tuple of its type and name.
+Field = tuple[str, str]
+
+
+def parseTypeAndName(typeAndName: str) -> Field:
+  """Separate `typeAndName` into `type` and `name` components."""
+
+  # Go backward from the end to find the first character that is not
+  # part of an identifier.
+  i = len(typeAndName) - 1
+  while i >= 0 and isIdentifierLetter(typeAndName[i]):
+    i -= 1
+
+  if not (0 < i and i < len(typeAndName)-1):
+    die(f"Could not parse type and name: {typeAndName}")
+
+  # Make `i` the index of the first character in the name.
+  i += 1
+
+  return (typeAndName[0:i], typeAndName[i:])
+
+
+# Generated line.
+autoPrefixedLineRE = re.compile(r"^ */\*AUTO_CTC\*/")
+
+
+# ------------------------- Header generation --------------------------
 def generatePrimaryCtorParamName(fieldName: str) -> str:
   """Generate the name to use as the primary ctor parameter
   corresponding to `fieldName`."""
@@ -229,10 +265,6 @@ def generatePrimaryMoveCtorParam(type: str, name: str) -> str:
   name = generatePrimaryCtorParamName(name)
 
   return f"{type}{name}";
-
-
-# A field is a tuple of its type and name.
-Field = tuple[str, str]
 
 
 def hasNonPrimitiveField(fields: list[Field]) -> bool:
@@ -371,37 +403,6 @@ def generateDeclarations(
   return out
 
 
-identifierLetterRE = re.compile("^[a-zA-Z0-9_]$")
-
-def isIdentifierLetter(c: str) -> bool:
-  """True if `c` is a single-letter string where the letter could be
-  part of a C++ identifier."""
-
-  return bool(identifierLetterRE.match(c))
-
-
-def parseTypeAndName(typeAndName: str) -> Field:
-  """Separate `typeAndName` into `type` and `name` components."""
-
-  # Go backward from the end to find the first character that is not
-  # part of an identifier.
-  i = len(typeAndName) - 1
-  while i >= 0 and isIdentifierLetter(typeAndName[i]):
-    i -= 1
-
-  if not (0 < i and i < len(typeAndName)-1):
-    die(f"Could not parse type and name: {typeAndName}")
-
-  # Make `i` the index of the first character in the name.
-  i += 1
-
-  return (typeAndName[0:i], typeAndName[i:])
-
-
-# Generated line.
-autoPrefixedLineRE = re.compile(r"^ */\*AUTO_CTC\*/")
-
-
 def processHeader(headerFname: str) -> None:
   """Read `headerFname` and scan it for directives to generate code.
   Also scan the corresponding implementation file."""
@@ -530,6 +531,7 @@ def processHeader(headerFname: str) -> None:
     classToClassOptions)
 
 
+# ------------------- Implementation file generation -------------------
 def generatePrimaryCtorParamsSeparateLines(fields: list[Field]) -> list[str]:
   """Generate a list that contains the parameter declarations for the
   primary constructor of a tuple class containing `fields`, where each
@@ -983,6 +985,7 @@ def processImplementationFile(
   writeUpdatedFile(implFname, origImplLines, newImplLines)
 
 
+# -------------------------------- main --------------------------------
 def main() -> None:
   # Parse command line.
   parser = argparse.ArgumentParser()
