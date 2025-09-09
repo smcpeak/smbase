@@ -4,7 +4,7 @@
 #include "codepoint.h"                 // module to test
 
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
-#include "sm-test.h"                   // EXPECT_EQ
+#include "sm-test.h"                   // EXPECT_EQ, EXPECT_{TRUE,FALSE}
 #include "xassert.h"                   // xassert
 
 #include <iostream>                    // std::{cout, endl}
@@ -126,6 +126,29 @@ void test_isSpaceOrTab()
 }
 
 
+void test_isASCIIAlphanumeric()
+{
+  EXPECT_FALSE(isASCIIAlphanumeric('/'));
+
+  EXPECT_TRUE(isASCIIAlphanumeric('0'));
+  EXPECT_TRUE(isASCIIAlphanumeric('9'));
+
+  EXPECT_FALSE(isASCIIAlphanumeric(':'));
+  EXPECT_FALSE(isASCIIAlphanumeric('@'));
+
+  EXPECT_TRUE(isASCIIAlphanumeric('A'));
+  EXPECT_TRUE(isASCIIAlphanumeric('Z'));
+
+  EXPECT_FALSE(isASCIIAlphanumeric('['));
+  EXPECT_FALSE(isASCIIAlphanumeric('`'));
+
+  EXPECT_TRUE(isASCIIAlphanumeric('a'));
+  EXPECT_TRUE(isASCIIAlphanumeric('z'));
+
+  EXPECT_FALSE(isASCIIAlphanumeric('{'));
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -138,6 +161,7 @@ void test_codepoint()
   test_isShellMetaCharacter();
   test_isSlashOrBackslash();
   test_isSpaceOrTab();
+  test_isASCIIAlphanumeric();
 }
 
 

@@ -176,6 +176,9 @@ bool isASCIILowercaseLetter(CodePoint c);
 // True if `c` is an uppercase or lowercase US-ASCII letter.
 bool isASCIILetter(CodePoint c);
 
+// True if `c` is a letter or digit.
+bool isASCIIAlphanumeric(CodePoint c);
+
 // True if 'isASCIIDigit' or 'c' is in ['A','F'] or ['a','f'].
 bool isASCIIHexDigit(CodePoint c);
 

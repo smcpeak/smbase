@@ -166,6 +166,13 @@ bool isASCIILetter(CodePoint c)
 }
 
 
+bool isASCIIAlphanumeric(CodePoint c)
+{
+  return isASCIILetter(c) ||
+         isASCIIDigit(c);
+}
+
+
 bool isASCIIHexDigit(CodePoint c)
 {
   return isASCIIDigit(c) ||
