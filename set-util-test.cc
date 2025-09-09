@@ -62,11 +62,14 @@ void testSetInsertAll()
 {
   std::set<int> s;
 
-  xassert(setInsertAll(s, std::set<int>{1,2,3}) == true);
+  xassert(setInsertAll(s, std::set<int>{1,2,3}) == 3);
   EXPECT_EQ(stringb(s), "{1, 2, 3}");
 
-  xassert(setInsertAll(s, std::set<int>{1,2,3}) == false);
+  xassert(setInsertAll(s, std::set<int>{1,2,3}) == 0);
   EXPECT_EQ(stringb(s), "{1, 2, 3}");
+
+  xassert(setInsertAll(s, std::set<int>{2,3,4,5}) == 2);
+  EXPECT_EQ(stringb(s), "{1, 2, 3, 4, 5}");
 }
 
 

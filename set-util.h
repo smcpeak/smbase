@@ -41,13 +41,15 @@ void setInsertUnique(std::set<T> &s, T const &t)
 }
 
 
-template <class T>
-bool setInsertAll(std::set<T> &dest, std::set<T> const &src)
+template <typename T, typename C, typename A>
+std::size_t setInsertAll(std::set<T,C,A> &dest, std::set<T,C,A> const &src)
 {
-  bool ret = false;
+  std::size_t ret = 0;
 
   for (auto const &v : src) {
-    ret |= setInsert(dest, v);
+    if (setInsert(dest, v)) {
+      ++ret;
+    }
   }
 
   return ret;

@@ -18,7 +18,7 @@
 #include "smbase/sm-macros.h"                    // OPEN_NAMESPACE
 #include "smbase/sm-span-fwd.h"                  // smbase::Span
 #include "smbase/std-optional-fwd.h"             // std::optional
-#include "smbase/std-set-fwd.h"                  // stdfwd::set
+#include "smbase/std-set-fwd.h"                  // stdfwd::set, std::set
 #include "smbase/std-vector-fwd.h"               // stdfwd::vector
 
 #include <cstddef>                               // std::size_t
@@ -43,10 +43,11 @@ template <class T>
 void setInsertUnique(stdfwd::set<T> &s, T const &t);
 
 
-// Insert all elements of `src` into `dest`.  Return true if at least
-// one element was inserted.
-template <class T>
-bool setInsertAll(stdfwd::set<T> &dest, stdfwd::set<T> const &src);
+// Insert all elements of `src` into `dest`.  Return the number of
+// elements inserted, which may be less than `src.size()` if some of its
+// elements were already present.
+template <typename T, typename C, typename A>
+std::size_t setInsertAll(std::set<T,C,A> &dest, std::set<T,C,A> const &src);
 
 
 // Remove `t` from `s`.  Return true if `s` changed as a result.
@@ -156,6 +157,8 @@ std::size_t setRemoveMany(std::set<K,C,A> &larger,
 
 // Insert all elements of `src` into `dest`, moving from `src` where
 // possible.
+//
+// TODO: This is similar to `setInsertAll` above, but named differently.
 template <typename K, typename C, typename A>
 void setInsertMany(std::set<K,C,A> &dest,
                    std::set<K,C,A> &&src);
