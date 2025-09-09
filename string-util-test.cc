@@ -1109,6 +1109,20 @@ void test_joinTerminate()
 }
 
 
+void test_replaceNonAlnumWith()
+{
+  EXPECT_EQ(
+    replaceNonAlnumWith("", 'x'),
+    "");
+  EXPECT_EQ(
+    replaceNonAlnumWith("abc+xyz", '-'),
+    "abc-xyz");
+  EXPECT_EQ(
+    replaceNonAlnumWith(std::string("#@!\000fgh\377", 8), 'x'),
+    "xxxxfghx");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -1157,6 +1171,7 @@ void test_string_util()
   test_eraseEmptyStrings();
   test_numOccurrences();
   test_joinTerminate();
+  test_replaceNonAlnumWith();
 }
 
 

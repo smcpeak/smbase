@@ -354,6 +354,11 @@ std::string stringToupper(std::string const &src);
 // Convert all of the US-ASCII letters in `src` to lowercase.
 std::string stringTolower(std::string const &src);
 
+// Return `src` where every non-alphanumeric US-ASCII character has been
+// replaced with `replacement`.
+std::string replaceNonAlnumWith(
+  std::string const &src, char replacement);
+
 
 /*
   We expect that `src` is made from a raw string literal like the

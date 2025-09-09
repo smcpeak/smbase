@@ -4,7 +4,7 @@
 #include "string-util.h"               // this module
 
 #include "smbase/breaker.h"            // breaker
-#include "smbase/codepoint.h"          // isASCIIPrintable, isShellMetacharacter, isSlashOrBackslash
+#include "smbase/codepoint.h"          // isASCIIPrintable, isShellMetacharacter, isSlashOrBackslash, isASCIIAlphanumeric
 #include "smbase/exc.h"                // smbase::xmessage
 #include "smbase/optional-util.h"      // liftToOptional
 #include "smbase/overflow.h"           // safeToInt, multiply[Add]WithOverflowCheck[Opt], addWithOverflowCheckOpt
@@ -870,6 +870,21 @@ std::string stringToupper(std::string const &src)
 std::string stringTolower(std::string const &src)
 {
   return translate(src, "A-Z", "a-z");
+}
+
+
+std::string replaceNonAlnumWith(
+  std::string const &src, char replacement)
+{
+  std::string ret(src);
+
+  for (char &c : ret) {
+    if (!isASCIIAlphanumeric(CodePoint(c))) {
+      c = replacement;
+    }
+  }
+
+  return ret;
 }
 
 
