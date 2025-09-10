@@ -9,6 +9,7 @@
 #include "smbase/dummy-printf.h"       // dummy_printf
 #include "smbase/exc.h"                // smbase::XBase
 #include "smbase/gdvalue-fwd.h"        // gdv::GDValue
+#include "smbase/pp-file-line.h"       // smbase::PreprocFileLine, HERE_PREPROC_FILE_LINE
 #include "smbase/sm-iostream.h"        // cout
 #include "smbase/sm-is-equal.h"        // smbase::is_equal
 #include "smbase/sm-macros.h"          // SM_PRINTF_ANNOTATION, NULLABLE
@@ -157,18 +158,23 @@ std::ostream &getTout();
 // is a signed integral type.  According to that function, a negative
 // number is not equal to any non-negative number.
 template <typename TA, typename TE>
-void expectEq(char const *label, TA const &actual, TE const &expect)
+void expectEq(
+  smbase::PreprocFileLine loc,
+  char const *label,
+  TA const &actual,
+  TE const &expect)
 {
   if (!smbase::is_equal(expect, actual)) {
     smbase::xmessage(stringb(
-      label << ": values are not equal:\n"
+      loc << ": " << label << ": values are not equal:\n"
       "  actual: " << actual << "\n"
       "  expect: " << expect));
   }
 }
 
-#define EXPECT_EQ(actual, expect) \
-  expectEq(#actual, actual, expect) /* user ; */
+#define EXPECT_EQ(actual, expect)           \
+  expectEq(HERE_PREPROC_FILE_LINE, #actual, \
+           actual, expect) /* user ; */
 
 
 /* Variant for use when `actual` and `expect` are numbers.  This just
@@ -177,40 +183,50 @@ void expectEq(char const *label, TA const &actual, TE const &expect)
    they will be printed as numbers even if one or both have a type based
    on `char` (such as `uint8_t`).
 */
-#define EXPECT_EQ_NUMBERS(actual, expect) \
-  expectEq(#actual, +(actual), +(expect)) /* user ; */
+#define EXPECT_EQ_NUMBERS(actual, expect)     \
+  expectEq(HERE_PREPROC_FILE_LINE, #actual,   \
+           +(actual), +(expect)) /* user ; */
 
 
 // Overload for the `char*` case to ensure we compare string contents
 // rather than addresses.  Both arguments must be non-null.
-void expectEq(char const *label, char const *actual, char const *expect);
+void expectEq(
+  smbase::PreprocFileLine loc,
+  char const *label,
+  char const *actual,
+  char const *expect);
 
 
 // ----------------------- EXPECT_HAS_SUBSTRING ------------------------
 // Check that 'hasSubstring(actual, expectSubstring)'.
 void expectHasSubstring(
+  smbase::PreprocFileLine loc,
   char const *label,
   string const &actual,
   char const *expectSubstring);
 
-#define EXPECT_HAS_SUBSTRING(actual, expectSubstring) \
-  expectHasSubstring(#actual, actual, expectSubstring) /* user ; */
+#define EXPECT_HAS_SUBSTRING(actual, expectSubstring)      \
+  expectHasSubstring(HERE_PREPROC_FILE_LINE, #actual,      \
+                     actual, expectSubstring) /* user ; */
 
 
 // ----------------------- EXPECT_MATCHES_REGEX ------------------------
 // Check that 'matchesRegex(actual, expectRegex)'.
 void expectMatchesRegex(
+  smbase::PreprocFileLine loc,
   char const *label,
   string const &actual,
   char const *expectRegex);
 
-#define EXPECT_MATCHES_REGEX(actual, expectRegex) \
-  expectMatchesRegex(#actual, actual, expectRegex) /* user ; */
+#define EXPECT_MATCHES_REGEX(actual, expectRegex)      \
+  expectMatchesRegex(HERE_PREPROC_FILE_LINE, #actual,  \
+                     actual, expectRegex) /* user ; */
 
 
 // --------------------------- EXPECT_EQ_GDV ---------------------------
 // Check that `actual` equals `expect`.
 void expectEqGDV(
+  smbase::PreprocFileLine loc,
   char const *label,
   gdv::GDValue const &actual,
   gdv::GDValue const &expect);
@@ -222,8 +238,9 @@ void expectEqGDV(
 // Using this macro often requires including additional headers to get
 // the right `toGDValue`.  And it is intentional that `toGDValue` is not
 // qualified because we want to allow argument-dependent lookup.
-#define EXPECT_EQ_GDV(actual, expect) \
-  expectEqGDV(#actual, toGDValue(actual), toGDValue(expect)) /* user ; */
+#define EXPECT_EQ_GDV(actual, expect)                            \
+  expectEqGDV(HERE_PREPROC_FILE_LINE, #actual,                   \
+              toGDValue(actual), toGDValue(expect)) /* user ; */
 
 
 // ------------------------- EXPECT_EQ_GDVSER --------------------------
@@ -232,6 +249,7 @@ void expectEqGDV(
 // throw XMessage due to the originals being different.
 void expectEqGDVSer_inner(
   bool origCompare,
+  smbase::PreprocFileLine loc,
   char const *label,
   gdv::GDValue const &actualGDV,
   gdv::GDValue const &expectGDV);
@@ -241,6 +259,7 @@ void expectEqGDVSer_inner(
 // originals.
 template <typename TA, typename TE>
 void expectEqGDVSer(
+  smbase::PreprocFileLine loc,
   char const *label,
   TA const &actualOrig,
   TE const &expectOrig,
@@ -249,7 +268,7 @@ void expectEqGDVSer(
 {
   expectEqGDVSer_inner(
     smbase::is_equal(expectOrig, actualOrig),
-    label, actualGDV, expectGDV);
+    loc, label, actualGDV, expectGDV);
 }
 
 // Check that `actual==expect`, but use GDV for serialization for the
@@ -258,7 +277,8 @@ void expectEqGDVSer(
 // suitable `toGDValue` in scope is imposed at the call site, not here
 // where the function template is defined.
 #define EXPECT_EQ_GDVSER(actual, expect)                            \
-  expectEqGDVSer(#actual,                                           \
+  expectEqGDVSer(HERE_PREPROC_FILE_LINE,                            \
+                 #actual,                                           \
                  actual, expect,                                    \
                  toGDValue(actual), toGDValue(expect)) /* user ; */
 
@@ -286,6 +306,7 @@ void expectEqGDVSer(
       }                                                           \
     }                                                             \
     catch (std::exception &e) {                                   \
+      /* Note: xfailure includes a preproc source loc. */         \
       xfailure_stringbc(                                          \
         "Expected exception of type `" #ExnType "`, but instead " \
         "got exception of type `" << getExceptionTypeName(e) <<   \

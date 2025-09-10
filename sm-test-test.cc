@@ -10,6 +10,7 @@
 #include "smbase/gdv-ordered-map.h"    // gdv::GDVOrderedMap (for TEST_CASE_EXPRS)
 #include "smbase/gdvalue.h"            // gdv::GDValue
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE, EMEMB
+#include "smbase/string-util.h"        // hasSubstring
 
 using namespace gdv;
 using namespace smbase;
@@ -18,6 +19,90 @@ using namespace smbase;
 OPEN_ANONYMOUS_NAMESPACE
 
 
+// ---------------- Tests sensitive to source location -----------------
+// The tests in this first section are sensitive to their placement in
+// the source file, hence are first to minimize disruption when making
+// changes.
+
+/* Some blank lines to facilitate adjusment if needed:
+
+
+
+
+
+
+
+
+
+*/
+
+
+// This is line 40.
+void test_EXPECT_EQ_loc()
+{
+  EXPECT_EXN_SUBSTR(EXPECT_EQ(3, 4),
+    XMessage,
+    "sm-test-test.cc:43: 3: values are not equal");
+}
+
+
+void test_EXPECT_HAS_SUBSTRING_loc()
+{
+  EXPECT_EXN_SUBSTR(EXPECT_HAS_SUBSTRING("abc", "def"),
+    XMessage,
+    "sm-test-test.cc:51: While checking \"abc\": "
+    "actual value is \"abc\" "
+    "but expected it to have substring \"def\".");
+}
+
+
+void test_EXPECT_MATCHES_REGEX_loc()
+{
+  EXPECT_EXN_SUBSTR(EXPECT_MATCHES_REGEX("ghi", "jkl"),
+    XMessage,
+    "sm-test-test.cc:61: While checking \"ghi\": "
+    "actual value is \"ghi\" "
+    "but expected it to match regex \"jkl\".");
+}
+
+
+void test_EXPECT_EQ_GDV_loc()
+{
+  EXPECT_EXN_SUBSTR(EXPECT_EQ_GDV("mno", GDVSequence{"pqr"}),
+    XMessage,
+    "sm-test-test.cc:71: \"mno\": values are not equal:\n"
+    "  actual: \"mno\"\n"
+    "  expect: [\"pqr\"]");
+}
+
+
+void test_EXPECT_EQ_GDVSER_loc()
+{
+  EXPECT_EXN_SUBSTR(EXPECT_EQ_GDVSER("mno", GDVSequence{"pqr"}),
+    XMessage,
+    "sm-test-test.cc:81: \"mno\": values are not equal:\n"
+    "  actual: \"mno\"\n"
+    "  expect: [\"pqr\"]");
+}
+
+
+void test_EXPECT_EXN_SUBSTR_loc()
+{
+  EXPECT_EXN_SUBSTR(EXPECT_EXN_SUBSTR((void)1, XMessage, "blah"),
+    XAssert,
+    "sm-test-test.cc:91: assertion failed: Expected exception, but none was thrown.");
+
+  EXPECT_EXN_SUBSTR(EXPECT_EXN_SUBSTR(xformat("whatever"), XUnimp, "blah"),
+    XAssert,
+    "sm-test-test.cc:95: assertion failed: Expected exception of type `XUnimp`");
+
+  EXPECT_EXN_SUBSTR(EXPECT_EXN_SUBSTR(xmessage("gorf"), XMessage, "blah"),
+    XAssert,
+    "sm-test-test.cc:99: assertion failed: Expected exception to have \"blah\" as a substring");
+}
+
+
+// -------------- Tests not sensitive to source location ---------------
 void sampleTest_testCase()
 {
   TEST_CASE("sampleTest_testCase");
@@ -109,9 +194,9 @@ void test_EXPECT_HAS_SUBSTRING()
 
     // Ordinarily, I would use TEST_EXN_SUBSTR, but that is the thing I
     // am trying to test, so instead use a lower-level test.
-    xassert(x.getMessage() ==
+    xassert(hasSubstring(x.getMessage(),
       "While checking \"actual\": actual value is \"actual\" but "
-      "expected it to have substring \"expectSubstring\".");
+      "expected it to have substring \"expectSubstring\"."));
   }
 
   EXPECT_HAS_SUBSTRING("actual", "ctua");
@@ -330,6 +415,13 @@ CLOSE_ANONYMOUS_NAMESPACE
 // Called from unit-tests.cc.
 void test_sm_test()
 {
+  test_EXPECT_EQ_loc();
+  test_EXPECT_HAS_SUBSTRING_loc();
+  test_EXPECT_MATCHES_REGEX_loc();
+  test_EXPECT_EQ_GDV_loc();
+  test_EXPECT_EQ_GDVSER_loc();
+  test_EXPECT_EXN_SUBSTR_loc();
+
   test_TEST_CASE();
   test_TEST_CASE_EXPRS();
   test_TEST_FUNC_EXPRS();

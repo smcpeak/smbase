@@ -8,6 +8,7 @@
 #include "smbase/exc.h"                // smbase::xmessage
 #include "smbase/gdvalue.h"            // gdv::GDValue
 #include "smbase/overflow.h"           // multiplyWithOverflowCheck
+#include "smbase/pp-file-line.h"       // smbase::PreprocFileLine
 #include "smbase/set-util.h"           // smbase::setInsert
 #include "smbase/sm-env.h"             // smbase::envAsIntOr
 #include "smbase/string-util.h"        // doubleQuote, matchesRegex
@@ -38,20 +39,25 @@ std::ostream &getTout()
 }
 
 
-void expectEq(char const *label, char const *actual, char const *expect)
+void expectEq(
+  smbase::PreprocFileLine loc,
+  char const *label,
+  char const *actual,
+  char const *expect)
 {
-  expectEq(label, std::string_view(actual), std::string_view(expect));
+  expectEq(loc, label, std::string_view(actual), std::string_view(expect));
 }
 
 
 void expectHasSubstring(
+  smbase::PreprocFileLine loc,
   char const *label,
   string const &actual,
   char const *expectSubstring)
 {
   if (!hasSubstring(actual, expectSubstring)) {
     xmessage(stringbc(
-      "While checking " << label <<
+      loc << ": While checking " << label <<
       ": actual value is " << doubleQuote(actual) <<
       " but expected it to have substring " << doubleQuote(expectSubstring) <<
       "."));
@@ -60,13 +66,14 @@ void expectHasSubstring(
 
 
 void expectMatchesRegex(
+  smbase::PreprocFileLine loc,
   char const *label,
   string const &actual,
   char const *expectRegex)
 {
   if (!matchesRegex(actual, expectRegex)) {
     xmessage(stringbc(
-      "While checking " << label <<
+      loc << ": While checking " << label <<
       ": actual value is " << doubleQuote(actual) <<
       " but expected it to match regex " << doubleQuote(expectRegex) <<
       "."));
@@ -75,13 +82,14 @@ void expectMatchesRegex(
 
 
 void expectEqGDV(
+  smbase::PreprocFileLine loc,
   char const *label,
   gdv::GDValue const &actualGDV,
   gdv::GDValue const &expectGDV)
 {
   if (expectGDV != actualGDV) {
     smbase::xmessage(stringb(
-      label << ": values are not equal:\n"
+      loc << ": " << label << ": values are not equal:\n"
       "  actual: " << actualGDV.asIndentedStringLevel(1) << "\n"
       "  expect: " << expectGDV.asIndentedStringLevel(1)));
   }
@@ -90,6 +98,7 @@ void expectEqGDV(
 
 void expectEqGDVSer_inner(
   bool origCompare,
+  smbase::PreprocFileLine loc,
   char const *label,
   gdv::GDValue const &actualGDV,
   gdv::GDValue const &expectGDV)
@@ -100,6 +109,7 @@ void expectEqGDVSer_inner(
     }
     else {
       smbase::xmessage(stringb(
+        loc << ": " <<
         label << ": although the original values compared as equal, " <<
         "the GDValues compared unequal:\n"
         "  actual: " << actualGDV.asIndentedStringLevel(1) << "\n"
@@ -109,12 +119,14 @@ void expectEqGDVSer_inner(
   else {
     if (actualGDV == expectGDV) {
       smbase::xmessage(stringb(
+        loc << ": " <<
         label << ": the original values compared as unequal, " <<
         "but the GDValues were equal:\n"
         "  actual/expect: " << actualGDV.asIndentedStringLevel(1)));
     }
     else {
       smbase::xmessage(stringb(
+        loc << ": " <<
         label << ": values are not equal:\n"
         "  actual: " << actualGDV.asIndentedStringLevel(1) << "\n"
         "  expect: " << expectGDV.asIndentedStringLevel(1)));
