@@ -148,6 +148,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(parsestring);
   RUN_TEST(portable_error_code);
   RUN_TEST(posix_fd_ostream);
+  RUN_TEST(pp_file_line);
   RUN_TEST(pprint);
   RUN_TEST(rack_allocator);
   RUN_TEST(reader);
