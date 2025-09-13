@@ -709,6 +709,13 @@ void GDValueParser::checkTaggedOrderedMapTag(char const *symName) const
 }
 
 
+// --------------------- toGDValue(GDValueParser) ----------------------
+GDValue toGDValue(GDValueParser const &parser)
+{
+  return parser.getValue();
+}
+
+
 // -------------------- integerGetAs specialization --------------------
 // Define the specializations we want.
 #define DEFINE_GDVP_GET_AS_METHOD_SPECIALIZATIONS(PRIM) \

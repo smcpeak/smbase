@@ -859,6 +859,9 @@ void test_orderedMapAsMap()
 
   xassert(p.mapContainsSym("x"));
   EXPECT_EQ(p.mapGetValueAtSym("x").getValue().stringGet(), "exs");
+
+  // Toss in a test of `toGDValue(GDValueParser)`.
+  EXPECT_EQ(toGDValue(p.mapGetValueAtSym("x")).stringGet(), "exs");
 }
 
 

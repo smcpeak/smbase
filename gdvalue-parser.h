@@ -338,6 +338,14 @@ public:      // methods
 };
 
 
+// Converting a parser to a value just yields the value being parsed.
+// This is another aspect of a parser being like a value but with
+// extended capabilities.
+//
+// Returns: parser.getValue()
+GDValue toGDValue(GDValueParser const &parser);
+
+
 // -------------------- integerGetAs specialization --------------------
 // Explicit instantiation declaration for the `integerGetAs` method
 // templates.  This tells the compiler *not* to instantiate them
