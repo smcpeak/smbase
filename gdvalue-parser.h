@@ -270,6 +270,7 @@ public:      // methods
 
   // ---- Sequence ----
   void checkIsSequence() const;
+  GDVSize sequenceSize() const;
   GDVSequence const &sequenceGet() const;
   GDValueParser sequenceGetValueAt(GDVIndex index) const;
 

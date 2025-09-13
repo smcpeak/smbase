@@ -360,13 +360,16 @@ void test_vector()
   std::vector<Data> vec2(GDVP_TO(std::vector<Data>, v));
   EXPECT_EQ(toGDValue(vec2), v);
 
-  // Test some parser error cases.
   GDValueParser p(v);
+  EXPECT_EQ(v.sequenceSize(), 2);
 
+  // Test some parser error cases.
   EXPECT_ERROR_SUBSTR(p.sequenceGetValueAt(2),
     "index 2, but it only has 2 elements.");
 
   EXPECT_ERROR_SUBSTR(p.sequenceGetValueAt(1).sequenceGetValueAt(0),
+    "<top>[1]: Expected sequence, not tagged map.");
+  EXPECT_ERROR_SUBSTR(p.sequenceGetValueAt(1).sequenceSize(),
     "<top>[1]: Expected sequence, not tagged map.");
 
   EXPECT_ERROR_SUBSTR(p.sequenceGetValueAt(1).mapGetValueAtSym("x").symbolGet(),

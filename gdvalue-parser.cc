@@ -446,6 +446,7 @@ void GDValueParser::checkContainerSize(GDVSize size) const
 DEFINE_CHECK_IS_KIND(Sequence, "sequence")
 
 RELAY_KIND_SPECIFIC_QUERY0(Sequence, GDVSequence const &, sequenceGet)
+RELAY_KIND_SPECIFIC_QUERY0(Sequence, GDVSize, sequenceSize)
 
 
 GDValueParser GDValueParser::sequenceGetValueAt(GDVIndex index) const
