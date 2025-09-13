@@ -415,6 +415,7 @@ void testSequence()
   DIAG("empty seq: " << v1);
   xassert(v1.asString() == "[]");
   xassert(v1.containerSize() == 0);
+  xassert(v1.sequenceSize() == 0);
   xassert(v1.containerIsEmpty());
   xassert(v1.getKind() == GDVK_SEQUENCE);
   xassert(v1.isSequence());
@@ -430,6 +431,7 @@ void testSequence()
   DIAG("three-element seq: " << v3);
   xassert(v3.asString() == "[1 \"b\" 3]");
   xassert(v3.containerSize() == 3);
+  xassert(v3.sequenceSize() == 3);
   xassert(!v3.containerIsEmpty());
   xassert(v3.getKind() == GDVK_SEQUENCE);
   xassert(v3.sequenceGet() == seq1b3);

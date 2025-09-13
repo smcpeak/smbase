@@ -694,6 +694,11 @@ public:      // methods
   void sequenceSet(GDVSequence const &seq);
   void sequenceSet(GDVSequence      &&seq);
 
+  // Requires `isSequence()`.
+  //
+  // TODO: Add the same for other containers?
+  GDVSize sequenceSize() const;
+
   GDVSequence const &sequenceGet()        const;
   GDVSequence       &sequenceGetMutable()      ;
 

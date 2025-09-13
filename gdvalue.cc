@@ -1344,6 +1344,13 @@ DEFINE_CONTAINER_CTOR_SET_GET(SEQUENCE, Sequence, sequence)
 DEFINE_GDV_KIND_BEGIN_END(Sequence, sequence)
 
 
+GDVSize GDValue::sequenceSize() const
+{
+  xassertPrecondition(isSequence());
+  return containerSize();
+}
+
+
 void GDValue::sequenceAppend(GDValue const &value)
 {
   sequenceGetMutable().push_back(value);
