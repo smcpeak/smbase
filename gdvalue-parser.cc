@@ -477,6 +477,14 @@ void GDValueParser::checkTupleSize(GDVSize size) const
 }
 
 
+bool GDValueParser::isTaggedTupleSize(char const *tag, GDVSize size) const
+{
+  return isTaggedTuple() &&
+         taggedContainerGetTagName() == tag &&
+         containerSize() == size;
+}
+
+
 void GDValueParser::checkTaggedTupleSize(char const *tag, GDVSize size) const
 {
   checkKind(GDVK_TAGGED_TUPLE);

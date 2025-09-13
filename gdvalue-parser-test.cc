@@ -949,7 +949,7 @@ void test_checkContainerSize()
 }
 
 
-// Also test `checkTupleSize`.
+// Test `checkTupleSize` and `isTaggedTupleSize`.
 void test_checkTaggedTupleSize()
 {
   {
@@ -959,6 +959,10 @@ void test_checkTaggedTupleSize()
 
     p.checkTupleSize(3);
     p.checkTaggedTupleSize("mytag", 3);
+
+    EXPECT_TRUE(p.isTaggedTupleSize("mytag", 3));
+    EXPECT_FALSE(p.isTaggedTupleSize("othertag", 3));
+    EXPECT_FALSE(p.isTaggedTupleSize("mytag", 333));
 
     EXPECT_EXN_SUBSTR(p.checkTaggedTupleSize("othertag", 3),
       XGDValueError,
@@ -974,6 +978,8 @@ void test_checkTaggedTupleSize()
   {
     GDValue t(GDVTuple{1, 2, 3});
     GDValueParser p(t);
+
+    EXPECT_FALSE(p.isTaggedTupleSize("mytag", 3));
 
     EXPECT_EXN_SUBSTR(
       p.checkTaggedTupleSize("mytag", 3),
