@@ -146,7 +146,10 @@ public:      // methods
     { obj.write(os); return os; }
 
   // Return the string that `write` would write.
-  std::string asString() const;
+  std::string asString(bool forceQuotes=false) const;
+
+  // Return: asString(true)
+  std::string quotedString() const;
 };
 
 inline void swap(GDVSymbol &a, GDVSymbol &b)

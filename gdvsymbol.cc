@@ -15,6 +15,7 @@
 
 // libc++
 #include <iostream>                              // std::ostream
+#include <sstream>                               // std::ostringstream
 #include <string>                                // std::string
 #include <string_view>                           // std::string_view
 #include <utility>                               // std::swap
@@ -137,9 +138,17 @@ void GDVSymbol::write(std::ostream &os, bool forceQuotes) const
 }
 
 
-std::string GDVSymbol::asString() const
+std::string GDVSymbol::asString(bool forceQuotes) const
 {
-  return stringb(*this);
+  std::ostringstream oss;
+  write(oss, forceQuotes);
+  return oss.str();
+}
+
+
+std::string GDVSymbol::quotedString() const
+{
+  return asString(true /*forceQuotes*/);
 }
 
 

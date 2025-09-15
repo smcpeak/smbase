@@ -21,12 +21,16 @@ void test_gdvsymbol()
   EXPECT_EQ(s1.getSymbolIndex(), 0);
   EXPECT_EQ(stringb(s1), "null");
   EXPECT_EQ(s1.asString(), "null");
+  EXPECT_EQ(s1.asString(false /*forceQuotes*/), "null");
+  EXPECT_EQ(s1.asString(true /*forceQuotes*/), "`null`");
+  EXPECT_EQ(s1.quotedString(), "`null`");
 
   GDVSymbol s2("hello");
   EXPECT_EQ(s2.getSymbolName(), "hello");
   EXPECT_EQ(s2.size(), 5);
   EXPECT_EQ(stringb(s2), "hello");
   EXPECT_EQ(s2.asString(), "hello");
+  EXPECT_EQ(s2.quotedString(), "`hello`");
   xassert(s1 > s2);
   xassert(GDVSymbol::compareIndices(s1.getSymbolIndex(),
                                     s2.getSymbolIndex()) > 0);
@@ -49,6 +53,9 @@ void test_gdvsymbol()
   xassert(GDVSymbol::validUnquotedSymbolName("a9"));
   xassert(!GDVSymbol::validUnquotedSymbolName("a!"));
   xassert(!GDVSymbol::validUnquotedSymbolName("!"));
+
+  EXPECT_EQ(GDVSymbol("has spaces").asString(), "`has spaces`");
+  EXPECT_EQ(GDVSymbol("has spaces").quotedString(), "`has spaces`");
 }
 
 
