@@ -1152,6 +1152,15 @@ void test_parseToGDValue()
 }
 
 
+void test_throwUnrecognizedSymbol()
+{
+  EXPECT_EXN_SUBSTR(GDValueParser("someSym"_sym).
+    throwUnrecognizedSymbol("some category"),
+    XGDValueError,
+    "Unrecognized some category: `someSym`.");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -1189,6 +1198,7 @@ void test_gdvalue_parser()
   test_float();
   test_double();
   test_parseToGDValue();
+  test_throwUnrecognizedSymbol();
 }
 
 

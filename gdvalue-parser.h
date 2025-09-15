@@ -237,6 +237,9 @@ public:      // methods
   GDVSymbol symbolGet() const;
   std::string_view symbolGetName() const;
 
+  // Throw the message: "Unrecognized <category>: <quotedSymbolName>."
+  void throwUnrecognizedSymbol(char const *category) const NORETURN;
+
   // ---- Integer ----
   void checkIsInteger() const;
   GDVInteger integerGet() const;

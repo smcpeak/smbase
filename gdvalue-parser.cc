@@ -379,6 +379,14 @@ RELAY_KIND_SPECIFIC_QUERY0(Symbol, GDVSymbol, symbolGet)
 RELAY_KIND_SPECIFIC_QUERY0(Symbol, std::string_view, symbolGetName)
 
 
+void GDValueParser::throwUnrecognizedSymbol(char const *category) const
+{
+  throwError(stringb(
+    "Unrecognized " << category << ": " <<
+    symbolGet().quotedString() << "."));
+}
+
+
 // ---- Integer ----
 DEFINE_CHECK_IS_KIND(Integer, "integer")
 
