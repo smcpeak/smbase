@@ -5,7 +5,7 @@
 
 #include "smbase/sm-test.h"            // module under test; and test harness to use
 
-#include "smbase/exc.h"                // xmessage, smbase::XMessage
+#include "smbase/exc.h"                // smbase::{xmessage, XMessage}
 #include "smbase/chained-cond.h"       // smbase::cc::le_le
 #include "smbase/gdv-ordered-map.h"    // gdv::GDVOrderedMap (for TEST_CASE_EXPRS)
 #include "smbase/gdvalue.h"            // gdv::GDValue
@@ -412,6 +412,10 @@ void test_wrong_exn()
 CLOSE_ANONYMOUS_NAMESPACE
 
 
+// Defined in sm-test-test2.cc.
+void test_sm_test2();
+
+
 // Called from unit-tests.cc.
 void test_sm_test()
 {
@@ -436,6 +440,8 @@ void test_sm_test()
   test_op_eq();
   test_no_exn();
   test_wrong_exn();
+
+  test_sm_test2();
 }
 
 

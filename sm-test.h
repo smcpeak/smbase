@@ -291,31 +291,33 @@ void expectEqGDVSer(
 
 // ---------------------------- EXPECT_EXN -----------------------------
 // Common core of `EXPECT_EXN` and `EXPECT_EXN_SUBSTR`
-#define EXPECT_EXN_COMMON_CORE(expr, ExnType, additionalCheck)    \
-  {                                                               \
-    bool evalFinished = false;                                    \
-    try {                                                         \
-      expr;                                                       \
-      evalFinished = true;                                        \
-    }                                                             \
-    catch (ExnType &e) {                                          \
-      char const *w = e.what();                                   \
-      additionalCheck                                             \
-      if (verbose) {                                              \
-        cout << "As expected: " << w << "\n";                     \
-      }                                                           \
-    }                                                             \
-    catch (std::exception &e) {                                   \
-      /* Note: xfailure includes a preproc source loc. */         \
-      xfailure_stringbc(                                          \
-        "Expected exception of type `" #ExnType "`, but instead " \
-        "got exception of type `" << getExceptionTypeName(e) <<   \
-        "`, with message: " << doubleQuote(e.what()) << ".");     \
-    }                                                             \
-    if (evalFinished) {                                           \
-      x_assert_fail("Expected exception, but none was thrown.",   \
-        __FILE__, __LINE__);                                      \
-    }                                                             \
+#define EXPECT_EXN_COMMON_CORE(expr, ExnType, additionalCheck) \
+  {                                                            \
+    bool evalFinished = false;                                 \
+    try {                                                      \
+      expr;                                                    \
+      evalFinished = true;                                     \
+    }                                                          \
+    catch (ExnType &e) {                                       \
+      char const *w = e.what();                                \
+      additionalCheck                                          \
+      if (verbose) {                                           \
+        cout << "As expected: " << w << "\n";                  \
+      }                                                        \
+    }                                                          \
+    catch (std::exception &e) {                                \
+      /* Note: xfailure includes a preproc source loc. */      \
+      xfailure_stringbc(                                       \
+        "Expected exception of type `" #ExnType                \
+        "`, but instead got exception of type `" <<            \
+        smbase::getExceptionTypeName(e) <<                     \
+        "`, with message: " << doubleQuote(e.what()) << ".");  \
+    }                                                          \
+    if (evalFinished) {                                        \
+      smbase::x_assert_fail(                                   \
+        "Expected exception, but none was thrown.",            \
+        __FILE__, __LINE__);                                   \
+    }                                                          \
   }
 
 
