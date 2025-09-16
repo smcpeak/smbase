@@ -3,13 +3,33 @@
 
 // See license.txt for copyright and terms of use.
 
-// This is similar to `gdvalue-parse`.  I'm trying a different approach,
-// and might entirely replace that module with this one.
-//
-// The main idea here is that, instead of passing around references to
-// `GDValue`, we wrap that in a `GDValueParser` that keeps track of the
-// access path that got to the current value.  That way if there is a
-// problem we can report the location.
+/* `GDValueParser` is a parser for `GDValue`.  This is something that is
+   used *after* parsing the text form, GDVN, into `GDValue`.
+
+   It is used to write code that converts a `GDValue` into some
+   application-specific data type, including (but not limited to)
+   specializations of the standard C++ container classes.
+
+   For error reporting, it keeps track of the access path from the
+   `GDValue` originally used to create a `GDValueParser`.
+
+   For every method on `GDValue` that yields a contained `GDValue`, for
+   example `GDValue::sequenceGetValueAt`, there is a same-named method
+   on `GDValueParser` that returns another `GDValueParser`, but with the
+   access path extended by one element (in this case, adding one numeric
+   index value).  Code that inspects `GDValueParser` should, in most
+   respects, look like code that inspects `GDValue`, except with
+   enhanced error reporting.
+
+   Whereas `GDValue` throws `XAssert` if an inappropriate accessor is
+   used (such as `sequenceGetValueAt` applied to a scalar),
+   `GDValueParser` throws `XGDValueError`.  The former is regarded as a
+   precondition violation (the program has a bug), while the latter is
+   considered (by me, in this module) to be the correct way to report an
+   input validation problem.  Functions in this module document their
+   input expectations with "expects" rather than "requires" to indicate
+   the input constraints.
+*/
 
 #ifndef SMBASE_GDVALUE_PARSER_H
 #define SMBASE_GDVALUE_PARSER_H
@@ -277,6 +297,9 @@ public:      // methods
   GDVSequence const &sequenceGet() const;
   GDValueParser sequenceGetValueAt(GDVIndex index) const;
 
+  // See `gdvalue-list.h` for parsing into `std::list`.
+  // See `gdvalue-vector.h` for parsing into `std::vector`.
+
   // ---- Tuple ----
   void checkIsTuple() const;
   void checkTupleSize(GDVSize size) const;
@@ -285,11 +308,15 @@ public:      // methods
   GDVTuple const &tupleGet() const;
   GDValueParser tupleGetValueAt(GDVIndex index) const;
 
+  // See `gdvalue-tuple.h` for parsing into `std::tuple`.
+
   // ---- Set ----
   void checkIsSet() const;
   GDVSet const &setGet() const;
   bool setContains(GDValue const &elt) const;
   GDValueParser setGetValue(GDValue const &elt) const;
+
+  // See `gdvalue-set.h` for parsing into `std::set`.
 
   // ---- Map ----
   // False for an ordered map.  Use `checkIsPOMap()` to allow both.
@@ -313,6 +340,8 @@ public:      // methods
   std::optional<GDValueParser> mapGetValueAtSymOpt(char const *symName) const;
   std::optional<GDValueParser> mapGetValueAtStrOpt(char const *str) const;
 
+  // See `gdvalue-map.h` for parsing into `std::map`.
+
   // ---- OrderedMap ----
   void checkIsOrderedMap() const;
   void checkIsPOMap() const;
@@ -323,6 +352,8 @@ public:      // methods
   bool orderedMapContainsSym(char const *symName) const;
   GDValueParser orderedMapGetValueAtSym(char const *symName) const;
 
+  // TODO: Provide a parser into `GDVOrderedMap`.
+
   // ---- TaggedContainer ----
   void checkIsTaggedContainer() const;
   GDVSymbol taggedContainerGetTag() const;
@@ -330,6 +361,8 @@ public:      // methods
 
   // Check that the tag is a symbol with `symName`.
   void checkContainerTag(char const *symName) const;
+
+  // TODO: Provide parsers into the `GDVTaggedContainer` types.
 
   // ---- Tagged Map ----
   void checkIsTaggedMap() const;
@@ -462,51 +495,54 @@ template <typename T, typename Enable /*= void*/>
 struct GDVPTo {};
 
 
+// This allows us to populate a GDValue with whatever is in `p` without
+// any further interpretation.
 template <>
 struct GDVPTo<GDValue> {
-  // This allows us to populate a GDValue with whatever is in `p`.
   static GDValue f(GDValueParser const &p);
 };
 
 
 template <>
 struct GDVPTo<bool> {
-  // Requires that `p` be the symbol `true` or `false`.
+  // Expects that `p` is the symbol `true` or `false`.
   static bool f(GDValueParser const &p);
 };
 
 
+// TODO: Generalize this to parse into any primitive integral type.
 template <>
 struct GDVPTo<int> {
-  // Requires that `p` be a small integer.
+  // Expects that `p` is an integer whose value can be represented by
+  // `int`.
   static int f(GDValueParser const &p);
 };
 
 
 template <>
 struct GDVPTo<GDVBinary64Float> {
-  // Requires that `p` be a binary64 float.
+  // Expects that `p` is a binary64 float.
   static GDVBinary64Float f(GDValueParser const &p);
 };
 
 
 template <>
 struct GDVPTo<float> {
-  // Requires that `p` be a binary64 float.
+  // Expects that `p` is a binary64 float.
   static float f(GDValueParser const &p);
 };
 
 
 template <>
 struct GDVPTo<double> {
-  // Requires that `p` be a binary64 float.
+  // Expects that `p` is a binary64 float.
   static double f(GDValueParser const &p);
 };
 
 
 template <>
 struct GDVPTo<std::string> {
-  // Requires that `v` be a string.
+  // Expects that `v` is a string.
   static std::string f(GDValueParser const &p);
 };
 
