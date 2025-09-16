@@ -1,15 +1,13 @@
-// gdvalue-klb.h
+// gdvalue-kind-srcloc.h
 // `GDValueKindSourceLocation`, a combined kind and source location.
 // This is a private implementation detail of `GDValue`.
 
-// TODO: Rename this file to `gdvalue-kind-srcloc.h`.
-
 // See license.txt for copyright and terms of use.
 
-#ifndef SMBASE_GDVALUE_KLB_H
-#define SMBASE_GDVALUE_KLB_H
+#ifndef SMBASE_GDVALUE_KIND_SRCLOC_H
+#define SMBASE_GDVALUE_KIND_SRCLOC_H
 
-#include "gdvalue-klb-fwd.h"           // fwds for this module
+#include "gdvalue-kind-srcloc-fwd.h"   // fwds for this module
 
 #include "gdvalue-kind.h"              // gdv::GDValueKind
 #include "gdvalue-srcloc.h"            // gdv::GDValueSourceLocation
@@ -124,4 +122,4 @@ public:      // methods
 CLOSE_NAMESPACE(gdv)
 
 
-#endif // SMBASE_GDVALUE_KLB_H
+#endif // SMBASE_GDVALUE_KIND_SRCLOC_H

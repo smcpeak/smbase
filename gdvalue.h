@@ -29,7 +29,7 @@
 
 // this dir
 #include "smbase/compare-util-iface.h"           // DEFINE_FRIEND_RELATIONAL_OPERATORS
-#include "smbase/gdvalue-klb.h"                  // GDValueKindSourceLocation
+#include "smbase/gdvalue-kind-srcloc.h"          // GDValueKindSourceLocation
 #include "smbase/sm-macros.h"                    // OPEN_NAMESPACE, NULLABLE
 #include "smbase/sm-pp-util.h"                   // SM_PP_COMMA_MAP
 #include "smbase/std-optional-fwd.h"             // std::optional

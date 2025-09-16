@@ -1,16 +1,16 @@
-// gdvalue-klb-test.cc
-// Tests for `gdvalue-klb` module.
+// gdvalue-kind-srcloc-test.cc
+// Tests for `gdvalue-kind-srcloc` module.
 
-#include "smbase/gdvalue-klb.h"        // module under test
+#include "smbase/gdvalue-kind-srcloc.h"          // module under test
 
-#include "smbase/compare-util.h"       // smbase::compare [h]
-#include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
-#include "smbase/sm-test.h"            // EXPECT_{EQ,TRUE,FALSE}
-#include "smbase/sm-test-order.h"      // EXPECT_STRICTLY_ORDERED, checkStrictlyOrdered
-#include "smbase/stringb.h"            // stringb
-#include "smbase/vector-util.h"        // vecArrayToCRefs
+#include "smbase/compare-util.h"                 // smbase::compare [h]
+#include "smbase/sm-macros.h"                    // OPEN_ANONYMOUS_NAMESPACE
+#include "smbase/sm-test.h"                      // EXPECT_{EQ,TRUE,FALSE}
+#include "smbase/sm-test-order.h"                // EXPECT_STRICTLY_ORDERED, checkStrictlyOrdered
+#include "smbase/stringb.h"                      // stringb
+#include "smbase/vector-util.h"                  // vecArrayToCRefs
 
-#include <string>                      // std::string
+#include <string>                                // std::string
 
 
 using namespace gdv;
@@ -97,7 +97,7 @@ CLOSE_ANONYMOUS_NAMESPACE
 
 
 // Called from unit-tests.cc.
-void test_gdvalue_klb()
+void test_gdvalue_kind_srcloc()
 {
   test_basics();
   test_order();

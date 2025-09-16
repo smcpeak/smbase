@@ -1,7 +1,7 @@
-// gdvalue-klb.cc
-// Code for `gdvalue-klb` module.
+// gdvalue-kind-srcloc.cc
+// Code for `gdvalue-kind-srcloc` module.
 
-#include "gdvalue-klb.h"               // this module
+#include "gdvalue-kind-srcloc.h"       // this module
 
 #include "smbase/compare-util.h"       // RET_IF_COMPARE_MEMBERS
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE, DMEMB, CMEMB
