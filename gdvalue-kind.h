@@ -6,7 +6,9 @@
 #ifndef SMBASE_GDVALUE_KIND_H
 #define SMBASE_GDVALUE_KIND_H
 
-#include "smbase/sm-macros.h"                    // OPEN_NAMESPACE
+#include "gdvalue-kind-fwd.h"          // fwds for this module
+
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 
 
 OPEN_NAMESPACE(gdv)
