@@ -12,6 +12,7 @@
 
 #include <algorithm>                   // std::{all_of, remove}
 #include <cstddef>                     // std::size_t
+#include <functional>                  // std::{reference_wrapper,cref}
 #include <iostream>                    // std::ostream
 #include <iterator>                    // std::make_move_iterator
 #include <optional>                    // std::optional
@@ -516,6 +517,22 @@ std::vector<T,A> vecSlice(
   std::size_t startIndex)
 {
   return vecSlice(vec, startIndex, vec.size() - startIndex);
+}
+
+
+// Given an array of `T`, return a vector of reference wrappers.
+template <typename T, std::size_t N>
+std::vector<std::reference_wrapper<T const>>
+vecArrayToCRefs(T const (&arr)[N])
+{
+  std::vector<std::reference_wrapper<T const>> ret;
+  ret.reserve(N);
+
+  for (T const &elt : arr) {
+    ret.push_back(std::cref(elt));
+  }
+
+  return ret;
 }
 
 

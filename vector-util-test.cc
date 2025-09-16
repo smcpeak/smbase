@@ -209,6 +209,20 @@ void test_vecForAllElements()
 }
 
 
+void test_vecArrayToCRefs()
+{
+  int arr[] = {1, 2, 3};
+  std::vector<std::reference_wrapper<int const>> refs =
+    vecArrayToCRefs(arr);
+
+  int sum = 0;
+  for (int const &n : refs) {
+    sum += n;
+  }
+  EXPECT_EQ(sum, 6);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -227,6 +241,7 @@ void test_vector_util()
   test_vecContains();
   test_vecEraseFirstN();
   test_vecForAllElements();
+  test_vecArrayToCRefs();
 }
 
 
