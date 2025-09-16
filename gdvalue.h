@@ -18,8 +18,9 @@
 // IWYU pragma: begin_exports
 #include "smbase/gdv-binary64-float-fwd.h"       // gdv::GDVBinary64Float
 #include "smbase/gdv-ordered-map-iface.h"        // gdv::GDVOrderedMap
-#include "smbase/gdvalue-kind.h"                 // GDValueKind
-#include "smbase/gdvalue-types.h"                // GDVSize, GDVIndex, GDVInteger, GDVSmallInteger, GDVString, GDVSequence, GDVSet, GDVMap, GDVOrderedMap, GDVMapEntry
+#include "smbase/gdvalue-kind.h"                 // gdv::GDValueKind
+#include "smbase/gdvalue-srcloc.h"               // gdv::GDValueSourceLocation
+#include "smbase/gdvalue-types.h"                // gdv::{GDVSize, GDVIndex, GDVInteger, GDVSmallInteger, GDVString, GDVSequence, GDVSet, GDVMap, GDVOrderedMap, GDVMapEntry}
 #include "smbase/gdvalue-write-options.h"        // gdv::GDValueWriteOptions
 #include "smbase/gdvsymbol.h"                    // gdv::GDVSymbol
 #include "smbase/gdvtuple.h"                     // gdv::GDVTuple
@@ -28,6 +29,7 @@
 
 // this dir
 #include "smbase/compare-util-iface.h"           // DEFINE_FRIEND_RELATIONAL_OPERATORS
+#include "smbase/gdvalue-klb.h"                  // GDValueKindSourceLocation
 #include "smbase/sm-macros.h"                    // OPEN_NAMESPACE, NULLABLE
 #include "smbase/sm-pp-util.h"                   // SM_PP_COMMA_MAP
 #include "smbase/std-optional-fwd.h"             // std::optional
@@ -221,7 +223,12 @@ public:      // class data
 private:     // instance data
   // Tag indicating which kind of value is represented, and for
   // integers, whether we are storing a large or small value.
-  GDValueKind m_kind;
+  //
+  // Plus: An optional source location.  The source location is
+  // generally set for values that were parsed from GDVN or JSON, and
+  // not otherwise, but it can be set or cleared at any time by a client
+  // of this class.
+  GDValueKindSourceLocation m_kindSourceLocation;
 
   // Representation of the value.
   union GDValueUnion {
@@ -265,6 +272,9 @@ private:     // instance data
   } m_value;
 
 private:     // methods
+  // Set `m_kindSourceLocation` to `kind` with no location info.
+  void setKindNoLoc(GDValueKind kind);
+
   // Reset this object, then take the data in 'obj', leaving 'obj' as
   // the null value.
   void resetSelfAndSwapWith(GDValue &obj) noexcept;
@@ -296,48 +306,50 @@ public:      // methods
   explicit GDValue(GDValueKind kind);
 
 
-  GDValueKind getKind() const { return m_kind; }
+  // Get the kind of value this is.  But see also `getSuperKind()`,
+  // which hides the "small integer" implementation detail.
+  GDValueKind getKind() const { return m_kindSourceLocation.getKind(); }
 
-  // Return `toString(m_kind)`.
+  // Return `toString(getKind())`.
   char const *getKindName() const;
 
-  // Return `kindCommonName(m_kind)`.
+  // Return `kindCommonName(getKind())`.
   char const *getKindCommonName() const;
 
   // Map SmallInteger to Integer, keeping other kinds the same, to get
   // the kind corresponding to the logical superclass.
   GDValueKind getSuperKind() const;
 
-  bool isSymbol()           const { return m_kind == GDVK_SYMBOL;             }
-  bool isInteger()          const { return m_kind == GDVK_INTEGER          ||
-                                           isSmallInteger();                  }
-  bool isSmallInteger()     const { return m_kind == GDVK_SMALL_INTEGER;      }
-  bool isBinary64Float()    const { return m_kind == GDVK_BINARY64_FLOAT;     }
-  bool isString()           const { return m_kind == GDVK_STRING;             }
+  bool isSymbol()           const { return getKind() == GDVK_SYMBOL;             }
+  bool isInteger()          const { return getKind() == GDVK_INTEGER          ||
+                                           isSmallInteger();                     }
+  bool isSmallInteger()     const { return getKind() == GDVK_SMALL_INTEGER;      }
+  bool isBinary64Float()    const { return getKind() == GDVK_BINARY64_FLOAT;     }
+  bool isString()           const { return getKind() == GDVK_STRING;             }
 
-  bool isSequence()         const { return m_kind == GDVK_SEQUENCE         ||
-                                           isTaggedSequence();                }
-  bool isTaggedSequence()   const { return m_kind == GDVK_TAGGED_SEQUENCE;    }
+  bool isSequence()         const { return getKind() == GDVK_SEQUENCE         ||
+                                           isTaggedSequence();                   }
+  bool isTaggedSequence()   const { return getKind() == GDVK_TAGGED_SEQUENCE;    }
 
-  bool isTuple()            const { return m_kind == GDVK_TUPLE            ||
-                                           isTaggedTuple();                   }
-  bool isTaggedTuple()      const { return m_kind == GDVK_TAGGED_TUPLE;       }
+  bool isTuple()            const { return getKind() == GDVK_TUPLE            ||
+                                           isTaggedTuple();                      }
+  bool isTaggedTuple()      const { return getKind() == GDVK_TAGGED_TUPLE;       }
 
-  bool isSet()              const { return m_kind == GDVK_SET              ||
-                                           isTaggedSet();                     }
-  bool isTaggedSet()        const { return m_kind == GDVK_TAGGED_SET;         }
+  bool isSet()              const { return getKind() == GDVK_SET              ||
+                                           isTaggedSet();                        }
+  bool isTaggedSet()        const { return getKind() == GDVK_TAGGED_SET;         }
 
-  bool isMap()              const { return m_kind == GDVK_MAP              ||
-                                           isTaggedMap();                     }
-  bool isTaggedMap()        const { return m_kind == GDVK_TAGGED_MAP;         }
+  bool isMap()              const { return getKind() == GDVK_MAP              ||
+                                           isTaggedMap();                        }
+  bool isTaggedMap()        const { return getKind() == GDVK_TAGGED_MAP;         }
 
-  bool isOrderedMap()       const { return m_kind == GDVK_ORDERED_MAP      ||
-                                           isTaggedOrderedMap();              }
-  bool isTaggedOrderedMap() const { return m_kind == GDVK_TAGGED_ORDERED_MAP; }
-  bool isPOMap()            const { return isMap()                         ||
-                                           isOrderedMap();                    }
-  bool isTaggedPOMap()      const { return isTaggedMap()                   ||
-                                           isTaggedOrderedMap();              }
+  bool isOrderedMap()       const { return getKind() == GDVK_ORDERED_MAP      ||
+                                           isTaggedOrderedMap();                 }
+  bool isTaggedOrderedMap() const { return getKind() == GDVK_TAGGED_ORDERED_MAP; }
+  bool isPOMap()            const { return isMap()                            ||
+                                           isOrderedMap();                       }
+  bool isTaggedPOMap()      const { return isTaggedMap()                      ||
+                                           isTaggedOrderedMap();                 }
 
   // True of Sequence, Tuple, Set, Map, and OrderedMap, tagged or not.
   // False of others.
@@ -401,7 +413,7 @@ public:      // methods
   static unsigned countConstructorCalls();
 
 
-  // Reset to null.
+  // Reset to null with no source location.
   void reset();
 
   // Exchange values with 'obj'.
@@ -409,6 +421,30 @@ public:      // methods
 
   // Assert invariants.
   void selfCheck() const;
+
+
+  // ---- Source location ----
+  // True if this value has source location information.
+  //
+  // All of the ctors create a value without a location.
+  bool hasSourceLocation() const;
+
+  // Get the location.
+  //
+  // Requires: hasSourceLocation()
+  GDValueSourceLocation sourceLocation() const;
+
+  // Get the location if we have one.
+  std::optional<GDValueSourceLocation> sourceLocationOpt() const;
+
+  // Remove a source location if we have one.
+  void clearSourceLocation();
+
+  // Set the location to `loc`.
+  void setSourceLocation(GDValueSourceLocation loc);
+
+  // Set it or clear it depending on `locOpt`.
+  void setSourceLocationOpt(std::optional<GDValueSourceLocation> locOpt);
 
 
   // ---- Write as text ----

@@ -7,7 +7,7 @@
 #define SMBASE_GDVALUE_KLB_FWD_H
 
 namespace gdv {
-  class GDValueKindLineByte;
+  class GDValueKindLineColumn;
 }
 
 #endif // SMBASE_GDVALUE_KLB_FWD_H

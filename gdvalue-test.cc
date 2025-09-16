@@ -2845,6 +2845,34 @@ void test_writeIndented()
 }
 
 
+void test_sourceLocation()
+{
+  GDValue v(1);
+  EXPECT_FALSE(v.hasSourceLocation());
+  EXPECT_FALSE(v.sourceLocationOpt().has_value());
+
+  v.clearSourceLocation();
+  EXPECT_FALSE(v.hasSourceLocation());
+  EXPECT_FALSE(v.sourceLocationOpt().has_value());
+
+  GDValueSourceLocation loc(2,3);
+  v.setSourceLocation(loc);
+  EXPECT_TRUE(v.hasSourceLocation());
+  EXPECT_TRUE(v.sourceLocationOpt().has_value());
+  EXPECT_EQ(v.sourceLocation(), loc);
+  EXPECT_EQ(v.sourceLocationOpt().value(), loc);
+
+  GDValueSourceLocation loc2(4,5);
+  v.setSourceLocationOpt(loc2);
+  EXPECT_TRUE(v.hasSourceLocation());
+  EXPECT_EQ(v.sourceLocation(), loc2);
+
+  v.setSourceLocationOpt(std::nullopt);
+  EXPECT_FALSE(v.hasSourceLocation());
+  EXPECT_FALSE(v.sourceLocationOpt().has_value());
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -2910,6 +2938,7 @@ void test_gdvalue()
     test_double();
     test_integerGetAs();
     test_writeIndented();
+    test_sourceLocation();
 
     // Some interesting values for the particular data used.
     testPrettyPrint(0);

@@ -256,6 +256,12 @@ GDValueWriteOptions GDValue::s_defaultWriteOptions;
 
 
 // ---------------------- GDValue private helpers ----------------------
+void GDValue::setKindNoLoc(GDValueKind kind)
+{
+  m_kindSourceLocation = GDValueKindSourceLocation(kind);
+}
+
+
 void GDValue::resetSelfAndSwapWith(GDValue &obj) noexcept
 {
   using std::swap;
@@ -264,7 +270,7 @@ void GDValue::resetSelfAndSwapWith(GDValue &obj) noexcept
 
   reset();
 
-  switch (obj.m_kind) {
+  switch (obj.getKind()) {
     default:
       xfailureInvariant("invalid kind");
 
@@ -278,7 +284,7 @@ void GDValue::resetSelfAndSwapWith(GDValue &obj) noexcept
     #undef CASE
   }
 
-  std::swap(m_kind, obj.m_kind);
+  std::swap(m_kindSourceLocation, obj.m_kindSourceLocation);
 
   GENERIC_CATCH_END
 }
@@ -286,8 +292,8 @@ void GDValue::resetSelfAndSwapWith(GDValue &obj) noexcept
 
 // --------------------- GDValue ctor/dtor/assign ----------------------
 // In a ctor, initialize fields for the null value.
-#define INIT_AS_NULL() \
-    m_kind(GDVK_SYMBOL), \
+#define INIT_AS_NULL()                 \
+    m_kindSourceLocation(GDVK_SYMBOL), \
     m_value(s_symbolIndex_null)
 
 
@@ -309,7 +315,7 @@ GDValue::~GDValue()
 GDValue::GDValue(GDValue const &obj)
   : INIT_AS_NULL()
 {
-  switch (obj.m_kind) {
+  switch (obj.getKind()) {
     default:
       xfailureInvariant("invalid kind");
 
@@ -362,10 +368,10 @@ GDValue &GDValue::operator=(GDValue &&obj)
 
 
 GDValue::GDValue(GDValueKind kind)
-  : m_kind(kind),
+  : m_kindSourceLocation(kind),
     m_value(s_symbolIndex_null)
 {
-  switch (m_kind) {
+  switch (getKind()) {
     default:
       xfailurePrecondition("invalid kind");
 
@@ -376,7 +382,7 @@ GDValue::GDValue(GDValueKind kind)
 
     case GDVK_INTEGER:
     case GDVK_SMALL_INTEGER:
-      m_kind = GDVK_SMALL_INTEGER;
+      setKindNoLoc(GDVK_SMALL_INTEGER);
       m_value.m_smallInteger = 0;
       break;
 
@@ -396,11 +402,11 @@ GDValue::GDValue(GDValueKind kind)
 
 GDValueKind GDValue::getSuperKind() const
 {
-  if (m_kind == GDVK_SMALL_INTEGER) {
+  if (getKind() == GDVK_SMALL_INTEGER) {
     return GDVK_INTEGER;
   }
   else {
-    return m_kind;
+    return getKind();
   }
 }
 
@@ -507,7 +513,7 @@ int compare(GDValue const &a, GDValue const &b)
   // Order first by superkind.
   RET_IF_COMPARE(a.getSuperKind(), b.getSuperKind());
 
-  if (a.m_kind != b.m_kind) {
+  if (a.getKind() != b.getKind()) {
     if (a.getSuperKind() == GDVK_INTEGER) {
       // Both are integers, but one is large and the other is small.
       // First compare the signs, swapping the order since false<true
@@ -525,7 +531,7 @@ int compare(GDValue const &a, GDValue const &b)
     xfailure("should not get here");
   }
 
-  switch (a.m_kind) {
+  switch (a.getKind()) {
     default:
       xfailureInvariant("invalid kind");
 
@@ -574,7 +580,7 @@ STATICDEF unsigned GDValue::countConstructorCalls()
 
 void GDValue::reset()
 {
-  switch (m_kind) {
+  switch (getKind()) {
     default:
       xfailureInvariant("invalid kind");
 
@@ -592,7 +598,7 @@ void GDValue::reset()
     #undef CASE
   }
 
-  m_kind = GDVK_SYMBOL;
+  setKindNoLoc(GDVK_SYMBOL);
   m_value.m_symbol = s_symbolIndex_null;
 }
 
@@ -629,7 +635,7 @@ static void checkAllocatedPtr(GDVBinary64Float const *p)
 
 void GDValue::selfCheck() const
 {
-  switch (m_kind) {
+  switch (getKind()) {
     default:
       xfailureInvariant("bad kind");
 
@@ -657,6 +663,44 @@ void GDValue::selfCheck() const
 
     #undef CASE
   }
+}
+
+
+// -------------------------- Source location --------------------------
+bool GDValue::hasSourceLocation() const
+{
+  return m_kindSourceLocation.hasSourceLocation();
+}
+
+
+GDValueSourceLocation GDValue::sourceLocation() const
+{
+  return m_kindSourceLocation.sourceLocation();
+}
+
+
+std::optional<GDValueSourceLocation> GDValue::sourceLocationOpt() const
+{
+  return m_kindSourceLocation.sourceLocationOpt();
+}
+
+
+void GDValue::clearSourceLocation()
+{
+  m_kindSourceLocation.clearSourceLocation();
+}
+
+
+void GDValue::setSourceLocation(GDValueSourceLocation loc)
+{
+  m_kindSourceLocation.setSourceLocation(loc);
+}
+
+
+void GDValue::setSourceLocationOpt(
+  std::optional<GDValueSourceLocation> locOpt)
+{
+  m_kindSourceLocation.setSourceLocationOpt(locOpt);
 }
 
 
@@ -783,7 +827,7 @@ STATICDEF GDValue GDValue::readFromFile(std::string const &fileName)
 // ------------------------------- Null --------------------------------
 bool GDValue::isNull() const
 {
-  if (m_kind == GDVK_SYMBOL) {
+  if (getKind() == GDVK_SYMBOL) {
     return m_value.m_symbol == s_symbolIndex_null;
   }
   return false;
@@ -793,7 +837,7 @@ bool GDValue::isNull() const
 // ------------------------------ Boolean ------------------------------
 bool GDValue::isBool() const
 {
-  if (m_kind == GDVK_SYMBOL) {
+  if (getKind() == GDVK_SYMBOL) {
     return m_value.m_symbol == s_symbolIndex_true ||
            m_value.m_symbol == s_symbolIndex_false;
   }
@@ -819,7 +863,7 @@ STATICDEF GDValue GDValue::makeBool(bool b)
 void GDValue::boolSet(bool b)
 {
   reset();
-  m_kind = GDVK_SYMBOL;
+  setKindNoLoc(GDVK_SYMBOL);
   m_value.m_symbol =
     b? s_symbolIndex_true : s_symbolIndex_false;
 
@@ -830,7 +874,7 @@ void GDValue::boolSet(bool b)
 
 bool GDValue::boolGet() const
 {
-  xassertPrecondition(m_kind == GDVK_SYMBOL);
+  xassertPrecondition(getKind() == GDVK_SYMBOL);
 
   if (m_value.m_symbol == s_symbolIndex_true) {
     return true;
@@ -860,13 +904,13 @@ void GDValue::symbolSet(GDVSymbol sym)
   reset();
 
   m_value.m_symbol = sym.getSymbolIndex();
-  m_kind = GDVK_SYMBOL;
+  setKindNoLoc(GDVK_SYMBOL);
 }
 
 
 GDVSymbol GDValue::symbolGet() const
 {
-  xassertPrecondition(m_kind == GDVK_SYMBOL);
+  xassertPrecondition(getKind() == GDVK_SYMBOL);
   return GDVSymbol(GDVSymbol::DirectIndex, m_value.m_symbol);
 }
 
@@ -916,7 +960,7 @@ void GDValue::integerSet(GDVInteger const &i)
   reset();
 
   if (!trySmallIntegerSet(i)) {
-    m_kind = GDVK_INTEGER;
+    setKindNoLoc(GDVK_INTEGER);
     m_value.m_integer = new GDVInteger(i);
   }
 }
@@ -927,7 +971,7 @@ void GDValue::integerSet(GDVInteger &&i)
   reset();
 
   if (!trySmallIntegerSet(i)) {
-    m_kind = GDVK_INTEGER;
+    setKindNoLoc(GDVK_INTEGER);
     m_value.m_integer = new GDVInteger(std::move(i));
   }
 }
@@ -937,7 +981,7 @@ GDVInteger GDValue::integerGet() const
 {
   xassertPrecondition(isInteger());
 
-  if (m_kind == GDVK_SMALL_INTEGER) {
+  if (getKind() == GDVK_SMALL_INTEGER) {
     return GDVInteger(m_value.m_smallInteger);
   }
   else {
@@ -950,7 +994,7 @@ bool GDValue::integerIsNegative() const
 {
   xassertPrecondition(isInteger());
 
-  if (m_kind == GDVK_SMALL_INTEGER) {
+  if (getKind() == GDVK_SMALL_INTEGER) {
     return m_value.m_smallInteger < 0;
   }
   else {
@@ -962,7 +1006,7 @@ bool GDValue::integerIsNegative() const
 GDVInteger const &GDValue::largeIntegerGet() const
 {
   // This has to specifically be a large integer.
-  xassertPrecondition(m_kind == GDVK_INTEGER);
+  xassertPrecondition(getKind() == GDVK_INTEGER);
 
   return *(m_value.m_integer);
 }
@@ -1068,7 +1112,7 @@ void GDValue::smallIntegerSet(GDVSmallInteger i)
 {
   reset();
 
-  m_kind = GDVK_SMALL_INTEGER;
+  setKindNoLoc(GDVK_SMALL_INTEGER);
   m_value.m_smallInteger = i;
 }
 
@@ -1105,7 +1149,7 @@ void GDValue::binary64FloatSet(GDVBinary64Float const &v)
   reset();
 
   m_value.m_binary64Float = new GDVBinary64Float(v);
-  m_kind = GDVK_BINARY64_FLOAT;
+  setKindNoLoc(GDVK_BINARY64_FLOAT);
 }
 
 
@@ -1114,7 +1158,7 @@ void GDValue::binary64FloatSet(GDVBinary64Float &&v)
   reset();
 
   m_value.m_binary64Float = new GDVBinary64Float(std::move(v));
-  m_kind = GDVK_BINARY64_FLOAT;
+  setKindNoLoc(GDVK_BINARY64_FLOAT);
 }
 
 
@@ -1184,7 +1228,7 @@ void GDValue::stringSet(GDVString const &str)
 {
   reset();
   m_value.m_string = new GDVString(str);
-  m_kind = GDVK_STRING;
+  setKindNoLoc(GDVK_STRING);
 
   ++s_ct_stringSetCopy;
 }
@@ -1194,7 +1238,7 @@ void GDValue::stringSet(GDVString &&str)
 {
   reset();
   m_value.m_string = new GDVString(std::move(str));
-  m_kind = GDVK_STRING;
+  setKindNoLoc(GDVK_STRING);
 
   ++s_ct_stringSetMove;
 }
@@ -1248,7 +1292,7 @@ DEFINE_GDV_KIND_BEGIN_END(String, string)
 // ---------------------------- Container ------------------------------
 GDVSize GDValue::containerSize() const
 {
-  switch (m_kind) {
+  switch (getKind()) {
     default:
       xfailurePrecondition("not a container");
 
@@ -1300,7 +1344,7 @@ bool GDValue::containerIsEmpty() const
     else {                                                    \
       reset();                                                \
       m_value.m_##kind = new GDV##Kind(container);            \
-      m_kind = GDVK_##KIND;                                   \
+      setKindNoLoc(GDVK_##KIND);                              \
     }                                                         \
                                                               \
     ++s_ct_##kind##SetCopy;                                   \
@@ -1314,7 +1358,7 @@ bool GDValue::containerIsEmpty() const
     else {                                                    \
       reset();                                                \
       m_value.m_##kind = new GDV##Kind(std::move(container)); \
-      m_kind = GDVK_##KIND;                                   \
+      setKindNoLoc(GDVK_##KIND);                              \
     }                                                         \
                                                               \
     ++s_ct_##kind##SetMove;                                   \
@@ -1324,11 +1368,11 @@ bool GDValue::containerIsEmpty() const
   {                                                           \
     xassertPrecondition(is##Kind());                          \
                                                               \
-    if (m_kind == GDVK_##KIND) {                              \
+    if (getKind() == GDVK_##KIND) {                           \
       return *(m_value.m_##kind);                             \
     }                                                         \
     else {                                                    \
-      xassert(m_kind == GDVK_TAGGED_##KIND);                  \
+      xassert(getKind() == GDVK_TAGGED_##KIND);               \
       return m_value.m_tagged##Kind->m_container;             \
     }                                                         \
   }                                                           \
@@ -1867,7 +1911,7 @@ GDValue::GDValue(GDValueKind kind, GDVSymbol tag)
 
     #define CASE(KIND, Container, container) \
       case GDVK_TAGGED_##KIND:               \
-        m_kind = kind;                       \
+        setKindNoLoc(kind);                  \
         m_value.m_tagged##Container =        \
           new GDVTagged##Container(tag, {}); \
         break;
@@ -1883,7 +1927,7 @@ GDValue::GDValue(GDValueKind kind, GDVSymbol tag)
 
 void GDValue::taggedContainerSetTag(GDVSymbol tag)
 {
-  switch (m_kind) {
+  switch (getKind()) {
     default:
       xfailurePrecondition("not a tagged container");
 
@@ -1901,7 +1945,7 @@ void GDValue::taggedContainerSetTag(GDVSymbol tag)
 
 GDVSymbol GDValue::taggedContainerGetTag() const
 {
-  switch (m_kind) {
+  switch (getKind()) {
     default:
       xfailurePrecondition("not a tagged container");
 
@@ -1944,7 +1988,7 @@ std::string_view GDValue::taggedContainerGetTagName() const
     }                                                                           \
     else {                                                                      \
       reset();                                                                  \
-      m_kind = GDVK_TAGGED_##KIND;                                              \
+      setKindNoLoc(GDVK_TAGGED_##KIND);                                         \
       m_value.m_tagged##Container = new GDVTagged##Container(tcont);            \
     }                                                                           \
   }                                                                             \
@@ -1956,7 +2000,7 @@ std::string_view GDValue::taggedContainerGetTagName() const
     }                                                                           \
     else {                                                                      \
       reset();                                                                  \
-      m_kind = GDVK_TAGGED_##KIND;                                              \
+      setKindNoLoc(GDVK_TAGGED_##KIND);                                         \
       m_value.m_tagged##Container = new GDVTagged##Container(std::move(tcont)); \
     }                                                                           \
   }                                                                             \
