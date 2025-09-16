@@ -118,6 +118,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(gdv_binary64_float);
   RUN_TEST(gdvalue);
   RUN_TEST(gdvalue_json);
+  RUN_TEST(gdvalue_klb);
   RUN_TEST(gdvalue_parser);
   RUN_TEST(gdvalue_reader);
   RUN_TEST(gdvalue_subst_transform);
