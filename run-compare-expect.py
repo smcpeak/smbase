@@ -2,16 +2,18 @@
 """
 Run a program and compare its output to what is expected.
 
-Before comparison, the output will first be normalized according to two
-rules:
+Before comparison, the output will first be normalized:
 
 1. If the string "VOLATILE" appears anywhere, the entire line is
 replaced with "VOLATILE".
 
-2. Within a line, if "0x" is followed by two or more hexadecimal digits,
-then the entire sequence will be replaced by "0xHEXDIGITS" unless the
-digits match "7F+", meaning they denote -1 as a signed twos-complement
-integer (in which case they are not replaced).
+2. If --hex-replacer is specified, then within a line, if "0x" is
+followed by two or more hexadecimal digits, then the entire sequence
+will be replaced by "0xHEXDIGITS" unless the digits match "7F+", meaning
+they denote -1 as a signed twos-complement integer (in which case they
+are not replaced).
+
+3. Other normalizations as described in --help.
 """
 
 import argparse              # argparse
@@ -134,6 +136,28 @@ pathNotFoundRE = re.compile("Path not found")
 pathNotFoundReplacement = "File not found"
 
 
+# Match output produced due to an assertion failure.  The point is to
+# isolate and remove the line number.
+assertionFailedRE = re.compile(r"(\w+:)(\d+)(: assertion failed: )")
+
+def assertionFailedReplacer(m: Match[str]) -> str:
+  """What to replace a match of `assertionFailedRE` with."""
+
+  return m.group(1) + "DIGITS" + m.group(3)
+
+
+def testAssertionFailedReplacer() -> None:
+  """Unit tests for `assertionFailedReplacer`."""
+
+  def one(input: str, expect: str) -> None:
+    actual: str = assertionFailedRE.sub(assertionFailedReplacer, input)
+    assert(actual == expect)
+
+  one("whatever", "whatever")
+  one("As expected: gdvalue.cc:1202: assertion failed: isBinary64Float()",
+      "As expected: gdvalue.cc:DIGITS: assertion failed: isBinary64Float()")
+
+
 # True to use the hexadecimal replacer.
 use_hex_replacer = False
 
@@ -141,6 +165,9 @@ use_hex_replacer = False
 # where Linux says "File not found" and Windows says "Path not found"
 # for the same circumstances.
 use_path_not_found_replacer = False
+
+# True to use `assertionFailedReplacer`.
+use_assertion_failed_replacer = False
 
 
 # If "VOLATILE" appears on a line, treat the entire line as volatile
@@ -154,10 +181,16 @@ def normalizeOutput(line: str) -> str:
 
   if volatileRE.search(line):
     return "VOLATILE"
-  elif use_hex_replacer:
+
+  if use_hex_replacer:
     line = hexDigitsRE.sub(hexReplacer, line)
-  elif use_path_not_found_replacer:
+
+  if use_path_not_found_replacer:
     line = pathNotFoundRE.sub(pathNotFoundReplacement, line)
+
+  if use_assertion_failed_replacer:
+    line = assertionFailedRE.sub(assertionFailedReplacer, line)
+
   return line
 
 
@@ -194,6 +227,8 @@ def main() -> None:
     help="Use the 0xHEXDIGITS replacer.")
   parser.add_argument("--path-not-found-replacer", action="store_true",
     help="Replace \"Path not found\" with \"File not found\".")
+  parser.add_argument("--assertion-failed-replacer", action="store_true",
+    help="Replace <line> in \"<file>:<line>: assertion failed: \" with \"DIGITS\".")
   parser.add_argument("--no-separators", action="store_true",
     help="Do not print the stdout/stderr/exit code separators.")
   parser.add_argument("--no-stderr", action="store_true",
@@ -213,6 +248,10 @@ def main() -> None:
   if opts.path_not_found_replacer:
     global use_path_not_found_replacer
     use_path_not_found_replacer = True
+
+  if opts.assertion_failed_replacer:
+    global use_assertion_failed_replacer
+    use_assertion_failed_replacer = True
 
   # Read the expected output.  Explicitly check for "/dev/null" so I can
   # use that name even with Windows Python.
@@ -343,6 +382,7 @@ def main() -> None:
       sys.exit(2)
 
 
+testAssertionFailedReplacer()
 call_main()
 
 

@@ -806,6 +806,18 @@ RCE_CMD_nohexreplace := cat test/hashex.txt
 rce-tests: out/rce_nohexreplace.ok
 
 
+# Test "assertion failed" digit replacement.
+RCE_CMD_afreplace := --assertion-failed-replacer cat test/assertion_failed_msg.txt
+
+rce-tests: out/rce_afreplace.ok
+
+
+# Test without "assertion failed" digit replacement.
+RCE_CMD_noafreplace := cat test/assertion_failed_msg.txt
+
+rce-tests: out/rce_noafreplace.ok
+
+
 # Test separators (default) versus --no-separators.
 RCE_CMD_separators0 := sh -c 'echo out; echo err >&2; exit 0'
 RCE_CMD_separators3 := sh -c 'echo out; echo err >&2; exit 3'

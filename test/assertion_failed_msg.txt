@@ -1,0 +1,3 @@
+Some text.
+As expected: gdvalue.cc:1202: assertion failed: isBinary64Float()
+More text.

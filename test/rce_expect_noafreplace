@@ -1,0 +1,7 @@
+---- stdout ----
+Some text.
+As expected: gdvalue.cc:1202: assertion failed: isBinary64Float()
+More text.
+---- stderr ----
+---- exit status ----
+Exit 0
