@@ -578,6 +578,7 @@ out/%.unit.ok: test/%.expect $(AFTER_UNIT_TESTS)
 	  --actual out/$*.actual \
 	  --expect test/$*.expect \
 	  --path-not-found-replacer \
+	  --assertion-failed-replacer \
 	  env VERBOSE=1 $(OBJDIR)/unit-tests.exe $*
 	touch $@
 
