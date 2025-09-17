@@ -41,14 +41,15 @@
 #include "smbase/gdv-ordered-map-fwd.h"          // gdv::GDVOrderedMap [n]
 #include "smbase/gdvalue-fwd.h"                  // gdv::GDValue [n]
 #include "smbase/gdvalue-kind.h"                 // gdv::GDValueKind
+#include "smbase/gdvalue-srcloc.h"               // gdv::GDValueSourceLocation
 #include "smbase/gdvalue-types.h"                // gdv::GDVIndex
 #include "smbase/gdvsymbol-fwd.h"                // gdv::GDVSymbol [n]
 #include "smbase/gdvtuple-fwd.h"                 // gdv::GDVTuple [n]
 #include "smbase/sm-macros.h"                    // OPEN_NAMESPACE, NORETURN
 
-#include "smbase/std-optional-fwd.h"             // std::optional [n]
 #include "smbase/std-string-view-fwd.h"          // std::string_view [n]
 
+#include <optional>                              // std::optional
 #include <string>                                // std::string
 #include <type_traits>                           // std::{enable_if_t, is_final, is_constructible}
 #include <vector>                                // std::vector
@@ -249,6 +250,13 @@ public:      // methods
   // `kind`.
   void checkKind(GDValueKind kind) const;
 
+  // Source location methods that operate on `getValue()`.  Like other
+  // methods in this class, they throw `XGDValueError` if a nominal
+  // precondition is violated.
+  bool hasSourceLocation() const;
+  GDValueSourceLocation sourceLocation() const;
+  std::optional<GDValueSourceLocation> sourceLocationOpt() const;
+
   // ---- Symbol ----
   void checkIsSymbol() const;
   bool isNull() const;
@@ -415,6 +423,12 @@ public:      // data
   // being parsed, but that object's lifetime may end before this
   // exception is caught.
 
+  // Optional source location of the offending object.  This is only set
+  // if that object has a location, which in turn depends on it having
+  // been originally expressed as GDVN or JSON (rather than created
+  // directly in memory).
+  std::optional<GDValueSourceLocation> m_sourceLocation;
+
   // GDV navigation path to the offending object.
   std::string m_path;
 
@@ -426,13 +440,26 @@ public:      // data
 public:      // methods
   ~XGDValueError();
 
+  // Create with absent location and empty strings.
+  XGDValueError();
+
   explicit XGDValueError(
+    std::optional<GDValueSourceLocation> sourceLocation,
     std::string &&path,
     std::string &&message);
 
   XGDValueError(XGDValueError const &obj);
 
-  // This combines information in `m_path` with `m_conflict`.
+  /* If `m_sourceLocation`, returns:
+
+       <line>:<col>: At GDV path <path>: <message>
+
+     where, recall, <message> is a complete sentence.
+
+     If there is no location, then this returns:
+
+       At GDV path <path>: <message>
+  */
   virtual std::string getConflict() const override;
 
   virtual char const *getTypeName() const noexcept override;

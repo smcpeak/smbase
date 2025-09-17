@@ -781,9 +781,9 @@ void test_parserPaths()
 
 void test_copy_XGDValueError()
 {
-  XGDValueError e1("p", "m");
+  XGDValueError e1(GDValueSourceLocation(2,3), "p", "m");
   XGDValueError e2(e1);
-  EXPECT_EQ(e2.getConflict(), "At GDV path p: m");
+  EXPECT_EQ(e2.getConflict(), "2:3: At GDV path p: m");
 }
 
 
@@ -867,18 +867,15 @@ void test_orderedMapAsMap()
 
 class ErrorHandler : public HandleXGDValueError {
 public:      // data
-  // The error details.
-  std::string m_path;
-  std::string m_message;
+  XGDValueError m_error;
 
 public:      // methods
   virtual void handle(GDValueParser const &p, XGDValueError &x)
   {
     // Should only get here once.
-    xassert(m_path.empty());
+    xassert(m_error.m_path.empty());
 
-    m_path = x.m_path;
-    m_message = x.m_message;
+    m_error = x;
   }
 };
 
@@ -893,8 +890,10 @@ void test_errorHandler()
 
   // This should not throw, instead it should drop element 2.
   std::map<int, Data> m = gdvpTo<std::map<int, Data>>(parser);
-  EXPECT_EQ(errorHandler.m_path, "<top>.2");
-  EXPECT_EQ(errorHandler.m_message,
+  EXPECT_EQ(errorHandler.m_error.m_sourceLocation.value(),
+            GDValueSourceLocation(1, 24 /*Start of "Data".*/));
+  EXPECT_EQ(errorHandler.m_error.m_path, "<top>.2");
+  EXPECT_EQ(errorHandler.m_error.m_message,
     "Expected map to have key y, but it does not.");
   EXPECT_EQ_GDV(m, fromGDVN("{ 1: Data{x:1 y:2} }"));
 }
@@ -1032,7 +1031,7 @@ void test_tuple()
     GDValueParser p(v);
 
     EXPECT_ERROR_SUBSTR(GDVP_TO(Tuple, v),
-      "At GDV path <top>[1]: Expected string, not small integer.");
+      "1:4: At GDV path <top>[1]: Expected string, not small integer.");
   }
 
   // Try to parse a tuple with too many elements.
@@ -1041,7 +1040,7 @@ void test_tuple()
     GDValueParser p(v);
 
     EXPECT_ERROR_SUBSTR(GDVP_TO(Tuple, v),
-      "At GDV path <top>: Expected container to have 3 elements, but it instead has 4 elements.");
+      "1:1: At GDV path <top>: Expected container to have 3 elements, but it instead has 4 elements.");
   }
 
   // Try to parse a tuple with too few elements.
@@ -1050,7 +1049,7 @@ void test_tuple()
     GDValueParser p(v);
 
     EXPECT_ERROR_SUBSTR(GDVP_TO(Tuple, v),
-      "At GDV path <top>: Expected container to have 3 elements, but it instead has 1 elements.");
+      "1:1: At GDV path <top>: Expected container to have 3 elements, but it instead has 1 elements.");
   }
 
   // We can parse tagged tuples too, discarding the tag.
@@ -1093,7 +1092,7 @@ void test_Either()
   EXPECT_ERROR_SUBSTR(GDVP_TO(E, fromGDVN("right(3 4)")),
     "At GDV path <top>: Expected container to have 1 elements, but it instead has 2 elements.");
   EXPECT_ERROR_SUBSTR(GDVP_TO(E, fromGDVN("right(3)")),
-    "At GDV path <top>[0]: Expected string, not small integer.");
+    "1:7: At GDV path <top>[0]: Expected string, not small integer.");
 }
 
 
@@ -1161,6 +1160,34 @@ void test_throwUnrecognizedSymbol()
 }
 
 
+void test_sourceLocation()
+{
+  // Value has locations.
+  {
+    GDValue v = fromGDVN("[1 2]");
+    GDValueParser p(v);
+    EXPECT_TRUE(p.hasSourceLocation());
+    EXPECT_EQ(p.sourceLocation(), GDValueSourceLocation(1,1));
+    EXPECT_EQ(p.sourceLocationOpt().value(), GDValueSourceLocation(1,1));
+
+    GDValueParser p2 = p.sequenceGetValueAt(1);
+    EXPECT_TRUE(p2.hasSourceLocation());
+    EXPECT_EQ(p2.sourceLocation(), GDValueSourceLocation(1,4));
+    EXPECT_EQ(p2.sourceLocationOpt().value(), GDValueSourceLocation(1,4));
+  }
+
+  // Value without locations.
+  {
+    GDValue v = GDValue(GDVSequence{1, 2});
+    GDValueParser p(v);
+    EXPECT_FALSE(p.hasSourceLocation());
+
+    GDValueParser p2 = p.sequenceGetValueAt(1);
+    EXPECT_FALSE(p2.hasSourceLocation());
+  }
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -1199,6 +1226,7 @@ void test_gdvalue_parser()
   test_double();
   test_parseToGDValue();
   test_throwUnrecognizedSymbol();
+  test_sourceLocation();
 }
 
 

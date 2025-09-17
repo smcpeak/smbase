@@ -7,7 +7,7 @@
 #include "smbase/gdv-binary64-float.h" // gdv::GDVBinary64Float
 #include "smbase/gdvalue.h"            // GDValue
 #include "smbase/overflow.h"           // convertNumberOpt
-#include "smbase/sm-macros.h"          // DMEMB, MDMEMB
+#include "smbase/sm-macros.h"          // DMEMB, MDMEMB, IMEMBFP, IMEMBMFP
 #include "smbase/stringb.h"            // stringb
 #include "smbase/xassert.h"            // xassert
 #include "smbase/xoverflow.h"          // smbase::XNumericConversion
@@ -287,7 +287,8 @@ RELAY_QUERY(bool, isUnorderedContainer)
 
 void GDValueParser::throwError(std::string &&msg) const
 {
-  THROW(XGDValueError(pathString(), std::move(msg)));
+  THROW(XGDValueError(
+    sourceLocationOpt(), pathString(), std::move(msg)));
 }
 
 
@@ -344,6 +345,22 @@ void GDValueParser::checkKind(GDValueKind kind) const
     checkIs##Kind();                                                   \
     return m_value->name(param1);                                      \
   }
+
+
+// ---- Source location ----
+RELAY_QUERY(bool, hasSourceLocation)
+
+
+GDValueSourceLocation GDValueParser::sourceLocation() const
+{
+  if (!hasSourceLocation()) {
+    throwError("GDValue does not have a source location.");
+  }
+  return m_value->sourceLocation();
+}
+
+
+RELAY_QUERY(std::optional<GDValueSourceLocation>, sourceLocationOpt)
 
 
 // ---- Symbol ----
@@ -750,24 +767,40 @@ XGDValueError::~XGDValueError()
 {}
 
 
+XGDValueError::XGDValueError()
+  : m_sourceLocation(),
+    m_path(),
+    m_message()
+{}
+
+
 XGDValueError::XGDValueError(
+  std::optional<GDValueSourceLocation> sourceLocation,
   std::string &&path,
   std::string &&message)
-  : m_path(std::move(path)),
-    m_message(std::move(message))
+:
+  IMEMBFP(sourceLocation),
+  IMEMBMFP(path),
+  IMEMBMFP(message)
 {}
 
 
 XGDValueError::XGDValueError(XGDValueError const &obj)
-  : DMEMB(m_path),
-    DMEMB(m_message)
+:
+  DMEMB(m_sourceLocation),
+  DMEMB(m_path),
+  DMEMB(m_message)
 {}
 
 
 std::string XGDValueError::getConflict() const
 {
-  return stringb(
-    "At GDV path " << m_path << ": " << m_message);
+  std::ostringstream oss;
+  if (m_sourceLocation) {
+    oss << *m_sourceLocation << ": ";
+  }
+  oss << "At GDV path " << m_path << ": " << m_message;
+  return oss.str();
 }
 
 
