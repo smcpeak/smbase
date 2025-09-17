@@ -124,6 +124,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(gdvalue_srcloc);
   RUN_TEST(gdvalue_subst_transform);
   RUN_TEST(gdvalue_transform);
+  RUN_TEST(gdvalue_writer);
   RUN_TEST(gdvsymbol);
   RUN_TEST(gdvtuple);
   RUN_TEST(get_type_name);

@@ -25,7 +25,15 @@ OPEN_NAMESPACE(gdv)
    the value came from.  The assumption is the client can keep track of
    that.
 
-   Not all `GDValue`s have them.
+   Why this distribution of bits?  If the GDVN/JSON uses newlines and
+   indentation then lines require more bits.  If not, then only the
+   column needs a lot of bits.  This distribution tries to balance those
+   two scenarios.  (It would be possible to use a "floating" divider,
+   but I think that's overkill for now.)
+
+   Not all `GDValue`s have them.  `GDValueReader` populates the
+   locations as it reads, whereas `GDValue`s created directly do not
+   have locations.
 
    The representation range is limited by what `GDValueKindLineColumn`
    can carry.  Values beyond that range "saturate" to the maximum value.

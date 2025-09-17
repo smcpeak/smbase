@@ -34,6 +34,7 @@
 #include <limits>                      // std::numeric_limits
 #include <string>                      // std::string
 #include <string_view>                 // std::string_view
+#include <type_traits>                 // std::remove_reference_t
 
 using namespace smbase;
 using namespace gdv;
@@ -2873,6 +2874,46 @@ void test_sourceLocation()
 }
 
 
+// Test that the ctors that accept a location produce that location when
+// asked.
+void test_sourceLocCtors()
+{
+  GDValueSourceLocation loc(2,3);
+
+  auto one = [loc](auto const &arg) {
+    // Pass the loc, get it back.
+    GDValue withLoc(arg, loc);
+    EXPECT_TRUE(withLoc.hasSourceLocation());
+    EXPECT_EQ(withLoc.sourceLocation(), loc);
+
+    // Do not pass a loc, so has none.
+    GDValue withoutLoc(arg);
+    EXPECT_FALSE(withoutLoc.hasSourceLocation());
+
+    // Comparison ignores source location.
+    EXPECT_EQ(withLoc, withoutLoc);
+
+    // Exercise the move ctor if there is one.
+    std::remove_reference_t<decltype(arg)> argCopy(arg);
+    GDValue movedWithLoc(std::move(argCopy), loc);
+    EXPECT_TRUE(movedWithLoc.hasSourceLocation());
+    EXPECT_EQ(movedWithLoc.sourceLocation(), loc);
+    EXPECT_EQ(movedWithLoc, withLoc);
+  };
+
+  one(GDVK_INTEGER);
+  one("foo"_sym);
+  one(GDVInteger(123));
+  one(GDVBinary64Float(3.5));
+  one(std::string("a string"));
+  one(GDVTaggedSequence("tag"_sym, {1}));
+  one(GDVTaggedTuple("tag"_sym, {1}));
+  one(GDVTaggedSet("tag"_sym, {1}));
+  one(GDVTaggedMap("tag"_sym, { {1, 2} }));
+  one(GDVTaggedOrderedMap("tag"_sym, { {1, 2} }));
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -2939,6 +2980,7 @@ void test_gdvalue()
     test_integerGetAs();
     test_writeIndented();
     test_sourceLocation();
+    test_sourceLocCtors();
 
     // Some interesting values for the particular data used.
     testPrettyPrint(0);

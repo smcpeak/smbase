@@ -129,7 +129,7 @@ public:      // methods
      end of file, or a non-negative character value otherwise.
 
      This updates `m_location`.  If the returned value is '\n', then
-     the line is incremented and the column reset to 0; otherwise, the
+     the line is incremented and the column reset to 1; otherwise, the
      column is incremented.  The latter happens even for `eofCode()` so
      that the caller can consistently say that an error occurred one
      column earlier than the current location if the return value of

@@ -24,6 +24,7 @@
 
 // libc++
 #include <fstream>                               // std::{ifstream, ofstream}
+#include <iostream>                              // std::{cout, cerr}
 #include <sstream>                               // std::ostringstream
 #include <string_view>                           // std::string_view
 #include <utility>                               // std::move, std::swap, std::make_pair
@@ -297,6 +298,24 @@ void GDValue::resetSelfAndSwapWith(GDValue &obj) noexcept
     m_value(s_symbolIndex_null)
 
 
+// Define a ctor that accepts one parameter plus a location.
+#define DEFINE_CTOR_WITH_LOCATION1(Type1)                   \
+  GDValue::GDValue(Type1 param1, GDValueSourceLocation loc) \
+    : GDValue(param1)                                       \
+  {                                                         \
+    setSourceLocation(loc);                                 \
+  }
+
+
+// Same, but moving the parameter into the delegate ctor.
+#define DEFINE_MOVE_CTOR_WITH_LOCATION1(Type1)              \
+  GDValue::GDValue(Type1 param1, GDValueSourceLocation loc) \
+    : GDValue(std::move(param1))                            \
+  {                                                         \
+    setSourceLocation(loc);                                 \
+  }
+
+
 GDValue::GDValue() noexcept
   : INIT_AS_NULL()
 {
@@ -327,6 +346,12 @@ GDValue::GDValue(GDValue const &obj)
     FOR_EACH_GDV_KIND(CASE)
 
     #undef CASE
+  }
+
+  if (obj.hasSourceLocation()) {
+    // Note: This has to be done after the above `switch` because the
+    // call to `kind##Set` clears the source location.
+    setSourceLocation(obj.sourceLocation());
   }
 
   ++s_ct_ctorCopy;
@@ -398,6 +423,9 @@ GDValue::GDValue(GDValueKind kind)
 
   ++s_ct_valueKindCtor;
 }
+
+
+DEFINE_CTOR_WITH_LOCATION1(GDValueKind)
 
 
 GDValueKind GDValue::getSuperKind() const
@@ -598,7 +626,9 @@ void GDValue::reset()
     #undef CASE
   }
 
+  // Clear the location while resetting the kind.
   setKindNoLoc(GDVK_SYMBOL);
+
   m_value.m_symbol = s_symbolIndex_null;
 }
 
@@ -776,6 +806,37 @@ void GDValue::writeToFile(
 }
 
 
+void GDValue::dumpTo(std::ostream &os) const
+{
+  GDValueWriteOptions opts;
+  opts.m_enableIndentation = true;
+  opts.m_writeSourceLocations = true;
+  write(os, opts);
+  os << '\n';
+  os.flush();
+}
+
+
+void GDValue::dumpToStdout() const
+{
+  dumpTo(std::cout);
+}
+
+
+void GDValue::dumpToStderr() const
+{
+  dumpTo(std::cerr);
+}
+
+
+std::string GDValue::dumpToString() const
+{
+  std::ostringstream oss;
+  dumpTo(oss);
+  return oss.str();
+}
+
+
 // --------------------------- Read as text ----------------------------
 STATICDEF std::optional<GDValue> GDValue::readNextValue(std::istream &is)
 {
@@ -898,6 +959,8 @@ GDValue::GDValue(GDVSymbol sym)
   ++s_ct_symbolCtor;
 }
 
+DEFINE_CTOR_WITH_LOCATION1(GDVSymbol)
+
 
 void GDValue::symbolSet(GDVSymbol sym)
 {
@@ -938,6 +1001,10 @@ GDValue::GDValue(GDVInteger &&i)
 
   ++s_ct_integerCtorMove;
 }
+
+
+DEFINE_CTOR_WITH_LOCATION1(GDVInteger const &)
+DEFINE_MOVE_CTOR_WITH_LOCATION1(GDVInteger &&)
 
 
 bool GDValue::trySmallIntegerSet(GDVInteger const &i)
@@ -1144,6 +1211,10 @@ GDValue::GDValue(GDVBinary64Float &&v)
 }
 
 
+DEFINE_CTOR_WITH_LOCATION1(GDVBinary64Float const &)
+DEFINE_MOVE_CTOR_WITH_LOCATION1(GDVBinary64Float &&)
+
+
 void GDValue::binary64FloatSet(GDVBinary64Float const &v)
 {
   reset();
@@ -1211,6 +1282,10 @@ GDValue::GDValue(GDVString &&str)
 
   ++s_ct_stringCtorMove;
 }
+
+
+DEFINE_CTOR_WITH_LOCATION1(GDVString const &)
+DEFINE_MOVE_CTOR_WITH_LOCATION1(GDVString &&)
 
 
 template <>
@@ -1980,6 +2055,9 @@ std::string_view GDValue::taggedContainerGetTagName() const
     tagged##Container##Set(std::move(tcont));                                   \
     ++s_ct_tagged##Container##CtorMove;                                         \
   }                                                                             \
+                                                                                \
+  DEFINE_CTOR_WITH_LOCATION1(GDVTagged##Container const &)                      \
+  DEFINE_MOVE_CTOR_WITH_LOCATION1(GDVTagged##Container &&)                      \
                                                                                 \
   void GDValue::tagged##Container##Set(GDVTagged##Container const &tcont)       \
   {                                                                             \

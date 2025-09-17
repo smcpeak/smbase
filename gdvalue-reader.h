@@ -8,6 +8,7 @@
 
 #include "smbase/file-line-col-fwd.h"  // smbase::FileLineCol [n]
 #include "smbase/gdvalue-fwd.h"        // GDValue [n]
+#include "smbase/gdvalue-srcloc.h"     // GDValueSourceLocation
 #include "smbase/reader.h"             // smbase::Reader
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 #include "smbase/std-optional-fwd.h"   // std::optional [n]
@@ -20,12 +21,45 @@
 OPEN_NAMESPACE(gdv)
 
 
-// Manage the process of reading a GDValue from an istream
+// A character read from the input and the location where it occurs.
+class GDValueSourceLocationAndChar {
+public:      // data
+  // Location where `m_c` was read.
+  GDValueSourceLocation m_loc;
+
+  // The character value read.
+  int m_c;
+
+public:      // methods
+  // ---- create-tuple-class: declarations for GDValueSourceLocationAndChar
+  /*AUTO_CTC*/ explicit GDValueSourceLocationAndChar(GDValueSourceLocation const &loc, int c);
+  /*AUTO_CTC*/ GDValueSourceLocationAndChar(GDValueSourceLocationAndChar const &obj) noexcept;
+  /*AUTO_CTC*/ GDValueSourceLocationAndChar &operator=(GDValueSourceLocationAndChar const &obj) noexcept;
+};
+
+
+// Manage the process of reading a GDValue from an istream.
 class GDValueReader : protected smbase::Reader {
 protected:   // methods
+  // Get the source location of the character before the next one to
+  // consume.
+  GDValueSourceLocation gdvLocPrevChar() const;
+
+  // Get the source location of the next character to read.
+  GDValueSourceLocation gdvLoc() const;
+
+  // Read the next character and get its location.
+  GDValueSourceLocationAndChar readLocChar();
+
   // Read the remainder of the stream until EOF.  If anything besides
   // whitespace and comments are present, throw a syntax error.
   void readEOFOrErr();
+
+  // Report that the character in `locChar` was not what we were
+  // `lookingFor`.
+  void unexpectedLocCharErr(
+    GDValueSourceLocationAndChar const &locChar,
+    char const *lookingFor);
 
   // True if 'c' is among the characters (including 'eofCode()') that
   // can directly follow the last character of a value.
@@ -41,6 +75,9 @@ protected:   // methods
   // them, or 'eofCode()'.
   int readCharAfterWhitespaceAndComments();
 
+  // Same, but with location.
+  GDValueSourceLocationAndChar readLocCharAfterWhitespaceAndComments();
+
   // Having seen and consumed "/*", scan the comment while balancing
   // those delimiters until the corresponding "*/" is found, then
   // return.  'nestingDepth' is the number of nested comments; 0 means
@@ -50,31 +87,39 @@ protected:   // methods
   // Having seen and parsed the first element of a sequence, read the
   // following values and append them to that sequence.  Return after
   // consuming the ']'.
-  GDValue readSequenceAfterFirstValue(GDValue &&firstValue);
+  GDValue readSequenceAfterFirstValue(
+    GDValueSourceLocationAndChar const &openingDelim,
+    GDValue &&firstValue);
 
   // Having seen and consumed '(', read the following values and put
   // them into a sequence.  Return after consuming the ')'.
-  GDValue readNextTuple();
+  GDValue readNextTuple(
+    GDValueSourceLocationAndChar const &openingDelim);
 
-  // Having seen and consumed '{' (in which case `ordered` is false) or
-  // '[' (in which case `ordered` is ture), read what follows to first
+  // Having seen and consumed '{' or '[', read what follows to first
   // determine whether it denotes a map, then parse and return the
   // entire container value.
-  GDValue readNextPossibleMap(bool ordered);
+  GDValue readNextPossibleMap(
+    GDValueSourceLocationAndChar const &openingDelim);
 
   // Having seen '{' followed by `firstValue` and *not* a subsequent
   // colon, return the set consisting of `firstValue` and all of the
   // following values until '}'.
-  GDValue readSetAfterFirstValue(GDValue &&firstValue);
+  GDValue readSetAfterFirstValue(
+    GDValueSourceLocationAndChar const &openingDelim,
+    GDValue &&firstValue);
 
   // Having seen '{' or '[' followed by `firstValue` and then a colon,
   // parse and return the remainder of the possibly-ordered map.
   GDValue readPossiblyOrderedMapAfterFirstKey(
-    bool ordered, GDValue &&firstKey);
+    GDValueSourceLocationAndChar const &openingDelim,
+    bool ordered,
+    GDValue &&firstKey);
 
   // Having seen and consumed '"', read the following characters and
   // put them into a string.  Return after consuming the final '"'.
-  GDValue readNextDQString();
+  GDValue readNextDQString(
+    GDValueSourceLocationAndChar const &openingDelim);
 
   // Having seen and consumed `delim`, read the following characters and
   // put them into a string.  Return after consuming the final `delim`.
@@ -97,23 +142,27 @@ protected:   // methods
   // number (so, it is '-' or a digit), read the remainder and put them
   // into a number, depending on what follows.  Return after consuming
   // the final digit.
-  GDValue readNextNumber(int firstChar);
+  GDValue readNextNumber(
+    GDValueSourceLocationAndChar const &firstChar);
 
-  // We have seen the start of a number and accumulated it into
-  // `digits`.  We then read either a decimal point or the 'e' or 'E'
-  // that starts an exponent, which is in `c`.  Add that to `digits` and continue reading
-  // the rest of the float.  Return the denoted value after reading the
-  // final digit.
+  // We have seen the start of a number (at `firstLoc`) and accumulated
+  // it into `digits`.  We then read either a decimal point or the 'e'
+  // or 'E' that starts an exponent, which is in `c`.  Add that to
+  // `digits` and continue reading the rest of the float.  Return the
+  // denoted value after reading the final digit.
   GDValue continueReadingFloat(
+    GDValueSourceLocation firstLoc,
     std::vector<char> &digits,
     int c);
 
   // Having seen and consumed 'firstChar', a character that starts a
   // symbol, read the remainder and put them into a symbol.  Then, if
-  // the immediately following character is '{', parse what follows as a
-  // map and return the symbol and map together as a tagged map.
-  // Otherwise just return the symbol as its own value.
-  GDValue readNextSymbolOrTaggedContainer(int firstChar);
+  // the immediately following character is '{' or '[' or '(', parse
+  // what follows as a container and return it with the symbol as a
+  // tagged container.  Otherwise just return the symbol as its own
+  // value.
+  GDValue readNextSymbolOrTaggedContainer(
+    GDValueSourceLocationAndChar const &firstChar);
 
 public:      // methods
   GDValueReader(std::istream &is,
@@ -133,6 +182,9 @@ public:      // methods
        if (auto valueOpt = reader.readNextValue()) {
          // Use `valueOpt`, knowing that `flc` is where it begins.
        }
+
+     TODO: This approach is obsoleted by having `GDValue` directly store
+     a source location.  Delete it once I've changed the users.
   */
   void skipWhitespaceAndComments();
 

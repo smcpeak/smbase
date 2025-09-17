@@ -19,6 +19,7 @@
 #include "smbase/utf8-writer.h"        // smbase::UTF8Writer
 #include "smbase/xassert.h"            // xassert
 
+#include <algorithm>                   // std::max
 #include <optional>                    // std::optional
 #include <string>                      // std::string
 #include <string_view>                 // std::string_view
@@ -30,6 +31,32 @@ using namespace smbase;
 OPEN_NAMESPACE(gdv)
 
 
+// ------------------- GDValueSourceLocationAndChar --------------------
+// ---- create-tuple-class: definitions for GDValueSourceLocationAndChar
+/*AUTO_CTC*/ GDValueSourceLocationAndChar::GDValueSourceLocationAndChar(
+/*AUTO_CTC*/   GDValueSourceLocation const &loc,
+/*AUTO_CTC*/   int c)
+/*AUTO_CTC*/   : IMEMBFP(loc),
+/*AUTO_CTC*/     IMEMBFP(c)
+/*AUTO_CTC*/ {}
+/*AUTO_CTC*/
+/*AUTO_CTC*/ GDValueSourceLocationAndChar::GDValueSourceLocationAndChar(GDValueSourceLocationAndChar const &obj) noexcept
+/*AUTO_CTC*/   : DMEMB(m_loc),
+/*AUTO_CTC*/     DMEMB(m_c)
+/*AUTO_CTC*/ {}
+/*AUTO_CTC*/
+/*AUTO_CTC*/ GDValueSourceLocationAndChar &GDValueSourceLocationAndChar::operator=(GDValueSourceLocationAndChar const &obj) noexcept
+/*AUTO_CTC*/ {
+/*AUTO_CTC*/   if (this != &obj) {
+/*AUTO_CTC*/     CMEMB(m_loc);
+/*AUTO_CTC*/     CMEMB(m_c);
+/*AUTO_CTC*/   }
+/*AUTO_CTC*/   return *this;
+/*AUTO_CTC*/ }
+/*AUTO_CTC*/
+
+
+// --------------------------- GDValueReader ---------------------------
 GDValueReader::GDValueReader(std::istream &is,
                              std::optional<std::string> fileName)
   : Reader(is, std::move(fileName))
@@ -40,12 +67,66 @@ GDValueReader::~GDValueReader()
 {}
 
 
+static GDValueSourceLocation makeGDVLoc(
+  FileLineCol const &flc, int columnOffset = 0)
+{
+  return GDValueSourceLocation(
+    flc.m_lc.m_line,
+
+    // The column offset can be 0 if we read a newline and then put it
+    // back.  This happens for example in
+    // `readNextSymbolOrTaggedContainer` when a symbol is immediately
+    // followed by a newline.  When this happens, we will not end up
+    // using the location for anything, but it is awkward to avoid
+    // computing one.  So, use `std::max` to force the column to be
+    // valid for `GDValueSourceLocation`.
+    //
+    // Ultimately, this is a consequence of the somewhat weird way my
+    // `Reader` class works; there are some comments on its declaration
+    // explaining the problems.  I think if that were cleaned up, the
+    // problem here would be solved too.
+    //
+    std::max(1, flc.m_lc.m_column + columnOffset));
+}
+
+
+GDValueSourceLocation GDValueReader::gdvLocPrevChar() const
+{
+  return makeGDVLoc(m_location, -1);
+}
+
+
+GDValueSourceLocation GDValueReader::gdvLoc() const
+{
+  return makeGDVLoc(m_location);
+}
+
+
+GDValueSourceLocationAndChar GDValueReader::readLocChar()
+{
+  GDValueSourceLocation loc = gdvLoc();
+  return GDValueSourceLocationAndChar(loc, readChar());
+}
+
+
 void GDValueReader::readEOFOrErr()
 {
   int c = readCharAfterWhitespaceAndComments();
   if (c != eofCode()) {
     unexpectedCharErr(c, "looking for the end of a file that should only have one value");
   }
+}
+
+
+// For now, this method is just a slight convenience, and relies on the
+// location tracking done by the underlying `Reader`.  But I'm thinking
+// at some point I might do all location tracking in `GDValueReader`, in
+// which case this method will be more useful.
+void GDValueReader::unexpectedLocCharErr(
+  GDValueSourceLocationAndChar const &locChar,
+  char const *lookingFor)
+{
+  unexpectedCharErr(locChar.m_c, lookingFor);
 }
 
 
@@ -142,6 +223,17 @@ int GDValueReader::readCharAfterWhitespaceAndComments()
 }
 
 
+GDValueSourceLocationAndChar
+GDValueReader::readLocCharAfterWhitespaceAndComments()
+{
+  int c = readCharAfterWhitespaceAndComments();
+
+  // The use of `gdvLocPrevChar` is inelegant, but it means I can avoid
+  // individually tracking the locations while skipping whitespace.
+  return GDValueSourceLocationAndChar(gdvLocPrevChar(), c);
+}
+
+
 void GDValueReader::skipCStyleComment(int nestingDepth)
 {
   // Number of child "/*...*/" comments of this one.
@@ -208,9 +300,11 @@ void GDValueReader::skipCStyleComment(int nestingDepth)
 }
 
 
-GDValue GDValueReader::readSequenceAfterFirstValue(GDValue &&firstValue)
+GDValue GDValueReader::readSequenceAfterFirstValue(
+  GDValueSourceLocationAndChar const &openingDelim,
+  GDValue &&firstValue)
 {
-  GDValue ret(GDVK_SEQUENCE);
+  GDValue ret(GDVK_SEQUENCE, openingDelim.m_loc);
 
   ret.sequenceAppend(std::move(firstValue));
 
@@ -228,9 +322,10 @@ GDValue GDValueReader::readSequenceAfterFirstValue(GDValue &&firstValue)
 }
 
 
-GDValue GDValueReader::readNextTuple()
+GDValue GDValueReader::readNextTuple(
+  GDValueSourceLocationAndChar const &openingDelim)
 {
-  GDValue ret(GDVK_TUPLE);
+  GDValue ret(GDVK_TUPLE, openingDelim.m_loc);
 
   while (true) {
     std::optional<GDValue> next = readNextValue();
@@ -246,8 +341,10 @@ GDValue GDValueReader::readNextTuple()
 }
 
 
-GDValue GDValueReader::readNextPossibleMap(bool ordered)
+GDValue GDValueReader::readNextPossibleMap(
+  GDValueSourceLocationAndChar const &openingDelim)
 {
+  bool const ordered = (openingDelim.m_c == '[');
   char const closingDelim = (ordered? ']' : '}');
 
   // Check first character after opening delimiter for something special.
@@ -256,10 +353,10 @@ GDValue GDValueReader::readNextPossibleMap(bool ordered)
   if (firstChar == closingDelim) {
     // Empty set or sequence.
     if (ordered) {
-      return GDValue(GDVK_SEQUENCE);
+      return GDValue(GDVK_SEQUENCE, openingDelim.m_loc);
     }
     else {
-      return GDValue(GDVK_SET);
+      return GDValue(GDVK_SET, openingDelim.m_loc);
     }
   }
 
@@ -270,7 +367,8 @@ GDValue GDValueReader::readNextPossibleMap(bool ordered)
       ordered?
         "looking for ']' after ':' of empty ordered map" :
         "looking for '}' after ':' of empty map");
-    return GDValue(ordered? GDVK_ORDERED_MAP : GDVK_MAP);
+    return GDValue(ordered? GDVK_ORDERED_MAP : GDVK_MAP,
+                   openingDelim.m_loc);
   }
 
   // Put back the first character and read the next value.
@@ -287,23 +385,27 @@ GDValue GDValueReader::readNextPossibleMap(bool ordered)
   if (charAfterValue == ':') {
     // Commit to the map or ordered map interpretation.
     return readPossiblyOrderedMapAfterFirstKey(
-      ordered, std::move(*firstValue));
+      openingDelim, ordered, std::move(*firstValue));
   }
   else {
     putback(charAfterValue);
     if (ordered) {
-      return readSequenceAfterFirstValue(std::move(*firstValue));
+      return readSequenceAfterFirstValue(
+        openingDelim, std::move(*firstValue));
     }
     else {
-      return readSetAfterFirstValue(std::move(*firstValue));
+      return readSetAfterFirstValue(
+        openingDelim, std::move(*firstValue));
     }
   }
 }
 
 
-GDValue GDValueReader::readSetAfterFirstValue(GDValue &&firstValue)
+GDValue GDValueReader::readSetAfterFirstValue(
+  GDValueSourceLocationAndChar const &openingDelim,
+  GDValue &&firstValue)
 {
-  GDValue ret(GDVK_SET);
+  GDValue ret(GDVK_SET, openingDelim.m_loc);
   ret.setInsert(std::move(firstValue));
 
   while (true) {
@@ -319,11 +421,14 @@ GDValue GDValueReader::readSetAfterFirstValue(GDValue &&firstValue)
 
 
 GDValue GDValueReader::readPossiblyOrderedMapAfterFirstKey(
-  bool ordered, GDValue &&firstKey)
+  GDValueSourceLocationAndChar const &openingDelim,
+  bool ordered,
+  GDValue &&firstKey)
 {
   char const closingDelim = (ordered? ']' : '}');
 
-  GDValue ret(ordered? GDVK_ORDERED_MAP : GDVK_MAP);
+  GDValue ret(ordered? GDVK_ORDERED_MAP : GDVK_MAP,
+              openingDelim.m_loc);
 
   // Read the first value.
   std::optional<GDValue> firstValue = readNextValue();
@@ -390,9 +495,11 @@ GDValue GDValueReader::readPossiblyOrderedMapAfterFirstKey(
 }
 
 
-GDValue GDValueReader::readNextDQString()
+GDValue GDValueReader::readNextDQString(
+  GDValueSourceLocationAndChar const &openingDelim)
 {
-  return GDValue(readNextQuotedStringContents('"'));
+  return GDValue(readNextQuotedStringContents(openingDelim.m_c),
+                 openingDelim.m_loc);
 }
 
 
@@ -573,14 +680,15 @@ int GDValueReader::readNextDelimitedCharacterEscape()
 }
 
 
-GDValue GDValueReader::readNextNumber(int const firstChar)
+GDValue GDValueReader::readNextNumber(
+  GDValueSourceLocationAndChar const &firstChar)
 {
   // We will collect all of the characters of the number here before
   // interpreting them as a number.
   std::vector<char> digits;
 
   // In the steady state, `c` has the next character to process.
-  int c = firstChar;
+  int c = firstChar.m_c;
 
   // Sign?
   if (c == '-') {
@@ -640,7 +748,7 @@ GDValue GDValueReader::readNextNumber(int const firstChar)
           "looking for digit in integer after a radix indicator");
       }
       else {
-        return continueReadingFloat(digits, c);
+        return continueReadingFloat(firstChar.m_loc, digits, c);
       }
     }
 
@@ -649,8 +757,10 @@ GDValue GDValueReader::readNextNumber(int const firstChar)
 
   try {
     // This will re-do the radix detection.  That is fine.
-    return GDValue(GDVInteger::fromDigits(
-      std::string_view(digits.data(), digits.size())));
+    return GDValue(
+      GDVInteger::fromDigits(
+        std::string_view(digits.data(), digits.size())),
+      firstChar.m_loc);
   }
   catch (XFormat &x) {       // gcov-ignore
     // We already validated the syntax, so this should not be possible.
@@ -662,6 +772,7 @@ GDValue GDValueReader::readNextNumber(int const firstChar)
 
 
 GDValue GDValueReader::continueReadingFloat(
+  GDValueSourceLocation firstLoc,
   std::vector<char> &digits,
   int c)
 {
@@ -731,8 +842,10 @@ GDValue GDValueReader::continueReadingFloat(
   putbackAfterValueOrErr(c);
 
   try {
-    return GDValue(GDVBinary64Float::parseString(
-      std::string_view(digits.data(), digits.size())));
+    return GDValue(
+      GDVBinary64Float::parseString(
+        std::string_view(digits.data(), digits.size())),
+      firstLoc);
   }
   catch (XFormat &x) {
     // This could happen due to the value being out of range, for
@@ -743,18 +856,19 @@ GDValue GDValueReader::continueReadingFloat(
 }
 
 
-GDValue GDValueReader::readNextSymbolOrTaggedContainer(int firstChar)
+GDValue GDValueReader::readNextSymbolOrTaggedContainer(
+  GDValueSourceLocationAndChar const &firstChar)
 {
   std::string symName;
-  if (firstChar == '`') {
-    symName = readNextQuotedStringContents(firstChar);
+  if (firstChar.m_c == '`') {
+    symName = readNextQuotedStringContents(firstChar.m_c);
   }
   else {
     // Read an unquoted symbol name.
 
     // We will accumulate the letters of the symbol here.
     std::vector<char> letters;
-    letters.push_back((char)firstChar);
+    letters.push_back(static_cast<char>(firstChar.m_c));
 
     int c;
     while (true) {
@@ -764,53 +878,65 @@ GDValue GDValueReader::readNextSymbolOrTaggedContainer(int firstChar)
         break;
       }
 
-      letters.push_back((char)c);
+      letters.push_back(static_cast<char>(c));
     }
 
     symName = std::string(letters.begin(), letters.end());
   }
   GDVSymbol symbol(symName);
 
-  int c = readChar();
-  if (c == '{') {
+  // Check if the next character is the opening delimiter of a
+  // container.
+  GDValueSourceLocationAndChar containerOpeningDelim = readLocChar();
+  if (containerOpeningDelim.m_c == '{') {
     // Tagged set or map.  First parse the container by itself.
-    GDValue container = readNextPossibleMap(false /*ordered*/);
+    GDValue container = readNextPossibleMap(containerOpeningDelim);
     if (container.isSet()) {
       // Move the set into a tagged set object.
-      return GDValue(GDVTaggedSet(symbol,
-        std::move(container.setGetMutable())));
+      return GDValue(
+        GDVTaggedSet(symbol,
+          std::move(container.setGetMutable())),
+        firstChar.m_loc);
     }
     else {
       // Make a tagged map.
-      return GDValue(GDVTaggedMap(symbol,
-        std::move(container.mapGetMutable())));
+      return GDValue(
+        GDVTaggedMap(symbol,
+          std::move(container.mapGetMutable())),
+        firstChar.m_loc);
     }
   }
 
-  else if (c == '[') {
+  else if (containerOpeningDelim.m_c == '[') {
     // Tagged sequence or ordered map.
-    GDValue container = readNextPossibleMap(true /*ordered*/);
+    GDValue container = readNextPossibleMap(containerOpeningDelim);
     if (container.isOrderedMap()) {
-      return GDValue(GDVTaggedOrderedMap(symbol,
-        std::move(container.orderedMapGetMutable())));
+      return GDValue(
+        GDVTaggedOrderedMap(symbol,
+          std::move(container.orderedMapGetMutable())),
+        firstChar.m_loc);
     }
     else {
-      return GDValue(GDVTaggedSequence(symbol,
-        std::move(container.sequenceGetMutable())));
+      return GDValue(
+        GDVTaggedSequence(symbol,
+          std::move(container.sequenceGetMutable())),
+        firstChar.m_loc);
     }
   }
 
-  else if (c == '(') {
+  else if (containerOpeningDelim.m_c == '(') {
     // Tagged tuple.
-    GDValue containedTuple = readNextTuple();
-    return GDValue(GDVTaggedTuple(symbol,
-      std::move(containedTuple.tupleGetMutable())));
+    GDValue containedTuple = readNextTuple(containerOpeningDelim);
+    return GDValue(
+      GDVTaggedTuple(symbol,
+        std::move(containedTuple.tupleGetMutable())),
+      firstChar.m_loc);
   }
 
   else {
     // Just a symbol.
-    putbackAfterValueOrErr(c);       // Could be EOF, fine.
-    return GDValue(symbol);
+    putbackAfterValueOrErr(containerOpeningDelim.m_c);  // Could be EOF, fine.
+    return GDValue(symbol, firstChar.m_loc);
   }
 }
 
@@ -833,31 +959,32 @@ std::optional<GDValue> GDValueReader::readNextValue()
   // it is UTF-8.
 
   while (true) {
-    int c = readCharAfterWhitespaceAndComments();
-    if (c == eofCode()) {
+    GDValueSourceLocationAndChar locChar =
+      readLocCharAfterWhitespaceAndComments();
+    if (locChar.m_c == eofCode()) {
       // Restore 'm_location' to that of the EOF.
-      putback(c);
+      putback(locChar.m_c);
       return std::nullopt;
     }
 
-    switch (c) {
+    switch (locChar.m_c) {
       case ']':
       case '}':
       case ')':
-        putback(c);
+        putback(locChar.m_c);
         return std::nullopt;
 
       case '[':
-        return std::make_optional(readNextPossibleMap(true /*ordered*/));
+        return std::make_optional(readNextPossibleMap(locChar));
 
       case '{':
-        return std::make_optional(readNextPossibleMap(false /*ordered*/));
+        return std::make_optional(readNextPossibleMap(locChar));
 
       case '(':
-        return std::make_optional(readNextTuple());
+        return std::make_optional(readNextTuple(locChar));
 
       case '"':
-        return std::make_optional(readNextDQString());
+        return std::make_optional(readNextDQString(locChar));
 
       case '0':
       case '1':
@@ -870,14 +997,18 @@ std::optional<GDValue> GDValueReader::readNextValue()
       case '8':
       case '9':
       case '-':
-        return std::make_optional(readNextNumber(c));
+        return std::make_optional(readNextNumber(locChar));
 
       default:
-        if (isLetter(c) || c == '_' || c == '`') {
-          return std::make_optional(readNextSymbolOrTaggedContainer(c));
+        if (isLetter(locChar.m_c) ||
+            locChar.m_c == '_' ||
+            locChar.m_c == '`') {
+          return std::make_optional(
+            readNextSymbolOrTaggedContainer(locChar));
         }
         else {
-          unexpectedCharErr(c, "looking for the start of a value");
+          unexpectedLocCharErr(locChar,
+            "looking for the start of a value");
         }
         return std::nullopt;      // Not reached.
     }

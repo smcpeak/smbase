@@ -30,6 +30,15 @@ OPEN_NAMESPACE(gdv)
 INIT_TRACE("gdvalue-writer");
 
 
+void GDValueWriter::possiblyWriteSourceLocation(GDValue const &value)
+{
+  if (m_options.m_writeSourceLocations &&
+      value.hasSourceLocation()) {
+    os() << "/*" << value.sourceLocation() << "*/";
+  }
+}
+
+
 template <class CONTAINER>
 bool GDValueWriter::writeContainer(
   CONTAINER const &container,
@@ -187,6 +196,8 @@ bool GDValueWriter::tryWrite(GDValue const &value,
     // Disable the use of indentation.
     m_options.m_enableIndentation = false;
   }
+
+  possiblyWriteSourceLocation(value);
 
   // For use inside the `CASE` macro below.
   static ContainerSyntax const   sequenceSyntax = { "[", "",  "]" };

@@ -226,8 +226,10 @@ private:     // instance data
   //
   // Plus: An optional source location.  The source location is
   // generally set for values that were parsed from GDVN or JSON, and
-  // not otherwise, but it can be set or cleared at any time by a client
-  // of this class.
+  // for values constructed with a location.  The location is cleared by
+  // the `<kind>Set` methods (such as `boolSet`).
+  //
+  // It can be set or cleared at any time by a client of this class.
   GDValueKindSourceLocation m_kindSourceLocation;
 
   // Representation of the value.
@@ -304,6 +306,9 @@ public:      // methods
   //   Container: empty
   //   Tagged container: null symbol, empty container
   explicit GDValue(GDValueKind kind);
+
+  // Same, but with a source location.
+  explicit GDValue(GDValueKind kind, GDValueSourceLocation loc);
 
 
   // Get the kind of value this is.  But see also `getSuperKind()`,
@@ -403,6 +408,8 @@ public:      // methods
        false < null < true
 
      Tagged containers compare the tag then the container.
+
+     Source locations are IGNORED for comparison.
   */
   friend int compare(GDValue const &a, GDValue const &b);
 
@@ -425,8 +432,6 @@ public:      // methods
 
   // ---- Source location ----
   // True if this value has source location information.
-  //
-  // All of the ctors create a value without a location.
   bool hasSourceLocation() const;
 
   // Get the location.
@@ -489,6 +494,14 @@ public:      // methods
   void writeToFile(std::string const &fileName,
                    GDValueWriteOptions options = s_defaultWriteOptions) const;
 
+  // Write this value to `os` using indentation and enabling source
+  // location printing, then write a newline and flush.
+  void dumpTo(std::ostream &os) const;
+
+  // Dump to specific streams.
+  void dumpToStdout() const;
+  void dumpToStderr() const;
+  std::string dumpToString() const;
 
   // ---- Read as text ----
   // Read the next value from 'is'.  It must read enough to determine
@@ -552,6 +565,7 @@ public:      // methods
 
   // ---- Symbol ----
   /*implicit*/ GDValue(GDVSymbol sym);
+  /*implicit*/ GDValue(GDVSymbol sym, GDValueSourceLocation loc);
 
   void symbolSet(GDVSymbol sym);
 
@@ -570,6 +584,9 @@ public:      // methods
   // reading initializers for complex values.
   /*implicit*/ GDValue(GDVInteger const &i);
   /*implicit*/ GDValue(GDVInteger      &&i);
+
+  /*implicit*/ GDValue(GDVInteger const &i, GDValueSourceLocation loc);
+  /*implicit*/ GDValue(GDVInteger      &&i, GDValueSourceLocation loc);
 
   void integerSet(GDVInteger const &i);
   void integerSet(GDVInteger      &&i);
@@ -626,6 +643,8 @@ public:      // methods
   /*implicit*/ GDValue(long long i);
   /*implicit*/ GDValue(unsigned long long i);
 
+  // TODO: Add overloads that accept a primitive integer and a location?
+
   // Callers must be careful not to pass a type that will be implicitly
   // converted and truncated, such as `uint64_t`.
   void smallIntegerSet(GDVSmallInteger i);
@@ -640,6 +659,11 @@ public:      // methods
   // prevent unintended conversion from integers, etc.
   /*implicit*/ GDValue(GDVBinary64Float const &v);
   /*implicit*/ GDValue(GDVBinary64Float      &&v);
+
+  /*implicit*/ GDValue(GDVBinary64Float const &v,
+                       GDValueSourceLocation loc);
+  /*implicit*/ GDValue(GDVBinary64Float      &&v,
+                       GDValueSourceLocation loc);
 
   void binary64FloatSet(GDVBinary64Float const &v);
   void binary64FloatSet(GDVBinary64Float      &&v);
@@ -661,6 +685,9 @@ public:      // methods
   // ---- String ----
   /*implicit*/ GDValue(GDVString const &str);
   /*implicit*/ GDValue(GDVString      &&str);
+
+  /*implicit*/ GDValue(GDVString const &str, GDValueSourceLocation loc);
+  /*implicit*/ GDValue(GDVString      &&str, GDValueSourceLocation loc);
 
   // Accept string literals.  But doing so in the obvious way causes
   // ambiguity with the constructor that accepts GDVInteger with an
@@ -726,6 +753,9 @@ public:      // methods
   // ---- Sequence ----
   /*implicit*/ GDValue(GDVSequence const &seq);
   /*implicit*/ GDValue(GDVSequence      &&seq);
+
+  // TODO: Ctor accepting a sequence and location?  And same for the
+  // other containers?
 
   void sequenceSet(GDVSequence const &seq);
   void sequenceSet(GDVSequence      &&seq);
@@ -966,6 +996,11 @@ public:      // methods
   #define DECLARE_TAGGED_CONTAINER_METHODS(KIND, Kind, kind) \
     /*implicit*/ GDValue(GDVTagged##Kind const &tcont);      \
     /*implicit*/ GDValue(GDVTagged##Kind      &&tcont);      \
+                                                             \
+    /*implicit*/ GDValue(GDVTagged##Kind const &tcont,       \
+                         GDValueSourceLocation loc);         \
+    /*implicit*/ GDValue(GDVTagged##Kind      &&tcont,       \
+                         GDValueSourceLocation loc);         \
                                                              \
     void tagged##Kind##Set(GDVTagged##Kind const &tcont);    \
     void tagged##Kind##Set(GDVTagged##Kind      &&tcont);    \

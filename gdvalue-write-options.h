@@ -40,6 +40,10 @@ public:      // instance data
   // them, but JSON requires them.
   bool m_writeCommas;
 
+  // If true, prefix every value that has a source location with
+  // "/*<line>:<col>*/".
+  bool m_writeSourceLocations;
+
   // Current indentation level.  When we start a new line, we indent
   // 'm_indentLevel * SPACES_PER_INDENT_LEVEL' spaces.  Initially 0.
   int m_indentLevel;
@@ -59,6 +63,7 @@ public:      // methods
       m_writeLargeIntegersAsDecimal(false),
       m_useUndelimitedHexEscapes(false),
       m_writeCommas(false),
+      m_writeSourceLocations(false),
       m_indentLevel(0),
       m_spacesPerIndentLevel(s_defaultSpacesPerIndentLevel),
       m_targetLineWidth(s_defaultTargetLineWidth)
@@ -74,6 +79,9 @@ public:      // methods
     { m_writeLargeIntegersAsDecimal = b; return *this; }
   GDValueWriteOptions &setUseUndelimitedHexEscapes(bool b)
     { m_useUndelimitedHexEscapes = b; return *this; }
+  GDValueWriteOptions &setWriteSourceLocations(bool b)
+    { m_writeSourceLocations = b; return *this; }
+  // TODO: Rename this to `setWriteCommas`.
   GDValueWriteOptions &setWriteJSON(bool b)
     { m_writeCommas = b; return *this; }
   GDValueWriteOptions &setIndentLevel(int newLevel)

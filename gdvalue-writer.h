@@ -55,6 +55,10 @@ public:      // data
   GDValueWriteOptions m_options;
 
 private:     // methods
+  // If `m_options.m_writeSourceLocations`, and `value` has a source
+  // location, write it as "/*<line>:<col>*/".
+  void possiblyWriteSourceLocation(GDValue const &value);
+
   // Write 'container' using the specified optional tag and open and
   // closing delimiters.
   //
