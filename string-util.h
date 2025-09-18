@@ -203,6 +203,9 @@ std::string encodeWithEscapes(char const *src, int len);
 std::string encodeWithEscapes(unsigned char const *src, int len);
 std::string encodeWithEscapes(signed char const *src, int len);
 
+// Use `decodeCStringEscapesTo{Stream,String}` in `c-string-reader` to
+// reverse what `encodeWithEscapes` does.
+
 
 // Insert 'str' into 'os', surrounded by double quotes, and using C-like
 // escape sequences for double-quotes, backslashes, and all
@@ -219,6 +222,10 @@ std::string doubleQuote_cstr(char const *cstr);
 std::string doubleQuote(std::string const &s);
 std::string doubleQuote(std::string_view sv);
 std::string doubleQuote(char const *cstr);
+
+// Use `parseQuotedCString` in `c-string-reader` to reverse what
+// `doubleQuote` does.
+
 
 // Return `c` enclosed in single quotes if it is printable and not a
 // metacharacter, or as an escape sequence if not.
