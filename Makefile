@@ -851,6 +851,18 @@ rce-tests: out/rce_chdir1.ok
 check: rce-tests
 
 
+# --------------------- test check-coding-rules.py ---------------------
+CCR_TEST_INPUTS := $(wildcard test/ccr/in/*)
+out/test-ccr.ok: $(CCR_TEST_INPUTS) test/ccr/expect.txt check-coding-rules.py
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(RUN_COMPARE_EXPECT) \
+	  --expect test/ccr/expect.txt \
+	  $(PYTHON3) check-coding-rules.py $(CCR_TEST_INPUTS)
+	touch $@
+
+check: out/test-ccr.ok
+
+
 # ------------------- test create-tuple-class.py -----------------------
 # Rewrite one header and implementation file.
 out/test/ctc/in/%.ok: test/ctc/in/%.h test/ctc/in/%.cc create-tuple-class.py

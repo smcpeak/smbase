@@ -1,0 +1,7 @@
+---- stdout ----
+test/ccr/in/has-cr.cc:4: Has carriage return (0x0D) character.
+test/ccr/in/has-using-namespace.h:4: 'using namespace' at top level.
+Found 2 violations.
+---- stderr ----
+---- exit status ----
+Exit 2
