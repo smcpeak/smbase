@@ -863,6 +863,17 @@ out/test-ccr.ok: $(CCR_TEST_INPUTS) test/ccr/expect.txt check-coding-rules.py
 check: out/test-ccr.ok
 
 
+# --------------------- run check-coding-rules.py ----------------------
+CCR_INPUT_SPEC = *.h *.c *.cc
+CCR_INPUTS := $(wildcard $(CCR_INPUT_SPEC))
+out/ccr.ok: $(CCR_INPUTS) check-coding-rules.py out/test-ccr.ok
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(PYTHON3) check-coding-rules.py $(CCR_INPUT_SPEC)
+	touch $@
+
+check: out/ccr.ok
+
+
 # ------------------- test create-tuple-class.py -----------------------
 # Rewrite one header and implementation file.
 out/test/ctc/in/%.ok: test/ctc/in/%.h test/ctc/in/%.cc create-tuple-class.py
@@ -932,30 +943,6 @@ check-mypy: out/run-compare-expect.py.mypy.ok
 ifeq ($(ENABLE_MYPY),1)
 check: check-mypy
 endif
-
-
-# ---------------------- `using namespace` check -----------------------
-# Verify that `using namespace` does not appear in any header.
-#
-# This `grep` command only checks for the `using` at the start of the
-# line because it is fine to have such a directive inside the body of a
-# function template, etc.
-#
-ALL_HEADERS := $(wildcard *.h)
-out/no-using-namespace-in-header.ok: $(ALL_HEADERS)
-	$(CREATE_OUTPUT_DIRECTORY)
-	@if grep '^using namespace' $(ALL_HEADERS); then \
-	  echo "Some headers have 'using namespace'."; \
-	  exit 2; \
-	else \
-	  exit 0; \
-	fi
-	touch $@
-
-.PHONY: check-ad-hoc
-check-ad-hoc: out/no-using-namespace-in-header.ok
-
-check: check-ad-hoc
 
 
 # ----------------------------- coverage -------------------------------
