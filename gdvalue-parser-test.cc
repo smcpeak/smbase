@@ -1188,6 +1188,13 @@ void test_sourceLocation()
 }
 
 
+void test_parseSymbol()
+{
+  GDValue v;
+  EXPECT_EQ(gdvpTo<GDVSymbol>(GDValueParser(v)).getSymbolName(), "null");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -1227,6 +1234,7 @@ void test_gdvalue_parser()
   test_parseToGDValue();
   test_throwUnrecognizedSymbol();
   test_sourceLocation();
+  test_parseSymbol();
 }
 
 

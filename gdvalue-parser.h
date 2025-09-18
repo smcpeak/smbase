@@ -530,6 +530,13 @@ struct GDVPTo<GDValue> {
 };
 
 
+// Populate a GDVSymbol specifically.
+template <>
+struct GDVPTo<GDVSymbol> {
+  static GDVSymbol f(GDValueParser const &p);
+};
+
+
 template <>
 struct GDVPTo<bool> {
   // Expects that `p` is the symbol `true` or `false`.

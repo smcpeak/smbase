@@ -823,6 +823,12 @@ GDValue GDVPTo<GDValue>::f(GDValueParser const &p)
 }
 
 
+GDVSymbol GDVPTo<GDVSymbol>::f(GDValueParser const &p)
+{
+  return p.symbolGet();
+}
+
+
 bool GDVPTo<bool>::f(GDValueParser const &p)
 {
   return p.boolGet();
