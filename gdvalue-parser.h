@@ -602,10 +602,16 @@ T gdvpTo(GDValueParser const &p)
 
 // If `p` is nullopt, then return a default-constructed `T`.  Otherwise
 // convert it normally.
-//
-// Defined in `gdvalue-parser-ops.h`.
 template <typename T>
-inline T gdvpOptTo(std::optional<GDValueParser> const &p);
+T gdvpOptTo(std::optional<GDValueParser> const &p)
+{
+  if (!p.has_value()) {
+    return T();
+  }
+  else {
+    return gdvpTo<T>(p.value());
+  }
+}
 
 
 // This is similar to `gdvpTo`, except it returns a newly allocated

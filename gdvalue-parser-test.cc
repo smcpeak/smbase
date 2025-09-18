@@ -14,7 +14,7 @@
 #include "smbase/gdvalue-list.h"                 // module under test
 #include "smbase/gdvalue-map.h"                  // module under test
 #include "smbase/gdvalue-optional.h"             // module under test
-#include "smbase/gdvalue-parser-ops.h"           // module under test
+#include "smbase/gdvalue-parser.h"               // module under test
 #include "smbase/gdvalue-set.h"                  // module under test
 #include "smbase/gdvalue-tuple.h"                // module under test
 #include "smbase/gdvalue-unique-ptr.h"           // module under test
