@@ -2865,6 +2865,7 @@ void test_sourceLocation()
   GDValue v(1);
   EXPECT_FALSE(v.hasSourceLocation());
   EXPECT_FALSE(v.sourceLocationOpt().has_value());
+  EXPECT_EQ(v.sourceLocationIndicator(), "");
 
   v.clearSourceLocation();
   EXPECT_FALSE(v.hasSourceLocation());
@@ -2876,15 +2877,18 @@ void test_sourceLocation()
   EXPECT_TRUE(v.sourceLocationOpt().has_value());
   EXPECT_EQ(v.sourceLocation(), loc);
   EXPECT_EQ(v.sourceLocationOpt().value(), loc);
+  EXPECT_EQ(v.sourceLocationIndicator(), "2:3: ");
 
   GDValueSourceLocation loc2(4,5);
   v.setSourceLocationOpt(loc2);
   EXPECT_TRUE(v.hasSourceLocation());
   EXPECT_EQ(v.sourceLocation(), loc2);
+  EXPECT_EQ(v.sourceLocationIndicator(), "4:5: ");
 
   v.setSourceLocationOpt(std::nullopt);
   EXPECT_FALSE(v.hasSourceLocation());
   EXPECT_FALSE(v.sourceLocationOpt().has_value());
+  EXPECT_EQ(v.sourceLocationIndicator(), "");
 }
 
 

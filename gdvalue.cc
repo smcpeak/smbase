@@ -725,6 +725,17 @@ std::optional<GDValueSourceLocation> GDValue::sourceLocationOpt() const
 }
 
 
+std::string GDValue::sourceLocationIndicator() const
+{
+  if (hasSourceLocation()) {
+    return sourceLocation().asString() + ": ";
+  }
+  else {
+    return {};
+  }
+}
+
+
 void GDValue::clearSourceLocation()
 {
   m_kindSourceLocation.clearSourceLocation();

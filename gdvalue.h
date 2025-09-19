@@ -436,6 +436,11 @@ public:      // methods
   // Get the location if we have one.
   std::optional<GDValueSourceLocation> sourceLocationOpt() const;
 
+  // If we have a source location, return "<line>:<col>: ".  Otherwise,
+  // return "".  The idea is to use this ahead of the GDVN to indicate
+  // where it came from if that is known.
+  std::string sourceLocationIndicator() const;
+
   // Remove a source location if we have one.
   void clearSourceLocation();
 
