@@ -817,6 +817,12 @@ HandleXGDValueError::HandleXGDValueError()
 
 
 // ------------------------------ GDVPTo -------------------------------
+GDValueParser GDVPTo<GDValueParser>::f(GDValueParser const &p)
+{
+  return p;
+}
+
+
 GDValue GDVPTo<GDValue>::f(GDValueParser const &p)
 {
   return p.getValue();

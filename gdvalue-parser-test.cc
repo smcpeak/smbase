@@ -1195,6 +1195,25 @@ void test_parseSymbol()
 }
 
 
+void test_parseParser()
+{
+  GDValue v(GDVSequence{1,2,3});
+  GDValueParser p(v);
+
+  // Get parsers to each element.
+  auto parsers = gdvpTo<std::vector<GDValueParser>>(p);
+  EXPECT_EQ(parsers.size(), 3);
+  for (int i=0; i < 3; ++i) {
+    // The element values are accessible.
+    EXPECT_EQ(parsers[i].integerGetAs<int>(), i+1);
+
+    // Each parser remembers its particular path.
+    EXPECT_EQ(parsers[i].pathString(),
+              stringb("<top>[" << i << "]"));
+  }
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -1235,6 +1254,7 @@ void test_gdvalue_parser()
   test_throwUnrecognizedSymbol();
   test_sourceLocation();
   test_parseSymbol();
+  test_parseParser();
 }
 
 

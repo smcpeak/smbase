@@ -522,8 +522,18 @@ template <typename T, typename Enable /*= void*/>
 struct GDVPTo {};
 
 
+// This allows extracting the parser itself.  One use is with
+// `gdvpTo<std::tuple>`, where one can do non-trivial parsing of some
+// tuple elements, while leaving others as parsers that can then be
+// further examined individually.
+template <>
+struct GDVPTo<GDValueParser> {
+  static GDValueParser f(GDValueParser const &p);
+};
+
+
 // This allows us to populate a GDValue with whatever is in `p` without
-// any further interpretation.
+// any further interpretation (but dropping the parser).
 template <>
 struct GDVPTo<GDValue> {
   static GDValue f(GDValueParser const &p);
