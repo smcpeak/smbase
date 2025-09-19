@@ -178,6 +178,10 @@ public:      // methods
 };
 
 
+// Create a `GDValueFnApplyTransform` and apply it to `v`.
+GDValue fnApplyTransformGDValue(GDValue const &v);
+
+
 CLOSE_NAMESPACE(gdv)
 
 

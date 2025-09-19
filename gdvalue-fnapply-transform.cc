@@ -311,6 +311,18 @@ GDValueFnApplyTransform::innermostARFunctionNames() const
 }
 
 
+GDValue fnApplyTransformGDValue(GDValue const &v)
+{
+  GDValueFnApplyTransform transform;
+  transform.selfCheck();
+
+  GDValue ret = transform.transform(v);
+  transform.selfCheck();
+
+  return ret;
+}
+
+
 CLOSE_NAMESPACE(gdv)
 
 

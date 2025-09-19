@@ -68,6 +68,9 @@ void test_basics()
     (std::set<GDVSymbol>{
       "f"_sym,
     }));
+
+  GDValue actual2 = fnApplyTransformGDValue(commands);
+  EXPECT_EQ(actual2, actual);
 }
 
 
