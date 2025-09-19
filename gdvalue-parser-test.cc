@@ -1214,6 +1214,87 @@ void test_parseParser()
 }
 
 
+// Test `isTagged##Kind`, `checkIs##Tagged##Kind`, and
+// `check##Tagged##Kind##Tag`.
+void test_isTaggedContainer()
+{
+  {
+    GDValue v(GDVTaggedSequence("foo"_sym, {1,2,3}));
+    GDValueParser p(v);
+
+    EXPECT_TRUE(p.isTaggedSequenceWTag("foo"));
+    EXPECT_FALSE(p.isTaggedSequenceWTag("fo"));
+    EXPECT_FALSE(p.isTaggedTupleWTag("foo"));
+
+    p.checkIsTaggedSequence();
+    EXPECT_EXN_SUBSTR(p.checkIsTaggedTuple(),
+      XGDValueError,
+      "At GDV path <top>: Expected tagged tuple, "
+      "not tagged sequence.");
+
+    p.checkTaggedSequenceTag("foo");
+    EXPECT_EXN_SUBSTR(p.checkTaggedSequenceTag("fo"),
+      XGDValueError,
+      "At GDV path <top>: Expected container to have tag fo, "
+      "but it instead has tag foo.");
+    EXPECT_EXN_SUBSTR(p.checkTaggedTupleTag("foo"),
+      XGDValueError,
+      "At GDV path <top>: Expected tagged tuple, "
+      "not tagged sequence.");
+  }
+
+  // For the other types, go a bit lighter on testing since they all
+  // share the same implementation.
+  {
+    GDValue v(GDVTaggedTuple("foo"_sym, {1,2,3}));
+    GDValueParser p(v);
+
+    EXPECT_TRUE(p.isTaggedTupleWTag("foo"));
+    EXPECT_FALSE(p.isTaggedTupleWTag("fo"));
+    EXPECT_FALSE(p.isTaggedSequenceWTag("foo"));
+
+    p.checkIsTaggedTuple();
+    p.checkTaggedTupleTag("foo");
+  }
+
+  {
+    GDValue v(GDVTaggedSet("foo"_sym, {1,2,3}));
+    GDValueParser p(v);
+
+    EXPECT_TRUE(p.isTaggedSetWTag("foo"));
+    EXPECT_FALSE(p.isTaggedSetWTag("fo"));
+    EXPECT_FALSE(p.isTaggedSequenceWTag("foo"));
+
+    p.checkIsTaggedSet();
+    p.checkTaggedSetTag("foo");
+  }
+
+  {
+    GDValue v(GDVTaggedMap("foo"_sym, {{1,2},{3,4}}));
+    GDValueParser p(v);
+
+    EXPECT_TRUE(p.isTaggedMapWTag("foo"));
+    EXPECT_FALSE(p.isTaggedMapWTag("fo"));
+    EXPECT_FALSE(p.isTaggedSequenceWTag("foo"));
+
+    p.checkIsTaggedMap();
+    p.checkTaggedMapTag("foo");
+  }
+
+  {
+    GDValue v(GDVTaggedOrderedMap("foo"_sym, {{1,2},{3,4}}));
+    GDValueParser p(v);
+
+    EXPECT_TRUE(p.isTaggedOrderedMapWTag("foo"));
+    EXPECT_FALSE(p.isTaggedOrderedMapWTag("fo"));
+    EXPECT_FALSE(p.isTaggedSequenceWTag("foo"));
+
+    p.checkIsTaggedOrderedMap();
+    p.checkTaggedOrderedMapTag("foo");
+  }
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -1255,6 +1336,7 @@ void test_gdvalue_parser()
   test_sourceLocation();
   test_parseSymbol();
   test_parseParser();
+  test_isTaggedContainer();
 }
 
 

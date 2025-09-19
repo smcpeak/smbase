@@ -702,7 +702,7 @@ RELAY_KIND_SPECIFIC_QUERY0(TaggedContainer, GDVSymbol, taggedContainerGetTag)
 RELAY_KIND_SPECIFIC_QUERY0(TaggedContainer, std::string_view, taggedContainerGetTagName)
 
 
-void GDValueParser::checkContainerTag(char const *symName) const
+void GDValueParser::checkContainerTag(std::string_view symName) const
 {
   if (taggedContainerGetTagName() != symName) {
     throwError_stringb(
@@ -712,26 +712,30 @@ void GDValueParser::checkContainerTag(char const *symName) const
 }
 
 
-// ---- Tagged Map ----
-DEFINE_CHECK_IS_KIND(TaggedMap, "tagged map")
+// ---- Tagged containers ----
+#define GDV_DEFINE_TAGGED_CONTAINER_METHODS(KIND, Kind, kind)            \
+                                                                         \
+  /* This could be factored as `RELAY_QUERY1`, but at the moment */      \
+  /* this is the only place that it would be used. */                    \
+  bool GDValueParser::isTagged##Kind##WTag(std::string_view tag) const   \
+  {                                                                      \
+    return m_value->isTagged##Kind##WTag(tag);                           \
+  }                                                                      \
+                                                                         \
+  void GDValueParser::checkIsTagged##Kind() const                        \
+  {                                                                      \
+    checkKind(GDVK_TAGGED_##KIND);                                       \
+  }                                                                      \
+                                                                         \
+  void GDValueParser::checkTagged##Kind##Tag(std::string_view tag) const \
+  {                                                                      \
+    checkIsTagged##Kind();                                               \
+    checkContainerTag(tag);                                              \
+  }
 
+FOR_EACH_GDV_CONTAINER(GDV_DEFINE_TAGGED_CONTAINER_METHODS)
 
-void GDValueParser::checkTaggedMapTag(char const *symName) const
-{
-  checkIsTaggedMap();
-  checkContainerTag(symName);
-}
-
-
-// ---- Tagged OrderedMap ----
-DEFINE_CHECK_IS_KIND(TaggedOrderedMap, "tagged ordered map")
-
-
-void GDValueParser::checkTaggedOrderedMapTag(char const *symName) const
-{
-  checkIsTaggedOrderedMap();
-  checkContainerTag(symName);
-}
+#undef GDV_DEFINE_TAGGED_CONTAINER_METHODS
 
 
 // --------------------- toGDValue(GDValueParser) ----------------------

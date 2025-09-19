@@ -38,6 +38,7 @@
 
 #include "smbase/exc.h"                          // smbase::XBase
 #include "smbase/gdv-binary64-float-fwd.h"       // gdv::GDVBinary64Float [n]
+#include "smbase/gdv-containers-fwd.h"           // FOR_EACH_GDV_CONTAINER
 #include "smbase/gdv-ordered-map-fwd.h"          // gdv::GDVOrderedMap [n]
 #include "smbase/gdvalue-fwd.h"                  // gdv::GDValue [n]
 #include "smbase/gdvalue-kind.h"                 // gdv::GDValueKind
@@ -368,17 +369,24 @@ public:      // methods
   std::string_view taggedContainerGetTagName() const;
 
   // Check that the tag is a symbol with `symName`.
-  void checkContainerTag(char const *symName) const;
+  void checkContainerTag(std::string_view symName) const;
 
   // TODO: Provide parsers into the `GDVTaggedContainer` types.
 
-  // ---- Tagged Map ----
-  void checkIsTaggedMap() const;
-  void checkTaggedMapTag(char const *symName) const;
+  // ---- Tagged containers ----
+  #define GDV_DECLARE_TAGGED_CONTAINER_METHODS(KIND, Kind, kind) \
+    /* True if this is a Tagged##Kind with tag `tag`. */         \
+    bool isTagged##Kind##WTag(std::string_view tag) const;       \
+                                                                 \
+    /* Check that this is a Tagged##Kind. */                     \
+    void checkIs##Tagged##Kind() const;                          \
+                                                                 \
+    /* Check that this is a Tagged##Kind with `tag`. */          \
+    void check##Tagged##Kind##Tag(std::string_view tag) const;
 
-  // ---- Tagged OrderedMap ----
-  void checkIsTaggedOrderedMap() const;
-  void checkTaggedOrderedMapTag(char const *symName) const;
+  FOR_EACH_GDV_CONTAINER(GDV_DECLARE_TAGGED_CONTAINER_METHODS)
+
+  #undef GDV_DECLARE_TAGGED_CONTAINER_METHODS
 };
 
 
