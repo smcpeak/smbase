@@ -45,6 +45,18 @@ void test_basics()
     ]
   )"));
 
+  // The substitution process preserves argument locations at the
+  // expense of parameter locations.
+  EXPECT_EQ(actual.dumpToString(), R"(/*2:5*/[
+  /*3:7*/123
+  null
+  /*4:16*/456
+  null
+  /*6:19*/(/*7:9*/2 /*7:9*/2)
+  /*6:19*/(/*4:16*/456 /*4:16*/456)
+]
+)");
+
   EXPECT_EQ(transform.environmentDepth(), 1);
 
   EXPECT_EQ_GDVSER(transform.innermostARVariableNames(),

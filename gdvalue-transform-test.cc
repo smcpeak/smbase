@@ -43,8 +43,14 @@ void test_basics()
     map{6:7}
   ])");
 
+  // Annotate all elements with their locations.
+  std::string gdvnWithLocs = v.dumpToString();
+
   GDValue v2 = deepCopyGDValue(v);
   EXPECT_EQ(v2, v);
+
+  // Ensure that deep copy preserves all locations.
+  EXPECT_EQ(v2.dumpToString(), gdvnWithLocs);
 }
 
 

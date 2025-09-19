@@ -18,7 +18,8 @@ GDValue GDValueTransform::transform(GDValue const &v)
     return v;
   }
 
-  GDValue out(v.getKind());
+  // Preserve the kind and location.
+  GDValue out(v.getKind(), v.sourceLocationOpt());
 
   if (v.isSequence()) {
     for (GDValue const &elt : v.sequenceIterableC()) {
