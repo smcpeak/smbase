@@ -1,16 +1,13 @@
 // gdvalue-types.h
 // Support types for `GDValue`.
 
-// This header is separate so it can be included without getting all of
-// gdvalue.h.
-
 #ifndef SMBASE_GDVALUE_TYPES_H
 #define SMBASE_GDVALUE_TYPES_H
 
+#include "smbase/gdv-containers-fwd.h"           // gdv::GDV{Sequence,Set,Map} (for clients
 #include "smbase/gdv-ordered-map-fwd.h"          // gdv::GDVOrderedMap (for clients)
 #include "smbase/gdvalue-fwd.h"                  // gdv::GDValue
 #include "smbase/sm-integer-fwd.h"               // smbase::Integer
-#include "smbase/sm-macros.h"                    // OPEN_NAMESPACE
 #include "smbase/std-map-fwd.h"                  // stdfwd::map
 #include "smbase/std-set-fwd.h"                  // stdfwd::set
 #include "smbase/std-string-fwd.h"               // std::string
@@ -21,47 +18,36 @@
 #include <cstdint>                               // std::int64_t
 
 
-OPEN_NAMESPACE(gdv)
+namespace gdv {
 
+  // Count of elements.
+  using GDVSize = std::size_t;
 
-// Count of elements.
-using GDVSize = std::size_t;
+  // Index for vectors.
+  using GDVIndex = std::size_t;
 
-// Index for vectors.
-using GDVIndex = std::size_t;
+  // GDValue(GDVK_INTEGER) holds this.
+  using GDVInteger = smbase::Integer;
 
-// GDValue(GDVK_INTEGER) holds this.
-using GDVInteger = smbase::Integer;
+  // Stored when the kind is GDVK_SMALL_INTEGER.
+  using GDVSmallInteger = std::int64_t;
 
-// Stored when the kind is GDVK_SMALL_INTEGER.
-using GDVSmallInteger = std::int64_t;
+  // Note: GDVBinary64Float is in `gdv-binary64-float.h`.
 
-// Note: GDVBinary64Float is in `gdv-binary64-float.h`.
+  // GDValue(GDVK_STRING) holds this.  It is a UTF-8 encoding of the
+  // sequence of Unicode code points the string represents.
+  using GDVString = std::string;
 
-// GDValue(GDVK_STRING) holds this.  It is a UTF-8 encoding of the
-// sequence of Unicode code points the string represents.
-using GDVString = std::string;
+  //using GDVOctetSequence = std::vector<unsigned char>;
 
-//using GDVOctetSequence = std::vector<unsigned char>;
+  // `GDVTuple` is defined in `gdvtuple.h`.
 
-// GDValue(GDVK_SEQUENCE) holds this.
-using GDVSequence = stdfwd::vector<GDValue>;
+  // `GDVOrderedMap` is declared in `gdv-ordered-map-fwd.h`.
 
-// `GDVTuple` is defined in `gdvtuple.h`.
+  // The entry type for GDVMap and GDVOrderedMap.
+  using GDVMapEntry = std::pair<GDValue const, GDValue>;
 
-// GDValue(GDVK_SET) holds this.
-using GDVSet = stdfwd::set<GDValue>;
-
-// GDValue(GDVK_MAP) holds this.
-using GDVMap = stdfwd::map<GDValue, GDValue>;
-
-// `GDVOrderedMap` is declared in `gdv-ordered-map-fwd.h`.
-
-// The entry type for GDVMap and GDVOrderedMap.
-using GDVMapEntry = std::pair<GDValue const, GDValue>;
-
-
-CLOSE_NAMESPACE(gdv)
+}
 
 
 #endif // SMBASE_GDVALUE_TYPES_H

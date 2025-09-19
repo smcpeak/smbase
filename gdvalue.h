@@ -17,6 +17,7 @@
 
 // IWYU pragma: begin_exports
 #include "smbase/gdv-binary64-float-fwd.h"       // gdv::GDVBinary64Float
+#include "smbase/gdv-containers-fwd.h"           // FOR_EACH_GDV_CONTAINER
 #include "smbase/gdv-ordered-map-iface.h"        // gdv::GDVOrderedMap
 #include "smbase/gdvalue-kind.h"                 // gdv::GDValueKind
 #include "smbase/gdvalue-srcloc.h"               // gdv::GDValueSourceLocation
@@ -97,25 +98,14 @@ public:      // methods
 };
 
 
-using GDVTaggedSequence   = GDVTaggedContainer<GDVSequence>;
-using GDVTaggedTuple      = GDVTaggedContainer<GDVTuple>;
-using GDVTaggedSet        = GDVTaggedContainer<GDVSet>;
-using GDVTaggedMap        = GDVTaggedContainer<GDVMap>;
-using GDVTaggedOrderedMap = GDVTaggedContainer<GDVOrderedMap>;
+/* See `gdvalue-fwd.h` for the following:
 
-
-// Expand `macro` once for each kind of GDV container.
-//
-// I do not use this macro in every possible place because token pasting
-// makes it hard to find things with ordinary text search, and some
-// things are important enough that I want to ensure they are easy to
-// find.
-#define FOR_EACH_GDV_CONTAINER(macro)        \
-  macro(SEQUENCE,    Sequence,   sequence  ) \
-  macro(TUPLE,       Tuple,      tuple     ) \
-  macro(SET,         Set,        set       ) \
-  macro(MAP,         Map,        map       ) \
-  macro(ORDERED_MAP, OrderedMap, orderedMap)
+    using GDVTaggedSequence   = GDVTaggedContainer<GDVSequence>;
+    using GDVTaggedTuple      = GDVTaggedContainer<GDVTuple>;
+    using GDVTaggedSet        = GDVTaggedContainer<GDVSet>;
+    using GDVTaggedMap        = GDVTaggedContainer<GDVMap>;
+    using GDVTaggedOrderedMap = GDVTaggedContainer<GDVOrderedMap>;
+*/
 
 
 // ----------------------------- GDValue -------------------------------
