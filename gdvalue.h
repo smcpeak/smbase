@@ -300,6 +300,10 @@ public:      // methods
   // Same, but with a source location.
   explicit GDValue(GDValueKind kind, GDValueSourceLocation loc);
 
+  // And an optional location.
+  explicit GDValue(
+    GDValueKind kind, std::optional<GDValueSourceLocation> locOpt);
+
 
   // Get the kind of value this is.  But see also `getSuperKind()`,
   // which hides the "small integer" implementation detail.

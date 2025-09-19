@@ -2928,6 +2928,23 @@ void test_sourceLocCtors()
 }
 
 
+void test_ctorLocOpt()
+{
+  {
+    GDValue v(GDVK_SYMBOL, std::nullopt);
+    EXPECT_FALSE(v.hasSourceLocation());
+  }
+
+  {
+    GDValueSourceLocation loc(4,5);
+    std::optional<GDValueSourceLocation> locOpt(loc);
+    GDValue v(GDVK_SYMBOL, locOpt);
+    EXPECT_TRUE(v.hasSourceLocation());
+    EXPECT_EQ(v.sourceLocation(), loc);
+  }
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -2995,6 +3012,7 @@ void test_gdvalue()
     test_writeIndented();
     test_sourceLocation();
     test_sourceLocCtors();
+    test_ctorLocOpt();
 
     // Some interesting values for the particular data used.
     testPrettyPrint(0);

@@ -428,6 +428,16 @@ GDValue::GDValue(GDValueKind kind)
 DEFINE_CTOR_WITH_LOCATION1(GDValueKind)
 
 
+GDValue::GDValue(
+  GDValueKind kind,
+  std::optional<GDValueSourceLocation> locOpt)
+:
+  GDValue(kind)
+{
+  setSourceLocationOpt(locOpt);
+}
+
+
 GDValueKind GDValue::getSuperKind() const
 {
   if (getKind() == GDVK_SMALL_INTEGER) {
