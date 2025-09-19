@@ -40,6 +40,9 @@ SMBASE_LIBCPP_BEGIN_NAMESPACE_STD
     template <typename _Tp>
     struct less_equal;
 
+    template <typename _Tp>
+    class reference_wrapper;
+
   SMBASE_LIBCPP_END_NAMESPACE_VERSION
 
 SMBASE_LIBCPP_END_NAMESPACE_STD
@@ -76,6 +79,8 @@ namespace stdfwd {
 
   template <typename _Tp = void>
   using less_equal = std::less_equal<_Tp>;
+
+  using std::reference_wrapper;
 }
 
 

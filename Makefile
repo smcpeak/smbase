@@ -495,6 +495,7 @@ UNIT_TEST_OBJS += sm-trace-test.o
 UNIT_TEST_OBJS += sm-unique-ptr-test.o
 UNIT_TEST_OBJS += sobjlist-test.o
 UNIT_TEST_OBJS += srcloc-test.o
+UNIT_TEST_OBJS += std-functional-fwd-test.o
 UNIT_TEST_OBJS += std-list-fwd-test.o
 UNIT_TEST_OBJS += std-map-fwd-test.o
 UNIT_TEST_OBJS += std-optional-fwd-test.o
