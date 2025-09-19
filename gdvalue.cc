@@ -2095,7 +2095,7 @@ std::string_view GDValue::taggedContainerGetTagName() const
     return *(m_value.m_tagged##Container);                                      \
   }                                                                             \
                                                                                 \
-  bool GDValue::isTagged##Container(std::string_view tag) const                 \
+  bool GDValue::isTagged##Container##WTag(std::string_view tag) const           \
   {                                                                             \
     return isTagged##Container() &&                                             \
            taggedContainerGetTagName() == tag;                                  \

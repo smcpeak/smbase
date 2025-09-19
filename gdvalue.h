@@ -998,8 +998,8 @@ public:      // methods
     GDVTagged##Kind const &tagged##Kind##Get()        const;     \
     GDVTagged##Kind       &tagged##Kind##GetMutable()      ;     \
                                                                  \
-    /* True if this is a tagged##Kind and the tag is `tag`. */   \
-    bool isTagged##Kind(std::string_view tag) const;
+    /* True if this is a tagged##Kind with tag `tag`. */         \
+    bool isTagged##Kind##WTag(std::string_view tag) const;
 
   FOR_EACH_GDV_CONTAINER(GDV_DECLARE_TAGGED_CONTAINER_METHODS)
 
