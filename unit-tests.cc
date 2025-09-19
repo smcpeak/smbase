@@ -117,6 +117,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(gcc_options);
   RUN_TEST(gdv_binary64_float);
   RUN_TEST(gdvalue);
+  RUN_TEST(gdvalue_fnapply_transform);
   RUN_TEST(gdvalue_json);
   RUN_TEST(gdvalue_kind_srcloc);
   RUN_TEST(gdvalue_parser);
