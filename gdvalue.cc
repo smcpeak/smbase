@@ -2093,16 +2093,27 @@ std::string_view GDValue::taggedContainerGetTagName() const
   {                                                                             \
     xassertPrecondition(isTagged##Container());                                 \
     return *(m_value.m_tagged##Container);                                      \
+  }                                                                             \
+                                                                                \
+  bool GDValue::isTagged##Container(std::string_view tag) const                 \
+  {                                                                             \
+    return isTagged##Container() &&                                             \
+           taggedContainerGetTagName() == tag;                                  \
   }
 
 
 FOR_EACH_GDV_CONTAINER(DEFINE_TAGGED_CONTAINER_METHODS)
 
 
+#undef DEFINE_TAGGED_CONTAINER_METHODS
+
+
 #define EXPLICITLY_INSTANTIATE(KIND, Kind, kind) \
   template class GDVTaggedContainer<GDV##Kind>;
 
 FOR_EACH_GDV_CONTAINER(EXPLICITLY_INSTANTIATE)
+
+#undef EXPLICITLY_INSTANTIATE
 
 
 // ----------------------- Member serialization ------------------------

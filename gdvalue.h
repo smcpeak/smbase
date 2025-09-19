@@ -983,24 +983,27 @@ public:      // methods
   GDVSymbol taggedContainerGetTag() const;
   std::string_view taggedContainerGetTagName() const;
 
-  #define DECLARE_TAGGED_CONTAINER_METHODS(KIND, Kind, kind) \
-    /*implicit*/ GDValue(GDVTagged##Kind const &tcont);      \
-    /*implicit*/ GDValue(GDVTagged##Kind      &&tcont);      \
-                                                             \
-    /*implicit*/ GDValue(GDVTagged##Kind const &tcont,       \
-                         GDValueSourceLocation loc);         \
-    /*implicit*/ GDValue(GDVTagged##Kind      &&tcont,       \
-                         GDValueSourceLocation loc);         \
-                                                             \
-    void tagged##Kind##Set(GDVTagged##Kind const &tcont);    \
-    void tagged##Kind##Set(GDVTagged##Kind      &&tcont);    \
-                                                             \
-    GDVTagged##Kind const &tagged##Kind##Get()        const; \
-    GDVTagged##Kind       &tagged##Kind##GetMutable()      ;
+  #define GDV_DECLARE_TAGGED_CONTAINER_METHODS(KIND, Kind, kind) \
+    /*implicit*/ GDValue(GDVTagged##Kind const &tcont);          \
+    /*implicit*/ GDValue(GDVTagged##Kind      &&tcont);          \
+                                                                 \
+    /*implicit*/ GDValue(GDVTagged##Kind const &tcont,           \
+                         GDValueSourceLocation loc);             \
+    /*implicit*/ GDValue(GDVTagged##Kind      &&tcont,           \
+                         GDValueSourceLocation loc);             \
+                                                                 \
+    void tagged##Kind##Set(GDVTagged##Kind const &tcont);        \
+    void tagged##Kind##Set(GDVTagged##Kind      &&tcont);        \
+                                                                 \
+    GDVTagged##Kind const &tagged##Kind##Get()        const;     \
+    GDVTagged##Kind       &tagged##Kind##GetMutable()      ;     \
+                                                                 \
+    /* True if this is a tagged##Kind and the tag is `tag`. */   \
+    bool isTagged##Kind(std::string_view tag) const;
 
-  FOR_EACH_GDV_CONTAINER(DECLARE_TAGGED_CONTAINER_METHODS)
+  FOR_EACH_GDV_CONTAINER(GDV_DECLARE_TAGGED_CONTAINER_METHODS)
 
-  #undef DECLARE_TAGGED_CONTAINER_METHODS
+  #undef GDV_DECLARE_TAGGED_CONTAINER_METHODS
 
   // Note: The accessors that work on untagged containers also work on
   // their tagged counterparts.

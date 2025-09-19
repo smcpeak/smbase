@@ -871,6 +871,8 @@ void testTaggedMap()
   xassert(v.isMap());
   xassert(v.isTaggedContainer());
   xassert(v.isTaggedMap());
+  xassert(v.isTaggedMap("x"));
+  xassert(!v.isTaggedMap("y"));
   xassert(!v.containerIsEmpty());
   v.selfCheck();
   testSerializeRoundtrip(v);
@@ -1168,6 +1170,8 @@ void testTaggedOrderedMap()
   xassert(v.isTaggedContainer());
   xassert(!v.isTaggedMap());
   xassert(v.isTaggedOrderedMap());
+  xassert(v.isTaggedOrderedMap("x"));
+  xassert(!v.isTaggedOrderedMap("y"));
   xassert(!v.containerIsEmpty());
   v.selfCheck();
   testSerializeRoundtrip(v);
@@ -1276,6 +1280,9 @@ void testTaggedSequence()
   xassert(v.isSequence());
   xassert(v.isTaggedContainer());
   xassert(v.isTaggedSequence());
+  xassert(v.isTaggedSequence("null"));
+  xassert(!v.isTaggedSequence("nullx"));
+  xassert(!v.isTaggedTuple("null"));
   xassert(v.containerIsEmpty());
   xassert(v.taggedContainerGetTag() == GDVSymbol());
   xassert(v.taggedContainerGetTag() == GDVSymbol("null"));
@@ -1283,6 +1290,9 @@ void testTaggedSequence()
 
   v.taggedContainerSetTag(GDVSymbol("x"));
   EXPECT_EQ(v.asString(), "x[]");
+  xassert(v.isTaggedSequence("x"));
+  xassert(!v.isTaggedSequence("xy"));
+  xassert(!v.isTaggedTuple("x"));
   testSerializeRoundtrip(v);
 
   v.sequenceAppend(1);
@@ -1343,6 +1353,8 @@ void testTaggedTuple()
 
   v.taggedContainerSetTag(GDVSymbol("x"));
   EXPECT_EQ(v.asString(), "x()");
+  xassert(v.isTaggedTuple("x"));
+  xassert(!v.isTaggedTuple("y"));
   testSerializeRoundtrip(v);
 
   v.tupleAppend(1);
@@ -1386,6 +1398,8 @@ void testTaggedSet()
 
   v.taggedContainerSetTag(GDVSymbol("x"));
   EXPECT_EQ(v.asString(), "x{}");
+  xassert(v.isTaggedSet("x"));
+  xassert(!v.isTaggedSet("y"));
   testSerializeRoundtrip(v);
 
   v.setInsert(1);
