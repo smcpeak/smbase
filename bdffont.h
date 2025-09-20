@@ -41,8 +41,10 @@
 #ifndef SMBASE_BDFFONT_H
 #define SMBASE_BDFFONT_H
 
+#include "bdffont-fwd.h"               // fwds for this module
+
 #include "smbase/array.h"              // ArrayStack
-#include "smbase/bit2d-fwd.h"          // Bit2d [f]
+#include "smbase/bit2d-fwd.h"          // Bit2d [n]
 #include "smbase/objlist.h"            // ObjList
 #include "smbase/point.h"              // point
 #include "smbase/sm-macros.h"          // NO_OBJECT_COPIES
