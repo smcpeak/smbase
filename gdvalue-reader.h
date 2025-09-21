@@ -15,6 +15,7 @@
 #include "smbase/std-string-fwd.h"     // std::string [n]
 #include "smbase/std-vector-fwd.h"     // std::vector [n]
 
+#include <cstdint>                     // std::uint32_t
 #include <iosfwd>                      // std::istream [n]
 
 
@@ -40,7 +41,14 @@ public:      // methods
 
 // Manage the process of reading a GDValue from an istream.
 class GDValueReader : protected smbase::Reader {
+public:      // data
+  // The file index to include in the value source locations.
+  std::optional<std::int32_t> m_fileIndexOpt;
+
 protected:   // methods
+  // Get the location of the next character plus `columnOffset`.
+  GDValueSourceLocation gdvLocOffset(int columnOffset) const;
+
   // Get the source location of the character before the next one to
   // consume.
   GDValueSourceLocation gdvLocPrevChar() const;

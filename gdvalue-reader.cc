@@ -57,9 +57,12 @@ OPEN_NAMESPACE(gdv)
 
 
 // --------------------------- GDValueReader ---------------------------
-GDValueReader::GDValueReader(std::istream &is,
-                             std::optional<std::string> fileName)
-  : Reader(is, std::move(fileName))
+GDValueReader::GDValueReader(
+  std::istream &is,
+  std::optional<std::string> fileNameOpt)
+:
+  Reader(is, fileNameOpt),
+  m_fileIndexOpt(GDValueSourceLocation::fileIndexOfNameOpt(fileNameOpt))
 {}
 
 
@@ -67,11 +70,12 @@ GDValueReader::~GDValueReader()
 {}
 
 
-static GDValueSourceLocation makeGDVLoc(
-  FileLineCol const &flc, int columnOffset = 0)
+GDValueSourceLocation GDValueReader::gdvLocOffset(int columnOffset) const
 {
   return GDValueSourceLocation(
-    flc.m_lc.m_line,
+    m_fileIndexOpt,
+
+    m_location.m_lc.m_line,
 
     // The column offset can be 0 if we read a newline and then put it
     // back.  This happens for example in
@@ -86,19 +90,19 @@ static GDValueSourceLocation makeGDVLoc(
     // explaining the problems.  I think if that were cleaned up, the
     // problem here would be solved too.
     //
-    std::max(1, flc.m_lc.m_column + columnOffset));
+    std::max(1, m_location.m_lc.m_column + columnOffset));
 }
 
 
 GDValueSourceLocation GDValueReader::gdvLocPrevChar() const
 {
-  return makeGDVLoc(m_location, -1);
+  return gdvLocOffset(-1);
 }
 
 
 GDValueSourceLocation GDValueReader::gdvLoc() const
 {
-  return makeGDVLoc(m_location);
+  return gdvLocOffset(0);
 }
 
 

@@ -47,11 +47,11 @@ void test_basics()
       GDValueKindSourceLocation::c_saturatedColumnValue });
   EXPECT_EQ(klb2.getKind(), GDVK_SEQUENCE);
   EXPECT_TRUE(klb2.hasSourceLocation());
-  EXPECT_EQ(klb2.sourceLocation().line(), 0xffffff);
+  EXPECT_EQ(klb2.sourceLocation().line(), 0xfffff);
   EXPECT_TRUE(klb2.sourceLocation().lineIsSaturated());
   EXPECT_EQ(klb2.sourceLocation().column(), 0xffffffffu);
   EXPECT_TRUE(klb2.sourceLocation().columnIsSaturated());
-  EXPECT_EQ(klb2.asString(), "GDVK_SEQUENCE at 16777215:4294967295");
+  EXPECT_EQ(klb2.asString(), "GDVK_SEQUENCE at 1048575:4294967295");
 
   EXPECT_STRICTLY_ORDERED(GDValueKindSourceLocation, klb0, klb1, klb2);
 
@@ -69,27 +69,44 @@ void test_basics()
   k = klb2;
   EXPECT_EQ(k, klb2);
   EXPECT_EQ(k.getKind(), GDVK_SEQUENCE);
-  EXPECT_EQ(k.sourceLocation().line(), 0xffffff);
+  EXPECT_EQ(k.sourceLocation().line(), 0xfffff);
   EXPECT_EQ(k.sourceLocation().column(), 0xffffffffu);
 }
 
 
 void test_order()
 {
-  GDValueKindSourceLocation klbs[] = {
+  GDValueSourceLocation::resetFileNameToIndex();
+
+  auto idx1 = GDValueSourceLocation::fileIndexOfName("name1");
+  auto idx2 = GDValueSourceLocation::fileIndexOfName("name2");
+  GDValueSourceLocation::globalSelfCheck();
+
+  GDValueKindSourceLocation locs[] = {
     GDValueKindSourceLocation(GDVK_SYMBOL),
     GDValueKindSourceLocation(GDVK_SYMBOL, { 1, 1 }),
     GDValueKindSourceLocation(GDVK_SYMBOL, { 1, 10 }),
     GDValueKindSourceLocation(GDVK_SYMBOL, { 10, 1 }),
     GDValueKindSourceLocation(GDVK_SYMBOL, { 10, 10 }),
+
     GDValueKindSourceLocation(GDVK_INTEGER),
     GDValueKindSourceLocation(GDVK_INTEGER, { 1, 1 }),
     GDValueKindSourceLocation(GDVK_INTEGER, { 1, 10 }),
     GDValueKindSourceLocation(GDVK_INTEGER, { 10, 1 }),
     GDValueKindSourceLocation(GDVK_INTEGER, { 10, 10 }),
+
+    GDValueKindSourceLocation(GDVK_INTEGER, { idx1, 1, 1 }),
+    GDValueKindSourceLocation(GDVK_INTEGER, { idx1, 1, 10 }),
+    GDValueKindSourceLocation(GDVK_INTEGER, { idx1, 10, 1 }),
+    GDValueKindSourceLocation(GDVK_INTEGER, { idx1, 10, 10 }),
+
+    GDValueKindSourceLocation(GDVK_INTEGER, { idx2, 1, 1 }),
+    GDValueKindSourceLocation(GDVK_INTEGER, { idx2, 1, 10 }),
+    GDValueKindSourceLocation(GDVK_INTEGER, { idx2, 10, 1 }),
+    GDValueKindSourceLocation(GDVK_INTEGER, { idx2, 10, 10 }),
   };
 
-  checkStrictlyOrdered("klbs", vecArrayToCRefs(klbs));
+  checkStrictlyOrdered("locs", vecArrayToCRefs(locs));
 }
 
 

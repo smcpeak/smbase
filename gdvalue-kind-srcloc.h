@@ -25,6 +25,10 @@
 OPEN_NAMESPACE(gdv)
 
 
+// Justifies using 4 bits for the kind.
+static_assert(NUM_GDVALUE_KINDS <= 16);
+
+
 /* This class is only meant to be used internally by `GDValue`.  It
    combines a `GDValueKind` with a `GDValueSourceLocation` into a
    single 64-bit object.
@@ -45,11 +49,16 @@ private:     // data
   //
   // Note: This can't be given the type `GDValueKind` because the only
   // portable types for a bitfield are `unsigned int` and `signed int`.
-  unsigned int m_kind : 8;
+  unsigned int m_kind : 4;
+
+  // File identifier.  0 means no file information.
+  //
+  // Invariant: If m_line==0 then m_fileIndex==0.
+  unsigned int m_fileIndex : 8;
 
   // Either 0, meaning there is no location information, or the 1-based
   // line number.  It could be `c_saturatedLineValue`.
-  unsigned int m_line : 24;
+  unsigned int m_line : 20;
 
   // 1-based byte column number within its containing line.  It could be
   // `c_saturatedColumnValue`.
@@ -75,8 +84,8 @@ public:      // methods
   // absent location is less than any present location.
   DECLARE_COMPARETO_AND_DEFINE_RELATIONALS(GDValueKindSourceLocation);
 
-  // Write as "<kind> at noloc" or "<kind> at <line>:<column>", where
-  // <kind> is `toString(kind())`.
+  // Write as "<kind> at noloc" or "<kind> at <loc>", where <kind> is
+  // `toString(kind())` and <loc> is `sourceLocation().asString()`.
   void write(std::ostream &os) const;
   friend std::ostream &operator<<(
     std::ostream &os, GDValueKindSourceLocation const &obj)
@@ -117,6 +126,10 @@ public:      // methods
   // Set it or clear it depending on `locOpt`.
   void setSourceLocationOpt(std::optional<GDValueSourceLocation> locOpt);
 };
+
+
+// Type size should be 64 bits.
+static_assert(sizeof(GDValueKindSourceLocation) == 8);
 
 
 CLOSE_NAMESPACE(gdv)

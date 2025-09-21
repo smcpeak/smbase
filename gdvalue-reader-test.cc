@@ -21,22 +21,32 @@ using namespace smbase;
 OPEN_ANONYMOUS_NAMESPACE
 
 
-void expectLoc(GDValue const &actual, int line, int col)
+void expectLoc(
+  GDValue const &actual,
+  std::optional<std::string> fnameOpt,
+  int line,
+  int col)
 {
   EXN_CONTEXT_EXPR(line);
   EXN_CONTEXT_EXPR(col);
 
+  auto indexOpt = GDValueSourceLocation::fileIndexOfNameOpt(fnameOpt);
+
   EXPECT_TRUE(actual.hasSourceLocation());
   EXPECT_EQ(actual.sourceLocation(),
-            GDValueSourceLocation(line, col));
+            GDValueSourceLocation(indexOpt, line, col));
 }
 
 
-void expectEqLoc(GDValue const &actual, GDValue const &expect,
-                 int line, int col)
+void expectEqLoc(
+  GDValue const &actual,
+  GDValue const &expect,
+  std::optional<std::string> fnameOpt,
+  int line,
+  int col)
 {
   EXPECT_EQ(actual, expect);
-  expectLoc(actual, line, col);
+  expectLoc(actual, fnameOpt, line, col);
 }
 
 
@@ -50,16 +60,16 @@ void test_basics()
   std::string const fname("fn");
   GDValueReader reader(iss, fname);
   EXPECT_EQ(reader.getLocation(), FileLineCol(fname, 1, 1, 0));
-  expectEqLoc(reader.readNextValue().value(), GDValue(1), 1,1);
+  expectEqLoc(reader.readNextValue().value(), GDValue(1), fname, 1,1);
 
   // We stop at the separating space, since seeing that is enough to
   // know that the value "1" is complete.
   EXPECT_EQ(reader.getLocation(), FileLineCol(fname, 1, 2, 1));
 
-  expectEqLoc(reader.readNextValue().value(), GDValue(2), 1,3);
+  expectEqLoc(reader.readNextValue().value(), GDValue(2), fname, 1,3);
   EXPECT_EQ(reader.getLocation(), FileLineCol(fname, 1, 4, 3));
 
-  expectEqLoc(reader.readNextValue().value(), GDValue(3), 1,5);
+  expectEqLoc(reader.readNextValue().value(), GDValue(3), fname, 1,5);
   EXPECT_EQ(reader.getLocation(), FileLineCol(fname, 1, 6, 5));
 
   EXPECT_FALSE(reader.readNextValue().has_value());
@@ -77,7 +87,7 @@ void test_error()
   GDValueReader reader(iss, fname);
   EXPECT_EQ(reader.getLocation(), FileLineCol(fname, 1, 1, 0));
 
-  expectEqLoc(reader.readNextValue().value(), GDValue(1), 1,1);
+  expectEqLoc(reader.readNextValue().value(), GDValue(1), fname, 1,1);
   EXPECT_EQ(reader.getLocation(), FileLineCol(fname, 1, 2, 1));
 
   EXPECT_EXN_SUBSTR(reader.readNextValue(),
@@ -107,7 +117,7 @@ void test_locations()
     ]
   )");
 
-  expectLoc(value, 2,5);
+  expectLoc(value, {}, 2,5);
 
   EXPECT_EQ(value.dumpToString(), R"(/*2:5*/[
   /*3:7*/null
@@ -185,6 +195,28 @@ void test_skipWhitespaceAndComments()
 }
 
 
+// TODO: Maybe move this someplace more general?
+GDValue fromGDVN_asIfFile(char const *gdvn, char const *fname)
+{
+  std::istringstream iss;
+  iss.str(gdvn);
+
+  GDValueReader reader(iss, fname);
+  return reader.readExactlyOneValue();
+}
+
+
+void test_fileLoc()
+{
+  EXPECT_EQ(fromGDVN_asIfFile("[1 2 3]", "somefile.gdvn").dumpToString(),
+    "/*somefile.gdvn:1:1*/[\n"
+    "  /*somefile.gdvn:1:2*/1\n"
+    "  /*somefile.gdvn:1:4*/2\n"
+    "  /*somefile.gdvn:1:6*/3\n"
+    "]\n");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -195,6 +227,7 @@ void test_gdvalue_reader()
   test_error();
   test_locations();
   test_skipWhitespaceAndComments();
+  test_fileLoc();
 }
 
 

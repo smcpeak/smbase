@@ -16,16 +16,10 @@
 OPEN_NAMESPACE(gdv)
 
 
-// Type size should be 64 bits.
-static_assert(sizeof(GDValueKindSourceLocation) == 8);
-
-// The `kind` must fit into 8 bits.
-static_assert(NUM_GDVALUE_KINDS <= 256);
-
-
 GDValueKindSourceLocation::GDValueKindSourceLocation(GDValueKind kind)
 :
   m_kind(static_cast<unsigned>(kind)),
+  m_fileIndex(0),
   m_line(0),
   m_column(0)
 {}
@@ -36,6 +30,7 @@ GDValueKindSourceLocation::GDValueKindSourceLocation(
   GDValueSourceLocation loc)
 :
   m_kind(static_cast<unsigned>(kind)),
+  m_fileIndex(loc.fileIndexOrZero()),
   m_line(loc.line()),
   m_column(loc.column())
 {
@@ -47,6 +42,7 @@ GDValueKindSourceLocation::GDValueKindSourceLocation(
   GDValueKindSourceLocation const &obj)
 :
   DMEMB(m_kind),
+  DMEMB(m_fileIndex),
   DMEMB(m_line),
   DMEMB(m_column)
 {}
@@ -57,6 +53,7 @@ GDValueKindSourceLocation &GDValueKindSourceLocation::operator=(
 {
   if (this != &obj) {
     CMEMB(m_kind);
+    CMEMB(m_fileIndex);
     CMEMB(m_line);
     CMEMB(m_column);
   }
@@ -67,6 +64,9 @@ GDValueKindSourceLocation &GDValueKindSourceLocation::operator=(
 void GDValueKindSourceLocation::selfCheck() const
 {
   xassert(m_kind < NUM_GDVALUE_KINDS);
+  if (m_line == 0) {
+    xassert(m_fileIndex == 0);
+  }
   xassert((m_line==0) == (m_column==0));
 }
 
@@ -78,6 +78,8 @@ int GDValueKindSourceLocation::compareTo(GDValueKindSourceLocation const &b) con
   auto const &a = *this;
 
   RET_IF_COMPARE_MEMBERS(m_kind);
+
+  RET_IF_COMPARE_MEMBERS(m_fileIndex);
 
   // Since absent is represented by 0, which is less than any present
   // line number, this will ensure that absent compares as less than any
@@ -128,7 +130,10 @@ GDValueSourceLocation GDValueKindSourceLocation::sourceLocation() const
 {
   xassertPrecondition(hasSourceLocation());
 
-  return GDValueSourceLocation(m_line, m_column);
+  return GDValueSourceLocation(
+    m_fileIndex? std::make_optional(m_fileIndex) : std::nullopt,
+    m_line,
+    m_column);
 }
 
 
@@ -145,6 +150,7 @@ std::optional<GDValueSourceLocation> GDValueKindSourceLocation::sourceLocationOp
 
 void GDValueKindSourceLocation::clearSourceLocation()
 {
+  m_fileIndex = 0;
   m_line = 0;
   m_column = 0;
   selfCheck();
@@ -154,6 +160,7 @@ void GDValueKindSourceLocation::clearSourceLocation()
 void GDValueKindSourceLocation::setSourceLocation(
   GDValueSourceLocation loc)
 {
+  m_fileIndex = loc.fileIndexOrZero();
   m_line = loc.line();
   m_column = loc.column();
   selfCheck();
