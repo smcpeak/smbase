@@ -483,6 +483,7 @@ UNIT_TEST_OBJS += sm-env-test.o
 UNIT_TEST_OBJS += sm-file-util-test.o
 UNIT_TEST_OBJS += sm-integer-test.o
 UNIT_TEST_OBJS += sm-is-equal-test.o
+UNIT_TEST_OBJS += sm-macros-test.o
 UNIT_TEST_OBJS += sm-pp-util-test.o
 UNIT_TEST_OBJS += sm-random-test.o
 UNIT_TEST_OBJS += sm-rc-ptr-test.o

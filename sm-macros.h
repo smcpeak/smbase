@@ -51,6 +51,10 @@
 // Same, but moving the parameter.
 #define IMEMBMFP(param) m_##param(std::move(param))
 
+// Swap members from within a member `swap` function.  Caller should
+// `#include <utility>` and `using std::swap`.
+#define SWAP_MEMB(memb) swap(memb, obj.memb)
+
 
 // Within a method that is writing the fields of an object, this will
 // write one such field
