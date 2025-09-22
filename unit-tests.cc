@@ -199,6 +199,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(stringf);
   RUN_TEST(stringset);
   RUN_TEST(strutil);
+  RUN_TEST(sum_tree);
   RUN_TEST(svdict);
   RUN_TEST(swap_util);
   RUN_TEST(syserr);

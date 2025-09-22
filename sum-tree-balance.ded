@@ -1,0 +1,828 @@
+{
+  "drawFileName": true,
+  "entities": [
+    {
+      "loc": {
+        "x": 15,
+        "y": 25
+      },
+      "name": "if (this->balanceFactor() > 1):",
+      "nameAlign": "TA_LEFT",
+      "shape": "ES_NO_SHAPE",
+      "size": {
+        "h": 20,
+        "w": 170
+      }
+    },
+    {
+      "loc": {
+        "x": 210,
+        "y": 15
+      },
+      "name": "this(H+3)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 250,
+        "y": 55
+      },
+      "name": "b(H)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 55,
+        "y": 135
+      },
+      "name": "if (m_left->balanceFactor() < 0):",
+      "nameAlign": "TA_LEFT",
+      "shape": "ES_NO_SHAPE",
+      "size": {
+        "h": 20,
+        "w": 180
+      }
+    },
+    {
+      "loc": {
+        "x": 255,
+        "y": 130
+      },
+      "name": "this(H+3)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 210,
+        "y": 170
+      },
+      "name": "a(H+2)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 295,
+        "y": 170
+      },
+      "name": "b(H)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 170,
+        "y": 210
+      },
+      "name": "c(H)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 255,
+        "y": 210
+      },
+      "name": "d(H+1)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 200,
+        "y": 250
+      },
+      "name": "e(H or H-1)",
+      "size": {
+        "h": 20,
+        "w": 85
+      }
+    },
+    {
+      "loc": {
+        "x": 300,
+        "y": 250
+      },
+      "name": "f(H or H-1)",
+      "size": {
+        "h": 20,
+        "w": 85
+      }
+    },
+    {
+      "loc": {
+        "x": 700,
+        "y": 180
+      },
+      "name": "this(H+3)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 590,
+        "y": 260
+      },
+      "name": "y(H+1)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 740,
+        "y": 220
+      },
+      "name": "b(H)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 545,
+        "y": 300
+      },
+      "name": "c(H)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 645,
+        "y": 220
+      },
+      "name": "x(H+2)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 630,
+        "y": 300
+      },
+      "name": "e(H or H-1)",
+      "size": {
+        "h": 20,
+        "w": 85
+      }
+    },
+    {
+      "loc": {
+        "x": 680,
+        "y": 260
+      },
+      "name": "f(H or H-1)",
+      "size": {
+        "h": 20,
+        "w": 85
+      }
+    },
+    {
+      "loc": {
+        "x": 165,
+        "y": 55
+      },
+      "name": "a(H+2)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 110,
+        "y": 95
+      },
+      "name": "c(H+1 or H)",
+      "size": {
+        "h": 20,
+        "w": 85
+      }
+    },
+    {
+      "loc": {
+        "x": 210,
+        "y": 95
+      },
+      "name": "d(H+1 or H)",
+      "size": {
+        "h": 20,
+        "w": 85
+      }
+    },
+    {
+      "loc": {
+        "x": 305,
+        "y": 95
+      },
+      "name": "not both H",
+      "nameAlign": "TA_LEFT",
+      "shape": "ES_NO_SHAPE",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 395,
+        "y": 250
+      },
+      "name": "not both H-1",
+      "nameAlign": "TA_LEFT",
+      "shape": "ES_NO_SHAPE",
+      "size": {
+        "h": 20,
+        "w": 80
+      }
+    },
+    {
+      "loc": {
+        "x": 645,
+        "y": 345
+      },
+      "name": "this(H+2)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 550,
+        "y": 385
+      },
+      "name": "y(H+1)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 790,
+        "y": 425
+      },
+      "name": "b(H)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 505,
+        "y": 425
+      },
+      "name": "c(H)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 740,
+        "y": 385
+      },
+      "name": "z(H+1)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 590,
+        "y": 425
+      },
+      "name": "e(H or H-1)",
+      "size": {
+        "h": 20,
+        "w": 85
+      }
+    },
+    {
+      "loc": {
+        "x": 690,
+        "y": 425
+      },
+      "name": "f(H or H-1)",
+      "size": {
+        "h": 20,
+        "w": 85
+      }
+    },
+    {
+      "loc": {
+        "x": 55,
+        "y": 300
+      },
+      "name": "else /*m_left->balanceFactor() >= 0*/:",
+      "nameAlign": "TA_LEFT",
+      "shape": "ES_NO_SHAPE",
+      "size": {
+        "h": 20,
+        "w": 220
+      }
+    },
+    {
+      "loc": {
+        "x": 285,
+        "y": 295
+      },
+      "name": "this(H+3)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 240,
+        "y": 335
+      },
+      "name": "a(H+2)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 325,
+        "y": 335
+      },
+      "name": "b(H)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 200,
+        "y": 375
+      },
+      "name": "c(H+1)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 285,
+        "y": 375
+      },
+      "name": "d(H+1 or H)",
+      "size": {
+        "h": 20,
+        "w": 85
+      }
+    },
+    {
+      "loc": {
+        "x": 285,
+        "y": 420
+      },
+      "name": "this(H+2)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 335,
+        "y": 460
+      },
+      "name": "(H+2 or H+1)",
+      "size": {
+        "h": 20,
+        "w": 90
+      }
+    },
+    {
+      "loc": {
+        "x": 390,
+        "y": 500
+      },
+      "name": "b(H)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 235,
+        "y": 460
+      },
+      "name": "c(H+1)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 285,
+        "y": 500
+      },
+      "name": "d(H+1 or H)",
+      "size": {
+        "h": 20,
+        "w": 85
+      }
+    },
+    {
+      "loc": {
+        "x": 635,
+        "y": 15
+      },
+      "name": "this(H+3)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 685,
+        "y": 55
+      },
+      "name": "(H+2)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 735,
+        "y": 95
+      },
+      "name": "b(H)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 590,
+        "y": 55
+      },
+      "name": "c(H)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 640,
+        "y": 95
+      },
+      "name": "d(H+1)",
+      "size": {
+        "h": 20,
+        "w": 70
+      }
+    },
+    {
+      "loc": {
+        "x": 585,
+        "y": 135
+      },
+      "name": "e(H or H-1)",
+      "size": {
+        "h": 20,
+        "w": 85
+      }
+    },
+    {
+      "loc": {
+        "x": 685,
+        "y": 135
+      },
+      "name": "f(H or H-1)",
+      "size": {
+        "h": 20,
+        "w": 85
+      }
+    },
+    {
+      "loc": {
+        "x": 780,
+        "y": 135
+      },
+      "name": "not both H-1",
+      "nameAlign": "TA_LEFT",
+      "shape": "ES_NO_SHAPE",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    },
+    {
+      "loc": {
+        "x": 715,
+        "y": 15
+      },
+      "name": "unbalanced!",
+      "nameAlign": "TA_LEFT",
+      "shape": "ES_NO_SHAPE",
+      "size": {
+        "h": 20,
+        "w": 75
+      }
+    }
+  ],
+  "inheritances": [],
+  "objectGraph": {},
+  "objectGraphConfig": {
+    "newNodeAttributes": null,
+    "newNodeName": null,
+    "showFields": []
+  },
+  "relations": [
+    {
+      "end": {"entityRef": 18},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 1}
+    },
+    {
+      "end": {"entityRef": 2},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 1}
+    },
+    {
+      "end": {"entityRef": 5},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 4}
+    },
+    {
+      "end": {"entityRef": 6},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 4}
+    },
+    {
+      "end": {"entityRef": 7},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 5}
+    },
+    {
+      "end": {"entityRef": 8},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 5}
+    },
+    {
+      "end": {"entityRef": 9},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 8}
+    },
+    {
+      "end": {"entityRef": 10},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 8}
+    },
+    {
+      "end": {"entityRef": 15},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 11}
+    },
+    {
+      "end": {"entityRef": 13},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 11}
+    },
+    {
+      "end": {"entityRef": 14},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 12}
+    },
+    {
+      "end": {"entityRef": 16},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 12}
+    },
+    {
+      "end": {"entityRef": 17},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 15}
+    },
+    {
+      "end": {"entityRef": 19},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 18}
+    },
+    {
+      "end": {"entityRef": 20},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 18}
+    },
+    {
+      "end": {"entityRef": 12},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 15}
+    },
+    {
+      "end": {"entityRef": 27},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 23}
+    },
+    {
+      "end": {"entityRef": 25},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 27}
+    },
+    {
+      "end": {"entityRef": 26},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 24}
+    },
+    {
+      "end": {"entityRef": 28},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 24}
+    },
+    {
+      "end": {"entityRef": 29},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 27}
+    },
+    {
+      "end": {"entityRef": 24},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 23}
+    },
+    {
+      "end": {"entityRef": 32},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 31}
+    },
+    {
+      "end": {"entityRef": 33},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 31}
+    },
+    {
+      "end": {"entityRef": 34},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 32}
+    },
+    {
+      "end": {"entityRef": 35},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 32}
+    },
+    {
+      "end": {"entityRef": 37},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 36}
+    },
+    {
+      "end": {"entityRef": 38},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 37}
+    },
+    {
+      "end": {"entityRef": 39},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 36}
+    },
+    {
+      "end": {"entityRef": 40},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 37}
+    },
+    {
+      "end": {"entityRef": 42},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 41}
+    },
+    {
+      "end": {"entityRef": 43},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 42}
+    },
+    {
+      "end": {"entityRef": 44},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 41}
+    },
+    {
+      "end": {"entityRef": 45},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 42}
+    },
+    {
+      "end": {"entityRef": 46},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 45}
+    },
+    {
+      "end": {"entityRef": 47},
+      "routingAlg": "RA_DIRECT",
+      "start": {"entityRef": 45}
+    },
+    {
+      "controlPts": [{
+        "x": 540,
+        "y": 35
+      }],
+      "end": {"pt": {
+        "x": 625,
+        "y": 25
+      }},
+      "label": "WRONG: this->rotateRight()",
+      "labelSegmentNumber": 1,
+      "start": {"pt": {
+        "x": 340,
+        "y": 135
+      }}
+    },
+    {
+      "controlPts": [{
+        "x": 540,
+        "y": 180
+      }],
+      "end": {"pt": {
+        "x": 690,
+        "y": 190
+      }},
+      "label": "m_left->rotateLeft()",
+      "labelSegmentNumber": 3,
+      "start": {"pt": {
+        "x": 340,
+        "y": 145
+      }}
+    },
+    {
+      "controlPts": [{
+        "x": 860,
+        "y": 250
+      }],
+      "end": {"pt": {
+        "x": 740,
+        "y": 350
+      }},
+      "label": "this->rotateRight()",
+      "labelSegmentNumber": 3,
+      "start": {"pt": {
+        "x": 785,
+        "y": 190
+      }}
+    },
+    {
+      "controlPts": [{
+        "x": 480,
+        "y": 365
+      }],
+      "end": {"pt": {
+        "x": 365,
+        "y": 425
+      }},
+      "label": "this->rotateRight()",
+      "labelSegmentNumber": 3,
+      "start": {"pt": {
+        "x": 365,
+        "y": 305
+      }}
+    }
+  ],
+  "type": "Diagram Editor Diagram",
+  "version": 32,
+  "windowSize": {
+    "h": 549,
+    "w": 895
+  }
+}
