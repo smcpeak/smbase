@@ -423,6 +423,16 @@ void test_TIMED_TEST_FUNC()
 }
 
 
+void test_DIAG2()
+{
+  // Verified manually.
+  DIAG("diagnostic level 1");
+  DIAG2("diagnostic level 2");
+  DIAGN(3, "diagnostic level 3");
+  DIAGN(4, "diagnostic level 4");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -456,6 +466,7 @@ void test_sm_test()
   test_wrong_exn();
   test_TEST_FUNC();
   test_TIMED_TEST_FUNC();
+  test_DIAG2();
 
   test_sm_test2();
 }

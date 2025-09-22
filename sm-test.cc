@@ -28,7 +28,7 @@
 using namespace smbase;
 
 
-int verbose = !!std::getenv("VERBOSE");
+int verbose = envAsIntOr(0, "VERBOSE");
 
 
 char const * NULLABLE g_argv0 = nullptr;

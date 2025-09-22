@@ -26,9 +26,9 @@
 #include <stdio.h>                     // printf
 
 
-// This is set, in a global initializer, to true if the "VERBOSE"
-// environment variable is set.  Tests can use it to control whether
-// they print extra diagnostics.
+// This is set, in a global initializer, to the numeric value of the
+// "VERBOSE" environment variable is that is set, otherwise 0.  Tests
+// can use it to control whether they print extra diagnostics.
 //
 // This has type `int` so it can be used from C modules too.
 extern int verbose;
@@ -145,6 +145,13 @@ std::ostream &getTout();
   if (verbose) {                     \
     std::cout << stuff << std::endl; \
   }
+
+#define DIAGN(n, stuff)              \
+  if (verbose >= n) {                \
+    std::cout << stuff << std::endl; \
+  }
+
+#define DIAG2(stuff) DIAGN(2, stuff)
 
 
 // Timer meant for use in test code as a very crude profiler.
