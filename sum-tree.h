@@ -15,6 +15,9 @@
 #include "sum-tree-iface.h"            // interface for this module
 
 #include "smbase/chained-cond.h"       // smbase::cc::le_le
+#include "smbase/gdvalue-unique-ptr.h" // gdv::toGDValue(std::unique_ptr)
+#include "smbase/gdvalue.h"            // gdv::GDValue
+#include "smbase/get-type-name.h"      // smbase::GetTypeName
 #include "smbase/xassert.h"            // xassert, smbase::xassertPtr
 
 #include <algorithm>                   // std::max
@@ -35,6 +38,16 @@ SumTree<T>::Node::Node(Summary summary, int height)
   m_summary(summary),
   m_height(height)
 {}
+
+
+template <typename T>
+void SumTree<T>::Node::writeNodeMembers(gdv::GDValue &m) const
+{
+  using namespace gdv;
+
+  GDV_WRITE_MEMBER_SYM(m_summary);
+  GDV_WRITE_MEMBER_SYM(m_height);
+}
 
 
 // --------------------------- InteriorNode ----------------------------
@@ -211,6 +224,21 @@ auto SumTree<T>::InteriorNode::getAllElements(
 
 
 template <typename T>
+SumTree<T>::InteriorNode::operator gdv::GDValue() const
+{
+  using namespace gdv;
+
+  GDValue m(GDVK_TAGGED_ORDERED_MAP, "InteriorNode"_sym);
+  this->writeNodeMembers(m);
+  m.mapSetValueAtSym("balanceFactor", balanceFactor());
+  GDV_WRITE_MEMBER_SYM(m_left);
+  GDV_WRITE_MEMBER_SYM(m_right);
+
+  return m;
+}
+
+
+template <typename T>
 auto SumTree<T>::InteriorNode::append(T const &t) -> NodeUPtr
 {
   // Appends always go into right subtree.
@@ -283,6 +311,19 @@ auto SumTree<T>::Leaf::getAllElements(
 
 
 template <typename T>
+SumTree<T>::Leaf::operator gdv::GDValue() const
+{
+  using namespace gdv;
+
+  GDValue m(GDVK_TAGGED_ORDERED_MAP, "Leaf"_sym);
+  this->writeNodeMembers(m);
+  GDV_WRITE_MEMBER_SYM(m_data);
+
+  return m;
+}
+
+
+template <typename T>
 auto SumTree<T>::Leaf::append(T const &t) -> NodeUPtr
 {
   return std::make_unique<InteriorNode>(
@@ -312,6 +353,7 @@ void SumTree<T>::selfCheck() const
 }
 
 
+// -------------------------- SumTree Queries --------------------------
 template <typename T>
 typename SumTree<T>::Summary SumTree<T>::summary() const
 {
@@ -341,6 +383,22 @@ auto SumTree<T>::allElements() const -> std::vector<LookupResult>
 }
 
 
+template <typename T>
+SumTree<T>::operator gdv::GDValue() const
+{
+  using namespace gdv;
+
+  GDValue m(GDVK_TAGGED_ORDERED_MAP, "SumTree"_sym);
+
+  m.orderedMapSetValueAtSym("T",
+    GDVSymbol(smbase::GetTypeName<T>::name()));
+  GDV_WRITE_MEMBER_SYM(m_root);
+
+  return m;
+}
+
+
+// ----------------------- SumTree Modifications -----------------------
 template <typename T>
 void SumTree<T>::append(T const &t)
 {

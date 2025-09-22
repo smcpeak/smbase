@@ -6,6 +6,7 @@
 #ifndef SMBASE_SUM_TREE_IFACE_H
 #define SMBASE_SUM_TREE_IFACE_H
 
+#include "smbase/gdvalue-fwd.h"        // gdv::GDValue [n]
 #include "smbase/std-utility-fwd.h"    // std::pair [n]
 #include "smbase/std-vector-fwd.h"     // stdfwd::vector [n]
 
@@ -93,6 +94,12 @@ private:     // types
       stdfwd::vector<LookupResult> &dest /*APPEND*/,
       Summary s) const = 0;
 
+    // Dump internal tree.
+    virtual operator gdv::GDValue() const = 0;
+
+    // Add to `m` the members declared in `Node`.
+    void writeNodeMembers(gdv::GDValue &m) const;
+
     // Insert `t` into the subtree rooted at `this`.
     //
     // When this method is invoked, `this` is *detached* from the tree;
@@ -142,6 +149,7 @@ private:     // types
     // Assert local invariants only.
     void localSelfCheck() const;
 
+    // Node method overrides.
     virtual void selfCheck() const override;
     virtual InteriorNode *asInteriorNode() override;
     virtual LookupResult lookup(Summary s) const override;
@@ -149,6 +157,7 @@ private:     // types
     virtual Summary getAllElements(
       stdfwd::vector<LookupResult> &dest /*APPEND*/,
       Summary s) const override;
+    virtual operator gdv::GDValue() const override;
     virtual NodeUPtr append(T const &t) override;
   };
 
@@ -163,6 +172,7 @@ private:     // types
     // Computes the summary from the provided data.
     Leaf(T const &data);
 
+    // Node method overrides.
     virtual void selfCheck() const override;
     virtual InteriorNode *asInteriorNode() override;
     virtual LookupResult lookup(Summary s) const override;
@@ -170,6 +180,7 @@ private:     // types
     virtual Summary getAllElements(
       stdfwd::vector<LookupResult> &dest /*APPEND*/,
       Summary s) const override;
+    virtual operator gdv::GDValue() const override;
     virtual NodeUPtr append(T const &t) override;
   };
 
@@ -200,6 +211,9 @@ public:      // methods
   // Return the sequence of elements, and for each, the summary of all
   // preceding elements.
   stdfwd::vector<LookupResult> allElements() const;
+
+  // Dump internal tree.  Requires that `toGDValue(T)` exist.
+  operator gdv::GDValue() const;
 
   // -------------------------- Modifications --------------------------
   // Add `t` to the end of the sequence.

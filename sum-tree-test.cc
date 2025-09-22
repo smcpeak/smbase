@@ -64,11 +64,6 @@ public:      // methods
     xfailure("not reached");
   }
 
-  void append(T const &t)
-  {
-    m_vec.push_back(t);
-  }
-
   std::vector<LookupResult> allElements() const
   {
     std::vector<LookupResult> ret;
@@ -80,6 +75,20 @@ public:      // methods
     }
 
     return ret;
+  }
+
+  operator GDValue() const
+  {
+    GDValue m(GDVK_TAGGED_ORDERED_MAP, "Ref"_sym);
+
+    GDV_WRITE_MEMBER_SYM(m_vec);
+
+    return m;
+  }
+
+  void append(T const &t)
+  {
+    m_vec.push_back(t);
   }
 };
 
@@ -155,15 +164,25 @@ public:      // methods
     return actual;
   }
 
+  std::vector<LookupResult> allElements() const
+  {
+    return m_sumTree.allElements();
+  }
+
+  operator GDValue() const
+  {
+    GDValue m(GDVK_TAGGED_ORDERED_MAP, "BothTrees"_sym);
+
+    GDV_WRITE_MEMBER_SYM(m_sumTree);
+    GDV_WRITE_MEMBER_SYM(m_refTree);
+
+    return m;
+  }
+
   void append(T const &t)
   {
     m_sumTree.append(t);
     m_refTree.append(t);
-  }
-
-  std::vector<LookupResult> allElements() const
-  {
-    return m_sumTree.allElements();
   }
 };
 
@@ -238,12 +257,82 @@ void test_basics()
     { i3, 15 },
   }));
 
+  // Tree before any balance rotations are needed.
+  VPVAL(toGDValue(both).asIndentedString());
+  EXPECT_EQ_GDV(toGDValue(both), fromGDVN(R"(
+    BothTrees[
+      sumTree: SumTree[
+        T: `{anonymous}::SummarizableInt`
+        root: InteriorNode[
+          summary: 22
+          height: 2
+          balanceFactor: -1
+          left: Leaf[summary:5 height:0 data:5]
+          right: InteriorNode[
+            summary: 17
+            height: 1
+            balanceFactor: 0
+            left: Leaf[summary:10 height:0 data:10]
+            right: Leaf[summary:7 height:0 data:7]
+          ]
+        ]
+      ]
+      refTree: Ref[vec:[5 10 7]]
+    ]
+  )"));
+
+  SummarizableInt i4{9};
+  VPVAL(i4.m_value);
+  both.append(i4);
+  both.selfCheck();
+
+  EXPECT_EQ(both.summary(), 31);
+
+  EXPECT_EQ_GDVSER(both.allElements(), (std::vector<BT::LookupResult>{
+    { i1, 0 },
+    { i2, 5 },
+    { i3, 15 },
+    { i4, 22 },
+  }));
+
+  // Result of insertion that triggers balance rotations.
+  VPVAL(toGDValue(both).asIndentedString());
+  EXPECT_EQ_GDV(toGDValue(both), fromGDVN(R"(
+    BothTrees[
+      sumTree: SumTree[
+        T: `{anonymous}::SummarizableInt`
+        root: InteriorNode[
+          summary: 31
+          height: 2
+          balanceFactor: 0
+          left: InteriorNode[
+            summary: 15
+            height: 1
+            balanceFactor: 0
+            left: Leaf[summary:5 height:0 data:5]
+            right: Leaf[summary:10 height:0 data:10]
+          ]
+          right: InteriorNode[
+            summary: 16
+            height: 1
+            balanceFactor: 0
+            left: Leaf[summary:7 height:0 data:7]
+            right: Leaf[summary:9 height:0 data:9]
+          ]
+        ]
+      ]
+      refTree: Ref[vec:[5 10 7 9]]
+    ]
+  )"));
+
   for (int i=0; i < 20; ++i) {
     EXN_CONTEXT_EXPR(i);
     both.append({i});
     both.selfCheck();
-    EXPECT_EQ(both.summary(), 22 + (i * (i+1) / 2));
+    EXPECT_EQ(both.summary(), 31 + (i * (i+1) / 2));
   }
+
+  VPVAL(toGDValue(both).asIndentedString());
 }
 
 
