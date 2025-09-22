@@ -35,6 +35,13 @@ bool envAsBool(char const *envvar);
 // Return the value of `envvar`, or an empty string if it is not set.
 char const *envOrEmpty(char const *envvar);
 
+// If `envvar` is set, return its value.  Otherwise return
+// `defaultValue`.
+//
+// Note the argument order, which follows that of `envAsIntOr`.
+char const *envAsStringOr(char const *defaultValue, char const *envvar);
+
+
 // Get the value of $XDG_CONFIG_HOME or its default if unset.  The
 // default is "$HOME/.config".  If $HOME is unset, returns ".config".
 //

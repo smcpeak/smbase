@@ -162,6 +162,19 @@ void testGetXDGStateHome()
 }
 
 
+void test_envAsStringOr()
+{
+  TEST_CASE(__func__);
+
+  testEnvMap = EnvMap{
+    { "foo", "bar" }
+  };
+
+  EXPECT_EQ(envAsStringOr("otherfoo", "foo"), "bar");
+  EXPECT_EQ(envAsStringOr("else", "something"), "else");
+}
+
+
 void testActualEnv()
 {
   // By setting envvar VERBOSE=1, these can be tested interactively.
@@ -188,6 +201,7 @@ void test_sm_env()
     testEnvOrEmpty();
     testGetXDGConfigHome();
     testGetXDGStateHome();
+    test_envAsStringOr();
   }
 
   // Run this with the real environment.

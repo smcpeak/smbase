@@ -47,11 +47,17 @@ bool envAsBool(char const *envvar)
 
 char const *envOrEmpty(char const *envvar)
 {
+  return envAsStringOr("", envvar);
+}
+
+
+char const *envAsStringOr(char const *defaultValue, char const *envvar)
+{
   if (char const *value = sm_getenv(envvar)) {
     return value;
   }
   else {
-    return "";
+    return defaultValue;
   }
 }
 
