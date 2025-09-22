@@ -6,11 +6,17 @@
 #ifndef SMBASE_SUM_TREE_IFACE_H
 #define SMBASE_SUM_TREE_IFACE_H
 
+#include "sum-tree-fwd.h"              // fwds for this module
+
 #include "smbase/gdvalue-fwd.h"        // gdv::GDValue [n]
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 #include "smbase/std-utility-fwd.h"    // std::pair [n]
 #include "smbase/std-vector-fwd.h"     // stdfwd::vector [n]
 
 #include <memory>                      // std::unique_ptr
+
+
+OPEN_NAMESPACE(smbase)
 
 
 /* A `SumTree<T>` is a *sequence* of T that can be indexed using a
@@ -222,6 +228,9 @@ public:      // methods
   // Add `t` to the end of the sequence.
   void append(T const &t);
 };
+
+
+CLOSE_NAMESPACE(smbase)
 
 
 #endif // SMBASE_SUM_TREE_IFACE_H

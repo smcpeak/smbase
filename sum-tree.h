@@ -18,12 +18,16 @@
 #include "smbase/gdvalue-unique-ptr.h" // gdv::toGDValue(std::unique_ptr)
 #include "smbase/gdvalue.h"            // gdv::GDValue
 #include "smbase/get-type-name.h"      // smbase::GetTypeName
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 #include "smbase/xassert.h"            // xassert, smbase::xassertPtr
 
 #include <algorithm>                   // std::max
 #include <memory>                      // std::unique_ptr
 #include <utility>                     // std::{move,pair}
 #include <vector>                      // std::vector
+
+
+OPEN_NAMESPACE(smbase)
 
 
 // ------------------------------- Node --------------------------------
@@ -72,7 +76,7 @@ template <typename T>
 void SumTree<T>::InteriorNode::localSelfCheck() const
 {
   xassert(this->m_summary == m_left->m_summary + m_right->m_summary);
-  xassert(smbase::cc::le_le(-1, balanceFactor(), +1));
+  xassert(cc::le_le(-1, balanceFactor(), +1));
 }
 
 
@@ -391,7 +395,7 @@ SumTree<T>::operator gdv::GDValue() const
   GDValue m(GDVK_TAGGED_ORDERED_MAP, "SumTree"_sym);
 
   m.orderedMapSetValueAtSym("T",
-    GDVSymbol(smbase::GetTypeName<T>::name()));
+    GDVSymbol(GetTypeName<T>::name()));
   GDV_WRITE_MEMBER_SYM(m_root);
 
   return m;
@@ -416,6 +420,9 @@ void SumTree<T>::append(T const &t)
     m_root = m_root.release()->append(t);
   }
 }
+
+
+CLOSE_NAMESPACE(smbase)
 
 
 #endif // SMBASE_SUM_TREE_H
