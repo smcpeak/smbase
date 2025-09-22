@@ -216,6 +216,9 @@ public:      // methods
   operator gdv::GDValue() const;
 
   // -------------------------- Modifications --------------------------
+  // Reset to an empty sequence.
+  void clear();
+
   // Add `t` to the end of the sequence.
   void append(T const &t);
 };

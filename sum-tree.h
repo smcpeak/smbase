@@ -400,6 +400,13 @@ SumTree<T>::operator gdv::GDValue() const
 
 // ----------------------- SumTree Modifications -----------------------
 template <typename T>
+void SumTree<T>::clear()
+{
+  m_root.reset();
+}
+
+
+template <typename T>
 void SumTree<T>::append(T const &t)
 {
   if (!m_root) {

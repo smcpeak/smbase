@@ -86,6 +86,11 @@ public:      // methods
     return m;
   }
 
+  void clear()
+  {
+    m_vec.clear();
+  }
+
   void append(T const &t)
   {
     m_vec.push_back(t);
@@ -183,6 +188,12 @@ public:      // methods
   {
     m_sumTree.append(t);
     m_refTree.append(t);
+  }
+
+  void clear()
+  {
+    m_sumTree.clear();
+    m_refTree.clear();
   }
 };
 
@@ -333,6 +344,16 @@ void test_basics()
   }
 
   VPVAL(toGDValue(both).asIndentedString());
+
+  // Test `clear`.
+  both.clear();
+  EXPECT_EQ(both.summary(), 0);
+  both.selfCheck();
+
+  // Make sure we can still `append`.
+  both.append(i1);
+  EXPECT_EQ(both.summary(), 5);
+  both.selfCheck();
 }
 
 
