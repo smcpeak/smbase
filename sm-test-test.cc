@@ -409,6 +409,20 @@ void test_wrong_exn()
 }
 
 
+void test_TEST_FUNC()
+{
+  // Verified manually.
+  TEST_FUNC();
+}
+
+
+void test_TIMED_TEST_FUNC()
+{
+  // Verified manually.
+  TIMED_TEST_FUNC();
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -440,6 +454,8 @@ void test_sm_test()
   test_op_eq();
   test_no_exn();
   test_wrong_exn();
+  test_TEST_FUNC();
+  test_TIMED_TEST_FUNC();
 
   test_sm_test2();
 }

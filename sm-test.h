@@ -147,9 +147,15 @@ std::ostream &getTout();
   }
 
 
-// 2024-06-01: There was a class called `TimedSection` here but I
-// removed it because it did not belong in this file and was not being
-// used.
+// Timer meant for use in test code as a very crude profiler.
+class TimedTestCase {
+  long m_start;
+  char const *m_name;
+
+public:
+  TimedTestCase(char const *name);
+  ~TimedTestCase();
+};
 
 
 // ----------------------------- EXPECT_EQ -----------------------------
@@ -385,6 +391,16 @@ bool op_eq(T const &a, T const &b)
 // Variant of the above that gets the function name automatically.
 #define TEST_FUNC_EXPRS(...) \
   TEST_CASE(__func__ << ": " << GDVN_OMAP_EXPRS(__VA_ARGS__)) /* user ; */
+
+
+// Just the test name, obtained automatically.
+#define TEST_FUNC()                \
+  TEST_CASE(__func__) /* user ; */
+
+// Timed version.
+#define TIMED_TEST_FUNC()                    \
+  TEST_FUNC();                               \
+  TimedTestCase timer(__func__) /* user ; */
 
 
 // -------------------- Randomized testing support ---------------------

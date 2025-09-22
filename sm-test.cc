@@ -7,6 +7,7 @@
 #include "smbase/counting-ostream.h"   // nullOStream
 #include "smbase/exc.h"                // smbase::xmessage
 #include "smbase/gdvalue.h"            // gdv::GDValue
+#include "smbase/nonport.h"            // getMilliseconds
 #include "smbase/overflow.h"           // multiplyWithOverflowCheck
 #include "smbase/pp-file-line.h"       // smbase::PreprocFileLine
 #include "smbase/set-util.h"           // smbase::setInsert
@@ -36,6 +37,20 @@ char const * NULLABLE g_argv0 = nullptr;
 std::ostream &getTout()
 {
   return verbose? std::cout : nullOStream;
+}
+
+
+TimedTestCase::TimedTestCase(char const *name)
+:
+  m_start(getMilliseconds()),
+  m_name(name)
+{}
+
+
+TimedTestCase::~TimedTestCase()
+{
+  long elapsed = getMilliseconds() - m_start;
+  DIAG(m_name << ": " << elapsed << " msecs");
 }
 
 
