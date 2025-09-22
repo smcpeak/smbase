@@ -1430,6 +1430,13 @@ GDValue fromGDVN(std::string_view sv);
 GDValue fromGDVN(char const *str);
 
 
+// Read a value from in-memory `gdvn`, with source location information
+// referring to `fname`.
+GDValue fromGDVN_asIfFile(
+  std::string const &fname,
+  std::string const &gdvn);
+
+
 CLOSE_NAMESPACE(gdv)
 
 

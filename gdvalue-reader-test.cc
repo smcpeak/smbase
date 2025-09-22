@@ -195,20 +195,9 @@ void test_skipWhitespaceAndComments()
 }
 
 
-// TODO: Maybe move this someplace more general?
-GDValue fromGDVN_asIfFile(char const *gdvn, char const *fname)
-{
-  std::istringstream iss;
-  iss.str(gdvn);
-
-  GDValueReader reader(iss, fname);
-  return reader.readExactlyOneValue();
-}
-
-
 void test_fileLoc()
 {
-  EXPECT_EQ(fromGDVN_asIfFile("[1 2 3]", "somefile.gdvn").dumpToString(),
+  EXPECT_EQ(fromGDVN_asIfFile("somefile.gdvn", "[1 2 3]").dumpToString(),
     "/*somefile.gdvn:1:1*/[\n"
     "  /*somefile.gdvn:1:2*/1\n"
     "  /*somefile.gdvn:1:4*/2\n"

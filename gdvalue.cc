@@ -2169,6 +2169,19 @@ GDValue fromGDVN(char const *str)
 }
 
 
+// This function is tested in `gdvalue-reader-test`.
+GDValue fromGDVN_asIfFile(
+  std::string const &fname,
+  std::string const &gdvn)
+{
+  std::istringstream iss;
+  iss.str(gdvn);
+
+  GDValueReader reader(iss, fname);
+  return reader.readExactlyOneValue();
+}
+
+
 CLOSE_NAMESPACE(gdv)
 
 

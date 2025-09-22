@@ -74,6 +74,63 @@ void test_basics()
 }
 
 
+void test_fileLocs()
+{
+  GDValue defns = fromGDVN_asIfFile("defns", R"(
+    [
+      Define(x 3)
+      Define(square(x) times(x x))
+    ]
+  )");
+  EXPECT_EQ(defns.dumpToString(),
+R"(/*defns:2:5*/[
+  /*defns:3:7*/Define(/*defns:3:14*/x /*defns:3:16*/3)
+  /*defns:4:7*/Define(
+    /*defns:4:14*/square(/*defns:4:21*/x)
+    /*defns:4:24*/times(/*defns:4:30*/x /*defns:4:32*/x)
+  )
+]
+)");
+
+  GDValue uses = fromGDVN_asIfFile("uses", R"(
+    [
+      7
+      x
+      square(5)
+    ]
+  )");
+  EXPECT_EQ(uses.dumpToString(),
+R"(/*uses:2:5*/[
+  /*uses:3:7*/7
+  /*uses:4:7*/x
+  /*uses:5:7*/square(/*uses:5:14*/5)
+]
+)");
+
+  GDValueFnApplyTransform transform;
+  transform.selfCheck();
+
+  // Put the definitions into the environment.
+  transform.transform(defns);
+  transform.selfCheck();
+
+  // Use them.
+  GDValue actual = transform.transform(uses);
+
+  // The main point of this test is that this result has a mixture of
+  // locations based on where each value was originally written.  The
+  // ability to do this is why my original idea of not storing file
+  // locations did not work.
+  EXPECT_EQ(actual.dumpToString(),
+R"(/*uses:2:5*/[
+  /*uses:3:7*/7
+  /*defns:3:16*/3
+  /*defns:4:24*/times(/*uses:5:14*/5 /*uses:5:14*/5)
+]
+)");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -81,6 +138,7 @@ CLOSE_ANONYMOUS_NAMESPACE
 void test_gdvalue_fnapply_transform()
 {
   test_basics();
+  test_fileLocs();
 }
 
 
