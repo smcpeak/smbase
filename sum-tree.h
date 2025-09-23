@@ -65,6 +65,7 @@ SumTree<T>::InteriorNode::InteriorNode(NodeUPtr left, NodeUPtr right)
 :
   Node(left->m_summary + right->m_summary,
        1 + std::max(left->m_height, right->m_height)),
+  m_size(left->size() + right->size()),
   m_left(std::move(left)),
   m_right(std::move(right))
 {
@@ -76,6 +77,7 @@ template <typename T>
 void SumTree<T>::InteriorNode::localSelfCheck() const
 {
   xassert(this->m_summary == m_left->m_summary + m_right->m_summary);
+  xassert(this->m_size == m_left->size() + m_right->size());
   xassert(cc::le_le(-1, balanceFactor(), +1));
 }
 
@@ -90,6 +92,13 @@ void SumTree<T>::InteriorNode::selfCheck() const
 
   m_left->selfCheck();
   m_right->selfCheck();
+}
+
+
+template <typename T>
+auto SumTree<T>::InteriorNode::size() const -> size_type
+{
+  return m_size;
 }
 
 
@@ -191,8 +200,11 @@ void SumTree<T>::InteriorNode::rebuild(NodeUPtr left, NodeUPtr right)
 template <typename T>
 void SumTree<T>::InteriorNode::localRecompute_brokenInvariants()
 {
+  // Node members need `this->` due to template lookup rules.
   this->m_summary = m_left->m_summary + m_right->m_summary;
   this->m_height = 1 + std::max(m_left->m_height, m_right->m_height);
+
+  m_size = m_left->size() + m_right->size();
 }
 
 
@@ -235,6 +247,7 @@ SumTree<T>::InteriorNode::operator gdv::GDValue() const
   GDValue m(GDVK_TAGGED_ORDERED_MAP, "InteriorNode"_sym);
   this->writeNodeMembers(m);
   m.mapSetValueAtSym("balanceFactor", balanceFactor());
+  GDV_WRITE_MEMBER_SYM(m_size);
   GDV_WRITE_MEMBER_SYM(m_left);
   GDV_WRITE_MEMBER_SYM(m_right);
 
@@ -278,6 +291,13 @@ void SumTree<T>::Leaf::selfCheck() const
 {
   xassert(this->m_summary == m_data.summary());
   xassert(this->m_height == 0);
+}
+
+
+template <typename T>
+auto SumTree<T>::Leaf::size() const -> size_type
+{
+  return 1;
 }
 
 
@@ -358,6 +378,13 @@ void SumTree<T>::selfCheck() const
 
 
 // -------------------------- SumTree Queries --------------------------
+template <typename T>
+auto SumTree<T>::size() const -> size_type
+{
+  return m_root? m_root->size() : 0;
+}
+
+
 template <typename T>
 typename SumTree<T>::Summary SumTree<T>::summary() const
 {

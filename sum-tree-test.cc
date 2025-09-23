@@ -22,6 +22,7 @@ OPEN_ANONYMOUS_NAMESPACE
 template <typename T>
 class RefTree {
 public:      // types
+  using size_type = std::size_t;
   using Summary = typename T::Summary;
   using LookupResult = std::pair<T const &, Summary>;
 
@@ -39,6 +40,11 @@ public:      // methods
 
   void selfCheck() const
   {}
+
+  size_type size() const
+  {
+    return m_vec.size();
+  }
 
   Summary summary() const
   {
@@ -102,6 +108,7 @@ public:      // methods
 template <typename T>
 class BothTrees {
 public:      // types
+  using size_type = std::size_t;
   using Summary = typename T::Summary;
   using LookupResult = std::pair<T const &, Summary>;
 
@@ -131,6 +138,7 @@ public:      // methods
     m_sumTree.selfCheck();
     m_refTree.selfCheck();
 
+    EXPECT_EQ(m_sumTree.size(), m_refTree.size());
     EXPECT_EQ(m_sumTree.summary(), m_refTree.summary());
 
     for (Summary s = Summary(); s < m_sumTree.summary(); ++s) {
@@ -149,6 +157,13 @@ public:      // methods
 
       expectEqLR(actualVec.at(i), expectVec.at(i));
     }
+  }
+
+  size_type size() const
+  {
+    size_type actual = m_sumTree.size();
+    EXPECT_EQ(actual, m_refTree.size());
+    return actual;
   }
 
   Summary summary() const
@@ -231,12 +246,15 @@ void test_basics()
   using BT = BothTrees<SummarizableInt>;
   BT both;
   both.selfCheck();
+  EXPECT_EQ(both.size(), 0);
+  EXPECT_EQ(both.summary(), 0);
 
   SummarizableInt i1{5};
   VPVAL(i1.m_value);
   both.append(i1);
   both.selfCheck();
 
+  EXPECT_EQ(both.size(), 1);
   EXPECT_EQ(both.summary(), 5);
 
   EXPECT_EQ_GDVSER(both.allElements(), (std::vector<BT::LookupResult>{
@@ -248,6 +266,7 @@ void test_basics()
   both.append(i2);
   both.selfCheck();
 
+  EXPECT_EQ(both.size(), 2);
   EXPECT_EQ(both.summary(), 15);
 
   EXPECT_EQ_GDVSER(both.allElements(), (std::vector<BT::LookupResult>{
@@ -260,6 +279,7 @@ void test_basics()
   both.append(i3);
   both.selfCheck();
 
+  EXPECT_EQ(both.size(), 3);
   EXPECT_EQ(both.summary(), 22);
 
   EXPECT_EQ_GDVSER(both.allElements(), (std::vector<BT::LookupResult>{
@@ -278,11 +298,13 @@ void test_basics()
           summary: 22
           height: 2
           balanceFactor: -1
+          size: 3
           left: Leaf[summary:5 height:0 data:5]
           right: InteriorNode[
             summary: 17
             height: 1
             balanceFactor: 0
+            size: 2
             left: Leaf[summary:10 height:0 data:10]
             right: Leaf[summary:7 height:0 data:7]
           ]
@@ -297,6 +319,7 @@ void test_basics()
   both.append(i4);
   both.selfCheck();
 
+  EXPECT_EQ(both.size(), 4);
   EXPECT_EQ(both.summary(), 31);
 
   EXPECT_EQ_GDVSER(both.allElements(), (std::vector<BT::LookupResult>{
@@ -316,10 +339,12 @@ void test_basics()
           summary: 31
           height: 2
           balanceFactor: 0
+          size: 4
           left: InteriorNode[
             summary: 15
             height: 1
             balanceFactor: 0
+            size: 2
             left: Leaf[summary:5 height:0 data:5]
             right: Leaf[summary:10 height:0 data:10]
           ]
@@ -327,6 +352,7 @@ void test_basics()
             summary: 16
             height: 1
             balanceFactor: 0
+            size: 2
             left: Leaf[summary:7 height:0 data:7]
             right: Leaf[summary:9 height:0 data:9]
           ]
@@ -340,6 +366,7 @@ void test_basics()
     EXN_CONTEXT_EXPR(i);
     both.append({i});
     both.selfCheck();
+    EXPECT_EQ(both.size(), 5 + i);
     EXPECT_EQ(both.summary(), 31 + (i * (i+1) / 2));
   }
 
@@ -347,11 +374,13 @@ void test_basics()
 
   // Test `clear`.
   both.clear();
+  EXPECT_EQ(both.size(), 0);
   EXPECT_EQ(both.summary(), 0);
   both.selfCheck();
 
   // Make sure we can still `append`.
   both.append(i1);
+  EXPECT_EQ(both.size(), 1);
   EXPECT_EQ(both.summary(), 5);
   both.selfCheck();
 }

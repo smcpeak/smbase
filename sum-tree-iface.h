@@ -13,6 +13,7 @@
 #include "smbase/std-utility-fwd.h"    // std::pair [n]
 #include "smbase/std-vector-fwd.h"     // stdfwd::vector [n]
 
+#include <cstddef>                     // std::size_t
 #include <memory>                      // std::unique_ptr
 
 
@@ -43,6 +44,8 @@ OPEN_NAMESPACE(smbase)
 template <typename T>
 class SumTree {
 public:      // types
+  using size_type = std::size_t;
+
   using Summary = typename T::Summary;
 
   // Result of lookup: a reference to an element, along with the amount
@@ -74,6 +77,9 @@ private:     // types
 
     // Assert invariants, including in subtrees.
     virtual void selfCheck() const = 0;
+
+    // Number of elements in the subtree rooted at `this`.
+    virtual size_type size() const = 0;
 
     // Return `this` as an `InteriorNode*`.  Requires that it is one.
     virtual InteriorNode *asInteriorNode() = 0;
@@ -121,6 +127,11 @@ private:     // types
 
   class InteriorNode : public Node {
   public:      // data
+    // Number of elements in the subtree rooted at `this`.
+    //
+    // Invariant: Equal to the sum of the child sizes.
+    size_type m_size;
+
     // Child subtrees.  Never null.
     //
     // Invariant: The AVL balance condition, i.e., that their heights do
@@ -157,6 +168,7 @@ private:     // types
 
     // Node method overrides.
     virtual void selfCheck() const override;
+    virtual size_type size() const override;
     virtual InteriorNode *asInteriorNode() override;
     virtual LookupResult lookup(Summary s) const override;
     virtual int balanceFactor() const override;
@@ -180,6 +192,7 @@ private:     // types
 
     // Node method overrides.
     virtual void selfCheck() const override;
+    virtual size_type size() const override;
     virtual InteriorNode *asInteriorNode() override;
     virtual LookupResult lookup(Summary s) const override;
     virtual int balanceFactor() const override;
@@ -204,6 +217,9 @@ public:      // methods
   void selfCheck() const;
 
   // ----------------------------- Queries -----------------------------
+  // Number of elements in the sequence.
+  size_type size() const;
+
   // Summary of the entire tree.
   Summary summary() const;
 
