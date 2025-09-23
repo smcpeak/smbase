@@ -27,6 +27,18 @@
 #include <vector>                      // std::vector
 
 
+// If true (the default), run `localSelfCheck`s as a normal part of the
+// algorithm.  This won't affect the asymptotic performance, just
+// constant factors.  This also does not affect what is done when the
+// full (recursive) `selfCheck` runs.
+static bool const doSelfCheckDuringAlgorithm =
+  #ifdef NDEBUG
+    false;
+  #else
+    true;
+  #endif
+
+
 OPEN_NAMESPACE(smbase)
 
 
@@ -69,7 +81,9 @@ SumTree<T>::InteriorNode::InteriorNode(NodeUPtr left, NodeUPtr right)
   m_left(std::move(left)),
   m_right(std::move(right))
 {
-  localSelfCheck();
+  if (doSelfCheckDuringAlgorithm) {
+    localSelfCheck();
+  }
 }
 
 
@@ -147,11 +161,14 @@ void SumTree<T>::InteriorNode::balance()
     this->rotateLeft();
   }
 
-  // Check invariants after all rotations are finished.  When we do two,
-  // the first can temporarily unbalance its pivot node; see diagram.
-  localSelfCheck();
-  m_left->localSelfCheck();
-  m_right->localSelfCheck();
+  if (doSelfCheckDuringAlgorithm) {
+    // Check invariants after all rotations are finished.  When we do
+    // two, the first can temporarily unbalance its pivot node; see
+    // diagram.
+    localSelfCheck();
+    m_left->localSelfCheck();
+    m_right->localSelfCheck();
+  }
 }
 
 
@@ -282,27 +299,16 @@ auto SumTree<T>::InteriorNode::insert(size_type index, T const &t)
 
   auto leftSize = m_left->size();
   if (index < leftSize) {
-  insertOnLeft:    // index == leftSize
     m_left = m_left.release()->insert(index, t);
   }
-
-  else if (index == leftSize) {
-    // We can insert into either child.  Use the balance factor to pick
-    // one in order to minimize subsequent rotations.
-    if (balanceFactor() < 0) {
-      // Left is a little light, so insert there.
-      goto insertOnLeft;
-    }
-    else {
-      // Equal, or right has less; go right.
-      goto insertOnRight;
-    }
-  }
-
-  else /*index > leftSize*/ {
-  insertOnRight:   // index == leftSize
+  else {
     m_right = m_right.release()->insert(index - leftSize, t);
   }
+
+  // In the `index==leftSize` case, we could insert into either child.
+  // I tried using the balance factor to insert into the less-deep
+  // child, but performance measurement showed a slight *decrease* in
+  // speed with that.
 
   // The updated child might make this node unbalanced, but we want to
   // recompute the summary, since if this node *is* still balanced, then

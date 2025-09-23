@@ -5,6 +5,7 @@
 
 #include "smbase/gdvalue-vector.h"     // gdv::toGDValue(std::vector)
 #include "smbase/gdvalue.h"            // gdv::GDValue
+#include "smbase/sm-env.h"             // smbase::envAsBool
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE, EMEMB
 #include "smbase/sm-random.h"          // smbase::RandomChoice
 #include "smbase/sm-test.h"            // EXPECT_EQ
@@ -433,16 +434,17 @@ void test_append()
 }
 
 
+EnvRandomizedTestIters const OUTER_ITERS
+  {5, "STT_INSERT_OUTER_ITERS", 2};
+EnvRandomizedTestIters const INNER_ITERS
+  {50, "STT_INSERT_INNER_ITERS", 2};
+
+
 void test_insert()
 {
   TEST_FUNC();
 
   using BT = BothTrees<SummarizableInt>;
-
-  int const OUTER_ITERS =
-    envRandomizedTestIters(5, "STT_INSERT_OUTER_ITERS", 2);
-  int const INNER_ITERS =
-    envRandomizedTestIters(50, "STT_INSERT_INNER_ITERS", 2);
 
   smbase_loopi(OUTER_ITERS) {
     EXN_CONTEXT_EXPR(i);
@@ -477,14 +479,64 @@ void test_insert()
 }
 
 
+template <typename TREE>
+void test_treePerformance()
+{
+  smbase_loopi(OUTER_ITERS) {
+    EXN_CONTEXT_EXPR(i);
+
+    TREE tree;
+
+    smbase_loopj(INNER_ITERS) {
+      int position = sm_random(tree.size()+1);
+      SummarizableInt value{sm_random(30)};
+
+      tree.insert(position, value);
+      xassert(tree.atC(position) == value);
+    }
+  }
+}
+
+
+void test_sumTreePerformance()
+{
+  TIMED_TEST_FUNC();
+
+  test_treePerformance<SumTree<SummarizableInt>>();
+}
+
+
+void test_refTreePerformance()
+{
+  TIMED_TEST_FUNC();
+
+  test_treePerformance<RefTree<SummarizableInt>>();
+}
+
+
+void test_performance()
+{
+  test_sumTreePerformance();
+  test_refTreePerformance();
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
 // Called from unit-tests.cc.
 void test_sum_tree()
 {
-  test_append();
-  test_insert();
+  bool const perf = envAsBool("PERF");
+
+  if (perf) {
+    test_performance();
+  }
+
+  else {
+    test_append();
+    test_insert();
+  }
 }
 
 
