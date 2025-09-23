@@ -464,6 +464,7 @@ UNIT_TEST_OBJS += objpool-test.o
 UNIT_TEST_OBJS += optional-opll-test.o
 UNIT_TEST_OBJS += optional-util-test.o
 UNIT_TEST_OBJS += ordered-map-test.o
+UNIT_TEST_OBJS += ordered-set-test.o
 UNIT_TEST_OBJS += overflow-test.o
 UNIT_TEST_OBJS += owner-test.o
 UNIT_TEST_OBJS += parsestring-test.o
