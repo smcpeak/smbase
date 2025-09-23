@@ -103,6 +103,21 @@ auto SumTree<T>::InteriorNode::size() const -> size_type
 
 
 template <typename T>
+T const &SumTree<T>::InteriorNode::atC(size_type index) const
+{
+  xassertPrecondition(cc::z_le_lt(index, m_size));
+
+  auto leftSize = m_left->size();
+  if (index < leftSize) {
+    return m_left->atC(index);
+  }
+  else {
+    return m_right->atC(index - leftSize);
+  }
+}
+
+
+template <typename T>
 auto SumTree<T>::InteriorNode::asInteriorNode() -> InteriorNode *
 {
   return this;
@@ -302,6 +317,14 @@ auto SumTree<T>::Leaf::size() const -> size_type
 
 
 template <typename T>
+T const &SumTree<T>::Leaf::atC(size_type index) const
+{
+  xassertPrecondition(index == 0);
+  return m_data;
+}
+
+
+template <typename T>
 auto SumTree<T>::Leaf::asInteriorNode() -> InteriorNode *
 {
   xfailure("Tried to treat a Leaf as an InteriorNode.");
@@ -382,6 +405,14 @@ template <typename T>
 auto SumTree<T>::size() const -> size_type
 {
   return m_root? m_root->size() : 0;
+}
+
+
+template <typename T>
+T const &SumTree<T>::atC(size_type index) const
+{
+  xassertPrecondition(cc::z_le_lt(index, size()));
+  return m_root->atC(index);
 }
 
 

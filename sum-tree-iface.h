@@ -81,6 +81,12 @@ private:     // types
     // Number of elements in the subtree rooted at `this`.
     virtual size_type size() const = 0;
 
+    // Get the `index`th element of those in the subtree rooted at
+    // `this`.
+    //
+    // Requires: 0 <= index < size()
+    virtual T const &atC(size_type index) const = 0;
+
     // Return `this` as an `InteriorNode*`.  Requires that it is one.
     virtual InteriorNode *asInteriorNode() = 0;
 
@@ -169,6 +175,7 @@ private:     // types
     // Node method overrides.
     virtual void selfCheck() const override;
     virtual size_type size() const override;
+    virtual T const &atC(size_type index) const override;
     virtual InteriorNode *asInteriorNode() override;
     virtual LookupResult lookup(Summary s) const override;
     virtual int balanceFactor() const override;
@@ -193,6 +200,7 @@ private:     // types
     // Node method overrides.
     virtual void selfCheck() const override;
     virtual size_type size() const override;
+    virtual T const &atC(size_type index) const override;
     virtual InteriorNode *asInteriorNode() override;
     virtual LookupResult lookup(Summary s) const override;
     virtual int balanceFactor() const override;
@@ -219,6 +227,13 @@ public:      // methods
   // ----------------------------- Queries -----------------------------
   // Number of elements in the sequence.
   size_type size() const;
+
+  // Get an element in the sequence.
+  //
+  // The returned reference is invalidated by any non-const method.
+  //
+  // Requires: 0 <= index < size()
+  T const &atC(size_type index) const;
 
   // Summary of the entire tree.
   Summary summary() const;

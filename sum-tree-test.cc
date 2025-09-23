@@ -46,6 +46,12 @@ public:      // methods
     return m_vec.size();
   }
 
+  T const &atC(size_type index) const
+  {
+    xassertPrecondition(cc::z_le_lt(index, size()));
+    return m_vec.at(index);
+  }
+
   Summary summary() const
   {
     Summary s = Summary();
@@ -138,15 +144,26 @@ public:      // methods
     m_sumTree.selfCheck();
     m_refTree.selfCheck();
 
+    // `size`
     EXPECT_EQ(m_sumTree.size(), m_refTree.size());
+
+    // `atC`
+    for (size_type i=0; i < m_sumTree.size(); ++i) {
+      // This checks equality.
+      atC(i);
+    }
+
+    // `summary`
     EXPECT_EQ(m_sumTree.summary(), m_refTree.summary());
 
+    // `lookup`
     for (Summary s = Summary(); s < m_sumTree.summary(); ++s) {
       EXN_CONTEXT_EXPR(s);
 
       expectEqLR(m_sumTree.lookup(s), m_refTree.lookup(s));
     }
 
+    // `allElements`
     std::vector<LookupResult> actualVec = m_sumTree.allElements();
     std::vector<LookupResult> expectVec = m_refTree.allElements();
 
@@ -163,6 +180,14 @@ public:      // methods
   {
     size_type actual = m_sumTree.size();
     EXPECT_EQ(actual, m_refTree.size());
+    return actual;
+  }
+
+  T const &atC(size_type index) const
+  {
+    T const &actual = m_sumTree.atC(index);
+    T const &expect = m_refTree.atC(index);
+    EXPECT_EQ_GDVSER(actual, expect);
     return actual;
   }
 
@@ -256,6 +281,7 @@ void test_basics()
 
   EXPECT_EQ(both.size(), 1);
   EXPECT_EQ(both.summary(), 5);
+  EXPECT_EQ_GDVSER(both.atC(0), i1);
 
   EXPECT_EQ_GDVSER(both.allElements(), (std::vector<BT::LookupResult>{
     { i1, 0 },
@@ -268,6 +294,8 @@ void test_basics()
 
   EXPECT_EQ(both.size(), 2);
   EXPECT_EQ(both.summary(), 15);
+  EXPECT_EQ_GDVSER(both.atC(0), i1);
+  EXPECT_EQ_GDVSER(both.atC(1), i2);
 
   EXPECT_EQ_GDVSER(both.allElements(), (std::vector<BT::LookupResult>{
     { i1, 0 },
@@ -281,6 +309,9 @@ void test_basics()
 
   EXPECT_EQ(both.size(), 3);
   EXPECT_EQ(both.summary(), 22);
+  EXPECT_EQ_GDVSER(both.atC(0), i1);
+  EXPECT_EQ_GDVSER(both.atC(1), i2);
+  EXPECT_EQ_GDVSER(both.atC(2), i3);
 
   EXPECT_EQ_GDVSER(both.allElements(), (std::vector<BT::LookupResult>{
     { i1, 0 },
@@ -321,6 +352,7 @@ void test_basics()
 
   EXPECT_EQ(both.size(), 4);
   EXPECT_EQ(both.summary(), 31);
+  EXPECT_EQ_GDVSER(both.atC(3), i4);
 
   EXPECT_EQ_GDVSER(both.allElements(), (std::vector<BT::LookupResult>{
     { i1, 0 },
@@ -368,6 +400,7 @@ void test_basics()
     both.selfCheck();
     EXPECT_EQ(both.size(), 5 + i);
     EXPECT_EQ(both.summary(), 31 + (i * (i+1) / 2));
+    EXPECT_EQ_GDVSER(both.atC(4 + i), SummarizableInt{i});
   }
 
   VPVAL(toGDValue(both).asIndentedString());
@@ -382,6 +415,7 @@ void test_basics()
   both.append(i1);
   EXPECT_EQ(both.size(), 1);
   EXPECT_EQ(both.summary(), 5);
+  EXPECT_EQ_GDVSER(both.atC(0), i1);
   both.selfCheck();
 }
 
