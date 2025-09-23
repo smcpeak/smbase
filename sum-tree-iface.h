@@ -258,6 +258,8 @@ public:      // methods
   // Dump internal tree.  Requires that `toGDValue(T)` exist.
   operator gdv::GDValue() const;
 
+  // TODO: Const iterator.
+
   // -------------------------- Modifications --------------------------
   // Reset to an empty sequence.
   void clear();
@@ -271,6 +273,8 @@ public:      // methods
   //
   // Equivalent to: insert(size(), t)
   void append(T const &t);
+
+  // TODO: Ability to modify an element.
 };
 
 

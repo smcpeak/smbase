@@ -212,6 +212,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(vdtllist);
   RUN_TEST(vector_push_pop);
   RUN_TEST(vector_util);
+  RUN_TEST(virtual_address_space);
   RUN_TEST(voidlist);
   RUN_TEST(vptrmap);
   RUN_TEST(windows_handle_ostream);
