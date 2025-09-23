@@ -564,6 +564,18 @@
         "h": 20,
         "w": 75
       }
+    },
+    {
+      "attributes": "Note possibility\nof temporary\nunbalance if\nf height is H-1.",
+      "fillColor": "Yellow",
+      "loc": {
+        "x": 485,
+        "y": 200
+      },
+      "size": {
+        "h": 65,
+        "w": 95
+      }
     }
   ],
   "inheritances": [],
@@ -817,6 +829,13 @@
         "x": 365,
         "y": 305
       }}
+    },
+    {
+      "end": {"pt": {
+        "x": 635,
+        "y": 230
+      }},
+      "start": {"entityRef": 50}
     }
   ],
   "type": "Diagram Editor Diagram",

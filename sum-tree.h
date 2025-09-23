@@ -14,7 +14,7 @@
 
 #include "sum-tree-iface.h"            // interface for this module
 
-#include "smbase/chained-cond.h"       // smbase::cc::le_le
+#include "smbase/chained-cond.h"       // smbase::cc::{le_le,z_le_lt,z_le_le}
 #include "smbase/gdvalue-unique-ptr.h" // gdv::toGDValue(std::unique_ptr)
 #include "smbase/gdvalue.h"            // gdv::GDValue
 #include "smbase/get-type-name.h"      // smbase::GetTypeName
@@ -147,7 +147,11 @@ void SumTree<T>::InteriorNode::balance()
     this->rotateLeft();
   }
 
+  // Check invariants after all rotations are finished.  When we do two,
+  // the first can temporarily unbalance its pivot node; see diagram.
   localSelfCheck();
+  m_left->localSelfCheck();
+  m_right->localSelfCheck();
 }
 
 
@@ -206,9 +210,9 @@ void SumTree<T>::InteriorNode::rebuild(NodeUPtr left, NodeUPtr right)
   m_left = std::move(left);
   m_right = std::move(right);
 
-  // Here, recomputation should suffice to restore invariants.
+  // Even after recomputation, balance invariant might be broken.  See
+  // the `sum-tree-balance.ded.png` diagram.
   localRecompute_brokenInvariants();
-  localSelfCheck();
 }
 
 
@@ -271,10 +275,22 @@ SumTree<T>::InteriorNode::operator gdv::GDValue() const
 
 
 template <typename T>
-auto SumTree<T>::InteriorNode::append(T const &t) -> NodeUPtr
+auto SumTree<T>::InteriorNode::insert(size_type index, T const &t)
+  -> NodeUPtr
 {
-  // Appends always go into right subtree.
-  m_right = m_right.release()->append(t);
+  xassertPrecondition(cc::z_le_le(index, size()));
+
+  auto leftSize = m_left->size();
+  if (index < leftSize) {
+    m_left = m_left.release()->insert(index, t);
+  }
+  else {
+    m_right = m_right.release()->insert(index - leftSize, t);
+  }
+
+  // TODO: Implement a minor optimization: If `index==leftSize`, we can
+  // insert into either subtree.  Use the balance factor to decide where
+  // to put it in order to minimize subsequent rotations.
 
   // The new right child might make this node unbalanced, but we want to
   // recompute the summary, since if this node *is* still balanced, then
@@ -303,6 +319,13 @@ SumTree<T>::Leaf::Leaf(T const &data)
 
 template <typename T>
 void SumTree<T>::Leaf::selfCheck() const
+{
+  localSelfCheck();
+}
+
+
+template <typename T>
+void SumTree<T>::Leaf::localSelfCheck() const
 {
   xassert(this->m_summary == m_data.summary());
   xassert(this->m_height == 0);
@@ -371,11 +394,22 @@ SumTree<T>::Leaf::operator gdv::GDValue() const
 
 
 template <typename T>
-auto SumTree<T>::Leaf::append(T const &t) -> NodeUPtr
+auto SumTree<T>::Leaf::insert(size_type index, T const &t) -> NodeUPtr
 {
-  return std::make_unique<InteriorNode>(
-    NodeUPtr(this),
-    std::make_unique<Leaf>(t));
+  xassertPrecondition(cc::z_le_le(index, size()));
+
+  if (index == 0) {
+    return std::make_unique<InteriorNode>(
+      std::make_unique<Leaf>(t),
+      NodeUPtr(this));
+  }
+
+  else {
+    xassert(index == 1);
+    return std::make_unique<InteriorNode>(
+      NodeUPtr(this),
+      std::make_unique<Leaf>(t));
+  }
 }
 
 
@@ -469,14 +503,24 @@ void SumTree<T>::clear()
 
 
 template <typename T>
-void SumTree<T>::append(T const &t)
+void SumTree<T>::insert(size_type index, T const &t)
 {
+  xassertPrecondition(cc::z_le_le(index, size()));
+
   if (!m_root) {
+    xassert(index == 0);
     m_root = std::make_unique<Leaf>(t);
   }
   else {
-    m_root = m_root.release()->append(t);
+    m_root = m_root.release()->insert(index, t);
   }
+}
+
+
+template <typename T>
+void SumTree<T>::append(T const &t)
+{
+  insert(size(), t);
 }
 
 

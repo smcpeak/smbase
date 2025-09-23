@@ -78,6 +78,9 @@ private:     // types
     // Assert invariants, including in subtrees.
     virtual void selfCheck() const = 0;
 
+    // Assert local invariants only.
+    virtual void localSelfCheck() const = 0;
+
     // Number of elements in the subtree rooted at `this`.
     virtual size_type size() const = 0;
 
@@ -118,15 +121,19 @@ private:     // types
     // Add to `m` the members declared in `Node`.
     void writeNodeMembers(gdv::GDValue &m) const;
 
-    // Insert `t` into the subtree rooted at `this`.
+    // Insert `t` at `index` in the sequence of elements contained in
+    // the subtree rooted at `this`.
     //
     // When this method is invoked, `this` is *detached* from the tree;
     // it is effectively its own owner/unique pointer.
     //
     // Return a unique pointer to the augmented tree, which must either
-    // be `this` itself or a new node owns `this` either directly or
-    // indirectly.
-    virtual std::unique_ptr<Node> append(T const &t) = 0;
+    // be `this` itself or a new node that owns `this` either directly
+    // or indirectly.
+    //
+    // Requires: 0 <= index <= size()
+    virtual std::unique_ptr<Node> insert(
+      size_type index, T const &t) = 0;
   };
 
   using NodeUPtr = std::unique_ptr<Node>;
@@ -169,11 +176,9 @@ private:     // types
     // Computes the summary and height from the children.
     InteriorNode(NodeUPtr left, NodeUPtr right);
 
-    // Assert local invariants only.
-    void localSelfCheck() const;
-
     // Node method overrides.
     virtual void selfCheck() const override;
+    virtual void localSelfCheck() const override;
     virtual size_type size() const override;
     virtual T const &atC(size_type index) const override;
     virtual InteriorNode *asInteriorNode() override;
@@ -183,7 +188,7 @@ private:     // types
       stdfwd::vector<LookupResult> &dest /*APPEND*/,
       Summary s) const override;
     virtual operator gdv::GDValue() const override;
-    virtual NodeUPtr append(T const &t) override;
+    virtual NodeUPtr insert(size_type index, T const &t) override;
   };
 
   class Leaf : public Node {
@@ -199,6 +204,7 @@ private:     // types
 
     // Node method overrides.
     virtual void selfCheck() const override;
+    virtual void localSelfCheck() const override;
     virtual size_type size() const override;
     virtual T const &atC(size_type index) const override;
     virtual InteriorNode *asInteriorNode() override;
@@ -208,7 +214,7 @@ private:     // types
       stdfwd::vector<LookupResult> &dest /*APPEND*/,
       Summary s) const override;
     virtual operator gdv::GDValue() const override;
-    virtual NodeUPtr append(T const &t) override;
+    virtual NodeUPtr insert(size_type index, T const &t) override;
   };
 
 private:     // data
@@ -256,7 +262,14 @@ public:      // methods
   // Reset to an empty sequence.
   void clear();
 
+  // Insert `t` so it has `index` in the resulting sequence.
+  //
+  // Requires: 0 <= index <= size()
+  void insert(size_type index, T const &t);
+
   // Add `t` to the end of the sequence.
+  //
+  // Equivalent to: insert(size(), t)
   void append(T const &t);
 };
 

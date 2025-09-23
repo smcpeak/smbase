@@ -6,6 +6,7 @@
 #include "smbase/gdvalue-vector.h"     // gdv::toGDValue(std::vector)
 #include "smbase/gdvalue.h"            // gdv::GDValue
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE, EMEMB
+#include "smbase/sm-random.h"          // smbase::RandomChoice
 #include "smbase/sm-test.h"            // EXPECT_EQ
 
 #include <vector>                      // std::vector
@@ -101,6 +102,12 @@ public:      // methods
   void clear()
   {
     m_vec.clear();
+  }
+
+  void insert(size_type index, T const &t)
+  {
+    xassertPrecondition(cc::z_le_le(index, size()));
+    m_vec.insert(m_vec.begin() + index, t);
   }
 
   void append(T const &t)
@@ -224,16 +231,22 @@ public:      // methods
     return m;
   }
 
-  void append(T const &t)
-  {
-    m_sumTree.append(t);
-    m_refTree.append(t);
-  }
-
   void clear()
   {
     m_sumTree.clear();
     m_refTree.clear();
+  }
+
+  void insert(size_type index, T const &t)
+  {
+    m_sumTree.insert(index, t);
+    m_refTree.insert(index, t);
+  }
+
+  void append(T const &t)
+  {
+    m_sumTree.append(t);
+    m_refTree.append(t);
   }
 };
 
@@ -264,7 +277,7 @@ public:
 };
 
 
-void test_basics()
+void test_append()
 {
   TEST_FUNC();
 
@@ -394,7 +407,7 @@ void test_basics()
     ]
   )"));
 
-  for (int i=0; i < 20; ++i) {
+  for (int i=0; i < 10; ++i) {
     EXN_CONTEXT_EXPR(i);
     both.append({i});
     both.selfCheck();
@@ -420,13 +433,58 @@ void test_basics()
 }
 
 
+void test_insert()
+{
+  TEST_FUNC();
+
+  using BT = BothTrees<SummarizableInt>;
+
+  int const OUTER_ITERS =
+    envRandomizedTestIters(5, "STT_INSERT_OUTER_ITERS", 2);
+  int const INNER_ITERS =
+    envRandomizedTestIters(50, "STT_INSERT_INNER_ITERS", 2);
+
+  smbase_loopi(OUTER_ITERS) {
+    EXN_CONTEXT_EXPR(i);
+
+    BT both;
+    both.selfCheck();
+
+    smbase_loopj(INNER_ITERS) {
+      EXN_CONTEXT_EXPR(j);
+
+      RandomChoice choice(40);
+      if (choice.check(1)) {
+        both.clear();
+      }
+
+      else if (choice.check(2)) {
+        int value = sm_random(30);
+
+        both.append(SummarizableInt{value});
+      }
+
+      else {
+        int position = sm_random(both.size()+1);
+        int value = sm_random(30);
+
+        both.insert(position, SummarizableInt{value});
+      }
+
+      both.selfCheck();
+    }
+  }
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
 // Called from unit-tests.cc.
 void test_sum_tree()
 {
-  test_basics();
+  test_append();
+  test_insert();
 }
 
 
