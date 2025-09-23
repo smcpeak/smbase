@@ -282,17 +282,29 @@ auto SumTree<T>::InteriorNode::insert(size_type index, T const &t)
 
   auto leftSize = m_left->size();
   if (index < leftSize) {
+  insertOnLeft:    // index == leftSize
     m_left = m_left.release()->insert(index, t);
   }
-  else {
+
+  else if (index == leftSize) {
+    // We can insert into either child.  Use the balance factor to pick
+    // one in order to minimize subsequent rotations.
+    if (balanceFactor() < 0) {
+      // Left is a little light, so insert there.
+      goto insertOnLeft;
+    }
+    else {
+      // Equal, or right has less; go right.
+      goto insertOnRight;
+    }
+  }
+
+  else /*index > leftSize*/ {
+  insertOnRight:   // index == leftSize
     m_right = m_right.release()->insert(index - leftSize, t);
   }
 
-  // TODO: Implement a minor optimization: If `index==leftSize`, we can
-  // insert into either subtree.  Use the balance factor to decide where
-  // to put it in order to minimize subsequent rotations.
-
-  // The new right child might make this node unbalanced, but we want to
+  // The updated child might make this node unbalanced, but we want to
   // recompute the summary, since if this node *is* still balanced, then
   // `balance()` won't make any further changes.
   localRecompute_brokenInvariants();
