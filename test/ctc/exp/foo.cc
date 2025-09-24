@@ -79,6 +79,7 @@ using namespace smbase;
 /*AUTO_CTC*/
 /*AUTO_CTC*/ int compare(Foo const &a, Foo const &b)
 /*AUTO_CTC*/ {
+/*AUTO_CTC*/   // Remember to #include "smbase/compare-util.h" for these.
 /*AUTO_CTC*/   RET_IF_COMPARE_MEMBERS(m_x);
 /*AUTO_CTC*/   RET_IF_COMPARE_MEMBERS(m_y);
 /*AUTO_CTC*/   RET_IF_COMPARE_MEMBERS(m_z);
@@ -141,6 +142,7 @@ using namespace smbase;
 /*AUTO_CTC*/
 /*AUTO_CTC*/ int compare(Bar const &a, Bar const &b)
 /*AUTO_CTC*/ {
+/*AUTO_CTC*/   // Remember to #include "smbase/compare-util.h" for these.
 /*AUTO_CTC*/   RET_IF_COMPARE_MEMBERS(m_n);
 /*AUTO_CTC*/   return 0;
 /*AUTO_CTC*/ }

@@ -839,6 +839,7 @@ def generateDefinitions(
   if options.compare:
     # int compare(Foo const &a, Foo const &b)
     # {
+    #   // Remember to #include "smbase/compare-util.h" for these.
     #   RET_IF_COMPARE_MEMBERS(x);
     #   RET_IF_COMPARE_MEMBERS(y);
     #   RET_IF_COMPARE_MEMBERS(z);
@@ -846,7 +847,8 @@ def generateDefinitions(
     # }
     out += [
       f"int compare({curClass} const &a, {curClass} const &b)",
-      "{"
+       "{",
+       "  // Remember to #include \"smbase/compare-util.h\" for these."
     ] + (
           # My current objective is to derive from XBase, which does not
           # have a comparison operator, so just skip this...
@@ -855,9 +857,9 @@ def generateDefinitions(
 
           generateCallsPerField(fields, "RET_IF_COMPARE_MEMBERS")
         ) + [
-      "  return 0;",
-      "}",
-      ""
+       "  return 0;",
+       "}",
+       ""
     ]
 
   def emit_toString() -> List[str]:
