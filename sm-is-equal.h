@@ -20,6 +20,8 @@
      - Pass by `const` reference instead of by value.
      - Rename to `is_equal`.
      - Put it in `smbase` namespace.
+
+   TODO: Replace uses of this module with `intcmp`.
 */
 
 #ifndef SMBASE_SM_IS_EQUAL_H
