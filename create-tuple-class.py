@@ -115,7 +115,7 @@ def writeUpdatedFile(fname: str, oldLines: list[str], newLines: list[str]) -> No
     return
 
   if checkMode:
-    print(f"Generated contents are different for {fname}.")
+    print(f"Generated contents ARE DIFFERENT for {fname}.")
     global checkModeDifferences
     checkModeDifferences = True
 
