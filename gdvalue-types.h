@@ -40,7 +40,7 @@ namespace gdv {
 
   //using GDVOctetSequence = std::vector<unsigned char>;
 
-  // `GDVTuple` is defined in `gdvtuple.h`.
+  // `GDVTuple` is defined in `gdv-tuple.h`.
 
   // `GDVOrderedMap` is declared in `gdv-ordered-map-fwd.h`.
 

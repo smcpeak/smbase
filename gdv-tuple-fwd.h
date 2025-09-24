@@ -1,5 +1,5 @@
-// gdvtuple-fwd.h
-// Forwards for `gdvtuple.h`.
+// gdv-tuple-fwd.h
+// Forwards for `gdv-tuple.h`.
 
 #ifndef SMBASE_GDVTUPLE_FWD_H
 #define SMBASE_GDVTUPLE_FWD_H

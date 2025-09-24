@@ -8,7 +8,7 @@
 
 // IWYU pragma: begin_exports
 #include "smbase/gdv-ordered-map-fwd.h"          // gdv::GDVOrderedMap
-#include "smbase/gdvtuple-fwd.h"                 // gdv::GDVTuple
+#include "smbase/gdv-tuple-fwd.h"                // gdv::GDVTuple
 // IWYU pragma: end_exports
 
 #include "smbase/gdvalue-itself-fwd.h"           // gdv::GDValue

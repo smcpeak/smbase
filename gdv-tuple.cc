@@ -1,7 +1,7 @@
-// gdvtuple.cc
-// Code for `gdvtuple` module.
+// gdv-tuple.cc
+// Code for `gdv-tuple` module.
 
-#include "gdvtuple.h"                  // this module
+#include "gdv-tuple.h"                 // this module
 
 #include "smbase/compare-util.h"       // COMPARE_MEMBERS
 #include "smbase/gdvalue.h"            // GDValue

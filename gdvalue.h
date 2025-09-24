@@ -19,12 +19,12 @@
 #include "smbase/gdv-binary64-float-fwd.h"       // gdv::GDVBinary64Float
 #include "smbase/gdv-containers-fwd.h"           // FOR_EACH_GDV_CONTAINER
 #include "smbase/gdv-ordered-map-iface.h"        // gdv::GDVOrderedMap
+#include "smbase/gdv-tuple.h"                    // gdv::GDVTuple
 #include "smbase/gdvalue-kind.h"                 // gdv::GDValueKind
 #include "smbase/gdvalue-srcloc.h"               // gdv::GDValueSourceLocation
 #include "smbase/gdvalue-types.h"                // gdv::{GDVSize, GDVIndex, GDVInteger, GDVSmallInteger, GDVString, GDVSequence, GDVSet, GDVMap, GDVOrderedMap, GDVMapEntry}
 #include "smbase/gdvalue-write-options.h"        // gdv::GDValueWriteOptions
 #include "smbase/gdvsymbol.h"                    // gdv::GDVSymbol
-#include "smbase/gdvtuple.h"                     // gdv::GDVTuple
 #include "smbase/sm-integer.h"                   // smbase::Integer
 // IWYU pragma: end_exports
 

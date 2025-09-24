@@ -116,6 +116,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(functional_set);
   RUN_TEST(gcc_options);
   RUN_TEST(gdv_binary64_float);
+  RUN_TEST(gdv_tuple);
   RUN_TEST(gdvalue);
   RUN_TEST(gdvalue_fnapply_transform);
   RUN_TEST(gdvalue_json);
@@ -128,7 +129,6 @@ static void entry(int argc, char **argv)
   RUN_TEST(gdvalue_transform);
   RUN_TEST(gdvalue_writer);
   RUN_TEST(gdvsymbol);
-  RUN_TEST(gdvtuple);
   RUN_TEST(get_type_name);
   RUN_TEST_NO_DECL(gprintf);
   RUN_TEST(growbuf);

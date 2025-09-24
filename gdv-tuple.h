@@ -1,4 +1,4 @@
-// gdvtuple.h
+// gdv-tuple.h
 // `GDVTuple`, a tuple class for use by `gdvalue.h`.
 
 // This file is in the public domain.
@@ -6,7 +6,7 @@
 #ifndef SMBASE_GDVTUPLE_H
 #define SMBASE_GDVTUPLE_H
 
-#include "gdvtuple-fwd.h"              // fwds for this module
+#include "gdv-tuple-fwd.h"             // fwds for this module
 
 // this dir
 #include "smbase/compare-util-iface.h" // DEFINE_FRIEND_RELATIONAL_OPERATORS

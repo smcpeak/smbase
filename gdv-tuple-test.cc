@@ -1,7 +1,7 @@
-// gdvtuple-test.cc
-// Tests for `gdvtuple` module.
+// gdv-tuple-test.cc
+// Tests for `gdv-tuple` module.
 
-#include "gdvtuple.h"                  // module under test
+#include "gdv-tuple.h"                 // module under test
 
 #include "smbase/gdvalue.h"            // gdv::GDValue
 #include "smbase/sm-test.h"            // EXPECT_EQ
@@ -133,7 +133,7 @@ static void testModifiers()
 
 
 // Called by unit-tests.cc.
-void test_gdvtuple()
+void test_gdv_tuple()
 {
   testConstructors();
   testAssignment();
