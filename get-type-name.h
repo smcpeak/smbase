@@ -111,6 +111,10 @@ struct GetTypeName {
 
   // Expose the name as a variable.  Use `inline` so this declaration is
   // also a definition.
+  //
+  // Note: `name()` sometimes does not work when used from outside this
+  // class!  Use `value` instead.  (I tried making `name()` private but
+  // that does not work due to how `GetTypeName<void>` is used.)
   constexpr inline static std::string_view value = name();
 };
 
