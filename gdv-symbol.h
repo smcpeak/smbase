@@ -1,12 +1,12 @@
-// gdvsymbol.h
+// gdv-symbol.h
 // `GDVSymbol`, which represents a symbol in a Generalized Data Value.
 
 // This file is in the public domain.
 
-#ifndef SMBASE_GDVSYMBOL_H
-#define SMBASE_GDVSYMBOL_H
+#ifndef SMBASE_GDV_SYMBOL_H
+#define SMBASE_GDV_SYMBOL_H
 
-#include "smbase/gdvsymbol-fwd.h"                // fwds for this file
+#include "smbase/gdv-symbol-fwd.h"               // fwds for this file
 
 #include "smbase/compare-util-iface.h"           // DEFINE_FRIEND_NON_EQUALITY_RELATIONAL_OPERATORS
 #include "smbase/indexed-string-table.h"         // smbase::IndexedStringTable::Index
@@ -168,4 +168,4 @@ GDVSymbol operator ""_sym(char const *name, std::size_t len);
 CLOSE_NAMESPACE(gdv)
 
 
-#endif // SMBASE_GDVSYMBOL_H
+#endif // SMBASE_GDV_SYMBOL_H

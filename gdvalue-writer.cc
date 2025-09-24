@@ -9,8 +9,8 @@
 #include "smbase/counting-ostream.h"   // CountingOStream
 #include "smbase/gdv-binary64-float.h" // gdv::GDVBinary64Float
 #include "smbase/gdv-ordered-map.h"    // gdv::GDVOrderedMap
+#include "smbase/gdv-symbol.h"         // gdv::GDVSymbol
 #include "smbase/gdvalue.h"            // gdv::GDValue
-#include "smbase/gdvsymbol.h"          // gdv::GDVSymbol
 #include "smbase/overflow.h"           // safeToInt
 #include "smbase/save-restore.h"       // SAVE_RESTORE, SET_RESTORE
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE

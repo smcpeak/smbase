@@ -3,8 +3,8 @@
 
 // This file is in the public domain.
 
-#ifndef SMBASE_GDVTUPLE_H
-#define SMBASE_GDVTUPLE_H
+#ifndef SMBASE_GDV_TUPLE_H
+#define SMBASE_GDV_TUPLE_H
 
 #include "gdv-tuple-fwd.h"             // fwds for this module
 
@@ -149,4 +149,4 @@ public:      // methods
 CLOSE_NAMESPACE(gdv)
 
 
-#endif // SMBASE_GDVTUPLE_H
+#endif // SMBASE_GDV_TUPLE_H

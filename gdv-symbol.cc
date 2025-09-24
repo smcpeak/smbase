@@ -1,9 +1,9 @@
-// gdvsymbol.cc
-// Code for gdvsymbol.h.
+// gdv-symbol.cc
+// Code for gdv-symbol.h.
 
 // This file is in the public domain.
 
-#include "gdvsymbol.h"                           // this module
+#include "gdv-symbol.h"                          // this module
 
 // this dir
 #include "smbase/codepoint.h"                    // isCIdentifierCharacter, isCIdentifierStartCharacter

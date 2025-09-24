@@ -1,9 +1,9 @@
-// gdvsymbol-test.cc
-// Tests for `gdvsymbol` module.
+// gdv-symbol-test.cc
+// Tests for `gdv-symbol` module.
 
 // This file is in the public domain.
 
-#include "gdvsymbol.h"                 // module under test
+#include "gdv-symbol.h"                // module under test
 
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
 #include "smbase/sm-test.h"            // EXPECT_EQ
@@ -232,7 +232,7 @@ CLOSE_ANONYMOUS_NAMESPACE
 
 
 // Called from unit-tests.cc.
-void test_gdvsymbol()
+void test_gdv_symbol()
 {
   test_basics();
   test_literal_and_equality();

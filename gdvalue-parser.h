@@ -40,12 +40,12 @@
 #include "smbase/gdv-binary64-float-fwd.h"       // gdv::GDVBinary64Float [n]
 #include "smbase/gdv-containers-fwd.h"           // FOR_EACH_GDV_CONTAINER
 #include "smbase/gdv-ordered-map-fwd.h"          // gdv::GDVOrderedMap [n]
+#include "smbase/gdv-symbol-fwd.h"               // gdv::GDVSymbol [n]
 #include "smbase/gdv-tuple-fwd.h"                // gdv::GDVTuple [n]
 #include "smbase/gdvalue-fwd.h"                  // gdv::GDValue [n]
 #include "smbase/gdvalue-kind.h"                 // gdv::GDValueKind
 #include "smbase/gdvalue-srcloc.h"               // gdv::GDValueSourceLocation
 #include "smbase/gdvalue-types.h"                // gdv::GDVIndex
-#include "smbase/gdvsymbol-fwd.h"                // gdv::GDVSymbol [n]
 #include "smbase/sm-macros.h"                    // OPEN_NAMESPACE, NORETURN
 
 #include "smbase/std-string-view-fwd.h"          // std::string_view [n]

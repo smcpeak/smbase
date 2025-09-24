@@ -8,8 +8,8 @@
 
 #include "gdvalue-transform-fwd.h"     // fwds for this module
 
+#include "smbase/gdv-symbol-fwd.h"     // gdv::GDVSymbol [n]
 #include "smbase/gdvalue-fwd.h"        // gdv::GDValue [n]
-#include "smbase/gdvsymbol-fwd.h"      // gdv::GDVSymbol [n]
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 
 

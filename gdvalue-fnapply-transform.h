@@ -9,10 +9,10 @@
 
 #include "gdvalue-fnapply-transform-fwd.h"       // fwds for this module
 
-#include "smbase/gdvalue.h"                      // gdv::{GDValue, GDVTaggedTuple}
+#include "smbase/gdv-symbol.h"                   // gdv::GDVSymbol
 #include "smbase/gdvalue-parser-fwd.h"           // gdv::GDValueParser [n]
 #include "smbase/gdvalue-transform.h"            // gdv::GDValueTransform
-#include "smbase/gdvsymbol.h"                    // gdv::GDVSymbol
+#include "smbase/gdvalue.h"                      // gdv::{GDValue, GDVTaggedTuple}
 #include "smbase/sm-macros.h"                    // OPEN_NAMESPACE, NO_OBJECT_COPIES
 #include "smbase/std-functional-fwd.h"           // std::reference_wrapper [n]
 #include "smbase/std-set-fwd.h"                  // std::set [n]

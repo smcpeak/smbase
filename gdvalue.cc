@@ -10,9 +10,9 @@
 #include "smbase/exc.h"                          // GENERIC_CATCH_{BEGIN,END}
 #include "smbase/gdv-binary64-float.h"           // gdv::GDVBinary64Float
 #include "smbase/gdv-ordered-map.h"              // gdv::GDVOrderedMap
+#include "smbase/gdv-symbol.h"                   // gdv::GDVSymbol
 #include "smbase/gdvalue-reader.h"               // gdv::GDValueReader
 #include "smbase/gdvalue-writer.h"               // gdv::GDValueWriter
-#include "smbase/gdvsymbol.h"                    // gdv::GDVSymbol
 #include "smbase/overflow.h"                     // convertNumberOpt
 #include "smbase/safe-int-conv.h"                // smbase::IsSafelyConvertible_v
 #include "smbase/sm-trace.h"                     // INIT_TRACE, etc.

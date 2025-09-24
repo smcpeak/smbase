@@ -3,8 +3,8 @@
 
 #include "gdvalue-transform.h"         // this module
 
+#include "smbase/gdv-symbol.h"         // gdv::GDVSymbol
 #include "smbase/gdvalue.h"            // gdv::GDValue
-#include "smbase/gdvsymbol.h"          // gdv::GDVSymbol
 #include "smbase/ordered-map.h"        // smbase::OrderedMap
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 

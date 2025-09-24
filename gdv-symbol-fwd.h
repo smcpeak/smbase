@@ -1,5 +1,5 @@
-// gdvsymbol-fwd.h
-// Forwards for gdvsymbol.h.
+// gdv-symbol-fwd.h
+// Forwards for gdv-symbol.h.
 
 // This file is in the public domain.
 

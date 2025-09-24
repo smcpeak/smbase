@@ -3,8 +3,8 @@
 
 #include "gdvalue-subst-transform.h"   // this module
 
+#include "smbase/gdv-symbol.h"         // gdv::GDVSymbol
 #include "smbase/gdvalue.h"            // gdv::GDValue
-#include "smbase/gdvsymbol.h"          // gdv::GDVSymbol
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE, IMEMBFP
 
 #include <map>                         // std::map
