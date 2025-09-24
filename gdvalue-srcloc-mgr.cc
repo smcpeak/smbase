@@ -51,18 +51,21 @@ void GDValueSourceLocationManager::selfCheck() const
 
 void GDValueSourceLocationManager::localSelfCheck() const
 {
-  if (!intcmp_equal(m_asManager.numLocalSpaces(), m_fileNames.size())) {
-    PVAL(m_asManager.numLocalSpaces());
-    PVAL(m_fileNames.size());
-  }
-  xassert(intcmp_equal(m_asManager.numLocalSpaces(), m_fileNames.size()));
+  xassert(intcmp_equal(m_asManager.numLocalSpaces(),
+                       m_fileNames.size()));
 }
 
 
 // ------------------------------ Queries ------------------------------
+auto GDValueSourceLocationManager::numFiles() const -> FileIndex
+{
+  return m_fileNames.size();
+}
+
+
 bool GDValueSourceLocationManager::validFileIndex(FileIndex index) const
 {
-  return cc::z_le_lt(index, m_fileNames.size());
+  return cc::z_le_lt(index, numFiles());
 }
 
 

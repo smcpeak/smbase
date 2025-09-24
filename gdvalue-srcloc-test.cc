@@ -23,6 +23,8 @@ OPEN_ANONYMOUS_NAMESPACE
 
 void test_basics()
 {
+  GDValueSourceLocation::resetFileNameToIndex();
+
   GDValueSourceLocation klb0(1, 1);
   EXPECT_EQ(klb0.line(), 1);
   EXPECT_FALSE(klb0.lineIsSaturated());
@@ -44,14 +46,17 @@ void test_basics()
   EXPECT_TRUE(klb0 != klb1);
   EXPECT_EQ(compare(klb0, klb1), -1);
 
+  GDValueSourceLocation::globalSelfCheck();
+
   GDValueSourceLocation klb2(
-    GDValueSourceLocation::c_saturatedLineValue + 10,
+    GDValueSourceLocation::c_saturatedFileAndLineValue + 10,
     GDValueSourceLocation::c_saturatedColumnValue);
-  EXPECT_EQ(klb2.line(), 0xfffff);
+  EXPECT_EQ(klb2.line(), 0xfffffff);
   EXPECT_TRUE(klb2.lineIsSaturated());
+  EXPECT_TRUE(klb2.fileIndexIsSaturated());
   EXPECT_EQ(klb2.column(), 0xffffffffu);
   EXPECT_TRUE(klb2.columnIsSaturated());
-  EXPECT_EQ(klb2.asString(), "1048575:4294967295");
+  EXPECT_EQ(klb2.asString(), "268435455:4294967295");
 
   EXPECT_STRICTLY_ORDERED(GDValueSourceLocation, klb0, klb1, klb2);
 
@@ -67,8 +72,14 @@ void test_basics()
 
   k = klb2;
   EXPECT_EQ(k, klb2);
-  EXPECT_EQ(k.line(), 0xfffff);
+  EXPECT_EQ(k.line(), 0xfffffff);
   EXPECT_EQ(k.column(), 0xffffffffu);
+
+  GDValueSourceLocation::globalSelfCheck();
+
+  // Undo the file+line saturation.
+  GDValueSourceLocation::resetFileNameToIndex();
+  GDValueSourceLocation::globalSelfCheck();
 }
 
 
@@ -95,7 +106,7 @@ void test_fileNames()
   GDValueSourceLocation::resetFileNameToIndex();
   GDValueSourceLocation::globalSelfCheck();
 
-  EXPECT_EQ(GDValueSourceLocation::fileNameToIndexC()->size(), 1);
+  EXPECT_EQ(GDValueSourceLocation::numFileIndices(), 1);
 
   // Add some names.
   auto idx1 = GDValueSourceLocation::fileIndexOfName("foo.cpp");
@@ -103,52 +114,40 @@ void test_fileNames()
   EXPECT_TRUE(idx1 == 1);
   EXPECT_TRUE(idx2 == 2);
 
-  EXPECT_EQ(GDValueSourceLocation::fileNameToIndexC()->size(), 3);
+  EXPECT_EQ(GDValueSourceLocation::numFileIndices(), 3);
 
   // Getting them again yields same index.
   EXPECT_EQ(GDValueSourceLocation::fileIndexOfName("foo.cpp"), idx1);
   EXPECT_EQ(GDValueSourceLocation::fileIndexOfName("bar.cpp"), idx2);
 
   // Name lookups.
-  EXPECT_EQ(GDValueSourceLocation::fileNameOptOfIndex(idx1).value(), "foo.cpp");
-  EXPECT_EQ(GDValueSourceLocation::fileNameOptOfIndex(idx2).value(), "bar.cpp");
+  EXPECT_EQ(GDValueSourceLocation::fileNameOfIndex(idx1), "foo.cpp");
+  EXPECT_EQ(GDValueSourceLocation::fileNameOfIndex(idx2), "bar.cpp");
 
   // Optional mapping.
-  std::optional<std::string> fooName = "foo.cpp";
-  EXPECT_EQ(GDValueSourceLocation::fileIndexOfNameOpt(fooName).value(), idx1);
-  EXPECT_NULLOPT(GDValueSourceLocation::fileIndexOfNameOpt(std::nullopt));
+  std::string fooName = "foo.cpp";
+  EXPECT_EQ(GDValueSourceLocation::fileIndexOfName(fooName), idx1);
+  EXPECT_EQ(GDValueSourceLocation::fileIndexOfName(""), 0);
 
   // Construct with file index.
   GDValueSourceLocation loc1(idx1, 10, 20);
   EXPECT_TRUE(loc1.hasFileIndex());
   EXPECT_EQ(loc1.fileIndex(), idx1);
-  EXPECT_EQ(loc1.fileNameOpt().value(), "foo.cpp");
-  EXPECT_EQ(loc1.fileNameOrExplanationOpt().value(), "foo.cpp");
+  EXPECT_EQ(loc1.fileName(), "foo.cpp");
   EXPECT_EQ(loc1.asString(), "foo.cpp:10:20");
 
   // Construct with no file index.
   GDValueSourceLocation loc2(10, 20);
   EXPECT_FALSE(loc2.hasFileIndex());
-  EXPECT_EQ(loc2.fileIndexOrZero(), 0u);
-  EXPECT_NULLOPT(loc2.fileIndexOpt());
-  EXPECT_NULLOPT(loc2.fileNameOpt());
-  EXPECT_NULLOPT(loc2.fileNameOrExplanationOpt());
+  EXPECT_EQ(loc2.fileIndex(), 0);
+  EXPECT_EQ(loc2.fileName(), "");
   EXPECT_EQ(loc2.asString(), "10:20");
 
   // Saturated file index.
   GDValueSourceLocation satLoc(
-    GDValueSourceLocation::c_saturatedFileIndexValue, 5, 6);
+    GDValueSourceLocation::c_saturatedFileAndLineValue, 6);
   EXPECT_TRUE(satLoc.fileIndexIsSaturated());
-  EXPECT_NULLOPT(satLoc.fileNameOpt());
-  EXPECT_EQ(satLoc.fileNameOrExplanationOpt().value(), "(Saturated FileIndex)");
-
-  // Unmapped file index (greater than any existing).
-  GDValueSourceLocation unmapped(idx2 + 10, 1, 1);
-  EXPECT_TRUE(unmapped.hasFileIndex());
-  EXPECT_FALSE(unmapped.fileIndexIsSaturated());
-  EXPECT_NULLOPT(unmapped.fileNameOpt());
-  EXPECT_EQ(unmapped.fileNameOrExplanationOpt().value(),
-            stringb("(FileIndex " << (idx2 + 10) << ")"));
+  EXPECT_EQ(loc2.fileName(), "");
 
   // Ordering comparisons with file indices.
   GDValueSourceLocation a(idx1, 1, 1);
@@ -157,7 +156,9 @@ void test_fileNames()
   EXPECT_TRUE(compare(a, b) < 0);
   EXPECT_STRICTLY_ORDERED(GDValueSourceLocation, a, b);
 
-  EXPECT_EQ(GDValueSourceLocation::fileNameToIndexC()->size(), 3);
+  // "foo.cpp", "bar.cpp", ""
+  EXPECT_EQ(GDValueSourceLocation::numFileIndices(), 3);
+
   GDValueSourceLocation::globalSelfCheck();
 }
 
@@ -167,28 +168,32 @@ void test_fileIndexSaturation()
   GDValueSourceLocation::resetFileNameToIndex();
   GDValueSourceLocation::globalSelfCheck();
 
-  for (int i=1; i <= 256; ++i) {
+  // The first 256 should exactly fill the available space.  Then the
+  // 257th should saturate.
+  for (int i=1; i <= 257; ++i) {
     EXN_CONTEXT(i);
     std::string name = stringb("name" << i);
     EXPECT_EQ(GDValueSourceLocation::fileIndexOfName(name), i);
+
+    GDValueSourceLocation loc(i, 0xfffff, 1);
   }
 
-  EXPECT_EQ(GDValueSourceLocation::fileNameToIndexC()->size(), 257);
+  EXPECT_EQ(GDValueSourceLocation::numFileIndices(), 258);
 
-  GDValueSourceLocation loc254(254, 1,1);
   GDValueSourceLocation loc255(255, 1,1);
   GDValueSourceLocation loc256(256, 1,1);
+  GDValueSourceLocation loc257(257, 1,1);
 
-  EXPECT_FALSE(loc254.fileIndexIsSaturated());
-  EXPECT_TRUE(loc255.fileIndexIsSaturated());
-  EXPECT_TRUE(loc256.fileIndexIsSaturated());
+  EXPECT_FALSE(loc255.fileIndexIsSaturated());
+  EXPECT_FALSE(loc256.fileIndexIsSaturated());
+  EXPECT_TRUE(loc257.fileIndexIsSaturated());
 
-  EXPECT_EQ(loc254.fileNameOrExplanationOpt().value(),
-            "name254");
-  EXPECT_EQ(loc255.fileNameOrExplanationOpt().value(),
-            "(Saturated FileIndex)");
-  EXPECT_EQ(loc256.fileNameOrExplanationOpt().value(),
-            "(Saturated FileIndex)");
+  EXPECT_EQ(loc255.fileName(), "name255");
+  EXPECT_EQ(loc256.fileName(), "name256");
+
+  // Asking about a saturated location yields info about the last
+  // unsaturated location.
+  EXPECT_EQ(loc257.fileName(), "name256");
 
   GDValueSourceLocation::globalSelfCheck();
   GDValueSourceLocation::resetFileNameToIndex();

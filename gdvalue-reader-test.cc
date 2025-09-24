@@ -30,11 +30,12 @@ void expectLoc(
   EXN_CONTEXT_EXPR(line);
   EXN_CONTEXT_EXPR(col);
 
-  auto indexOpt = GDValueSourceLocation::fileIndexOfNameOpt(fnameOpt);
+  std::string fname = fnameOpt? *fnameOpt : std::string();
+  auto index = GDValueSourceLocation::fileIndexOfName(fname);
 
   EXPECT_TRUE(actual.hasSourceLocation());
   EXPECT_EQ(actual.sourceLocation(),
-            GDValueSourceLocation(indexOpt, line, col));
+            GDValueSourceLocation(index, line, col));
 }
 
 

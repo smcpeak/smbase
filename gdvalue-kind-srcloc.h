@@ -39,8 +39,8 @@ static_assert(NUM_GDVALUE_KINDS <= 16);
 class GDValueKindSourceLocation {
 public:      // constants
   // Saturation constants.
-  static inline std::uint32_t c_saturatedLineValue =
-    GDValueSourceLocation::c_saturatedLineValue;
+  static inline std::uint32_t c_saturatedFileAndLineValue =
+    GDValueSourceLocation::c_saturatedFileAndLineValue;
   static inline std::uint32_t c_saturatedColumnValue =
     GDValueSourceLocation::c_saturatedColumnValue;
 
@@ -51,19 +51,14 @@ private:     // data
   // portable types for a bitfield are `unsigned int` and `signed int`.
   unsigned int m_kind : 4;
 
-  // File identifier.  0 means no file information.
-  //
-  // Invariant: If m_line==0 then m_fileIndex==0.
-  unsigned int m_fileIndex : 8;
-
-  // Either 0, meaning there is no location information, or the 1-based
-  // line number.  It could be `c_saturatedLineValue`.
-  unsigned int m_line : 20;
+  // Either 0, meaning there is no location information, or the
+  // file+line global index.  It could be `c_saturatedFileAndLineValue`.
+  unsigned int m_fileAndLine : 28;
 
   // 1-based byte column number within its containing line.  It could be
   // `c_saturatedColumnValue`.
   //
-  // Invariant: (m_line==0) == (m_column==0)
+  // Invariant: (m_fileAndLine==0) == (m_column==0)
   std::uint32_t m_column;
 
 public:      // methods

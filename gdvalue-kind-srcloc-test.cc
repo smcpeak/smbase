@@ -22,6 +22,8 @@ OPEN_ANONYMOUS_NAMESPACE
 
 void test_basics()
 {
+  GDValueSourceLocation::resetFileNameToIndex();
+
   GDValueKindSourceLocation klb0(GDVK_SYMBOL);
   EXPECT_EQ(klb0.getKind(), GDVK_SYMBOL);
   EXPECT_FALSE(klb0.hasSourceLocation());
@@ -42,16 +44,17 @@ void test_basics()
   EXPECT_TRUE(klb0 != klb1);
   EXPECT_EQ(compare(klb0, klb1), -1);
 
-  GDValueKindSourceLocation klb2(GDVK_SEQUENCE,
-    { GDValueKindSourceLocation::c_saturatedLineValue + 10,
-      GDValueKindSourceLocation::c_saturatedColumnValue });
+  GDValueSourceLocation satLoc(
+    GDValueSourceLocation::c_saturatedFileAndLineValue,
+    GDValueSourceLocation::c_saturatedColumnValue);
+  GDValueKindSourceLocation klb2(GDVK_SEQUENCE, satLoc);
   EXPECT_EQ(klb2.getKind(), GDVK_SEQUENCE);
   EXPECT_TRUE(klb2.hasSourceLocation());
-  EXPECT_EQ(klb2.sourceLocation().line(), 0xfffff);
+  EXPECT_EQ(klb2.sourceLocation().line(), 0xfffffff);
   EXPECT_TRUE(klb2.sourceLocation().lineIsSaturated());
   EXPECT_EQ(klb2.sourceLocation().column(), 0xffffffffu);
   EXPECT_TRUE(klb2.sourceLocation().columnIsSaturated());
-  EXPECT_EQ(klb2.asString(), "GDVK_SEQUENCE at 1048575:4294967295");
+  EXPECT_EQ(klb2.asString(), "GDVK_SEQUENCE at 268435455:4294967295");
 
   EXPECT_STRICTLY_ORDERED(GDValueKindSourceLocation, klb0, klb1, klb2);
 
@@ -69,7 +72,7 @@ void test_basics()
   k = klb2;
   EXPECT_EQ(k, klb2);
   EXPECT_EQ(k.getKind(), GDVK_SEQUENCE);
-  EXPECT_EQ(k.sourceLocation().line(), 0xfffff);
+  EXPECT_EQ(k.sourceLocation().line(), 0xfffffff);
   EXPECT_EQ(k.sourceLocation().column(), 0xffffffffu);
 }
 

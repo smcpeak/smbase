@@ -19,8 +19,7 @@ OPEN_NAMESPACE(gdv)
 GDValueKindSourceLocation::GDValueKindSourceLocation(GDValueKind kind)
 :
   m_kind(static_cast<unsigned>(kind)),
-  m_fileIndex(0),
-  m_line(0),
+  m_fileAndLine(0),
   m_column(0)
 {}
 
@@ -30,8 +29,7 @@ GDValueKindSourceLocation::GDValueKindSourceLocation(
   GDValueSourceLocation loc)
 :
   m_kind(static_cast<unsigned>(kind)),
-  m_fileIndex(loc.fileIndexOrZero()),
-  m_line(loc.line()),
+  m_fileAndLine(loc.fileAndLineNumber()),
   m_column(loc.column())
 {
   selfCheck();
@@ -42,8 +40,7 @@ GDValueKindSourceLocation::GDValueKindSourceLocation(
   GDValueKindSourceLocation const &obj)
 :
   DMEMB(m_kind),
-  DMEMB(m_fileIndex),
-  DMEMB(m_line),
+  DMEMB(m_fileAndLine),
   DMEMB(m_column)
 {}
 
@@ -53,8 +50,7 @@ GDValueKindSourceLocation &GDValueKindSourceLocation::operator=(
 {
   if (this != &obj) {
     CMEMB(m_kind);
-    CMEMB(m_fileIndex);
-    CMEMB(m_line);
+    CMEMB(m_fileAndLine);
     CMEMB(m_column);
   }
   return *this;
@@ -64,10 +60,7 @@ GDValueKindSourceLocation &GDValueKindSourceLocation::operator=(
 void GDValueKindSourceLocation::selfCheck() const
 {
   xassert(m_kind < NUM_GDVALUE_KINDS);
-  if (m_line == 0) {
-    xassert(m_fileIndex == 0);
-  }
-  xassert((m_line==0) == (m_column==0));
+  xassert((m_fileAndLine==0) == (m_column==0));
 }
 
 
@@ -79,12 +72,10 @@ int GDValueKindSourceLocation::compareTo(GDValueKindSourceLocation const &b) con
 
   RET_IF_COMPARE_MEMBERS(m_kind);
 
-  RET_IF_COMPARE_MEMBERS(m_fileIndex);
-
   // Since absent is represented by 0, which is less than any present
   // line number, this will ensure that absent compares as less than any
   // present location.
-  RET_IF_COMPARE_MEMBERS(m_line);
+  RET_IF_COMPARE_MEMBERS(m_fileAndLine);
 
   RET_IF_COMPARE_MEMBERS(m_column);
 
@@ -122,7 +113,7 @@ void GDValueKindSourceLocation::setKind(GDValueKind kind)
 // ----------------------------- location ------------------------------
 bool GDValueKindSourceLocation::hasSourceLocation() const
 {
-  return m_line != 0;
+  return m_fileAndLine != 0;
 }
 
 
@@ -131,13 +122,14 @@ GDValueSourceLocation GDValueKindSourceLocation::sourceLocation() const
   xassertPrecondition(hasSourceLocation());
 
   return GDValueSourceLocation(
-    m_fileIndex? std::make_optional(m_fileIndex) : std::nullopt,
-    m_line,
+    GDValueSourceLocation::FILE_AND_LINE,
+    m_fileAndLine,
     m_column);
 }
 
 
-std::optional<GDValueSourceLocation> GDValueKindSourceLocation::sourceLocationOpt() const
+std::optional<GDValueSourceLocation>
+GDValueKindSourceLocation::sourceLocationOpt() const
 {
   if (hasSourceLocation()) {
     return sourceLocation();
@@ -150,8 +142,7 @@ std::optional<GDValueSourceLocation> GDValueKindSourceLocation::sourceLocationOp
 
 void GDValueKindSourceLocation::clearSourceLocation()
 {
-  m_fileIndex = 0;
-  m_line = 0;
+  m_fileAndLine = 0;
   m_column = 0;
   selfCheck();
 }
@@ -160,8 +151,7 @@ void GDValueKindSourceLocation::clearSourceLocation()
 void GDValueKindSourceLocation::setSourceLocation(
   GDValueSourceLocation loc)
 {
-  m_fileIndex = loc.fileIndexOrZero();
-  m_line = loc.line();
+  m_fileAndLine = loc.fileAndLineNumber();
   m_column = loc.column();
   selfCheck();
 }

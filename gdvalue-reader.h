@@ -41,9 +41,13 @@ public:      // methods
 
 // Manage the process of reading a GDValue from an istream.
 class GDValueReader : protected smbase::Reader {
+public:      // types
+  using FileIndex = GDValueSourceLocation::FileIndex;
+
 public:      // data
-  // The file index to include in the value source locations.
-  std::optional<std::int32_t> m_fileIndexOpt;
+  // The file index to include in the value source locations.  0 means
+  // no file.
+  FileIndex m_fileIndex;
 
 protected:   // methods
   // Get the location of the next character plus `columnOffset`.

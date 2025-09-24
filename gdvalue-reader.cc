@@ -62,7 +62,8 @@ GDValueReader::GDValueReader(
   std::optional<std::string> fileNameOpt)
 :
   Reader(is, fileNameOpt),
-  m_fileIndexOpt(GDValueSourceLocation::fileIndexOfNameOpt(fileNameOpt))
+  m_fileIndex(fileNameOpt?
+    GDValueSourceLocation::fileIndexOfName(*fileNameOpt) : 0)
 {}
 
 
@@ -73,7 +74,7 @@ GDValueReader::~GDValueReader()
 GDValueSourceLocation GDValueReader::gdvLocOffset(int columnOffset) const
 {
   return GDValueSourceLocation(
-    m_fileIndexOpt,
+    m_fileIndex,
 
     m_location.m_lc.m_line,
 

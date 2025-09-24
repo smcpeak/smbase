@@ -11,7 +11,7 @@
 
 #include "smbase/gdvalue-fwd.h"                  // gdv::GDValue [n]
 #include "smbase/ordered-set-iface.h"            // smbase::OrderedSet
-#include "smbase/sm-macros.h"                    // OPEN_NAMESPACE
+#include "smbase/sm-macros.h"                    // OPEN_NAMESPACE, NO_OBJECT_COPIES
 #include "smbase/std-string-fwd.h"               // std::string_view [n]
 #include "smbase/std-utility-fwd.h"              // std::pair [n]
 #include "smbase/virtual-address-space.h"        // smbase::VirtualASManager
@@ -26,8 +26,16 @@ OPEN_NAMESPACE(gdv)
    the corresponding file name and line number.
 
    TODO: Expand the scope to handle column numbers and byte offsets too.
+
+   A key difference between this location manager and the one in the
+   `srcloc` module is it allows files to grow incrementally, interleaved
+   with other files growing as well.  This allows files to be read in
+   one pass even while other reading is happening.
 */
 class GDValueSourceLocationManager {
+  // For now.
+  NO_OBJECT_COPIES(GDValueSourceLocationManager);
+
 public:      // types
   // An index for a known file name.
   using FileIndex = std::uint32_t;
@@ -69,7 +77,10 @@ public:      // methods
   void localSelfCheck() const;
 
   // ----------------------------- Queries -----------------------------
-  // True if `index` was previously returned by `fileIndexForName`.
+  // Number of files established via `fileIndexForName`.
+  FileIndex numFiles() const;
+
+  // Returns: bool(0 <= index < numFiles())
   bool validFileIndex(FileIndex index) const;
 
   // Get the name associated with `index`.
