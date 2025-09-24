@@ -5,7 +5,7 @@
 
 #include "smbase/gdvalue.h"                      // gdv::GDValue
 #include "smbase/sm-macros.h"                    // OPEN_ANONYMOUS_NAMESPACE
-#include "smbase/sm-test.h"                      // EXPECT_EQ
+#include "smbase/sm-test.h"                      // EXPECT_EQ, TEST_FUNC_EXPRS
 
 using namespace gdv;
 using namespace smbase;
@@ -14,14 +14,31 @@ using namespace smbase;
 OPEN_ANONYMOUS_NAMESPACE
 
 
+using VASID = VirtualASManager::VASID;
+using LocalOffset = VirtualASManager::LocalOffset;
+using GlobalOffset = VirtualASManager::GlobalOffset;
+using IdOffset = std::pair<VASID, LocalOffset>;
+
+
+// Check that `globalOffset` maps to/from `(vas, localOffst)` in `mgr`.
+void checkGlobalLocal(
+  VirtualASManager const &mgr,
+  GlobalOffset globalOffset,
+  VASID vas,
+  LocalOffset localOffset)
+{
+  TEST_FUNC_EXPRS(globalOffset, vas, localOffset);
+
+  EXPECT_EQ_GDVSER(mgr.globalToLocal(globalOffset),
+                   IdOffset(vas, localOffset));
+  EXPECT_EQ(mgr.localToGlobal(vas, localOffset), globalOffset);
+}
+
+
 // This builds the address space described in the comments above the
 // declaration of `VirtualASManager`.
 void test_basics()
 {
-  using VASID = VirtualASManager::VASID;
-  using LocalOffset = VirtualASManager::LocalOffset;
-  using IdOffset = std::pair<VASID, LocalOffset>;
-
   // Start empty.
   VirtualASManager mgr;
 
@@ -49,9 +66,9 @@ void test_basics()
   mgr.selfCheck();
   EXPECT_EQ(mgr.globalSpaceSize(), 10);
   EXPECT_EQ(mgr.localSpaceSize(vasA), 10);
-  EXPECT_EQ_GDVSER(mgr.globalToLocal(0), IdOffset(vasA,0));
-  EXPECT_EQ_GDVSER(mgr.globalToLocal(5), IdOffset(vasA,5));
-  EXPECT_EQ_GDVSER(mgr.globalToLocal(9), IdOffset(vasA,9));
+  checkGlobalLocal(mgr, 0, vasA, 0);
+  checkGlobalLocal(mgr, 5, vasA, 5);
+  checkGlobalLocal(mgr, 9, vasA, 9);
 
   // Allocate B.
   VASID vasB = mgr.allocateLocalSpace();
@@ -73,9 +90,10 @@ void test_basics()
   EXPECT_EQ(mgr.numLocalSpaces(), 2);
   EXPECT_EQ(mgr.localSpaceSize(vasA), 10);
   EXPECT_EQ(mgr.localSpaceSize(vasB), 50);
-  EXPECT_EQ_GDVSER(mgr.globalToLocal(9), IdOffset(vasA,9));
-  EXPECT_EQ_GDVSER(mgr.globalToLocal(10), IdOffset(vasB,0));
-  EXPECT_EQ_GDVSER(mgr.globalToLocal(59), IdOffset(vasB,49));
+  checkGlobalLocal(mgr,  0, vasA,  0);
+  checkGlobalLocal(mgr,  9, vasA,  9);
+  checkGlobalLocal(mgr, 10, vasB,  0);
+  checkGlobalLocal(mgr, 59, vasB, 49);
 
   // Allocate more space in A.
   mgr.extendLocalSpace(vasA, 70);
@@ -85,11 +103,12 @@ void test_basics()
   EXPECT_EQ(mgr.numLocalSpaces(), 2);
   EXPECT_EQ(mgr.localSpaceSize(vasA), 80);
   EXPECT_EQ(mgr.localSpaceSize(vasB), 50);
-  EXPECT_EQ_GDVSER(mgr.globalToLocal(9), IdOffset(vasA,9));
-  EXPECT_EQ_GDVSER(mgr.globalToLocal(10), IdOffset(vasB,0));
-  EXPECT_EQ_GDVSER(mgr.globalToLocal(59), IdOffset(vasB,49));
-  EXPECT_EQ_GDVSER(mgr.globalToLocal(60), IdOffset(vasA,10));
-  EXPECT_EQ_GDVSER(mgr.globalToLocal(129), IdOffset(vasA,79));
+  checkGlobalLocal(mgr,   0, vasA,  0);
+  checkGlobalLocal(mgr,   9, vasA,  9);
+  checkGlobalLocal(mgr,  10, vasB,  0);
+  checkGlobalLocal(mgr,  59, vasB, 49);
+  checkGlobalLocal(mgr,  60, vasA, 10);
+  checkGlobalLocal(mgr, 129, vasA, 79);
 
   // Allocate C.
   VASID vasC = mgr.allocateLocalSpace();
@@ -114,11 +133,14 @@ void test_basics()
   EXPECT_EQ(mgr.localSpaceSize(vasA), 80);
   EXPECT_EQ(mgr.localSpaceSize(vasB), 50);
   EXPECT_EQ(mgr.localSpaceSize(vasC), 500);
-  EXPECT_EQ_GDVSER(mgr.globalToLocal(59), IdOffset(vasB,49));
-  EXPECT_EQ_GDVSER(mgr.globalToLocal(60), IdOffset(vasA,10));
-  EXPECT_EQ_GDVSER(mgr.globalToLocal(129), IdOffset(vasA,79));
-  EXPECT_EQ_GDVSER(mgr.globalToLocal(130), IdOffset(vasC,0));
-  EXPECT_EQ_GDVSER(mgr.globalToLocal(629), IdOffset(vasC,499));
+  checkGlobalLocal(mgr,   0, vasA,   0);
+  checkGlobalLocal(mgr,   9, vasA,   9);
+  checkGlobalLocal(mgr,  10, vasB,   0);
+  checkGlobalLocal(mgr,  59, vasB,  49);
+  checkGlobalLocal(mgr,  60, vasA,  10);
+  checkGlobalLocal(mgr, 129, vasA,  79);
+  checkGlobalLocal(mgr, 130, vasC,   0);
+  checkGlobalLocal(mgr, 629, vasC, 499);
 
   // Extend C again to get the rest.
   mgr.extendLocalSpace(vasC, 500);
@@ -129,13 +151,16 @@ void test_basics()
   EXPECT_EQ(mgr.localSpaceSize(vasA), 80);
   EXPECT_EQ(mgr.localSpaceSize(vasB), 50);
   EXPECT_EQ(mgr.localSpaceSize(vasC), 1000);
-  EXPECT_EQ_GDVSER(mgr.globalToLocal(59), IdOffset(vasB,49));
-  EXPECT_EQ_GDVSER(mgr.globalToLocal(60), IdOffset(vasA,10));
-  EXPECT_EQ_GDVSER(mgr.globalToLocal(129), IdOffset(vasA,79));
-  EXPECT_EQ_GDVSER(mgr.globalToLocal(130), IdOffset(vasC,0));
-  EXPECT_EQ_GDVSER(mgr.globalToLocal(629), IdOffset(vasC,499));
-  EXPECT_EQ_GDVSER(mgr.globalToLocal(630), IdOffset(vasC,500));
-  EXPECT_EQ_GDVSER(mgr.globalToLocal(1129), IdOffset(vasC,999));
+  checkGlobalLocal(mgr,    0, vasA,   0);
+  checkGlobalLocal(mgr,    9, vasA,   9);
+  checkGlobalLocal(mgr,   10, vasB,   0);
+  checkGlobalLocal(mgr,   59, vasB,  49);
+  checkGlobalLocal(mgr,   60, vasA,  10);
+  checkGlobalLocal(mgr,  129, vasA,  79);
+  checkGlobalLocal(mgr,  130, vasC,   0);
+  checkGlobalLocal(mgr,  629, vasC, 499);
+  checkGlobalLocal(mgr,  630, vasC, 500);
+  checkGlobalLocal(mgr, 1129, vasC, 999);
 }
 
 

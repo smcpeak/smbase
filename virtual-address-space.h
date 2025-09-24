@@ -10,7 +10,7 @@
 #include "virtual-address-space-fwd.h" // fwds for this module
 
 #include "smbase/gdvalue-fwd.h"        // gdv::GDValue [n]
-#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE, NO_OBJECT_COPIES
 #include "smbase/std-utility-fwd.h"    // std::pair [n]
 #include "smbase/sum-tree-fwd.h"       // smbase::SumTree [n]
 
@@ -60,6 +60,9 @@ OPEN_NAMESPACE(smbase)
    directives) and not know in advance how big each is.
 */
 class VirtualASManager {
+  // For now.
+  NO_OBJECT_COPIES(VirtualASManager);
+
 public:      // types
   // Virtual Address Space identifier.
   using VASID = int;
@@ -71,8 +74,9 @@ public:      // types
   using LocalOffset = int;
 
 private:     // types
-  // Element stored in the tree.
-  class VASFragment {
+  // Element of the global address space, used to look up a fragment by
+  // its global address.
+  class GlobalASFragment {
   public:      // types
     using Summary = GlobalOffset;
 
@@ -83,7 +87,7 @@ private:     // types
     // Where in the local space does this fragment start?
     //
     // Always non-negative.
-    LocalOffset m_start;
+    LocalOffset m_localStart;
 
     // Size of the fragment in both local and global space.
     //
@@ -101,19 +105,57 @@ private:     // types
     operator gdv::GDValue() const;
   };
 
+  // Record of one part of a local address space.  This is an element
+  // stored in `m_vasToLocalFragments` for a particular VAS, which is
+  // used to look up a fragment by its local address.
+  class LocalASFragment {
+  public:      // types
+    using Summary = LocalOffset;
+
+  public:      // data
+    // Where this fragment starts in the global space.
+    //
+    // Non-negative.
+    GlobalOffset m_globalStart;
+
+    // Size of the fragment in both local and global space.
+    //
+    // Always non-negative.
+    LocalOffset m_size;
+
+  public:      // methods
+    // The summary is `m_size`.
+    LocalOffset summary() const;
+
+    // Check invariants.
+    void selfCheck() const;
+
+    // Dump fields.
+    operator gdv::GDValue() const;
+  };
+
 private:     // data
   // Tree of local fragments.
   //
   // Invariant: For each `vas`, the sequence of elements with that ID
   // describes a contiguous space: each `m_start` is the sum of all the
   // `m_size`s that preceded it (with that ID).
-  std::unique_ptr<SumTree<VASFragment>> m_tree;
-
-  // Map from VASID to its allocated size.
   //
-  // Invariant: For each valid index `vas`, its value in `m_vasSizes`
-  // equals the sum of `m_size` fields in `m_tree` where `m_vas==vas`.
-  std::vector<LocalOffset> m_vasSizes;
+  // Invariant: For every element `e` in `m_globalFragments`:
+  //   0 <= e.m_vas < numLocalSpaces()
+  //
+  std::unique_ptr<SumTree<GlobalASFragment>> m_globalFragments;
+
+  // Map from VASID to a tree of its fragments.
+  //
+  // TODO: Change from `unique_ptr` to direct storage once `SumTree`
+  // has a move ctor.
+  //
+  // Invariant: For each valid index `vas`, the sequence of fragments
+  // here precisely corresponds to the subset of fragments in
+  // `m_globalFragments` with `m_vas==vas`.
+  std::vector<std::unique_ptr<SumTree<LocalASFragment>>>
+    m_vasToLocalFragments;
 
 public:      // methods
   ~VirtualASManager();
@@ -140,6 +182,12 @@ public:      // methods
   //
   // Requires: validLocalSpace(vas)
   LocalOffset localSpaceSize(VASID vas) const;
+
+  // Translate `(vas, offset)` to the global space.
+  //
+  // Requires: validLocalSpace(vas)
+  // Requires: 0 <= offset < localSpaceSize(vas)
+  GlobalOffset localToGlobal(VASID vas, LocalOffset offset) const;
 
   // Look up global `offset` and return its associated virtual address
   // space and the offset within that space.

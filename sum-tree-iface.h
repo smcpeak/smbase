@@ -9,7 +9,7 @@
 #include "sum-tree-fwd.h"              // fwds for this module
 
 #include "smbase/gdvalue-fwd.h"        // gdv::GDValue [n]
-#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE, NO_OBJECT_COPIES
 #include "smbase/std-utility-fwd.h"    // std::pair [n]
 #include "smbase/std-vector-fwd.h"     // stdfwd::vector [n]
 
@@ -43,6 +43,9 @@ OPEN_NAMESPACE(smbase)
 */
 template <typename T>
 class SumTree {
+  // For now.
+  NO_OBJECT_COPIES(SumTree);
+
 public:      // types
   using size_type = std::size_t;
 
@@ -226,6 +229,8 @@ public:      // methods
 
   // Empty tree.
   SumTree();
+
+  // TODO: Copy and move.
 
   // Assert invariants.
   void selfCheck() const;

@@ -15,25 +15,50 @@ using namespace gdv;
 OPEN_NAMESPACE(smbase)
 
 
-// ---------------------------- VASFragment ----------------------------
-auto VirtualASManager::VASFragment::summary() const -> GlobalOffset
+// ------------------------- GlobalASFragment --------------------------
+auto VirtualASManager::GlobalASFragment::summary() const -> GlobalOffset
 {
   return m_size;
 }
 
 
-void VirtualASManager::VASFragment::selfCheck() const
+void VirtualASManager::GlobalASFragment::selfCheck() const
 {
-  xassert(m_start >= 0);
+  xassert(m_localStart >= 0);
   xassert(m_size >= 0);
 }
 
 
-VirtualASManager::VASFragment::operator gdv::GDValue() const
+VirtualASManager::GlobalASFragment::operator gdv::GDValue() const
 {
-  GDValue m(GDVK_TAGGED_ORDERED_MAP, "VASFragment"_sym);
+  GDValue m(GDVK_TAGGED_ORDERED_MAP, "GlobalASFragment"_sym);
 
   GDV_WRITE_MEMBER_SYM(m_vas);
+  GDV_WRITE_MEMBER_SYM(m_size);
+
+  return m;
+}
+
+
+// -------------------------- LocalASFragment --------------------------
+auto VirtualASManager::LocalASFragment::summary() const -> LocalOffset
+{
+  return m_size;
+}
+
+
+void VirtualASManager::LocalASFragment::selfCheck() const
+{
+  xassert(m_globalStart >= 0);
+  xassert(m_size >= 0);
+}
+
+
+VirtualASManager::LocalASFragment::operator gdv::GDValue() const
+{
+  GDValue m(GDVK_TAGGED_ORDERED_MAP, "LocalASFragment"_sym);
+
+  GDV_WRITE_MEMBER_SYM(m_globalStart);
   GDV_WRITE_MEMBER_SYM(m_size);
 
   return m;
@@ -46,43 +71,102 @@ VirtualASManager::~VirtualASManager()
 
 
 VirtualASManager::VirtualASManager()
-  : m_tree(new SumTree<VASFragment>),
-    m_vasSizes()
+  : m_globalFragments(new SumTree<GlobalASFragment>),
+    m_vasToLocalFragments()
 {}
 
 
 void VirtualASManager::selfCheck() const
 {
-  m_tree->selfCheck();
+  m_globalFragments->selfCheck();
 
-  // Map from `m_vas` to sum of sizes in `m_tree`.
-  std::vector<LocalOffset> treeSizes(numLocalSpaces(), 0);
-
-  // Traverse `m_tree` to populate `treeSize`.
-  for (std::size_t i=0; i < m_tree->size(); ++i) {
-    VASFragment const &frag = m_tree->atC(i);
-    frag.selfCheck();
-
-    // The start is the sum of all preceding sizes.
-    xassert(frag.m_start == treeSizes.at(frag.m_vas));
-
-    treeSizes.at(frag.m_vas) += frag.m_size;
+  // Check each local tree.
+  for (VASID vas = 0; vas < numLocalSpaces(); ++vas) {
+    m_vasToLocalFragments.at(vas)->selfCheck();
   }
 
-  // Should match `m_vasSizes`.
-  xassert(m_vasSizes == treeSizes);
+  // Next global fragment to check
+  std::size_t globalIndex = 0;
+
+  // Where we expect the next fragment to start globally.
+  GlobalOffset globalStart = 0;
+
+  // Map from VASID to the index of its tree within
+  // `m_vasToLocalFragments` of the next fragment to check.
+  std::vector<std::size_t> vasToLocalIndex(numLocalSpaces(), 0);
+
+  // For each VAS, where we expect its next fragment to start.
+  std::vector<LocalOffset> vasToLocalStart(numLocalSpaces(), 0);
+
+  // Walk the global fragments, checking that each corresponds to the
+  // next local fragment for its VAS.
+  while (globalIndex < m_globalFragments->size()) {
+    // Look up `globalIndex`.
+    GlobalASFragment const &globalFrag =
+      m_globalFragments->atC(globalIndex);
+    globalFrag.selfCheck();
+
+    // Look up the VASID.
+    VASID const vas = globalFrag.m_vas;
+    xassert(cc::z_le_lt(vas, numLocalSpaces()));
+    SumTree<LocalASFragment> const &localFragments =
+      *( m_vasToLocalFragments.at(vas) );
+    std::size_t &localIndex =
+      vasToLocalIndex.at(vas);
+    LocalOffset &localStart =
+      vasToLocalStart.at(vas);
+
+    // Look up `localIndex`.
+    xassert(cc::z_le_lt(localIndex, localFragments.size()));
+    LocalASFragment const &localFrag =
+      localFragments.atC(localIndex);
+    localFrag.selfCheck();
+
+    // Check correspondences.
+    xassert(localStart == globalFrag.m_localStart);
+    xassert(globalStart == localFrag.m_globalStart);
+    xassert(globalFrag.m_size == localFrag.m_size);
+
+    // Advance to next global fragment.
+    ++globalIndex;
+    globalStart += globalFrag.m_size;
+
+    // Advance to next local fragment.
+    ++localIndex;
+    localStart += localFrag.m_size;
+  }
+
+  // Check that we got to the end of the global space.
+  xassert(globalStart == globalSpaceSize());
+
+  // Check all of the final local data.
+  for (VASID vas = 0; vas < numLocalSpaces(); ++vas) {
+    // Look up `vas`.
+    SumTree<LocalASFragment> const &localFragments =
+      *( m_vasToLocalFragments.at(vas) );
+    std::size_t localIndex =
+      vasToLocalIndex.at(vas);
+    LocalOffset localStart =
+      vasToLocalStart.at(vas);
+
+    // Check that we got to the end of the local space.
+    xassert(localIndex == localFragments.size());
+    xassert(localStart == localFragments.summary());
+    xassert(localStart == localSpaceSize(vas));
+  }
 }
 
 
+// ------------------------------ Queries ------------------------------
 auto VirtualASManager::globalSpaceSize() const -> GlobalOffset
 {
-  return m_tree->summary();
+  return m_globalFragments->summary();
 }
 
 
 auto VirtualASManager::numLocalSpaces() const -> VASID
 {
-  return m_vasSizes.size();
+  return m_vasToLocalFragments.size();
 }
 
 
@@ -95,7 +179,26 @@ bool VirtualASManager::validLocalSpace(VASID vas) const
 auto VirtualASManager::localSpaceSize(VASID vas) const -> LocalOffset
 {
   xassertPrecondition(validLocalSpace(vas));
-  return m_vasSizes.at(vas);
+  return m_vasToLocalFragments.at(vas)->summary();
+}
+
+
+auto VirtualASManager::localToGlobal(
+  VASID vas, LocalOffset offset) const -> GlobalOffset
+{
+  xassertPrecondition(validLocalSpace(vas));
+  xassertPrecondition(cc::z_le_lt(offset, localSpaceSize(vas)));
+
+  // Get info for `vas`.
+  SumTree<LocalASFragment> const &localFragments =
+    m_vasToLocalFragments.at(vas).operator*();
+
+  // Get the specific fragment that contains `offset`, along with how
+  // far into that fragment `offset` is.
+  auto [localFrag, fragOffset] =
+    localFragments.lookup(offset);
+
+  return localFrag.m_globalStart + fragOffset;
 }
 
 
@@ -104,18 +207,20 @@ auto VirtualASManager::globalToLocal(GlobalOffset offset) const
 {
   xassertPrecondition(cc::z_le_lt(offset, globalSpaceSize()));
 
-  std::pair<VASFragment const &, GlobalOffset> fragOfs =
-    m_tree->lookup(offset);
+  std::pair<GlobalASFragment const &, GlobalOffset> fragOfs =
+    m_globalFragments->lookup(offset);
 
   return {fragOfs.first.m_vas,
-          fragOfs.first.m_start + fragOfs.second};
+          fragOfs.first.m_localStart + fragOfs.second};
 }
 
 
+// --------------------------- Modification ----------------------------
 auto VirtualASManager::allocateLocalSpace() -> VASID
 {
   VASID ret = numLocalSpaces();
-  m_vasSizes.push_back(0);
+  m_vasToLocalFragments.push_back(
+    std::make_unique<SumTree<LocalASFragment>>());
 
   xassertPostcondition(numLocalSpaces() == ret + 1);
   xassertPostcondition(localSpaceSize(ret) == 0);
@@ -133,11 +238,9 @@ auto VirtualASManager::extendLocalSpace(VASID vas, LocalOffset size)
   GlobalOffset ret = globalSpaceSize();
   LocalOffset oldLocalSize = localSpaceSize(vas);
 
-  m_tree->append(VASFragment{vas, oldLocalSize, size});
+  m_globalFragments->append(GlobalASFragment{vas, oldLocalSize, size});
 
-  LocalOffset newLocalSize =
-    addWithOverflowCheck<LocalOffset>(oldLocalSize, size);
-  m_vasSizes.at(vas) = newLocalSize;
+  m_vasToLocalFragments.at(vas)->append(LocalASFragment{ret, size});
 
   xassertPostcondition(globalSpaceSize() == ret + size);
   xassertPostcondition(localSpaceSize(vas) == oldLocalSize + size);
