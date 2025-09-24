@@ -123,6 +123,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(gdvalue_parser);
   RUN_TEST(gdvalue_reader);
   RUN_TEST(gdvalue_srcloc);
+  RUN_TEST(gdvalue_srcloc_mgr);
   RUN_TEST(gdvalue_subst_transform);
   RUN_TEST(gdvalue_transform);
   RUN_TEST(gdvalue_writer);
