@@ -492,7 +492,7 @@ void test_gdvpOptTo()
 }
 
 
-class Data2 final {
+class Data2 {
 public:      // data
   // Uses a symbol as a key.
   std::string m_s1;
@@ -542,6 +542,18 @@ void testWithData2()
     "\"intList\":[1 2 3] "
     "\"s2\":\"s2value\""
   "}");
+
+  // Check that we can parse it using `GDVPTo<optional>::f()`.
+  std::optional<Data2> d2Opt =
+    GDVPTo<std::optional<Data2>>::f(GDValueParser(serialized));
+
+  EXPECT_EQ_GDV(*d2Opt, d);
+
+  // Check that we can parse it using `gdvpTo<optional>()`.
+  d2Opt =
+    gdvpTo<std::optional<Data2>>(GDValueParser(serialized));
+
+  EXPECT_EQ_GDV(*d2Opt, d);
 }
 
 

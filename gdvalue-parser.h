@@ -53,6 +53,7 @@
 #include <optional>                              // std::optional
 #include <string>                                // std::string
 #include <type_traits>                           // std::{enable_if_t, is_final, is_constructible}
+#include <utility>                               // std::declval
 #include <vector>                                // std::vector
 
 
@@ -599,22 +600,26 @@ struct GDVPTo<std::string> {
 };
 
 
-// If `T` is final and can be constructed from `GDValueParser`, we
-// should be able to safely create it directly.  The requirement for
-// `final` is to avoid constructing a superclass when the value
-// specifies to make a subclass.
+// If `T` can be directly constructed from `GDValueParser`, define
+// `GDVPTo` for it.
+//
+// The SFINAE condition checks specifically for a constructor rather
+// than `is_constructible` because the latter would succeed for
+// `std::optional<T>` if `T` has such a constructor, or a variant type,
+// etc., but those need special handling.
+//
+// Previously I had required that `T` be `final` here, but I think that
+// is unnecessary since `GDVPTo` is told specifically what type to make.
+// The requirement for `final` is only needed for `GDVPToNew`.
 template <typename T>
 struct GDVPTo<T,
-              std::enable_if_t<
-                std::is_final<T>::value &&
-                std::is_constructible<T, GDValueParser>::value>
+              std::void_t<decltype(T(std::declval<GDValueParser>()))>
              > {
   static T f(GDValueParser const &p)
   {
     return T(p);
   }
 };
-
 
 
 // Syntactic convenience for calling the above.
