@@ -917,19 +917,28 @@ check: check-ctc
 test/fts/exp/%:
 	touch $@
 
+# Map a certain header file to "-", which is a signal to the script to
+# not generate that header.
+define FTS_NAME_OR_HYPHEN
+$(subst out/test/fts/noheader.txt.h,-,$1)
+endef
+
 out/test/fts/%.ok: test/fts/in/% test/fts/exp/%.h test/fts/exp/%.c \
                    file-to-strlit.py test/fts/check-fts.cc
 	$(CREATE_OUTPUT_DIRECTORY)
 	@#
 	@# Run the script we are testing.
 	$(PYTHON3) ./file-to-strlit.py arr $< \
-	  out/test/fts/$*.h out/test/fts/$*.c
+	  $(call FTS_NAME_OR_HYPHEN,out/test/fts/$*.h) \
+	  out/test/fts/$*.c
 	@#
 	@# Check against expected output.
-	$(RUN_COMPARE_EXPECT) \
-	  --expect test/fts/exp/$*.h \
-	  --no-separators --no-stderr \
-	  cat out/test/fts/$*.h
+	if [ -f out/test/fts/$*.h ]; then \
+	  $(RUN_COMPARE_EXPECT) \
+	    --expect test/fts/exp/$*.h \
+	    --no-separators --no-stderr \
+	    cat out/test/fts/$*.h; \
+	fi
 	$(RUN_COMPARE_EXPECT) \
 	  --expect test/fts/exp/$*.c \
 	  --no-separators --no-stderr \
@@ -937,10 +946,12 @@ out/test/fts/%.ok: test/fts/in/% test/fts/exp/%.h test/fts/exp/%.c \
 	@#
 	@# Check that, when compiled, it denotes the right contents.
 	$(CXX) -c -o out/test/fts/$*.o out/test/fts/$*.c
-	$(CXX) -o out/test/fts/$*.exe \
-	  -include out/test/fts/$*.h test/fts/check-fts.cc \
-	  out/test/fts/$*.o
-	./out/test/fts/$*.exe test/fts/in/$*
+	if [ -f out/test/fts/$*.h ]; then \
+	  $(CXX) -o out/test/fts/$*.exe \
+	    -include out/test/fts/$*.h test/fts/check-fts.cc \
+	    out/test/fts/$*.o; \
+	  ./out/test/fts/$*.exe test/fts/in/$*; \
+	fi
 	@#
 	@# All good.
 	touch $@
@@ -948,6 +959,7 @@ out/test/fts/%.ok: test/fts/in/% test/fts/exp/%.h test/fts/exp/%.c \
 .PHONY: check-fts
 check-fts: out/test/fts/allbytes.bin.ok
 check-fts: out/test/fts/hex-escape-problem.bin.ok
+check-fts: out/test/fts/noheader.txt.ok
 
 check: check-fts
 
@@ -986,6 +998,7 @@ out/%.mypy.ok: %
 .PHONY: check-mypy
 check-mypy: out/boilerplate.py.mypy.ok
 check-mypy: out/create-tuple-class.py.mypy.ok
+check-mypy: out/file-to-strlit.py.mypy.ok
 check-mypy: out/find-extra-deps.py.mypy.ok
 check-mypy: out/get-file-descriptions.py.mypy.ok
 check-mypy: out/run-compare-expect.py.mypy.ok

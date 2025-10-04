@@ -4,7 +4,7 @@
 #include "allbytes.bin.h"             // decl of arr
 
 // contents of test/fts/in/allbytes.bin, plus an extra NUL byte
-char const arr[273] =
+extern char const arr[273] =
   "\000\001\002\003\004\005\006\007\010\011\n"
   "\013\014\015\016\017\n"
   "\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037\n"
