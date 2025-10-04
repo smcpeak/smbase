@@ -22,26 +22,25 @@ Reads <inFile>, writes <outHeader> and <outCode>.
 """)
 
 
-# TODO: Change the terminology to "bytes", not "characters".
 def encode_file_to_c_lines(infile: Path) -> tuple[list[str], int]:
   """Read binary data from `infile` and return (encoded_lines,
-  num_characters)."""
+  num_bytes)."""
 
-  # Lines of encoded characters.
+  # Lines of encoded bytes.
   out_lines: list[str] = []
 
   # Current encoded output line.
   cur_line: str = ""
 
-  # Total number of characters.
-  num_characters = 0
+  # Total number of bytes.
+  num_bytes = 0
 
   with infile.open("rb") as f:
     while True:
       buf = f.read(4096)
       if not buf:
         break
-      num_characters += len(buf)
+      num_bytes += len(buf)
       for b in buf:
         if b == 10:  # newline
           # At newlines, encode it, and also break the string literal so
@@ -61,13 +60,13 @@ def encode_file_to_c_lines(infile: Path) -> tuple[list[str], int]:
 
         else:
           # Use octal rather than hex because hex would continue if the
-          # next character happened to also be valid hex.
+          # next byte happened to also be valid hex.
           cur_line += f"\\{b:03o}"
 
   # Final line; might be empty, which is fine, and handles the
   # degenerate case of an empty input file.
   out_lines.append(cur_line)
-  return out_lines, num_characters
+  return out_lines, num_bytes
 
 
 def write_header(
@@ -143,7 +142,7 @@ def main(argv: list[str]) -> int:
   out_header = Path(out_header_str)
   out_code = Path(out_code_str)
 
-  out_lines, num_chars = encode_file_to_c_lines(in_file)
+  out_lines, num_bytes = encode_file_to_c_lines(in_file)
 
   # Size of the output array.  It is one more than the source file's
   # size because (a) the array literal syntax requires an implicit NUL
@@ -152,12 +151,12 @@ def main(argv: list[str]) -> int:
   # standard string-manipulation functions.  When dealing with binary
   # data, clients must be aware that the extra NUL byte is always
   # present, and was not in the original file.
-  array_size = num_chars + 1
+  array_size = num_bytes + 1
 
   write_header(out_header, array_name, in_file, array_size, argv)
   write_code(out_code, out_header, array_name, in_file, array_size, out_lines, argv)
 
-  print(f"encoded {num_chars} bytes in {out_header} and {out_code}")
+  print(f"encoded {num_bytes} bytes in {out_header} and {out_code}")
   return 0
 
 
