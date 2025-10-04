@@ -60,9 +60,9 @@ def encode_file_to_c_lines(infile: Path) -> tuple[list[str], int]:
           cur_line += chr(b)
 
         else:
-          # TODO: FIX: If this is followed by hex characters, they get
-          # interpreted as part of the escape sequence.
-          cur_line += f"\\x{b:02X}"
+          # Use octal rather than hex because hex would continue if the
+          # next character happened to also be valid hex.
+          cur_line += f"\\{b:03o}"
 
   # Final line; might be empty, which is fine, and handles the
   # degenerate case of an empty input file.

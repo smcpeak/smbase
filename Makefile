@@ -917,10 +917,15 @@ check: check-ctc
 test/fts/exp/%:
 	touch $@
 
-out/test/fts/%.ok: test/fts/in/% test/fts/exp/%.h test/fts/exp/%.c file-to-strlit.py
+out/test/fts/%.ok: test/fts/in/% test/fts/exp/%.h test/fts/exp/%.c \
+                   file-to-strlit.py test/fts/check-fts.cc
 	$(CREATE_OUTPUT_DIRECTORY)
+	@#
+	@# Run the script we are testing.
 	$(PYTHON3) ./file-to-strlit.py arr $< \
 	  out/test/fts/$*.h out/test/fts/$*.c
+	@#
+	@# Check against expected output.
 	$(RUN_COMPARE_EXPECT) \
 	  --expect test/fts/exp/$*.h \
 	  --no-separators --no-stderr \
@@ -929,11 +934,22 @@ out/test/fts/%.ok: test/fts/in/% test/fts/exp/%.h test/fts/exp/%.c file-to-strli
 	  --expect test/fts/exp/$*.c \
 	  --no-separators --no-stderr \
 	  cat out/test/fts/$*.c
+	@#
+	@# Check that, when compiled, it denotes the right contents.
 	$(CXX) -c -o out/test/fts/$*.o out/test/fts/$*.c
+	$(CXX) -o out/test/fts/$*.exe \
+	  -include out/test/fts/$*.h test/fts/check-fts.cc \
+	  out/test/fts/$*.o
+	./out/test/fts/$*.exe test/fts/in/$*
+	@#
+	@# All good.
 	touch $@
 
 .PHONY: check-fts
 check-fts: out/test/fts/allbytes.bin.ok
+check-fts: out/test/fts/hex-escape-problem.bin.ok
+
+check: check-fts
 
 
 # -------------- check create-tuple-class.py outputs -------------------
