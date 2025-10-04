@@ -913,6 +913,29 @@ check-ctc: out/test/ctc/in/foo.ok
 check: check-ctc
 
 
+# ----------------------- test file-to-strlit.py -----------------------
+test/fts/exp/%:
+	touch $@
+
+out/test/fts/%.ok: test/fts/in/% test/fts/exp/%.h test/fts/exp/%.c file-to-strlit.py
+	$(CREATE_OUTPUT_DIRECTORY)
+	$(PYTHON3) ./file-to-strlit.py arr $< \
+	  out/test/fts/$*.h out/test/fts/$*.c
+	$(RUN_COMPARE_EXPECT) \
+	  --expect test/fts/exp/$*.h \
+	  --no-separators --no-stderr \
+	  cat out/test/fts/$*.h
+	$(RUN_COMPARE_EXPECT) \
+	  --expect test/fts/exp/$*.c \
+	  --no-separators --no-stderr \
+	  cat out/test/fts/$*.c
+	$(CXX) -c -o out/test/fts/$*.o out/test/fts/$*.c
+	touch $@
+
+.PHONY: check-fts
+check-fts: out/test/fts/allbytes.bin.ok
+
+
 # -------------- check create-tuple-class.py outputs -------------------
 # Set of header files that use create-tuple-class.py.
 CTC_HEADERS :=
