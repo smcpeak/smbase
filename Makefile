@@ -113,7 +113,7 @@ RANLIB  = ranlib
 PYTHON3 = python3
 
 # https://mypy-lang.org/
-MYPY    = mypy
+MYPY    = $(PYTHON3) -m mypy
 
 # How to invoke run-compare-expect.py.
 RUN_COMPARE_EXPECT = $(PYTHON3) ./run-compare-expect.py
