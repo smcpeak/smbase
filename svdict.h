@@ -14,6 +14,8 @@
 #include "strhash.h"    // StringHash
 #include "xassert.h"    // xassert
 
+#include <cstdint>      // uintptr_t
+
 
 // constness: for this class, 'const' means the *mapping* from string
 // to void* won't change; but I don't prevent the thing pointed-at
