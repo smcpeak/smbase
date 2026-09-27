@@ -102,6 +102,24 @@ void test_EXPECT_EXN_SUBSTR_loc()
 }
 
 
+void test_EXPECT_EXN_REGEX_loc()
+{
+  EXPECT_EXN_SUBSTR(EXPECT_EXN_REGEX((void)1, XMessage, "blah"),
+    XAssert,
+    "sm-test-test.cc:107: assertion failed: Expected exception, but none was thrown.");
+
+  EXPECT_EXN_SUBSTR(EXPECT_EXN_REGEX(xformat("whatever"), XUnimp, "blah"),
+    XAssert,
+    "sm-test-test.cc:111: assertion failed: Expected exception of type `XUnimp`");
+
+  EXPECT_EXN_SUBSTR(EXPECT_EXN_REGEX(xmessage("gorf"), XMessage, "blah"),
+    XMessage,
+    "sm-test-test.cc:115: While checking exception message for `xmessage(\"gorf\")`: actual value is \"gorf\" but expected it to match regex \"blah\".");
+
+  EXPECT_EXN_REGEX(xmessage("gorf"), XMessage, "g..f")
+}
+
+
 // -------------- Tests not sensitive to source location ---------------
 void sampleTest_testCase()
 {
@@ -449,6 +467,7 @@ void test_sm_test()
   test_EXPECT_EQ_GDV_loc();
   test_EXPECT_EQ_GDVSER_loc();
   test_EXPECT_EXN_SUBSTR_loc();
+  test_EXPECT_EXN_REGEX_loc();
 
   test_TEST_CASE();
   test_TEST_CASE_EXPRS();

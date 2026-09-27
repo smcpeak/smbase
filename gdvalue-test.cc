@@ -2767,9 +2767,9 @@ void test_binary64Float_parseErrors()
   testOneErrorSubstr("1e- ", 1, 4,
     "Unexpected ' ' while looking for digit after sign after exponent indicator in float.");
 
-  // TODO: Generalize this to also allow "Numerical result out of range".
-  testOneErrorSubstr("1e400", 1, 5,
-    "Parsing \"1e400\" as float: offset 5: ");
+  // I've seen "Result too large" and "Numerical result out of range".
+  testOneErrorRegex("1e400", 1, 5,
+    "Parsing \"1e400\" as float: offset 5:.*(too large|out of range)");
 }
 
 

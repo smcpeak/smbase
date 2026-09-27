@@ -351,6 +351,16 @@ void expectEqGDVSer(
     })
 
 
+// Like above, but the message should match a regex.
+#define EXPECT_EXN_REGEX(expr, ExnType, expectRegex) \
+  EXPECT_EXN_COMMON_CORE(expr, ExnType,              \
+    expectMatchesRegex(                              \
+      HERE_PREPROC_FILE_LINE,                        \
+      "exception message for `" #expr "`",           \
+      w, expectRegex);                               \
+  )
+
+
 // ------------------------ Comparison testing -------------------------
 // Test `a==b`, but also verify that the result is the same if the
 // order is swapped, and that it is consistent with `a!=b`.
