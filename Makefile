@@ -113,7 +113,7 @@ RANLIB  = ranlib
 PYTHON3 = python3
 
 # https://mypy-lang.org/
-MYPY    = mypy
+MYPY    = $(PYTHON3) -m mypy
 
 # How to invoke run-compare-expect.py.
 RUN_COMPARE_EXPECT = $(PYTHON3) ./run-compare-expect.py
@@ -1004,7 +1004,7 @@ check-mypy: out/get-file-descriptions.py.mypy.ok
 check-mypy: out/run-compare-expect.py.mypy.ok
 
 ifeq ($(ENABLE_MYPY),1)
-check: check-mypy
+all: check-mypy
 endif
 
 
