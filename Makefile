@@ -1004,7 +1004,7 @@ check-mypy: out/get-file-descriptions.py.mypy.ok
 check-mypy: out/run-compare-expect.py.mypy.ok
 
 ifeq ($(ENABLE_MYPY),1)
-check: check-mypy
+all: check-mypy
 endif
 
 
