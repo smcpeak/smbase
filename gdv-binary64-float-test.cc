@@ -296,8 +296,11 @@ void test_deserialization()
   // The "Result too large" text comes from the C++ library, so probably
   // is not portable.  But I'll wait until this trips to weaken the
   // check so I can see where it differs and to what extent.
+  //
+  // TODO: Indeed, it fails with GLIBC 2.43, which says
+  // "Numerical result out of range".  Generalize with a regex.
   EXPECT_EXN_SUBSTR(GDVBinary64Float::parseString("1e400"),
-    XFormat, "Parsing \"1e400\" as float: offset 5: Result too large");
+    XFormat, "Parsing \"1e400\" as float: offset 5: ");
 
   EXPECT_EXN_SUBSTR(GDVBinary64Float::parseString("1ee4"),
     XFormat, "Parsing \"1ee4\" as float: offset 1: invalid character");
