@@ -584,6 +584,9 @@ test/%.expect:
 AFTER_UNIT_TESTS := out/unit-tests.exe.ok
 
 # Run one unit test and compare to expected output.
+#
+# The "long long" type name replacement is meant for gdvalue.unit.ok
+# since it checks some exceptions that report integer size issues.
 out/%.unit.ok: test/%.expect $(AFTER_UNIT_TESTS)
 	$(CREATE_OUTPUT_DIRECTORY)
 	$(RUN_COMPARE_EXPECT) \
@@ -591,7 +594,7 @@ out/%.unit.ok: test/%.expect $(AFTER_UNIT_TESTS)
 	  --expect test/$*.expect \
 	  --path-not-found-replacer \
 	  --assertion-failed-replacer \
-	  --replace '(long long int|long int)' 'long... int' \
+	  --replace 'type "(long long|long)( int)?"' 'type "long... int"' \
 	  env VERBOSE=1 $(OBJDIR)/unit-tests.exe $*
 	touch $@
 
