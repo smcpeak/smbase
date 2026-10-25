@@ -137,7 +137,7 @@ GENSRC = 0
 # Set to 1 to compute code coverage.
 COVERAGE = 0
 
-# If 1, hook the `mypy` checks into the `check` target.
+# If 1, hook the `mypy` checks into the `all` target.
 ENABLE_MYPY = 0
 
 # Path to the null device.
