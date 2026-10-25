@@ -4,7 +4,8 @@
 #include "hex-escape-problem.bin.h"             // decl of arr
 
 // contents of test/fts/in/hex-escape-problem.bin, plus an extra NUL byte
-extern char const arr[25] =
+extern char const arr[25];
+char const arr[25] =
   "CR then '0' then NL:\n"
   "\0150\n"
   ""

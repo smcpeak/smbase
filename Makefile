@@ -956,11 +956,20 @@ out/test/fts/%.ok: test/fts/in/% test/fts/exp/%.h test/fts/exp/%.c \
 	  cat out/test/fts/$*.c
 	@#
 	@# Check that, when compiled, it denotes the right contents.
-	$(CXX) -c -o out/test/fts/$*.o out/test/fts/$*.c
+	$(CC) -c -o out/test/fts/$*.o out/test/fts/$*.c
 	if [ -f out/test/fts/$*.h ]; then \
 	  $(CXX) -o out/test/fts/$*.exe \
 	    -include out/test/fts/$*.h test/fts/check-fts.cc \
 	    out/test/fts/$*.o; \
+	  ./out/test/fts/$*.exe test/fts/in/$*; \
+	fi
+	@#
+	@# Also check compiling as C++.
+	$(CXX) -c -o out/test/fts/$*-cpp.o -xc++ out/test/fts/$*.c
+	if [ -f out/test/fts/$*.h ]; then \
+	  $(CXX) -o out/test/fts/$*.exe \
+	    -include out/test/fts/$*.h test/fts/check-fts.cc \
+	    out/test/fts/$*-cpp.o; \
 	  ./out/test/fts/$*.exe test/fts/in/$*; \
 	fi
 	@#

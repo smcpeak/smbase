@@ -150,7 +150,11 @@ def write_code(
 
     # The `extern` is required if there is no header file since, in C++,
     # an initialized global variable has internal linkage by default.
-    out.write(f"extern char const {array_name}[{array_size}] =\n")
+    out.write(f"extern char const {array_name}[{array_size}];\n")
+
+    # But, write the initializer separately since otherwise Clang warns
+    # in C mode that an `extern` variable has an initializer.
+    out.write(f"char const {array_name}[{array_size}] =\n")
 
     for enc_line in out_lines:
       out.write(f'  "{enc_line}"\n')
