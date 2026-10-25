@@ -22,6 +22,8 @@ class Sub3;
 
 class Super {
 public:
+  virtual ~Super() = default;
+
   enum Kind { K_SUB1, K_SUB2, K_SUB3 };
   virtual Kind kind() const = 0;
 
