@@ -504,8 +504,12 @@ SumTree<T>::operator gdv::GDValue() const
 
   GDValue m(GDVK_TAGGED_ORDERED_MAP, "SumTree"_sym);
 
+  // The type argument is included mostly for debug assistance.  I have
+  // tests that check the entire GDV output, so the name must be
+  // normalized across compilers.
   m.orderedMapSetValueAtSym("T",
-    GDVSymbol(GetTypeName<T>::name()));
+    GDVSymbol(normalizeTypeName(GetTypeName<T>::value)));
+
   GDV_WRITE_MEMBER_SYM(m_root);
 
   return m;
