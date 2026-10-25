@@ -312,6 +312,13 @@ std::string replace(
   DEPRECATED("Use `replaceAll` instead.");
 
 
+// Like `replaceAll`, but accepting `string_view` inputs.
+std::string replaceAll_sv(
+  std::string_view src,
+  std::string_view oldstr,
+  std::string_view newstr);
+
+
 // Replace all occurrences of first elements in `substitutions` with
 // their corresponding second elements.  This checks for matches in
 // order, replacing the first (not necessarily longest) that matches,

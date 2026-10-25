@@ -596,6 +596,8 @@ void testReplaceAll()
   EXPECT_EQ(replaceAll("xxx", "x", ""), "");
   EXPECT_EQ(replaceAll("Just some text. Just some text.", "some", "SOME"),
                        "Just SOME text. Just SOME text.");
+
+  EXPECT_EQ(replaceAll_sv("xxx", "x", "xxx"), "xxxxxxxxx");
 }
 
 

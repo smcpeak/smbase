@@ -701,6 +701,15 @@ std::string replaceAll(
   std::string const &oldstr,
   std::string const &newstr)
 {
+  return replaceAll_sv(origSrc, oldstr, newstr);
+}
+
+
+std::string replaceAll_sv(
+  std::string_view origSrc,
+  std::string_view oldstr,
+  std::string_view newstr)
+{
   // It doesn't make sense to replace an empty substring, and if we
   // tried we would get into an infinite loop.
   xassertPrecondition(!oldstr.empty());
