@@ -590,7 +590,7 @@ out/%.unit.ok: test/%.expect $(AFTER_UNIT_TESTS)
 	  --expect test/$*.expect \
 	  --path-not-found-replacer \
 	  --assertion-failed-replacer \
-	  --replace '(long long |long )' 'long... ' \
+	  --replace '(long long int|long int)' 'long... int' \
 	  env VERBOSE=1 $(OBJDIR)/unit-tests.exe $*
 	touch $@
 
