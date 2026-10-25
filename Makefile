@@ -858,6 +858,12 @@ RCE_CMD_chdir1 := --chdir fonts ls sample1.bdf
 rce-tests: out/rce_chdir1.ok
 
 
+# Test --replace.
+RCE_CMD_replace1 := --replace '(long long |long )' 'long... ' cat test/long_long_msg.txt
+
+rce-tests: out/rce_replace1.ok
+
+
 .PHONY: rce-tests
 check: rce-tests
 

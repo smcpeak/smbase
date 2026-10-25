@@ -1,0 +1,8 @@
+---- stdout ----
+As expected: test_integerGetAs: convertNumber: Source value 123456 of type "long... int" (64 bits) cannot be represented with type "signed char" (8 bits).
+As expected: test_integerGetAs: convertNumber: Source value 1234567890123456789 of type "long... int" (64 bits) cannot be represented with type "int" (32 bits).
+As expected: test_integerGetAs: convertNumber: Source value 123456 of type "long... int" (64 bits) cannot be represented with type "signed char" (8 bits).
+As expected: test_integerGetAs: convertNumber: Source value 1234567890123456789 of type "long... int" (64 bits) cannot be represented with type "int" (32 bits).
+---- stderr ----
+---- exit status ----
+Exit 0

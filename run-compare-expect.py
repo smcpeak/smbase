@@ -127,6 +127,102 @@ use_assertion_failed_replacer = False
 # included in the normalized output.
 volatileRE = re.compile(r"VOLATILE")
 
+
+# A compiled --replace specification.  The second element can contain
+# "\0", "\1", etc., to indicate places to insert the matched string or
+# substrings.
+CompiledReplaceSpec = tuple[re.Pattern[str], str]
+
+# Global list of generic replacements, in the order to apply them.
+g_compiled_replace_specs: list[CompiledReplaceSpec] = []
+
+
+def compileReplaceRegexes(
+  replace_specs: list[list[str]]
+) -> list[CompiledReplaceSpec]:
+  """
+  Given the list of --replace arguments, compile the regexes.
+  """
+
+  res: list[CompiledReplaceSpec] = []
+
+  for spec in replace_specs:
+    try:
+      res.append((re.compile(spec[0]), spec[1]))
+    except re.error as e:
+      # Add the offending regex to the error message.
+      raise ValueError(
+        f"Invalid --replace regex '{spec[0]}': " +
+        f"{e.msg} at position {e.pos}.") from e
+
+  return res
+
+
+def applyReplaceRegex(
+  pat: re.Pattern[str],
+  replacement: str,
+  line: str,
+) -> str:
+  """
+  Apply a single --replace rule to `line`.
+  """
+
+  return pat.sub(replacement, line)
+
+
+def applyReplaceRegexes(
+  compiled_specs: list[CompiledReplaceSpec],
+  line: str,
+) -> str:
+  """
+  Apply the given --replace specifications to `line`, returning the
+  transformed (normalized) result string.
+  """
+
+  compiled_spec: CompiledReplaceSpec
+  for compiled_spec in compiled_specs:
+    line = applyReplaceRegex(compiled_spec[0], compiled_spec[1], line)
+
+  return line
+
+
+def testApplyReplaceRegexes() -> None:
+  """Unit tests for `applyReplaceRegexes`."""
+
+  specs: list[CompiledReplaceSpec] = compileReplaceRegexes([
+    ["foo", "bar"],
+    [r"(long long|long)", "long..."],
+    [r"(\d+) cats", r"\1 dogs"],
+  ])
+
+  def one(
+    specs: list[CompiledReplaceSpec],
+    input: str,
+    expect: str,
+  ) -> None:
+    actual: str = applyReplaceRegexes(specs, input)
+    if actual != expect:
+      print(f"actual: {actual}")
+      print(f"expect: {expect}")
+    assert(actual == expect)
+
+  one(specs, "", "")
+  one(specs, "foobar", "barbar")
+  one(specs, "foofoofoo", "barbarbar")
+
+  one(specs,
+    'Source value 123456 of type "long long int" (64 bits) cannot be',
+    'Source value 123456 of type "long... int" (64 bits) cannot be')
+
+  one(specs,
+    'Source value 123456 of type "long int" (64 bits) cannot be',
+    'Source value 123456 of type "long... int" (64 bits) cannot be')
+
+  one(specs,
+    "there are 75 cats and then 92 cats",
+    "there are 75 dogs and then 92 dogs")
+
+
 def normalizeOutput(line: str) -> str:
   """Remove strings that vary from run to run so the result is suitable
   as expected test output."""
@@ -142,6 +238,8 @@ def normalizeOutput(line: str) -> str:
 
   if use_assertion_failed_replacer:
     line = assertionFailedRE.sub(assertionFailedReplacer, line)
+
+  line = applyReplaceRegexes(g_compiled_replace_specs, line)
 
   return line
 
@@ -181,6 +279,18 @@ def main() -> None:
     help="Replace \"Path not found\" with \"File not found\".")
   parser.add_argument("--assertion-failed-replacer", action="store_true",
     help="Replace <line> in \"<file>:<line>: assertion failed: \" with \"DIGITS\".")
+
+  parser.add_argument(
+    "--replace",
+    action="append",
+    nargs=2,
+    metavar=("REGEX", "REPLACEMENT"),
+    help=r"""
+      Replace all occurrences of REGEX with REPLACEMENT.  The latter can
+      use \0 to refer to the entire matched string, \1 for the first
+      matching group, etc.
+    """)
+
   parser.add_argument("--no-separators", action="store_true",
     help="Do not print the stdout/stderr/exit code separators.")
   parser.add_argument("--no-stderr", action="store_true",
@@ -204,6 +314,10 @@ def main() -> None:
   if opts.assertion_failed_replacer:
     global use_assertion_failed_replacer
     use_assertion_failed_replacer = True
+
+  if opts.replace:
+    global g_compiled_replace_specs
+    g_compiled_replace_specs = compileReplaceRegexes(opts.replace)
 
   # Read the expected output.  Explicitly check for "/dev/null" so I can
   # use that name even with Windows Python.
@@ -336,6 +450,7 @@ def main() -> None:
 
 if __name__ == "__main__":
   testAssertionFailedReplacer()
+  testApplyReplaceRegexes()
   call_main(main)
 
 
