@@ -9,6 +9,7 @@
 #define SMBASE_GET_TYPE_NAME_H
 
 #include "sm-macros.h"                 // OPEN_NAMESPACE
+#include "std-string-fwd.h"            // std::string
 
 #include <cstddef>                     // std::size_t
 #include <string_view>                 // std::string_view
@@ -117,6 +118,12 @@ struct GetTypeName {
   // that does not work due to how `GetTypeName<void>` is used.)
   constexpr inline static std::string_view value = name();
 };
+
+
+// Return a type name that is normalized across compilers.  This is not
+// done in `GetTypeName::name` because it requires allocating a new
+// `string`, rather than just restricting a `string_view`.
+std::string normalizeTypeName(std::string_view tname);
 
 
 CLOSE_NAMESPACE(smbase)

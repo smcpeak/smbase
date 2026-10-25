@@ -31,7 +31,16 @@ void test_get_type_name()
   EXPECT_EQ(GetTypeName<int>::value, "int");
   EXPECT_EQ(GetTypeName<unsigned int>::value, "unsigned int");
   EXPECT_EQ(GetTypeName<GetTypeName<int> >::value, "smbase::GetTypeName<int>");
+
+  // The un-normalized name differs by compiler, so we just print it in
+  // verbose mode.
   VPVAL(GetTypeName<SomeClass>::value);
+
+  // Test that normalization produces a consistent result.  If this
+  // fails, most likely another transformation has to be added to
+  // `normalizeTypeName` to handle a new compiler.
+  EXPECT_EQ(normalizeTypeName(GetTypeName<SomeClass>::value),
+    "{anonymous}::SomeClass");
 }
 
 

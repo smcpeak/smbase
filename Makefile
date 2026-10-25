@@ -304,6 +304,7 @@ SRCS += gdvalue-transform.cc
 SRCS += gdvalue-write-options.cc
 SRCS += gdvalue-writer.cc
 SRCS += gdvalue.cc
+SRCS += get-type-name.cc
 SRCS += gprintf.c
 SRCS += growbuf.cc
 SRCS += hashline.cc
