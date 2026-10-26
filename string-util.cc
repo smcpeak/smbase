@@ -1060,6 +1060,12 @@ std::string int64ToRadixDigits(
 }
 
 
+char const *boolToString(bool b)
+{
+  return b? "true" : "false";
+}
+
+
 // -------------- Conversion between strings and vectors ---------------
 std::vector<unsigned char> stringToVectorOfUChar(std::string const &s)
 {

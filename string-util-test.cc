@@ -1125,6 +1125,18 @@ void test_replaceNonAlnumWith()
 }
 
 
+void test_boolToString()
+{
+  EXPECT_EQ(
+    boolToString(true),
+    "true");
+
+  EXPECT_EQ(
+    boolToString(false),
+    "false");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -1174,6 +1186,7 @@ void test_string_util()
   test_numOccurrences();
   test_joinTerminate();
   test_replaceNonAlnumWith();
+  test_boolToString();
 }
 
 

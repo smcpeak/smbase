@@ -454,6 +454,10 @@ std::string int64ToRadixDigits(
   std::int64_t value, int radix, bool radixIndicator);
 
 
+// Return "true" or "false".
+char const *boolToString(bool b);
+
+
 // -------------- Conversion between strings and vectors ---------------
 // Return the sequence of characters in `s`.
 stdfwd::vector<unsigned char>
