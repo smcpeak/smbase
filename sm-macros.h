@@ -211,6 +211,7 @@ inline void pretendUsedFn(T const &) {}
   // just let the warnings roll if we can't suppress them
   #define NORETURN
   #define UNUSED
+  #define DEPRECATED(reasonString)
 #endif
 
 
