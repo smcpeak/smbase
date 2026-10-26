@@ -34,13 +34,13 @@ OPEN_NAMESPACE(smbase)
 
 // Insert 't' into 's'.  Return true if it was inserted, false if it was
 // already there.
-template <class T>
-bool setInsert(stdfwd::set<T> &s, T const &t);
+template <typename T, typename C, typename A>
+bool setInsert(std::set<T,C,A> &s, T const &t);
 
 
 // Insert 't' into 's', requiring that it not already be there.
-template <class T>
-void setInsertUnique(stdfwd::set<T> &s, T const &t);
+template <typename T, typename C, typename A>
+void setInsertUnique(std::set<T,C,A> &s, T const &t);
 
 
 // Insert all elements of `src` into `dest`.  Return the number of
@@ -191,15 +191,15 @@ void setRemoveExisting(std::set<K,C,A> &s, K const &k);
 //   void printElement(std::ostream &os, T const &t);
 //
 // and write `t` to `os`.
-template <class T, class PRINT_ELEMENT>
+template <typename T, typename C, typename A, typename PRINT_ELEMENT>
 void setWrite(
   std::ostream &os,
-  stdfwd::set<T> const &s,
+  std::set<T,C,A> const &s,
   PRINT_ELEMENT const &printElement);
 
 
-template <class T>
-std::ostream& operator<< (std::ostream &os, stdfwd::set<T> const &s);
+template <typename T, typename C, typename A>
+std::ostream& operator<< (std::ostream &os, std::set<T,C,A> const &s);
 
 
 // Object that can participate in an operator<< output chain.

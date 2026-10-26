@@ -16,6 +16,7 @@
 #include "smbase/xassert.h"            // xassert
 
 #include <cstdlib>                     // std::atoi
+#include <functional>                  // std::greater
 #include <set>                         // std::set
 
 using namespace gdv;
@@ -39,9 +40,31 @@ void testSetInsert()
 }
 
 
+void testSetInsert_customComparator()
+{
+  std::set<int, std::greater<int>> s;
+
+  bool b = setInsert(s, 1);
+  xassert(b);
+
+  b = setInsert(s, 1);
+  xassert(!b);
+
+  EXPECT_EQ(stringb(s), "{1}");
+
+  b = setInsert(s, 2);
+  xassert(b);
+
+  b = setInsert(s, 2);
+  xassert(!b);
+
+  EXPECT_EQ(stringb(s), "{2, 1}");
+}
+
+
 void testSetInsertUnique()
 {
-  std::set<int> s;
+  std::set<int, std::greater<int>> s;
 
   setInsertUnique(s, 1);
   EXPECT_EQ(stringb(s), "{1}");
@@ -568,6 +591,7 @@ CLOSE_ANONYMOUS_NAMESPACE
 void test_set_util()
 {
   testSetInsert();
+  testSetInsert_customComparator();
   testSetInsertUnique();
   testSetInsertAll();
   testSetErase();

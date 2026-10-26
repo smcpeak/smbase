@@ -25,16 +25,16 @@ OPEN_NAMESPACE(smbase)
 // NOTE: Comments describing these functions are in `set-util-iface.h`.
 
 
-template <class T>
-bool setInsert(std::set<T> &s, T const &t)
+template <typename T, typename C, typename A>
+bool setInsert(std::set<T,C,A> &s, T const &t)
 {
   auto res = s.insert(t);
   return res.second;
 }
 
 
-template <class T>
-void setInsertUnique(std::set<T> &s, T const &t)
+template <typename T, typename C, typename A>
+void setInsertUnique(std::set<T,C,A> &s, T const &t)
 {
   bool inserted = setInsert(s, t);
   xassert(inserted);
@@ -327,10 +327,10 @@ void setRemoveExisting(std::set<K,C,A> &s, K const &k)
 }
 
 
-template <class T, class PRINT_ELEMENT>
+template <typename T, typename C, typename A, typename PRINT_ELEMENT>
 void setWrite(
   std::ostream &os,
-  std::set<T> const &s,
+  std::set<T,C,A> const &s,
   PRINT_ELEMENT const &printElement)
 {
   os << '{';
@@ -348,8 +348,8 @@ void setWrite(
 }
 
 
-template <class T>
-std::ostream& operator<< (std::ostream &os, std::set<T> const &s)
+template <typename T, typename C, typename A>
+std::ostream& operator<< (std::ostream &os, std::set<T,C,A> const &s)
 {
   setWrite(os, s,
     [](std::ostream &os, T const &t) -> void {
