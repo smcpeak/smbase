@@ -96,6 +96,15 @@ void testSetInsertAll()
 }
 
 
+void testSetInsertAll_differentComparators()
+{
+  std::set<int, std::greater<int>> s;
+
+  xassert(setInsertAll(s, std::set<int>{1,2,3}) == 3);
+  EXPECT_EQ(stringb(s), "{3, 2, 1}");
+}
+
+
 void testSetErase()
 {
   std::set<int> s;
@@ -594,6 +603,7 @@ void test_set_util()
   testSetInsert_customComparator();
   testSetInsertUnique();
   testSetInsertAll();
+  testSetInsertAll_differentComparators();
   testSetErase();
   testSetContains();
   testSetContainsDerived();

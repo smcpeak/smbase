@@ -46,8 +46,10 @@ void setInsertUnique(std::set<T,C,A> &s, T const &t);
 // Insert all elements of `src` into `dest`.  Return the number of
 // elements inserted, which may be less than `src.size()` if some of its
 // elements were already present.
-template <typename T, typename C, typename A>
-std::size_t setInsertAll(std::set<T,C,A> &dest, std::set<T,C,A> const &src);
+template <typename T, typename C1, typename A1,
+                      typename C2, typename A2>
+std::size_t setInsertAll(std::set<T,C1,A1> &dest,
+                         std::set<T,C2,A2> const &src);
 
 
 // Remove `t` from `s`.  Return true if `s` changed as a result.
