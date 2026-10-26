@@ -15,7 +15,7 @@
 
 #include "smbase/iter-and-end-fwd.h"             // smbase::ConstIterAndEnd
 #include "smbase/nway-comparison-result-fwd.h"   // smbase::NWayComparisonResult
-#include "smbase/sm-macros.h"                    // OPEN_NAMESPACE
+#include "smbase/sm-macros.h"                    // DEPRECATED, OPEN_NAMESPACE
 #include "smbase/sm-span-fwd.h"                  // smbase::Span
 #include "smbase/std-optional-fwd.h"             // std::optional
 #include "smbase/std-set-fwd.h"                  // stdfwd::set, std::set
@@ -46,6 +46,15 @@ template <typename T, typename C1, typename A1,
                       typename C2, typename A2>
 std::size_t setInsertAll(std::set<T,C1,A1> &dest,
                          std::set<T,C2,A2> const &src);
+
+
+// Insert all elements of `src` into `dest`, moving from `src` where
+// possible.  This does not return an element count due to an
+// implementation issue, but could (with some effort) be modified to do
+// so if needed.
+template <typename K, typename C, typename A>
+void setInsertAll_move(std::set<K,C,A> &dest,
+                       std::set<K,C,A> &&src);
 
 
 // Remove `t` from `s`.  Return true if `s` changed as a result.
@@ -157,13 +166,10 @@ std::size_t setRemoveMany(std::set<K,C,A> &larger,
                           std::set<K,C,A> const &smaller);
 
 
-// Insert all elements of `src` into `dest`, moving from `src` where
-// possible.
-//
-// TODO: This is similar to `setInsertAll` above, but named differently.
 template <typename K, typename C, typename A>
 void setInsertMany(std::set<K,C,A> &dest,
-                   std::set<K,C,A> &&src);
+                   std::set<K,C,A> &&src)
+  DEPRECATED("Use `setInsertAll_move` instead.");  // 2026-10-26
 
 
 // Call 'func' on every element in 'input' and return the set of all of

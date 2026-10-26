@@ -58,6 +58,18 @@ std::size_t setInsertAll(std::set<T,C1,A1> &dest,
 }
 
 
+template <typename K, typename C, typename A>
+void setInsertAll_move(std::set<K,C,A> &dest,
+                       std::set<K,C,A> &&src)
+{
+  // C++17 has a method to do this in one step.  But I can't get a count
+  // of inserted elements this way.  If I decide I want the count, I'll
+  // need to resort to either using node handles or performing a count
+  // before and after.
+  dest.merge(std::move(src));
+}
+
+
 template <typename T, typename C, typename A>
 bool setErase(std::set<T,C,A> &s, T const &t)
 {
@@ -285,11 +297,7 @@ template <typename K, typename C, typename A>
 void setInsertMany(std::set<K,C,A> &dest,
                    std::set<K,C,A> &&src)
 {
-  // C++17 has a method to do this in one step.  But I can't get a count
-  // of inserted elements this way.  If I decide I want the count, I'll
-  // need to resort to either using node handles or performing a count
-  // before and after.
-  dest.merge(std::move(src));
+  setInsertAll_move(dest, std::move(src));
 }
 
 

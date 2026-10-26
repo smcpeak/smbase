@@ -661,14 +661,14 @@ void test_setRemoveMany()
 }
 
 
-void test_setInsertMany()
+void test_setInsertAll_move()
 {
   // Use strings to at least motivate the use of element moves, but I'm
   // not actually measuring it.
   std::set<std::string> s1{"a","b","c","d"};
   std::set<std::string> s2{"c","d","e","f"};
 
-  setInsertMany(s1, std::move(s2));
+  setInsertAll_move(s1, std::move(s2));
 
   EXPECT_EQ(stringb(s1), "{a, b, c, d, e, f}");
 
@@ -711,7 +711,7 @@ void test_set_util()
   test_setsAreDisjointRandomized();
   test_setUnion();
   test_setRemoveMany();
-  test_setInsertMany();
+  test_setInsertAll_move();
 }
 
 
