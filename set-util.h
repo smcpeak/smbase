@@ -65,15 +65,17 @@ bool setErase(std::set<T,C,A> &s, T const &t)
 }
 
 
-template <class T, class KEY>
-bool setContains(stdfwd::set<T> const &s, KEY const &k)
+template <typename T, typename C, typename A, typename KEY>
+bool setContains(std::set<T,C,A> const &s, KEY const &k)
 {
   return s.count(k) > 0;
 }
 
 
-template <class T>
-bool isSubsetOf(std::set<T> const &subset, std::set<T> const &superset)
+template <typename T, typename C1, typename A1,
+                      typename C2, typename A2>
+bool isSubsetOf(std::set<T,C1,A1> const &subset,
+                std::set<T,C2,A2> const &superset)
 {
   for (auto it = subset.begin(); it != subset.end(); ++it) {
     auto it2 = superset.find(*it);
@@ -86,10 +88,11 @@ bool isSubsetOf(std::set<T> const &subset, std::set<T> const &superset)
 }
 
 
-template <class T>
+template <typename T, typename C1, typename A1,
+                      typename C2, typename A2>
 bool isSubsetOf_getExtra(T &extra /*OUT*/,
-                         std::set<T> const &smaller,
-                         std::set<T> const &larger)
+                         std::set<T,C1,A1> const &smaller,
+                         std::set<T,C2,A2> const &larger)
 {
   for (T const &element : smaller) {
     if (!setContains(larger, element)) {
@@ -102,10 +105,11 @@ bool isSubsetOf_getExtra(T &extra /*OUT*/,
 }
 
 
-template <class T>
+template <typename T, typename C1, typename A1,
+                      typename C2, typename A2>
 std::optional<T> setHasElementNotIn(
-  std::set<T> const &smaller,
-  std::set<T> const &larger)
+  std::set<T,C1,A1> const &smaller,
+  std::set<T,C2,A2> const &larger)
 {
   for (T const &element : smaller) {
     if (!setContains(larger, element)) {
@@ -289,11 +293,13 @@ void setInsertMany(std::set<K,C,A> &dest,
 }
 
 
-template <typename OELT, typename IELT, typename FUNC>
-std::set<OELT> setMapElements(std::set<IELT> const &input,
-                              FUNC const &func)
+template <typename OELT, typename OC, typename OA,
+          typename IELT, typename IC, typename IA,
+          typename FUNC>
+std::set<OELT,OC,OA> setMapElements(std::set<IELT,IC,IA> const &input,
+                                    FUNC const &func)
 {
-  std::set<OELT> output;
+  std::set<OELT,OC,OA> output;
 
   for (IELT const &ielt : input) {
     output.insert(func(ielt));
@@ -303,8 +309,8 @@ std::set<OELT> setMapElements(std::set<IELT> const &input,
 }
 
 
-template <class T>
-std::vector<T> setToVector(std::set<T> const &s)
+template <typename T, typename C, typename A>
+std::vector<T> setToVector(std::set<T,C,A> const &s)
 {
   std::vector<T> ret;
   for (T const &elt : s) {
@@ -361,28 +367,28 @@ std::ostream& operator<< (std::ostream &os, std::set<T,C,A> const &s)
 }
 
 
-template <class T, class PRINT_ELEMENT>
-SetWriter<T,PRINT_ELEMENT>::SetWriter(
-  std::set<T> const &s,
+template <typename T, typename C, typename A, typename PRINT_ELEMENT>
+SetWriter<T,C,A,PRINT_ELEMENT>::SetWriter(
+  std::set<T,C,A> const &s,
   PRINT_ELEMENT const &pe)
   : m_set(s),
     m_printElement(pe)
 {}
 
 
-template <class T, class PRINT_ELEMENT>
-void SetWriter<T,PRINT_ELEMENT>::write(std::ostream &os) const
+template <typename T, typename C, typename A, typename PRINT_ELEMENT>
+void SetWriter<T,C,A,PRINT_ELEMENT>::write(std::ostream &os) const
 {
   setWrite(os, m_set, m_printElement);
 }
 
 
-template <class T, class PRINT_ELEMENT>
-SetWriter<T,PRINT_ELEMENT> setWriter(
-  std::set<T> const &s,
+template <typename T, typename C, typename A, typename PRINT_ELEMENT>
+SetWriter<T,C,A,PRINT_ELEMENT> setWriter(
+  std::set<T,C,A> const &s,
   PRINT_ELEMENT const &pe)
 {
-  return SetWriter<T,PRINT_ELEMENT>(s, pe);
+  return SetWriter<T,C,A,PRINT_ELEMENT>(s, pe);
 }
 
 

@@ -128,6 +128,16 @@ void testSetContains()
 }
 
 
+void testSetContains_customComparator()
+{
+  std::set<int, std::greater<int>> s{1,3,5};
+
+  xassert(setContains(s, 1));
+  xassert(!setContains(s, 2));
+  xassert(setContains(s, 3));
+}
+
+
 struct Base {};
 struct Derived : Base {};
 
@@ -161,6 +171,16 @@ void testIsSubsetOf()
 }
 
 
+void testIsSubsetOf_differentComparators()
+{
+  std::set<int, std::greater<int>> s1{1};
+  std::set<int> s12{1,2};
+
+  xassert(isSubsetOf(s1, s12));
+  xassert(!isSubsetOf(s12, s1));
+}
+
+
 void testIsSubsetOf_getExtra()
 {
   std::set<int> s1{1};
@@ -172,6 +192,21 @@ void testIsSubsetOf_getExtra()
 
   xassert(!isSubsetOf_getExtra(extra /*OUT*/, s12, s1));
   xassert(extra == 2);
+}
+
+
+void testIsSubsetOf_getExtra_differentComparators()
+{
+  std::set<int> s1{1};
+  std::set<int, std::greater<int>> s123{1,2,3};
+
+  int extra = 0;
+  xassert(isSubsetOf_getExtra(extra /*OUT*/, s1, s123));
+  xassert(extra == 0);
+
+  // Iteration follows `s123`'s order, so 3 is found first.
+  xassert(!isSubsetOf_getExtra(extra /*OUT*/, s123, s1));
+  xassert(extra == 3);
 }
 
 
@@ -190,6 +225,16 @@ void testSetHasElementNotIn()
 }
 
 
+void testSetHasElementNotIn_differentComparators()
+{
+  std::set<int> s1{1};
+  std::set<int, std::greater<int>> s12{1,2};
+
+  xassert(setHasElementNotIn(s12, s1) == std::make_optional(2));
+  xassert(setHasElementNotIn(s1, s12).has_value() == false);
+}
+
+
 void testSetMapElements()
 {
   std::set<char const *> strings{"1", "2", "3"};
@@ -203,10 +248,39 @@ void testSetMapElements()
 }
 
 
+void testSetMapElements_customComparators()
+{
+  std::set<int, std::greater<int>> input{1, 2, 3};
+
+  // Default output comparator.
+  std::set<int> doubled = setMapElements<int>(input,
+    [](int i) -> int {
+      return i*2;
+    });
+  EXPECT_EQ(stringb(doubled), "{2, 4, 6}");
+
+  // Explicit output comparator.
+  std::set<int, std::greater<int>> negated =
+    setMapElements<int, std::greater<int>>(input,
+      [](int i) -> int {
+        return -i;
+      });
+  EXPECT_EQ(stringb(negated), "{-1, -2, -3}");
+}
+
+
 void testSetToVector()
 {
   std::vector<int> v = setToVector(std::set<int>{1,2,3});
   EXPECT_EQ(stringb(v), "[1 2 3]");
+}
+
+
+void testSetToVector_customComparator()
+{
+  std::vector<int> v =
+    setToVector(std::set<int, std::greater<int>>{1,2,3});
+  EXPECT_EQ(stringb(v), "[3 2 1]");
 }
 
 
@@ -242,6 +316,16 @@ void testSetWriter()
     os << "(" << i << ")";
   };
   EXPECT_EQ(stringb(setWriter(s, printElement)), "{(1), (2)}");
+}
+
+
+void testSetWriter_customComparator()
+{
+  std::set<int, std::greater<int>> s{1,2};
+  auto printElement = [](std::ostream &os, int i) -> void {
+    os << "(" << i << ")";
+  };
+  EXPECT_EQ(stringb(setWriter(s, printElement)), "{(2), (1)}");
 }
 
 
@@ -606,15 +690,22 @@ void test_set_util()
   testSetInsertAll_differentComparators();
   testSetErase();
   testSetContains();
+  testSetContains_customComparator();
   testSetContainsDerived();
   testIsSubsetOf();
+  testIsSubsetOf_differentComparators();
   testIsSubsetOf_getExtra();
+  testIsSubsetOf_getExtra_differentComparators();
   testSetHasElementNotIn();
+  testSetHasElementNotIn_differentComparators();
   testSetMapElements();
+  testSetMapElements_customComparators();
   testSetToVector();
+  testSetToVector_customComparator();
   test_setRemove();
   testOstreamInsert();
   testSetWriter();
+  testSetWriter_customComparator();
   test_setIsDisjointWith();
   test_setsAreDisjoint();
   test_setsAreDisjointRandomized();

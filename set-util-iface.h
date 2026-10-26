@@ -28,10 +28,6 @@
 OPEN_NAMESPACE(smbase)
 
 
-// TODO: All of the methods that use `stdfwd` should use `std` and
-// have all three template parameters spelled out.
-
-
 // Insert 't' into 's'.  Return true if it was inserted, false if it was
 // already there.
 template <typename T, typename C, typename A>
@@ -65,22 +61,25 @@ bool setErase(std::set<T,C,A> &s, T const &t);
 // The key type is allowed to be different from `T` to allow the use of
 // types implicitly convertible to or comparable with `T`.
 //
-template <class T, class KEY>
-bool setContains(stdfwd::set<T> const &s, KEY const &k);
+template <typename T, typename C, typename A, typename KEY>
+bool setContains(std::set<T,C,A> const &s, KEY const &k);
 
 
 // True if every element in 'subset' is also in 'superset'.
-template <class T>
-bool isSubsetOf(stdfwd::set<T> const &subset, stdfwd::set<T> const &superset);
+template <typename T, typename C1, typename A1,
+                      typename C2, typename A2>
+bool isSubsetOf(std::set<T,C1,A1> const &subset,
+                std::set<T,C2,A2> const &superset);
 
 
 // If 'smaller' is a subset of 'larger', return true.  Otherwise, set
 // 'extra' to one of the elements that is in 'smaller' but not in
 // 'larger', and return false.
-template <class T>
+template <typename T, typename C1, typename A1,
+                      typename C2, typename A2>
 bool isSubsetOf_getExtra(T &extra /*OUT*/,
-                         stdfwd::set<T> const &smaller,
-                         stdfwd::set<T> const &larger);
+                         std::set<T,C1,A1> const &smaller,
+                         std::set<T,C2,A2> const &larger);
 
 
 // If there is an element in `smaller` that is not in `larger`, return
@@ -90,10 +89,11 @@ bool isSubsetOf_getExtra(T &extra /*OUT*/,
 // return value sense), except it does not require an existing `T`
 // object, which can be an issue when `T` lacks a default constructor.
 //
-template <class T>
+template <typename T, typename C1, typename A1,
+                      typename C2, typename A2>
 std::optional<T> setHasElementNotIn(
-  stdfwd::set<T> const &smaller,
-  stdfwd::set<T> const &larger);
+  std::set<T,C1,A1> const &smaller,
+  std::set<T,C2,A2> const &larger);
 
 
 // True if there is no element in both `a` and `b`.
@@ -168,14 +168,18 @@ void setInsertMany(std::set<K,C,A> &dest,
 
 // Call 'func' on every element in 'input' and return the set of all of
 // the results.
-template <typename OELT, typename IELT, typename FUNC>
-stdfwd::set<OELT> setMapElements(stdfwd::set<IELT> const &input,
-                                 FUNC const &func);
+template <typename OELT,
+          typename OC = std::less<OELT>,
+          typename OA = std::allocator<OELT>,
+          typename IELT, typename IC, typename IA,
+          typename FUNC>
+std::set<OELT,OC,OA> setMapElements(std::set<IELT,IC,IA> const &input,
+                                    FUNC const &func);
 
 
 // Return a vector containing the elements of 's' in natural order.
-template <class T>
-stdfwd::vector<T> setToVector(stdfwd::set<T> const &s);
+template <typename T, typename C, typename A>
+stdfwd::vector<T> setToVector(std::set<T,C,A> const &s);
 
 
 // Remove `k` from `s`.  Return true if it was there before.
@@ -205,17 +209,17 @@ std::ostream& operator<< (std::ostream &os, std::set<T,C,A> const &s);
 
 
 // Object that can participate in an operator<< output chain.
-template <class T, class PRINT_ELEMENT>
+template <typename T, typename C, typename A, typename PRINT_ELEMENT>
 class SetWriter {
 public:      // data
   // Set to write.
-  stdfwd::set<T> const &m_set;
+  std::set<T,C,A> const &m_set;
 
   // Element printer.
   PRINT_ELEMENT const &m_printElement;
 
 public:      // methods
-  inline SetWriter(stdfwd::set<T> const &s, PRINT_ELEMENT const &pe);
+  inline SetWriter(std::set<T,C,A> const &s, PRINT_ELEMENT const &pe);
 
   inline void write(std::ostream &os) const;
 
@@ -229,9 +233,9 @@ public:      // methods
 
 // Make a 'SetWriter' object, deducing its template arguments.  `pe` is
 // like `printElement` in `setWrite`.
-template <class T, class PRINT_ELEMENT>
-SetWriter<T,PRINT_ELEMENT> setWriter(
-  stdfwd::set<T> const &s,
+template <typename T, typename C, typename A, typename PRINT_ELEMENT>
+SetWriter<T,C,A,PRINT_ELEMENT> setWriter(
+  std::set<T,C,A> const &s,
   PRINT_ELEMENT const &pe);
 
 
