@@ -362,7 +362,11 @@ def main() -> None:
       runArgs['cwd'] = opts.chdir
 
     # Run the program, capturing output.
-    proc = subprocess.run(command, **runArgs)
+    try:
+      proc = subprocess.run(command, **runArgs)
+    except Exception as e:
+      e.add_note(f"While attempting to run {command!r}")
+      raise
 
     # Combine the stdout, stderr, and exit code into one list.
     sep = not opts.no_separators
