@@ -1033,6 +1033,15 @@ void test_tuple()
       EXPECT_EQ(toGDValue(tup2), v);
     }
 
+    // Demonstrate using structured bindings.
+    {
+      auto [num, str, dat] =
+        gdvpToTuple<int, std::string, Data>(GDValueParser(v));
+      EXPECT_EQ(num, 3);
+      EXPECT_EQ(str, "foo");
+      EXPECT_EQ(dat, Data(4,5));
+    }
+
     // Both in one call.
     gdvnTestRoundtrip(tup, "(3 \"foo\" Data{x:4 y:5})");
   }
