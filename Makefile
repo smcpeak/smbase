@@ -112,8 +112,9 @@ AR      = ar
 RANLIB  = ranlib
 PYTHON3 = python3
 
-# https://mypy-lang.org/
-MYPY    = $(PYTHON3) -m mypy
+# Lately, I've been getting this with "pipx install 'mypy<2'".  mypy
+# version 2 does not work on Cygwin.
+MYPY    = mypy
 
 # How to invoke run-compare-expect.py.
 RUN_COMPARE_EXPECT = $(PYTHON3) ./run-compare-expect.py
