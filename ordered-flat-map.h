@@ -63,7 +63,11 @@ auto OrderedFlatMap<KEY, VALUE, COMPARE>::lookup(KEY const &key) const -> size_t
   auto it = std::lower_bound(m_sortedKeys.begin(), m_sortedKeys.end(),
                              key, COMPARE());
 
-  // TODO: Is this guaranteed to be constant-time?
+  // This is guaranteed to be constant-time by the fact that we started
+  // with a vector iterator and `lower_bound` returns the same type as
+  // its parameters.  With C++20 I could do
+  // `static_assert(std::contiguous_iterator<decltype(it)>);` to
+  // double-check, but I'm currently targeting C++17.
   return it - m_sortedKeys.begin();
 }
 
