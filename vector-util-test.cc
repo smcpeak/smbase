@@ -64,6 +64,19 @@ void test_vecEraseAll()
 }
 
 
+// Test `vecToElementSet` with a custom comparator.
+void test_vecToElementSetCompare()
+{
+  std::vector<int> v{1,2,3};
+  std::set<int, std::greater<int>> s =
+    vecToElementSet<int, std::greater<int>>(v);
+  auto it = s.begin();
+  xassert(*it == 3);
+  ++it;
+  xassert(*it == 2);
+}
+
+
 void test_vecMapElements()
 {
   std::vector<string> src {"a", "b"};
@@ -230,6 +243,7 @@ void test_vector_util()
 {
   test_vecAccumulateWith();
   test_vecEraseAll();
+  test_vecToElementSetCompare();
   test_vecMapElements();
   test_vecConvertElements();
   test_vecCommonPrefixLength();

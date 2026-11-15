@@ -24,23 +24,11 @@ inline OrderedFlatMap<KEY, VALUE, COMPARE>::~OrderedFlatMap()
 {}
 
 
-// TODO: Fold this into `vecToElementSet`.
-template <typename T, typename C = std::less<T>>
-std::set<T, C> vecToElementSetEx(std::vector<T> const &vec)
-{
-  std::set<T, C> ret;
-  for (T const &t : vec) {
-    ret.insert(t);
-  }
-  return ret;
-}
-
-
 template <typename KEY, typename VALUE, typename COMPARE>
 inline auto OrderedFlatMap<KEY, VALUE, COMPARE>::selfCheck() const -> void
 {
   std::set<KEY, COMPARE> keySet =
-    vecToElementSetEx<KEY, COMPARE>(m_sortedKeys);
+    vecToElementSet<KEY, COMPARE>(m_sortedKeys);
 
   // Invariant: All elements are unique.
   xassert(m_sortedKeys.size() == keySet.size());
@@ -52,7 +40,7 @@ inline auto OrderedFlatMap<KEY, VALUE, COMPARE>::selfCheck() const -> void
   // Invariant: The set of keys in `m_insertionOrder` is the same as the
   // set of keys in `m_sortedKeys`.
   std::set<KEY, COMPARE> insKeySet =
-    vecToElementSetEx<KEY, COMPARE>(m_insertionOrder);
+    vecToElementSet<KEY, COMPARE>(m_insertionOrder);
   xassert(keySet == insKeySet);
 }
 

@@ -12,7 +12,7 @@
 
 #include <algorithm>                   // std::{all_of, remove}
 #include <cstddef>                     // std::size_t
-#include <functional>                  // std::{reference_wrapper,cref}
+#include <functional>                  // std::{reference_wrapper,cref,less}
 #include <iostream>                    // std::ostream
 #include <iterator>                    // std::make_move_iterator
 #include <optional>                    // std::optional
@@ -318,10 +318,10 @@ void vecInsertAt(std::vector<T> &vec, std::size_t index, T const &t)
 
 
 // Return the set of elements in 'vec'.
-template <class T>
-std::set<T> vecToElementSet(std::vector<T> const &vec)
+template <typename T, typename C = std::less<T>>
+std::set<T,C> vecToElementSet(std::vector<T> const &vec)
 {
-  std::set<T> ret;
+  std::set<T,C> ret;
   for (T const &t : vec) {
     ret.insert(t);
   }
