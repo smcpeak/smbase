@@ -26,8 +26,13 @@ void test_basics()
     elapsed = fastTimeMilliseconds - start;
   }
 
+  // This test can't "fail"; I just run it with VERBOSE=1 and manually
+  // inspect the results.
   DIAG("Read the fast timer " << ct <<
+       " (" << (ct / 1000000) << " M)" <<
        " times in " << elapsed << " ms.")
+  DIAG("The timer 1000-loop counter is " <<
+       fastTimeThread1000Loops << ".")
 }
 
 

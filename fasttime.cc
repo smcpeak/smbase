@@ -5,12 +5,14 @@
 
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 
+#include <atomic>                      // std::atomic_uint
+
 
 OPEN_NAMESPACE(smbase)
 
-volatile unsigned fastTimeMilliseconds = 0;
+SMBASE_FASTTIME_UNSIGNED fastTimeMilliseconds = 0;
 
-volatile unsigned fastTimeThread1000Loops = 0;
+SMBASE_FASTTIME_UNSIGNED fastTimeThread1000Loops = 0;
 
 CLOSE_NAMESPACE(smbase)
 
