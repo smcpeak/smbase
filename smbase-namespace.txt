@@ -6,12 +6,14 @@ Most of smbase is *not* inside the `smbase` namespace, but I'm trying to
 gradually change that, at first just by putting new code into it.  The
 eventual goal is for all of smbase to be in that namespace.
 
-If I add `namespace smbase` to an exising header, I also use
-SMBASE_GLOBAL_ALIAS to put `using` declarations at the end that export
-the names to the global namespace for client code compatibility, guarded
-by a check for the SMBASE_NO_GLOBAL_ALIASES preprocessor symbol being
-defined.  This marks where they are and would allow a client to turn
-them off.
+Occasionally in the past, when I would add `namespace smbase` to an
+exising header, I would also use SMBASE_GLOBAL_ALIAS to put `using`
+declarations at the end that export the names to the global namespace
+for client code compatibility, guarded by a check for the
+SMBASE_NO_GLOBAL_ALIASES preprocessor symbol being defined.  This marks
+where they are and would allow a client to turn them off.  However, my
+current approach is to mostly not do this, and just accept and fix the
+resulting breakage.
 
 2026-11-15: At this point I'd estimate that roughly half of the smbase
 modules, and most that I use frequently, now put their symbols into the
