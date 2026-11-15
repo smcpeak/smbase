@@ -76,6 +76,18 @@ template <typename KEY, typename VALUE, typename COMPARE>
 }
 
 
+template <typename KEY, typename VALUE, typename COMPARE>
+void OrderedFlatMap<KEY, VALUE, COMPARE>::clear()
+{
+  // Note: Due to the way this function is called by the move ctor, the
+  // members might (technically) not all have the same size here.
+
+  m_sortedKeys.clear();
+  m_correspValues.clear();
+  m_insertionOrder.clear();
+}
+
+
 // --------------------------- Constructors ----------------------------
 template <typename KEY, typename VALUE, typename COMPARE>
 inline OrderedFlatMap<KEY, VALUE, COMPARE>::OrderedFlatMap()
@@ -103,6 +115,12 @@ OrderedFlatMap<KEY, VALUE, COMPARE>::OrderedFlatMap(OrderedFlatMap &&obj)
     MDMEMB(m_correspValues),
     MDMEMB(m_insertionOrder)
 {
+  // The move ctor must leave `obj` in a valid state, which for me means
+  // that all invariants hold.  However, technically, the three move
+  // ctor for the members could have left them with different sizes.
+  // So, clear `obj` to ensure its invariants hold.
+  obj.clear();
+
   SELFCHECK();
 }
 

@@ -87,6 +87,10 @@ protected:   // funcs
   // True if `k1` and `k2` are equal according to `COMPARE`.
   static bool equalKeys(KEY const &k1, KEY const &k2);
 
+  // Remove all elements.  (For now, this is protected because it is
+  // just an implementation detail of the move ctor.)
+  void clear();
+
 public:      // funcs
   inline ~OrderedFlatMap();
 
