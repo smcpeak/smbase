@@ -286,6 +286,7 @@ SRCS += datetime.cc
 SRCS += dev-warning.cc
 SRCS += exc.cc
 SRCS += exclusive-write-file.cc
+SRCS += fasttime.cc
 SRCS += file-line-col.cc
 SRCS += flatten.cc
 SRCS += functional-set.cc
