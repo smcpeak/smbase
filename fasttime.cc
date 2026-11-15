@@ -52,6 +52,10 @@ static unsigned __stdcall fastTimeThreadFunc(void*)
     // it isn't consuming excessive resources.  The shared counter
     // variable is only updated occasionally in order to limit
     // cross-CPU memory traffic.
+    //
+    // One data point: On Windows 11 / x86_64, the outer `while` loop
+    // only runs about once every 10 ms, so the "1000 loop" counter only
+    // gets incremented about once every 10 seconds.
     loops++;
     if (loops % 1000 == 0) {
       fastTimeThread1000Loops++;
