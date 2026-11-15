@@ -4,6 +4,11 @@
 #ifndef SMBASE_FASTTIME_H
 #define SMBASE_FASTTIME_H
 
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
+
+
+OPEN_NAMESPACE(smbase)
+
 
 // Number of milliseconds since some arbitrary point in the past.
 // After this module has been initialized, client code can read this
@@ -43,8 +48,11 @@ struct FastTimeAccumulator {
 };
 
 
-// Unit tests, in test-fasttime.cc
-int test_fasttime();
+CLOSE_NAMESPACE(smbase)
+
+
+// TODO: Actually write unit tests.
+//int test_fasttime();
 
 
 #endif // SMBASE_FASTTIME_H

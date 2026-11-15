@@ -3,9 +3,16 @@
 
 #include "smbase/fasttime.h"           // this module
 
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
+
+
+OPEN_NAMESPACE(smbase)
+
 volatile unsigned fastTimeMilliseconds = 0;
 
 volatile unsigned fastTimeThread1000Loops = 0;
+
+CLOSE_NAMESPACE(smbase)
 
 
 #ifdef __MINGW32__
@@ -17,6 +24,9 @@ volatile unsigned fastTimeThread1000Loops = 0;
 #include <iostream>                    // std::cout
 
 using namespace std;
+
+
+OPEN_NAMESPACE(smbase)
 
 
 // Handle to a semaphore used to wait for the thread to start.
@@ -88,11 +98,22 @@ void fastTimeInitialize()
 }
 
 
+CLOSE_NAMESPACE(smbase)
+
+
 #else // !__MINGW32__
+
+
+OPEN_NAMESPACE(smbase)
+
 
 // For now, on unix, the "time" will always be zero.
 void fastTimeInitialize()
 {}
+
+
+CLOSE_NAMESPACE(smbase)
+
 
 #endif
 
