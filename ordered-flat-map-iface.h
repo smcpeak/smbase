@@ -10,6 +10,7 @@
 
 #include "smbase/compare-util-iface.h" // DEFINE_FRIEND_RELATIONAL_OPERATORS
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
+#include "smbase/std-tuple-fwd.h"      // std::tuple [f]
 
 #include <cstddef>                     // std::size_t
 #include <vector>                      // std::vector
@@ -81,15 +82,18 @@ protected:   // data
 
 protected:   // funcs
   // Return the first index in `m_sortedKeys` whose key is not less than
-  // `key`, or `m_sortedKeys.size()` if all are.
-  size_type lookup(KEY const &key) const;
+  // `key`, or `m_sortedKeys.size()` if all are.  Also return true if
+  // the returned index has `key`.
+  std::tuple<size_type, bool> lookup(KEY const &key) const;
 
   // True if `k1` and `k2` are equal according to `COMPARE`.
   static bool equalKeys(KEY const &k1, KEY const &k2);
 
-  // Remove all elements.  (For now, this is protected because it is
-  // just an implementation detail of the move ctor.)
-  void clear();
+  // Given that we have already looked up `key` and determined that it
+  // is not present, and would go into `index`, insert it and `value`
+  // into that location.
+  VALUE &insertNewKeyAndValue(
+    size_type index, KEY const &key, VALUE &&value);
 
 public:      // funcs
   inline ~OrderedFlatMap();
@@ -120,10 +124,32 @@ public:      // funcs
   inline size_type size() const;
 
   // ---------------------------- Modifiers ----------------------------
+  // If `key` is already mapped, update its value and return false
+  // without altering the extrinsic order.  Otherwise (the key is new),
+  // insert (append) a new entry that maps `key` to `value` and return
+  // true.
+  //
+  // The move version accepts a non-moveable reference to `key` because
+  // I (currently) keep two copies of it.
+  inline bool setValueAtKey(KEY const &key, VALUE const &value);
+  inline bool setValueAtKey(KEY const &key, VALUE      &&value);
+
+  // Like `setValueAtKey`, but assert that `key` was not already
+  // present.
+  inline void setValueAtNewKey(KEY const &key, VALUE const &value);
+  inline void setValueAtNewKey(KEY const &key, VALUE      &&value);
+
   // If `key` is mapped, return a mutable reference to its value.
   // Otherwise, insert a mapping from `key` to a default-constructed
   // value and return a reference to that value.
+  //
+  // This is mainly useful in the case that all values are different
+  // from the default-constructed value, so the caller can tell by
+  // inspecting the return value whether a new mapping was created.
   inline VALUE &valueRefAtKey(KEY const &key);
+
+  // Remove all elements.
+  void clear();
 
   // ----------------------------- Lookup ------------------------------
   // True if `key` is mapped to some value.
