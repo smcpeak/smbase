@@ -15,7 +15,7 @@ volatile unsigned fastTimeThread1000Loops = 0;
 CLOSE_NAMESPACE(smbase)
 
 
-#ifdef __MINGW32__
+#if defined(__MINGW32__)
 
 #include <stdlib.h>                    // abort
 #include <process.h>                   // _beginthreadex
@@ -66,6 +66,12 @@ static unsigned __stdcall fastTimeThreadFunc(void*)
 }
 
 
+bool fastTimeIsImplemented()
+{
+  return true;
+}
+
+
 void fastTimeInitialize()
 {
   // Don't start more than one thread.
@@ -107,7 +113,12 @@ CLOSE_NAMESPACE(smbase)
 OPEN_NAMESPACE(smbase)
 
 
-// For now, on unix, the "time" will always be zero.
+bool fastTimeIsImplemented()
+{
+  return false;
+}
+
+
 void fastTimeInitialize()
 {}
 

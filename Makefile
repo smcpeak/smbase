@@ -433,6 +433,7 @@ UNIT_TEST_OBJS += dni-vector-test.o
 UNIT_TEST_OBJS += either-test.o
 UNIT_TEST_OBJS += exc-test.o
 UNIT_TEST_OBJS += exclusive-write-file-test.o
+UNIT_TEST_OBJS += fasttime-test.o
 UNIT_TEST_OBJS += file-line-col-test.o
 UNIT_TEST_OBJS += functional-set-test.o
 UNIT_TEST_OBJS += gcc-options-test.o

@@ -25,6 +25,11 @@ extern volatile unsigned fastTimeMilliseconds;
 extern volatile unsigned fastTimeThread1000Loops;
 
 
+// True if this module is implemented on the current platform.  If this
+// returns false, then `fastTimeMilliseconds` is always zero.
+bool fastTimeIsImplemented();
+
+
 // Start the mechanism that keeps 'fastTimeMilliseconds' up to date.
 // It is safe to call this more than once (it is idempotent, and very
 // fast if already initialized).
@@ -51,8 +56,8 @@ struct FastTimeAccumulator {
 CLOSE_NAMESPACE(smbase)
 
 
-// TODO: Actually write unit tests.
-//int test_fasttime();
+// Unit tests, defined in fasttime-test.cc.
+void test_fasttime();
 
 
 #endif // SMBASE_FASTTIME_H

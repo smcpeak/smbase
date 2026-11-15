@@ -112,6 +112,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(either);
   RUN_TEST(exc);
   RUN_TEST(exclusive_write_file);
+  RUN_TEST(fasttime);
   RUN_TEST(file_line_col);
   RUN_TEST(functional_set);
   RUN_TEST(gcc_options);
