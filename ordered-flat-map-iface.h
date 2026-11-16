@@ -87,15 +87,15 @@ protected:   // funcs
   // Return the first index in `m_sortedKeys` whose key is not less than
   // `key`, or `m_sortedKeys.size()` if all are.  Also return true if
   // the returned index has `key`.
-  std::tuple<size_type, bool> lookup(KEY const &key) const;
+  inline std::tuple<size_type, bool> lookup(KEY const &key) const;
 
   // True if `k1` and `k2` are equal according to `COMPARE`.
-  static bool equalKeys(KEY const &k1, KEY const &k2);
+  inline static bool equalKeys(KEY const &k1, KEY const &k2);
 
   // Given that we have already looked up `key` and determined that it
   // is not present, and would go into `index`, insert it and `value`
   // into that location.
-  VALUE &insertNewKeyAndValue(
+  inline VALUE &insertNewKeyAndValue(
     size_type index, KEY const &key, VALUE &&value);
 
 public:      // funcs
@@ -158,7 +158,7 @@ public:      // funcs
   inline VALUE &valueRefAtKey(KEY const &key);
 
   // Remove all elements.
-  void clear();
+  inline void clear();
 
   // ----------------------------- Lookup ------------------------------
   // True if `key` is mapped to some value.
