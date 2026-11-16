@@ -111,7 +111,12 @@ modules are now considered obsolete (marked below as such).
     <li><a class="toc" href="#header_wrappers">Header wrappers</a>
     <li><a class="toc" href="#misc">Miscellaneous</a>
   </ul>
+  <li><a class="toc" href="#python_modules">Python Modules</a>
   <li><a class="toc" href="#utility_scripts">Utility Scripts</a>
+  <ul>
+    <li><a class="toc" href="#currently_used_scripts">Currently Used Scripts</a>
+    <li><a class="toc" href="#obsolete_scripts">Obsolete Scripts</a>
+  </ul>
 </ul>
 <!-- END CONTENTS -->
 
@@ -1957,12 +1962,28 @@ These wrap some third-party headers.
 </dl>
 
 
-<h1 id="utility_scripts">Utility Scripts</h1>
+<h1 id="python_modules">Python Modules</h1>
 
 <dl>
 
-<dt><a href="run-flex.pl">run-flex.pl</a>
-<dd>Perl script to run flex and massage its output for portability.
+<dt><a href="boilerplate.py">boilerplate.py</a>
+<dd>Definitions to enhance error reporting in a Python program.
+
+</dl>
+
+
+<h1 id="utility_scripts">Utility Scripts</h1>
+
+
+<h2 id="currently_used_scripts">Currently Used Scripts</h2>
+
+<p>
+These are the scripts being actively maintained and used for new code.
+
+<dl>
+
+<dt><a href="check-coding-rules.py">check-coding-rules.py</a>
+<dd>Check some ad-hoc coding rules on the input source files.
 
 <dt><a href="create-tuple-class.py">create-tuple-class.py</a>
 <dd>Python script to declare and define common methods for "tuple"
@@ -1973,6 +1994,48 @@ These wrap some third-party headers.
   <!-- AUTO --><dd>
   <!-- AUTO -->  <code>CTCTest</code> class, which tests <code>create-tuple-class.py</code>.
 <!-- end file desc -->
+
+<dt><a href="file-to-strlit.py">file-to-strlit.py</a>
+<dd>Encode a file's contents as a C string literal.
+
+<dt><a href="find-extra-deps.py">find-extra-deps.py</a>
+<dd>Given a set of .d file created by gcc -MMD, find any cases where a file
+    depends on a file that is not checked in to the repo.  Emit those as
+    Makefile dependencies in sorted order.
+
+<dt><a href="get-file-descriptions.py">get-file-descriptions.py</a>
+<dd>Get file descriptions and put them into index.html.
+
+<dt><a href="make-cc-json.py">make-cc-json.py</a>
+<dd>This script accepts a compilation command line and writes a
+    compile_commands.json fragment to standard output.  The fragment is a
+    JSON object enclosed by braces and ending with a comma, since it will be
+    concatenated into a JSON array later.
+
+<dt><a href="run-compare-expect.py">run-compare-expect.py</a>
+<dd>Run a program and compare its output to what is expected.
+
+</dl>
+
+
+<h2 id="obsolete_scripts">Obsolete Scripts</h2>
+
+<p>
+These scripts are old and mostly unmaintained and unused.
+
+<dl>
+
+<dt><a href="codepatch.pl">codepatch.pl</a>
+<dd>This is sort of like 'patch' but a little higher-level.
+
+<dt><a href="run-flex.pl">run-flex.pl</a>
+<dd>Perl script to run flex and massage its output for portability.
+    Obsolete; use <a href="https://github.com/smcpeak/smflex">smflex</a>
+    instead.
+
+<dt><a href="scan-depends.pl">scan-depends.pl</a>
+<dd>Scan some C/C++ source files for their module dependencies,
+    output a description in the Dot graph format.
 
 </dl>
 
