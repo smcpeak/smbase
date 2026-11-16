@@ -145,11 +145,12 @@ auto OrderedFlatMap<KEY, VALUE, COMPARE>::size() const -> size_type
 // ----------------------------- Modifiers -----------------------------
 template <typename KEY, typename VALUE, typename COMPARE>
 VALUE &OrderedFlatMap<KEY, VALUE, COMPARE>::insertNewKeyAndValue(
-  size_type index, KEY const &key, VALUE &&value)
+  size_type index, KEY &&key, VALUE &&value)
 {
   try {
     // Insert into sorted maps at `index`.
-    m_sortedKeys.insert(m_sortedKeys.begin() + index, key);
+    m_sortedKeys.insert(m_sortedKeys.begin() + index,
+                        std::move(key));
     m_correspValues.insert(m_correspValues.begin() + index,
                            std::move(value));
 
@@ -194,7 +195,7 @@ VALUE &OrderedFlatMap<KEY, VALUE, COMPARE>::valueRefAtKey(KEY const &key)
   }
   else {
     // Insert default-constructed value.
-    return insertNewKeyAndValue(index, key, VALUE());
+    return insertNewKeyAndValue(index, KEY(key), VALUE());
   }
 }
 
@@ -211,8 +212,7 @@ bool OrderedFlatMap<KEY, VALUE, COMPARE>::setValueAtKey(
   }
 
   else {
-    // Make a copy of `value` here since the callee moves it.
-    insertNewKeyAndValue(index, key, VALUE(value));
+    insertNewKeyAndValue(index, KEY(key), VALUE(value));
     return true;
   }
 }
@@ -220,17 +220,22 @@ bool OrderedFlatMap<KEY, VALUE, COMPARE>::setValueAtKey(
 
 template <typename KEY, typename VALUE, typename COMPARE>
 bool OrderedFlatMap<KEY, VALUE, COMPARE>::setValueAtKey(
-  KEY const &key, VALUE &&value)
+  KEY &&key, VALUE &&value)
 {
   auto [index, found] = lookup(key);
 
   if (found) {
     m_correspValues.at(index) = std::move(value);
+
+    // For uniformity, move the value out of `key`.
+    KEY movedKey(std::move(key));
+    PRETEND_USED(movedKey);
+
     return false;
   }
 
   else {
-    insertNewKeyAndValue(index, key, std::move(value));
+    insertNewKeyAndValue(index, std::move(key), std::move(value));
     return true;
   }
 }
@@ -247,9 +252,9 @@ void OrderedFlatMap<KEY, VALUE, COMPARE>::setValueAtNewKey(
 
 template <typename KEY, typename VALUE, typename COMPARE>
 void OrderedFlatMap<KEY, VALUE, COMPARE>::setValueAtNewKey(
-  KEY const &key, VALUE &&value)
+  KEY &&key, VALUE &&value)
 {
-  bool inserted = setValueAtKey(key, std::move(value));
+  bool inserted = setValueAtKey(std::move(key), std::move(value));
   xassert(inserted);
 }
 

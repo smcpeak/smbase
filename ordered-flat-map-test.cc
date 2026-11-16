@@ -426,7 +426,7 @@ void test_randomOps()
         int key = randomKey();
         std::string value = randomValue();
         bool wasPresent = m.contains(key);
-        bool inserted = m.setValueAtKey(key, std::string(value));
+        bool inserted = m.setValueAtKey(int(key), std::string(value));
         EXPECT_EQ(inserted, !wasPresent);
         EXPECT_EQ(m.valueAtKey(key), value);
       }
@@ -441,7 +441,7 @@ void test_randomOps()
             m.setValueAtNewKey(key, value);
           }
           else {
-            m.setValueAtNewKey(key, std::string(value));
+            m.setValueAtNewKey(int(key), std::string(value));
           }
           EXPECT_EQ(m.valueAtKey(key), value);
         }

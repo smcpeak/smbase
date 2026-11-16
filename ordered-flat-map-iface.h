@@ -95,8 +95,11 @@ protected:   // funcs
   // Given that we have already looked up `key` and determined that it
   // is not present, and would go into `index`, insert it and `value`
   // into that location.
+  //
+  // Due to accepting `key` and `value` by rvalue reference, callers may
+  // need to make explicit copies of read-only values.
   inline VALUE &insertNewKeyAndValue(
-    size_type index, KEY const &key, VALUE &&value);
+    size_type index, KEY &&key, VALUE &&value);
 
 public:      // funcs
   inline ~OrderedFlatMap();
@@ -137,16 +140,13 @@ public:      // funcs
   // without altering the extrinsic order.  Otherwise (the key is new),
   // insert (append) a new entry that maps `key` to `value` and return
   // true.
-  //
-  // The move version accepts a non-moveable reference to `key` because
-  // I (currently) keep two copies of it.
   inline bool setValueAtKey(KEY const &key, VALUE const &value);
-  inline bool setValueAtKey(KEY const &key, VALUE      &&value);
+  inline bool setValueAtKey(KEY      &&key, VALUE      &&value);
 
   // Like `setValueAtKey`, but assert that `key` was not already
   // present.
   inline void setValueAtNewKey(KEY const &key, VALUE const &value);
-  inline void setValueAtNewKey(KEY const &key, VALUE      &&value);
+  inline void setValueAtNewKey(KEY      &&key, VALUE      &&value);
 
   // If `key` is mapped, return a mutable reference to its value.
   // Otherwise, insert a mapping from `key` to a default-constructed
