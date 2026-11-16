@@ -8,6 +8,7 @@
 
 #include "ordered-flat-map-fwd.h"      // fwds for this module
 
+#include "smbase/gdvalue-fwd.h"        // gdv::GDValue [f]
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 #include "smbase/std-tuple-fwd.h"      // std::tuple [f]
 
@@ -177,6 +178,10 @@ public:      // funcs
   // ----------------------------- Lookup ------------------------------
   // True if `key` is mapped to some value.
   inline bool contains(KEY const &key) const;
+
+  // -------------------------- Serialization --------------------------
+  // Return as an untagged ordered map.
+  operator gdv::GDValue() const;
 };
 
 

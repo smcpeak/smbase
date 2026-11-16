@@ -11,6 +11,7 @@
 #include "ordered-mru-flat-map-iface.h"          // interface for this module
 
 #include "smbase/chained-cond.h"                 // smbase::cc::z_le_lt
+#include "smbase/gdvalue.h"                      // gdv::GDValue
 #include "smbase/ordered-flat-map.h"             // OrderedFlatMap
 #include "smbase/sm-macros.h"                    // OPEN_NAMESPACE, DMEMB, MDMEMB, SELFCHECK
 
@@ -164,6 +165,14 @@ template <typename KEY, typename VALUE, typename COMPARE>
 bool OrderedMRUFlatMap<KEY, VALUE, COMPARE>::contains(KEY const &key) const
 {
   return Base::contains(key);
+}
+
+
+// --------------------------- Serialization ---------------------------
+template <typename KEY, typename VALUE, typename COMPARE>
+OrderedMRUFlatMap<KEY, VALUE, COMPARE>::operator gdv::GDValue() const
+{
+  return Base::operator gdv::GDValue();
 }
 
 

@@ -8,6 +8,7 @@
 
 #include "ordered-mru-flat-map-fwd.h"            // fwds for this module
 
+#include "smbase/gdvalue-fwd.h"                  // gdv::GDValue [f]
 #include "smbase/ordered-flat-map-iface.h"       // OrderedFlatMap
 #include "smbase/sm-macros.h"                    // OPEN_NAMESPACE
 
@@ -89,6 +90,9 @@ public:      // funcs
 
   // ----------------------------- Lookup ------------------------------
   inline bool contains(KEY const &key) const;
+
+  // -------------------------- Serialization --------------------------
+  operator gdv::GDValue() const;
 };
 
 

@@ -8,6 +8,7 @@
 
 #include "smbase/exc.h"                          // EXN_CONTEXT_EXPR
 #include "smbase/fasttime.h"                     // smbase::{fastTimeInitialize, fastTimeMilliseconds}
+#include "smbase/gdvalue.h"                      // gdv::GDValue
 #include "smbase/ordered-map.h"                  // smbase::OrderedMap
 #include "smbase/save-restore.h"                 // SAVE_RESTORE
 #include "smbase/sm-env.h"                       // smbase::envAsIntOr
@@ -18,6 +19,7 @@
 #include <string>                                // std::string
 #include <utility>                               // std::move
 
+using namespace gdv;
 using namespace smbase;
 
 
@@ -33,6 +35,9 @@ void test_basics()
   ORDERED_FLAT_MAP m;
   m.selfCheck();
 
+  EXPECT_EQ_GDV(m, GDVOrderedMap{});
+  EXPECT_EQ_GDV(m, fromGDVN("[:]"));
+
   EXPECT_EQ(m.empty(), true);
   EXPECT_EQ(m.size(), 0);
 
@@ -42,6 +47,8 @@ void test_basics()
 
   EXPECT_EQ(m.empty(), false);
   EXPECT_EQ(m.size(), 3);
+
+  EXPECT_EQ_GDV(m, fromGDVN(R"([1:"one" 3:"three" 2:"two"])"));
 
   // Key-based lookup uses the intrinsic order.
   EXPECT_EQ(m.valueAtKey(1), "one");
@@ -87,6 +94,8 @@ void test_basics()
     // And ability to update via the reference.
     valueRef = "four";
     EXPECT_EQ(m.valueAtKey(4), "four");
+
+    EXPECT_EQ_GDV(m, fromGDVN(R"([1:"one" 3:"three" 2:"two" 4:"four"])"));
   }
 
   // Move ctor.

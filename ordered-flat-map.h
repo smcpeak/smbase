@@ -9,6 +9,7 @@
 #include "ordered-flat-map-iface.h"    // interface for this module
 
 #include "smbase/chained-cond.h"       // smbase::cc::z_le_lt
+#include "smbase/gdvalue.h"            // gdv::GDValue
 #include "smbase/overflow.h"           // convertNumber
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE, DMEMB, MDMEMB, SELFCHECK
 #include "smbase/vector-util.h"        // vecToElementSet, vecContains
@@ -282,6 +283,33 @@ template <typename KEY, typename VALUE, typename COMPARE>
 bool OrderedFlatMap<KEY, VALUE, COMPARE>::contains(KEY const &key) const
 {
   return std::get<1>(lookup(key));
+}
+
+
+// --------------------------- Serialization ---------------------------
+template <typename KEY, typename VALUE, typename COMPARE>
+OrderedFlatMap<KEY, VALUE, COMPARE>::operator gdv::GDValue() const
+{
+  using gdv::toGDValue;
+
+  gdv::GDValue ret(gdv::GDVK_ORDERED_MAP);
+
+  for (size_type index=0; index < this->size(); ++index) {
+    // Convert each key and value to GDV, then add them as a mapping in
+    // `ret`.
+    //
+    // One subtlety is, although the keys are all distinct, it is
+    // possible for two keys to yield the same GDV (they normally
+    // shouldn't, but nothing prevents it).  If that happens, the second
+    // (or later) mapping with a duplicate GDV key will be silently
+    // discarded.
+    ret.orderedMapInsertValueAt(
+      toGDValue(this->keyAtIndex(index)),
+      toGDValue(this->valueAtIndex(index))
+    );
+  }
+
+  return ret;
 }
 
 
