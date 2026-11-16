@@ -219,7 +219,12 @@ all: pre-target
 .PHONY: pre-target
 
 
-# -------------- Experimenting with m4 for related files ---------------
+# -------------- Using m4 to generate some related files ---------------
+# 2026-11-15: The handful of files here (sobjlist.h, etc.) are obsolete
+# (see index.html), and I have no intention of using m4 on anything new,
+# so this section is only relevant on the rare occasions when one of
+# these ancient files needs maintenance.
+
 # This section is disabled by default because the generated files are
 # checked in to the repo, but when git checks them out, they have random
 # timestamps so 'make' usually thinks some are out of date.  If you
