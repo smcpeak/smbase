@@ -8,9 +8,10 @@
 
 #include "ordered-flat-map-iface.h"    // interface for this module
 
+#include "smbase/chained-cond.h"       // smbase::cc::z_le_lt
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE, DMEMB, MDMEMB, SELFCHECK
-#include "smbase/vector-util.h"        // vecToElementSet
-#include "smbase/xassert.h"            // xassert, xassertdb, xfailure_stringbc
+#include "smbase/vector-util.h"        // vecToElementSet, vecContains
+#include "smbase/xassert.h"            // xassert, xassertdb, xfailure_stringbc, xassertPrecondition
 
 #include <algorithm>                   // std::lower_bound
 #include <exception>                   // std::exception
@@ -40,11 +41,15 @@ inline auto OrderedFlatMap<KEY, VALUE, COMPARE>::selfCheck() const -> void
   xassert(m_correspValues.size() == m_sortedKeys.size());
   xassert(m_insertionOrder.size() == m_sortedKeys.size());
 
-  // Invariant: The set of keys in `m_insertionOrder` is the same as the
-  // set of keys in `m_sortedKeys`.
-  std::set<KEY, COMPARE> insKeySet =
-    vecToElementSet<KEY, COMPARE>(m_insertionOrder);
-  xassert(keySet == insKeySet);
+  // Invariant: The set of values in `m_insertionOrder` is [0,size()-1].
+  std::set<unsigned> insKeySet =
+    vecToElementSet<unsigned>(m_insertionOrder);
+  xassert(insKeySet.size() == m_sortedKeys.size());
+  unsigned expect = 0;
+  for (unsigned index : insKeySet) {
+    xassert(index == expect);
+    ++expect;
+  }
 }
 
 
@@ -109,16 +114,16 @@ VALUE const &OrderedFlatMap<KEY, VALUE, COMPARE>::valueAtKey(KEY const &key) con
 template <typename KEY, typename VALUE, typename COMPARE>
 KEY const &OrderedFlatMap<KEY, VALUE, COMPARE>::keyAtIndex(size_type index) const
 {
-  xassert(index < m_insertionOrder.size());
-  return m_insertionOrder.at(index);
+  xassertPrecondition(cc::z_le_lt(index, m_insertionOrder.size()));
+  return m_sortedKeys.at(m_insertionOrder.at(index));
 }
 
 
 template <typename KEY, typename VALUE, typename COMPARE>
 VALUE const &OrderedFlatMap<KEY, VALUE, COMPARE>::valueAtIndex(size_type index) const
 {
-  KEY const &key = this->keyAtIndex(index);
-  return valueAtKey(key);
+  xassertPrecondition(cc::z_le_lt(index, m_insertionOrder.size()));
+  return m_correspValues.at(m_insertionOrder.at(index));
 }
 
 
@@ -148,8 +153,21 @@ VALUE &OrderedFlatMap<KEY, VALUE, COMPARE>::insertNewKeyAndValue(
     m_correspValues.insert(m_correspValues.begin() + index,
                            std::move(value));
 
-    // Append to insertion order.
-    m_insertionOrder.push_back(key);
+    // Increment every element of `m_insertOrder` that is `index` or
+    // larger in order to match the vector insertion we just did.
+    for (unsigned &idx : m_insertionOrder) {
+      if (idx >= index) {
+        ++idx;
+      }
+    }
+
+    // As a result of the previous step, no element of
+    // `m_insertionOrder` equals `index`.
+    xassertdb(!vecContains(m_insertionOrder,
+                           static_cast<unsigned>(index)));
+
+    // Append `index`, thereby recording when `key` was inserted.
+    m_insertionOrder.push_back(index);
   }
 
   catch (std::exception &x) {
@@ -239,8 +257,10 @@ void OrderedFlatMap<KEY, VALUE, COMPARE>::setValueAtNewKey(
 template <typename KEY, typename VALUE, typename COMPARE>
 void OrderedFlatMap<KEY, VALUE, COMPARE>::clear()
 {
-  // Note: Due to the way this function is called by the move ctor, the
-  // members might (technically) not all have the same size here.
+  // Note: This function is called in a few places where the class
+  // invariants might be broken, and its purpose is to restore them by
+  // any means necessary.  Consequently, this is the one public function
+  // for which the class invariants are *not* a precondition.
 
   m_sortedKeys.clear();
   m_correspValues.clear();

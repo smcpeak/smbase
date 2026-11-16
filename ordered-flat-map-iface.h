@@ -42,7 +42,7 @@ OPEN_NAMESPACE(smbase)
 
     * Copyable.
 
-    * Default-constructible.
+    * Default-constructible if `valueRefAtKey` is used.
 
   I call this "ordered", meaning *extrinsically* ordered, for the same
   reasons that OrderedMap is called ordered.  See the comments in
@@ -72,13 +72,16 @@ protected:   // data
   // Invariant: m_correspValues.size() == m_sortedKeys.size()
   std::vector<VALUE> m_correspValues;
 
-  // Map keys, in the order originally inserted.
+  // Indices into `m_sortedKeys` that record the order in which the keys
+  // were originally inserted.
+  //
+  // I choose to use `unsigned` rather than `size_type` because that
+  // saves memory and I expect it to be sufficient here.
   //
   // Invariant: m_insertionOrder.size() == m_sortedKeys.size()
   //
-  // Invariant: The set of keys in `m_insertionOrder` is the same as the
-  // set of keys in `m_sortedKeys`.
-  std::vector<KEY> m_insertionOrder;
+  // Invariant: The set of values in `m_insertionOrder` is [0,size()-1].
+  std::vector<unsigned> m_insertionOrder;
 
 protected:   // funcs
   // Return the first index in `m_sortedKeys` whose key is not less than
@@ -108,12 +111,18 @@ public:      // funcs
 
   // ------------------------- Element access --------------------------
   // Return the value at `key`, which must be mapped.
+  //
+  // Requires: contains(key)
   inline VALUE const &valueAtKey(KEY const &key) const;
 
   // Return the key at `index`.
+  //
+  // Requires: 0 <= index < size()
   inline KEY const &keyAtIndex(size_type index) const;
 
   // Return the value at `index`.
+  //
+  // Requires: 0 <= index < size()
   inline VALUE const &valueAtIndex(size_type index) const;
 
   // ---------------------------- Capacity -----------------------------
