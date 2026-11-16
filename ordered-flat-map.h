@@ -193,7 +193,7 @@ bool OrderedFlatMap<KEY, VALUE, COMPARE>::setValueAtKey(
   }
 
   else {
-    insertNewKeyAndValue(index, key, value);
+    insertNewKeyAndValue(index, key, VALUE(value));
     return true;
   }
 }

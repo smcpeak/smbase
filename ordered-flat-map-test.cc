@@ -5,9 +5,11 @@
 
 #include "smbase/ordered-flat-map.h"   // module under test
 
+#include "smbase/exc.h"                // EXN_CONTEXT_EXPR
 #include "smbase/ordered-map.h"        // smbase::OrderedMap
-#include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE, DMEMB, MDMEMB
-#include "smbase/sm-test.h"            // EXPECT_EQ, EXPECT_EXN_SUBSTR
+#include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE, DMEMB, MDMEMB, smbase_loopi
+#include "smbase/sm-random.h"          // smbase::{RandomChoice, sm_random}
+#include "smbase/sm-test.h"            // EXPECT_EQ, EXPECT_EXN_SUBSTR, EnvRandomizedTestIters
 
 #include <string>                      // std::string
 #include <utility>                     // std::move
@@ -344,6 +346,155 @@ void test_mapPairBasics()
 }
 
 
+EnvRandomizedTestIters const OUTER_ITERS
+  {20, "OFMT_RANDOM_OUTER_ITERS", 2};
+EnvRandomizedTestIters const INNER_ITERS
+  {100, "OFMT_RANDOM_INNER_ITERS", 2};
+
+
+// Keys are drawn from [0, KEY_RANGE-1].  The range is kept small so
+// that keys collide often, exercising both the "new key" and "existing
+// key" paths.
+int const KEY_RANGE = 30;
+
+
+int randomKey()
+{
+  return sm_random(KEY_RANGE);
+}
+
+
+// Return a random value.  It is never empty, so it is distinguishable
+// from the default-constructed value that `valueRefAtKey` inserts.
+std::string randomValue()
+{
+  return "v" + std::to_string(sm_random(100));
+}
+
+
+// Apply a random sequence of operations to an `OrderedMapPair`, which
+// checks that the flat map agrees with the reference map after each.
+void test_randomOps()
+{
+  TEST_FUNC();
+
+  using MP = OrderedMapPair<int, std::string>;
+
+  smbase_loopi(OUTER_ITERS) {
+    EXN_CONTEXT_EXPR(i);
+
+    MP m;
+
+    smbase_loopj(INNER_ITERS) {
+      EXN_CONTEXT_EXPR(j);
+
+      RandomChoice choice(100);
+
+      if (choice.check(1)) {
+        m.clear();
+      }
+
+      else if (choice.check(2)) {
+        // Copy, then move, and check that the results agree with the
+        // original.  (`selfCheck` compares flat and reference maps.)
+        MP copy(m);
+        EXPECT_EQ(copy.size(), m.size());
+
+        MP moved(std::move(copy));
+        EXPECT_EQ(moved.size(), m.size());
+        for (MP::size_type index=0; index < m.size(); ++index) {
+          EXPECT_EQ(moved.keyAtIndex(index), m.keyAtIndex(index));
+          EXPECT_EQ(moved.valueAtIndex(index), m.valueAtIndex(index));
+        }
+
+        // The move ctor clears its source.
+        EXPECT_EQ(copy.empty(), true);
+      }
+
+      else if (choice.check(20)) {
+        // Lvalue `setValueAtKey`.
+        int key = randomKey();
+        std::string value = randomValue();
+        bool wasPresent = m.contains(key);
+        bool inserted = m.setValueAtKey(key, value);
+        EXPECT_EQ(inserted, !wasPresent);
+        EXPECT_EQ(m.valueAtKey(key), value);
+      }
+
+      else if (choice.check(15)) {
+        // Rvalue `setValueAtKey`.
+        int key = randomKey();
+        std::string value = randomValue();
+        bool wasPresent = m.contains(key);
+        bool inserted = m.setValueAtKey(key, std::string(value));
+        EXPECT_EQ(inserted, !wasPresent);
+        EXPECT_EQ(m.valueAtKey(key), value);
+      }
+
+      else if (choice.check(15)) {
+        // `setValueAtNewKey`, lvalue or rvalue, using a key that is not
+        // already mapped if there is one.
+        int key = randomKey();
+        if (!m.contains(key)) {
+          std::string value = randomValue();
+          if (sm_random(2)) {
+            m.setValueAtNewKey(key, value);
+          }
+          else {
+            m.setValueAtNewKey(key, std::string(value));
+          }
+          EXPECT_EQ(m.valueAtKey(key), value);
+        }
+      }
+
+      else if (choice.check(20)) {
+        // `valueRefAtKey`, which is only on the flat map.  As in
+        // `test_mapPairBasics`, simulate its effect on the reference
+        // map using other methods.
+        int key = randomKey();
+        bool wasPresent = m.contains(key);
+
+        std::string &valueRef = m.m_flatMap.valueRefAtKey(key);
+        if (!wasPresent) {
+          // It was just created with a default-constructed value.
+          EXPECT_EQ(valueRef, "");
+          m.m_refMap.setValueAtNewKey(key, "");
+        }
+        EXPECT_EQ(m.valueAtKey(key), valueRef);
+
+        // Usually, update the value through the reference.
+        if (sm_random(4) != 0) {
+          std::string value = randomValue();
+          valueRef = value;
+          m.m_refMap.setValueAtKey(key, value);
+          EXPECT_EQ(m.valueAtKey(key), value);
+        }
+      }
+
+      else {
+        // Queries.  (Each wrapper method compares the two maps.)
+        int key = randomKey();
+        if (m.contains(key)) {
+          m.valueAtKey(key);
+        }
+        else {
+          EXPECT_EXN(m.m_flatMap.valueAtKey(key), XAssert);
+        }
+
+        if (!m.empty()) {
+          MP::size_type index = sm_random(m.size());
+          m.keyAtIndex(index);
+          m.valueAtIndex(index);
+        }
+        EXPECT_EXN(m.m_flatMap.keyAtIndex(m.size()), XAssert);
+      }
+
+      m.selfCheck();
+    }
+  }
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -353,6 +504,7 @@ void test_ordered_flat_map()
   test_basics();
   test_differentCompare();
   test_mapPairBasics();
+  test_randomOps();
 }
 
 
