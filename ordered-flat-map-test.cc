@@ -7,10 +7,13 @@
 #include "smbase/ordered-mru-flat-map.h"         // module under test
 
 #include "smbase/exc.h"                          // EXN_CONTEXT_EXPR
+#include "smbase/fasttime.h"                     // smbase::{fastTimeInitialize, fastTimeMilliseconds}
 #include "smbase/ordered-map.h"                  // smbase::OrderedMap
+#include "smbase/save-restore.h"                 // SAVE_RESTORE
+#include "smbase/sm-env.h"                       // smbase::envAsIntOr
 #include "smbase/sm-macros.h"                    // OPEN_ANONYMOUS_NAMESPACE, DMEMB, MDMEMB, smbase_loopi
 #include "smbase/sm-random.h"                    // smbase::{RandomChoice, sm_random}
-#include "smbase/sm-test.h"                      // EXPECT_EQ, EXPECT_EXN_SUBSTR, EnvRandomizedTestIters, TEST_FUNC
+#include "smbase/sm-test.h"                      // EXPECT_EQ, EXPECT_EXN_SUBSTR, EnvRandomizedTestIters, TEST_FUNC, TEST_CASE
 
 #include <string>                                // std::string
 #include <utility>                               // std::move
@@ -538,6 +541,57 @@ void test_stringKey()
 }
 
 
+// Do repeated lookups of the same key to test performance of MRU.
+template <typename ORDERED_FLAT_MAP>
+void test_performanceLoop()
+{
+  int const numKeys = envAsIntOr(10, "OFMT_PERF_KEYS");
+  int const numIters = envAsIntOr(1000000, "OFMT_PERF_ITERS");
+
+  ORDERED_FLAT_MAP m;
+
+  smbase_loopi(numKeys) {
+    m.setValueAtNewKey(i, 0);
+  }
+
+  fastTimeInitialize();
+  unsigned start = fastTimeMilliseconds;
+
+  // Repeatedly look up 5.
+  smbase_loopi(numIters) {
+    // Increment the value returned so the optimizer does not remove
+    // this entire loop.
+    ++(m.valueRefAtKey(5));
+  }
+
+  unsigned elapsedMS = fastTimeMilliseconds - start;
+  VPVAL(elapsedMS);
+
+  // Check its value afterward, again to prevent optimizing away.
+  EXPECT_EQ(m.valueRefAtKey(5), numIters);
+}
+
+
+void test_performance()
+{
+  // Enable verbose output just for the performance tests.
+  SAVE_RESTORE(verbose);
+  if (envAsBool("OFMT_PERF")) {
+    verbose = 1;
+  }
+
+  {
+    TEST_CASE("OrderedFlatMap performance");
+    test_performanceLoop<OrderedFlatMap<int, int>>();
+  }
+
+  {
+    TEST_CASE("OrderedMRUFlatMap performance");
+    test_performanceLoop<OrderedMRUFlatMap<int, int>>();
+  }
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -564,6 +618,8 @@ void test_ordered_flat_map()
 
   test_stringKey<OrderedFlatMap<std::string, int>>();
   test_stringKey<OrderedMRUFlatMap<std::string, int>>();
+
+  test_performance();
 }
 
 
