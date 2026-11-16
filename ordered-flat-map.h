@@ -9,6 +9,7 @@
 #include "ordered-flat-map-iface.h"    // interface for this module
 
 #include "smbase/chained-cond.h"       // smbase::cc::z_le_lt
+#include "smbase/overflow.h"           // convertNumber
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE, DMEMB, MDMEMB, SELFCHECK
 #include "smbase/vector-util.h"        // vecToElementSet, vecContains
 #include "smbase/xassert.h"            // xassert, xassertdb, xfailure_stringbc, xassertPrecondition
@@ -148,6 +149,8 @@ template <typename K, typename V>
 VALUE &OrderedFlatMap<KEY, VALUE, COMPARE>::insertNewKeyAndValue(
   size_type index, K &&key, V &&value)
 {
+  unsigned unsigned_index = convertNumber<unsigned>(index);
+
   try {
     // Insert into sorted maps at `index`.
     m_sortedKeys.insert(m_sortedKeys.begin() + index,
@@ -165,11 +168,10 @@ VALUE &OrderedFlatMap<KEY, VALUE, COMPARE>::insertNewKeyAndValue(
 
     // As a result of the previous step, no element of
     // `m_insertionOrder` equals `index`.
-    xassertdb(!vecContains(m_insertionOrder,
-                           static_cast<unsigned>(index)));
+    xassertdb(!vecContains(m_insertionOrder, unsigned_index));
 
     // Append `index`, thereby recording when `key` was inserted.
-    m_insertionOrder.push_back(index);
+    m_insertionOrder.push_back(unsigned_index);
   }
 
   catch (std::exception &x) {
