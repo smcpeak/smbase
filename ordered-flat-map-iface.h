@@ -8,7 +8,6 @@
 
 #include "ordered-flat-map-fwd.h"      // fwds for this module
 
-#include "smbase/compare-util-iface.h" // DEFINE_FRIEND_RELATIONAL_OPERATORS
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 #include "smbase/std-tuple-fwd.h"      // std::tuple [f]
 

@@ -6,7 +6,7 @@
 #ifndef SMBASE_ORDERED_FLAT_MAP_FWD_H
 #define SMBASE_ORDERED_FLAT_MAP_FWD_H
 
-#include "smbase/std-functional-fwd.h" // std::less
+#include "smbase/std-functional-fwd.h" // std::less [f]
 
 namespace smbase {
   template <typename KEY,

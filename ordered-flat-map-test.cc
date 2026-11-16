@@ -3,16 +3,17 @@
 
 // This file is in the public domain.
 
-#include "smbase/ordered-flat-map.h"   // module under test
+#include "smbase/ordered-flat-map.h"             // module under test
+#include "smbase/ordered-mru-flat-map.h"         // module under test
 
-#include "smbase/exc.h"                // EXN_CONTEXT_EXPR
-#include "smbase/ordered-map.h"        // smbase::OrderedMap
-#include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE, DMEMB, MDMEMB, smbase_loopi
-#include "smbase/sm-random.h"          // smbase::{RandomChoice, sm_random}
-#include "smbase/sm-test.h"            // EXPECT_EQ, EXPECT_EXN_SUBSTR, EnvRandomizedTestIters, TEST_FUNC
+#include "smbase/exc.h"                          // EXN_CONTEXT_EXPR
+#include "smbase/ordered-map.h"                  // smbase::OrderedMap
+#include "smbase/sm-macros.h"                    // OPEN_ANONYMOUS_NAMESPACE, DMEMB, MDMEMB, smbase_loopi
+#include "smbase/sm-random.h"                    // smbase::{RandomChoice, sm_random}
+#include "smbase/sm-test.h"                      // EXPECT_EQ, EXPECT_EXN_SUBSTR, EnvRandomizedTestIters, TEST_FUNC
 
-#include <string>                      // std::string
-#include <utility>                     // std::move
+#include <string>                                // std::string
+#include <utility>                               // std::move
 
 using namespace smbase;
 
@@ -20,9 +21,13 @@ using namespace smbase;
 OPEN_ANONYMOUS_NAMESPACE
 
 
+// The tests in this file exercise both OrderedFlatMap and
+// OrderedMRUFlatMap, with the template parameter ORDERED_FLAT_MAP bound
+// to one or the other.
+template <typename ORDERED_FLAT_MAP>
 void test_basics()
 {
-  OrderedFlatMap<int, std::string> m;
+  ORDERED_FLAT_MAP m;
   m.selfCheck();
 
   EXPECT_EQ(m.empty(), true);
@@ -59,7 +64,7 @@ void test_basics()
 
   // Copy ctor.
   {
-    OrderedFlatMap<int, std::string> m2(m);
+    ORDERED_FLAT_MAP m2(m);
     EXPECT_EQ(m2.size(), 3);
     EXPECT_EQ(m2.valueAtKey(2), "two");
     m2.selfCheck();
@@ -82,7 +87,7 @@ void test_basics()
   }
 
   // Move ctor.
-  OrderedFlatMap<int, std::string> m2(std::move(m));
+  ORDERED_FLAT_MAP m2(std::move(m));
   EXPECT_EQ(m2.size(), 4);
   EXPECT_EQ(m2.valueAtKey(2), "two");
   m2.selfCheck();
@@ -102,9 +107,10 @@ public:
 };
 
 
+template <typename ORDERED_FLAT_MAP>
 void test_differentCompare()
 {
-  OrderedFlatMap<int, std::string, CompareMod10> m;
+  ORDERED_FLAT_MAP m;
   m.selfCheck();
 
   EXPECT_EQ(m.empty(), true);
@@ -126,15 +132,16 @@ void test_differentCompare()
 }
 
 
-// OrderedFlatMap under test, and OrderedMap for reference.
-template <typename KEY, typename VALUE>
+// Ordered[MRU]FlatMap under test, and OrderedMap for reference.
+template <typename KEY, typename VALUE, typename ORDERED_FLAT_MAP>
 class OrderedMapPair {
 public:      // types
-  using size_type = typename OrderedFlatMap<KEY, VALUE>::size_type;
+  using size_type = typename ORDERED_FLAT_MAP::size_type;
+  using FLAT_MAP = ORDERED_FLAT_MAP;
 
 public:      // data
   // Object under test.
-  OrderedFlatMap<KEY, VALUE> m_flatMap;
+  ORDERED_FLAT_MAP m_flatMap;
 
   // Reference implementation.
   OrderedMap<KEY, VALUE> m_refMap;
@@ -261,9 +268,10 @@ public:
 
 
 // Like `test_basics()`, but using `OrderedMapPair`.
+template <typename ORDERED_MAP_PAIR>
 void test_mapPairBasics()
 {
-  OrderedMapPair<int, std::string> m;
+  ORDERED_MAP_PAIR m;
   m.selfCheck();
 
   EXPECT_EQ(m.empty(), true);
@@ -304,7 +312,7 @@ void test_mapPairBasics()
 
   // Copy ctor.
   {
-    OrderedMapPair<int, std::string> m2(m);
+    ORDERED_MAP_PAIR m2(m);
     EXPECT_EQ(m2.size(), 3);
     EXPECT_EQ(m2.valueAtKey(2), two);
     m2.selfCheck();
@@ -334,7 +342,7 @@ void test_mapPairBasics()
   }
 
   // Move ctor.
-  OrderedMapPair<int, std::string> m2(std::move(m));
+  ORDERED_MAP_PAIR m2(std::move(m));
   EXPECT_EQ(m2.size(), 4);
   EXPECT_EQ(m2.valueAtKey(2), two);
   m2.selfCheck();
@@ -373,11 +381,14 @@ std::string randomValue()
 
 // Apply a random sequence of operations to an `OrderedMapPair`, which
 // checks that the flat map agrees with the reference map after each.
+template <typename ORDERED_MAP_PAIR>
 void test_randomOps()
 {
   TEST_FUNC();
 
-  using MP = OrderedMapPair<int, std::string>;
+  using MP = ORDERED_MAP_PAIR;
+  using size_type = typename MP::size_type;
+  using FLAT_MAP = typename MP::FLAT_MAP;
 
   smbase_loopi(OUTER_ITERS) {
     EXN_CONTEXT_EXPR(i);
@@ -401,7 +412,7 @@ void test_randomOps()
 
         MP moved(std::move(copy));
         EXPECT_EQ(moved.size(), m.size());
-        for (MP::size_type index=0; index < m.size(); ++index) {
+        for (size_type index=0; index < m.size(); ++index) {
           EXPECT_EQ(moved.keyAtIndex(index), m.keyAtIndex(index));
           EXPECT_EQ(moved.valueAtIndex(index), m.valueAtIndex(index));
         }
@@ -450,7 +461,7 @@ void test_randomOps()
         else {
           // Make a copy of the map first, since it will be altered by
           // the offending insertion.
-          OrderedFlatMap<int, std::string> m2(m.m_flatMap);
+          FLAT_MAP m2(m.m_flatMap);
 
           // Confirm that `setValueAtNewKey` will complain if I insert
           // an existing key.
@@ -497,7 +508,7 @@ void test_randomOps()
         }
 
         if (!m.empty()) {
-          MP::size_type index = sm_random(m.size());
+          size_type index = sm_random(m.size());
           m.keyAtIndex(index);
           m.valueAtIndex(index);
         }
@@ -511,11 +522,12 @@ void test_randomOps()
 
 
 // Use std::string as a key.
+template <typename ORDERED_FLAT_MAP>
 void test_stringKey()
 {
-  OrderedFlatMap<std::string, int> m;
+  ORDERED_FLAT_MAP m;
 
-  // This fails due to the `enable_if_t`:
+  // This fails (as desired) due to the `enable_if_t`:
   //m.setValueAtNewKey("one", 1);
   // So we do this instead:
   m.setValueAtNewKey(std::string("one"), 1);
@@ -532,11 +544,26 @@ CLOSE_ANONYMOUS_NAMESPACE
 // Called from unit-tests.cc.
 void test_ordered_flat_map()
 {
-  test_basics();
-  test_differentCompare();
-  test_mapPairBasics();
-  test_randomOps();
-  test_stringKey();
+  using FlatMap = OrderedFlatMap<int, std::string>;
+  using MRUFlatMap = OrderedMRUFlatMap<int, std::string>;
+
+  test_basics<FlatMap>();
+  test_basics<MRUFlatMap>();
+
+  test_differentCompare<OrderedFlatMap<int, std::string, CompareMod10>>();
+  test_differentCompare<OrderedMRUFlatMap<int, std::string, CompareMod10>>();
+
+  using MapPair = OrderedMapPair<int, std::string, FlatMap>;
+  using MRUMapPair = OrderedMapPair<int, std::string, MRUFlatMap>;
+
+  test_mapPairBasics<MapPair>();
+  test_mapPairBasics<MRUMapPair>();
+
+  test_randomOps<MapPair>();
+  test_randomOps<MRUMapPair>();
+
+  test_stringKey<OrderedFlatMap<std::string, int>>();
+  test_stringKey<OrderedMRUFlatMap<std::string, int>>();
 }
 
 
