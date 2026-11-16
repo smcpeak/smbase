@@ -9,7 +9,7 @@
 #include "smbase/ordered-map.h"        // smbase::OrderedMap
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE, DMEMB, MDMEMB, smbase_loopi
 #include "smbase/sm-random.h"          // smbase::{RandomChoice, sm_random}
-#include "smbase/sm-test.h"            // EXPECT_EQ, EXPECT_EXN_SUBSTR, EnvRandomizedTestIters
+#include "smbase/sm-test.h"            // EXPECT_EQ, EXPECT_EXN_SUBSTR, EnvRandomizedTestIters, TEST_FUNC
 
 #include <string>                      // std::string
 #include <utility>                     // std::move

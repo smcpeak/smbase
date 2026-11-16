@@ -193,6 +193,7 @@ bool OrderedFlatMap<KEY, VALUE, COMPARE>::setValueAtKey(
   }
 
   else {
+    // Make a copy of `value` here since the callee moves it.
     insertNewKeyAndValue(index, key, VALUE(value));
     return true;
   }
