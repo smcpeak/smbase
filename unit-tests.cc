@@ -134,6 +134,7 @@ static void entry(int argc, char **argv)
   RUN_TEST_NO_DECL(gprintf);
   RUN_TEST(growbuf);
   RUN_TEST(hashline);
+  RUN_TEST(htt);
   RUN_TEST(indexed_string_table);
   RUN_TEST(iter_and_end);
   RUN_TEST(line_col);
