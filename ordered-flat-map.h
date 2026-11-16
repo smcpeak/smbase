@@ -17,7 +17,7 @@
 #include <exception>                   // std::exception
 #include <set>                         // std::set
 #include <tuple>                       // std::{get, tuple}
-#include <utility>                     // std::move
+#include <utility>                     // std::{forward, move}
 
 
 OPEN_NAMESPACE(smbase)
@@ -144,15 +144,16 @@ auto OrderedFlatMap<KEY, VALUE, COMPARE>::size() const -> size_type
 
 // ----------------------------- Modifiers -----------------------------
 template <typename KEY, typename VALUE, typename COMPARE>
+template <typename K, typename V>
 VALUE &OrderedFlatMap<KEY, VALUE, COMPARE>::insertNewKeyAndValue(
-  size_type index, KEY &&key, VALUE &&value)
+  size_type index, K &&key, V &&value)
 {
   try {
     // Insert into sorted maps at `index`.
     m_sortedKeys.insert(m_sortedKeys.begin() + index,
-                        std::move(key));
+                        std::forward<K>(key));
     m_correspValues.insert(m_correspValues.begin() + index,
-                           std::move(value));
+                           std::forward<V>(value));
 
     // Increment every element of `m_insertOrder` that is `index` or
     // larger in order to match the vector insertion we just did.
@@ -195,67 +196,45 @@ VALUE &OrderedFlatMap<KEY, VALUE, COMPARE>::valueRefAtKey(KEY const &key)
   }
   else {
     // Insert default-constructed value.
-    return insertNewKeyAndValue(index, KEY(key), VALUE());
+    return insertNewKeyAndValue(index, key, VALUE());
   }
 }
 
 
 template <typename KEY, typename VALUE, typename COMPARE>
+template <typename K, typename V, typename>
 bool OrderedFlatMap<KEY, VALUE, COMPARE>::setValueAtKey(
-  KEY const &key, VALUE const &value)
+  K &&key, V &&value)
 {
   auto [index, found] = lookup(key);
 
   if (found) {
-    m_correspValues.at(index) = value;
+    m_correspValues.at(index) = std::forward<V>(value);
     return false;
   }
 
   else {
-    insertNewKeyAndValue(index, KEY(key), VALUE(value));
+    insertNewKeyAndValue(index,
+      std::forward<K>(key), std::forward<V>(value));
     return true;
   }
 }
 
 
 template <typename KEY, typename VALUE, typename COMPARE>
-bool OrderedFlatMap<KEY, VALUE, COMPARE>::setValueAtKey(
-  KEY &&key, VALUE &&value)
-{
-  auto [index, found] = lookup(key);
-
-  if (found) {
-    m_correspValues.at(index) = std::move(value);
-
-    // For uniformity, move the value out of `key`.
-    KEY movedKey(std::move(key));
-    PRETEND_USED(movedKey);
-
-    return false;
-  }
-
-  else {
-    insertNewKeyAndValue(index, std::move(key), std::move(value));
-    return true;
-  }
-}
-
-
-template <typename KEY, typename VALUE, typename COMPARE>
+template <typename K, typename V, typename>
 void OrderedFlatMap<KEY, VALUE, COMPARE>::setValueAtNewKey(
-  KEY const &key, VALUE const &value)
+  K &&key, V &&value)
 {
-  bool inserted = setValueAtKey(key, value);
-  xassert(inserted);
-}
+  bool inserted =
+    setValueAtKey(std::forward<K>(key), std::forward<V>(value));
 
-
-template <typename KEY, typename VALUE, typename COMPARE>
-void OrderedFlatMap<KEY, VALUE, COMPARE>::setValueAtNewKey(
-  KEY &&key, VALUE &&value)
-{
-  bool inserted = setValueAtKey(std::move(key), std::move(value));
-  xassert(inserted);
+  // Although we only learn about it afterwards, a violation here means
+  // the precondition `!contains(key)` was false on entry.
+  //
+  // Note that the map contents have been altered here, so code that
+  // recovers from this assertion needs to be a little cautious.
+  xassertPrecondition(inserted);
 }
 
 

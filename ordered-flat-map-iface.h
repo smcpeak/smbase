@@ -13,6 +13,7 @@
 #include "smbase/std-tuple-fwd.h"      // std::tuple [f]
 
 #include <cstddef>                     // std::size_t
+#include <type_traits>                 // std::{decay_t, enable_if_t, is_same_v}
 #include <vector>                      // std::vector
 
 
@@ -95,11 +96,9 @@ protected:   // funcs
   // Given that we have already looked up `key` and determined that it
   // is not present, and would go into `index`, insert it and `value`
   // into that location.
-  //
-  // Due to accepting `key` and `value` by rvalue reference, callers may
-  // need to make explicit copies of read-only values.
+  template <typename K, typename V>    // Universal refs for key/value.
   inline VALUE &insertNewKeyAndValue(
-    size_type index, KEY &&key, VALUE &&value);
+    size_type index, K &&key, V &&value);
 
 public:      // funcs
   inline ~OrderedFlatMap();
@@ -140,13 +139,29 @@ public:      // funcs
   // without altering the extrinsic order.  Otherwise (the key is new),
   // insert (append) a new entry that maps `key` to `value` and return
   // true.
-  inline bool setValueAtKey(KEY const &key, VALUE const &value);
-  inline bool setValueAtKey(KEY      &&key, VALUE      &&value);
+  template <typename K,    // Universal refs for key/value.
+            typename V,
+
+            // Require that the deduced K be (nearly) the same as KEY.
+            // The primary reason is that, inside this function, we
+            // might otherwise do two conversions (one for lookup and
+            // one for insertion).
+            typename = std::enable_if_t<std::is_same_v<std::decay_t<K>, KEY>>
+
+            // In contrast, K will be converted at most once, so we can
+            // accept whatever is compatible..
+           >
+  inline bool setValueAtKey(K &&key, V &&value);
 
   // Like `setValueAtKey`, but assert that `key` was not already
   // present.
-  inline void setValueAtNewKey(KEY const &key, VALUE const &value);
-  inline void setValueAtNewKey(KEY      &&key, VALUE      &&value);
+  template <typename K,    // Universal refs for key/value.
+            typename V,
+
+            // Same rationale as above.
+            typename = std::enable_if_t<std::is_same_v<std::decay_t<K>, KEY>>
+           >
+  inline void setValueAtNewKey(K &&key, V &&value);
 
   // If `key` is mapped, return a mutable reference to its value.
   // Otherwise, insert a mapping from `key` to a default-constructed

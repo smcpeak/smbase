@@ -216,35 +216,29 @@ public:
     return ret;
   }
 
-  bool setValueAtKey(KEY const &key, VALUE const &value)
+  template <typename K, typename V>
+  bool setValueAtKey(K &&key, V &&value)
   {
-    bool inserted = m_flatMap.setValueAtKey(key, value);
-    EXPECT_EQ(inserted, m_refMap.setValueAtKey(key, value));
+    // Do the reference map update first, using just lvalue references.
+    // I don't need to exercise the reference map's handling of other
+    // types since it's not the system under test.
+    bool inserted = m_refMap.setValueAtKey(key, value);
+
+    EXPECT_EQ(
+      m_flatMap.setValueAtKey(
+        std::forward<K>(key), std::forward<V>(value)),
+      inserted);
+
     return inserted;
   }
 
-  bool setValueAtKey(KEY const &key, VALUE &&value)
+  template <typename K, typename V>
+  void setValueAtNewKey(K &&key, V &&value)
   {
-    // To exercise the move version of `setValueAtKey`, move a copy of
-    // `value`.
-    bool inserted = m_flatMap.setValueAtKey(key, VALUE(value));
-
-    // Move the original into the reference map.
-    EXPECT_EQ(inserted, m_refMap.setValueAtKey(key, std::move(value)));
-
-    return inserted;
-  }
-
-  void setValueAtNewKey(KEY const &key, VALUE const &value)
-  {
-    m_flatMap.setValueAtNewKey(key, value);
     m_refMap.setValueAtNewKey(key, value);
-  }
 
-  void setValueAtNewKey(KEY const &key, VALUE &&value)
-  {
-    m_flatMap.setValueAtNewKey(key, VALUE(value));
-    m_refMap.setValueAtNewKey(key, std::move(value));
+    m_flatMap.setValueAtNewKey(
+      std::forward<K>(key), std::forward<V>(value));
   }
 
   // This class does not expose `valueRefAtKey` because that wouldn't
@@ -275,27 +269,31 @@ void test_mapPairBasics()
   EXPECT_EQ(m.empty(), true);
   EXPECT_EQ(m.size(), 0);
 
-  m.setValueAtNewKey(1, "one");
-  m.setValueAtNewKey(3, "three");
-  m.setValueAtNewKey(2, "two");
+  std::string one("one");
+  std::string two("two");
+  std::string three("three");
+
+  m.setValueAtNewKey(1, one);
+  m.setValueAtNewKey(3, three);
+  m.setValueAtNewKey(2, two);
 
   EXPECT_EQ(m.empty(), false);
   EXPECT_EQ(m.size(), 3);
 
   // Key-based lookup uses the intrinsic order.
-  EXPECT_EQ(m.valueAtKey(1), "one");
-  EXPECT_EQ(m.valueAtKey(2), "two");
-  EXPECT_EQ(m.valueAtKey(3), "three");
+  EXPECT_EQ(m.valueAtKey(1), one);
+  EXPECT_EQ(m.valueAtKey(2), two);
+  EXPECT_EQ(m.valueAtKey(3), three);
 
   // Index-based lookup uses the extrinsic order.
   EXPECT_EQ(m.keyAtIndex(0), 1);
-  EXPECT_EQ(m.valueAtIndex(0), "one");
+  EXPECT_EQ(m.valueAtIndex(0), one);
 
   EXPECT_EQ(m.keyAtIndex(1), 3);
-  EXPECT_EQ(m.valueAtIndex(1), "three");
+  EXPECT_EQ(m.valueAtIndex(1), three);
 
   EXPECT_EQ(m.keyAtIndex(2), 2);
-  EXPECT_EQ(m.valueAtIndex(2), "two");
+  EXPECT_EQ(m.valueAtIndex(2), two);
 
   EXPECT_EQ(m.contains(0), false);
   EXPECT_EQ(m.contains(1), true);
@@ -308,7 +306,7 @@ void test_mapPairBasics()
   {
     OrderedMapPair<int, std::string> m2(m);
     EXPECT_EQ(m2.size(), 3);
-    EXPECT_EQ(m2.valueAtKey(2), "two");
+    EXPECT_EQ(m2.valueAtKey(2), two);
     m2.selfCheck();
   }
 
@@ -329,15 +327,16 @@ void test_mapPairBasics()
     EXPECT_EQ(m.valueAtKey(4), "");
 
     // And ability to update via the reference.
-    valueRef = "four";
-    m.m_refMap.setValueAtKey(4, "four");
-    EXPECT_EQ(m.valueAtKey(4), "four");
+    std::string four("four");
+    valueRef = four;
+    m.m_refMap.setValueAtKey(4, four);
+    EXPECT_EQ(m.valueAtKey(4), four);
   }
 
   // Move ctor.
   OrderedMapPair<int, std::string> m2(std::move(m));
   EXPECT_EQ(m2.size(), 4);
-  EXPECT_EQ(m2.valueAtKey(2), "two");
+  EXPECT_EQ(m2.valueAtKey(2), two);
   m2.selfCheck();
 
   // The invariants of `m` should hold, even if its state is otherwise
@@ -426,7 +425,8 @@ void test_randomOps()
         int key = randomKey();
         std::string value = randomValue();
         bool wasPresent = m.contains(key);
-        bool inserted = m.setValueAtKey(int(key), std::string(value));
+        // This exercises lvalue `key` reference.
+        bool inserted = m.setValueAtKey(key, std::string(value));
         EXPECT_EQ(inserted, !wasPresent);
         EXPECT_EQ(m.valueAtKey(key), value);
       }
@@ -441,9 +441,22 @@ void test_randomOps()
             m.setValueAtNewKey(key, value);
           }
           else {
+            // This exercises rvalue `key` reference.
             m.setValueAtNewKey(int(key), std::string(value));
           }
           EXPECT_EQ(m.valueAtKey(key), value);
+        }
+
+        else {
+          // Make a copy of the map first, since it will be altered by
+          // the offending insertion.
+          OrderedFlatMap<int, std::string> m2(m.m_flatMap);
+
+          // Confirm that `setValueAtNewKey` will complain if I insert
+          // an existing key.
+          EXPECT_EXN(
+            m2.setValueAtNewKey(key, std::string("x")),
+            XAssert);
         }
       }
 
@@ -471,6 +484,8 @@ void test_randomOps()
         }
       }
 
+      // The sum of `choice` calls above is 73, so 27% of the time we
+      // end up here.
       else {
         // Queries.  (Each wrapper method compares the two maps.)
         int key = randomKey();
@@ -495,6 +510,22 @@ void test_randomOps()
 }
 
 
+// Use std::string as a key.
+void test_stringKey()
+{
+  OrderedFlatMap<std::string, int> m;
+
+  // This fails due to the `enable_if_t`:
+  //m.setValueAtNewKey("one", 1);
+  // So we do this instead:
+  m.setValueAtNewKey(std::string("one"), 1);
+
+  EXPECT_EQ(m.valueAtKey("one"), 1);
+
+  m.selfCheck();
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -505,6 +536,7 @@ void test_ordered_flat_map()
   test_differentCompare();
   test_mapPairBasics();
   test_randomOps();
+  test_stringKey();
 }
 
 
