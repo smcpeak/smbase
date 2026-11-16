@@ -39,6 +39,10 @@ void test_basics()
 
       {
         [[maybe_unused]] HTT_StartStopLabel ss3(tree, three);
+
+        // Ensure not all the counts are zero.
+        while (ss3.elapsedMSSoFar() == 0)
+          {}
       }
     }
   }

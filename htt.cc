@@ -6,12 +6,14 @@
 #include "htt.h"                                 // this module
 
 #include "smbase/fasttime.h"                     // fastTimeInitialize, fastTimeMilliseconds
+#include "smbase/gdvalue.h"                      // gdv::GDValue
 #include "smbase/ordered-mru-flat-map.h"         // smbase::OrderedMRUFlatMap
 #include "smbase/sm-macros.h"                    // OPEN_NAMESPACE
 #include "smbase/xassert.h"                      // xassert, xassertPrecondition
 
 #include <string>                                // std::string
 #include <string_view>                           // std::string_view
+#include <utility>                               // std::move
 
 
 OPEN_NAMESPACE(smbase)
@@ -45,6 +47,34 @@ HTT_Node *HTT_Node::getChild(HTT_LabelIndex labelIndex)
 }
 
 
+gdv::GDValue HTT_Node::asGDValue(HTT_Tree const &tree) const
+{
+  gdv::GDValue ret(gdv::GDVK_ORDERED_MAP);
+
+  ret.orderedMapSetValueAtSym("elapsedMS", m_elapsedMS);
+
+  gdv::GDValue children(gdv::GDVK_ORDERED_MAP);
+
+  for (LabelIndexToChildMap::size_type childIndex=0;
+       childIndex < m_children.size();
+       ++childIndex)
+  {
+    HTT_LabelIndex labelIndex = m_children.keyAtIndex(childIndex);
+    std::string_view label = tree.getLabelForIndex(labelIndex);
+
+    HTT_Node const *child = m_children.valueAtIndex(childIndex).get();
+    gdv::GDValue childGDV = child->asGDValue(tree);
+
+    children.orderedMapSetValueAt(
+      gdv::GDValue(label), std::move(childGDV));
+  }
+
+  ret.orderedMapSetValueAtSym("children", std::move(children));
+
+  return ret;
+}
+
+
 // ----------------------------- HTT_Tree ------------------------------
 HTT_Tree::~HTT_Tree()
 {}
@@ -65,7 +95,7 @@ HTT_LabelIndex HTT_Tree::getIndexForLabel(std::string_view label)
 }
 
 
-std::string_view HTT_Tree::getLabelForIndex(HTT_LabelIndex index)
+std::string_view HTT_Tree::getLabelForIndex(HTT_LabelIndex index) const
 {
   return m_labelTable.get(index);
 }
@@ -93,9 +123,16 @@ void HTT_Tree::popNode(HTT_Node *oldStackTop)
 }
 
 
+HTT_Tree::operator gdv::GDValue() const
+{
+  return m_root.asGDValue(*this);
+}
+
+
 std::string HTT_Tree::asString() const
 {
-  return "TODO";
+  gdv::GDValue v(*this);
+  return v.asIndentedString();
 }
 
 
@@ -108,7 +145,13 @@ HTT_StartStopNode::HTT_StartStopNode(HTT_Node *node)
 
 HTT_StartStopNode::~HTT_StartStopNode()
 {
-  m_node->addElapsedMS(fastTimeMilliseconds - m_startMS);
+  m_node->addElapsedMS(elapsedMSSoFar());
+}
+
+
+unsigned HTT_StartStopNode::elapsedMSSoFar() const
+{
+  return fastTimeMilliseconds - m_startMS;
 }
 
 

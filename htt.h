@@ -8,6 +8,7 @@
 
 #include "htt-fwd.h"                             // fwds for this module
 
+#include "smbase/gdvalue-fwd.h"                  // gdv::GDValue [f]
 #include "smbase/indexed-string-table.h"         // smbase::IndexedStringTable
 #include "smbase/ordered-mru-flat-map-iface.h"   // smbase::OrderedMRUFlatMap [i]
 #include "smbase/sm-macros.h"                    // OPEN_NAMESPACE
@@ -30,6 +31,10 @@ typedef IndexedStringTable::Index HTT_LabelIndex;
 // sequence of labels (those on the path from the root to this node)
 // that correspond to nested activities, similar to a call stack.
 class HTT_Node {
+private:     // types
+  using LabelIndexToChildMap =
+    OrderedMRUFlatMap<HTT_LabelIndex, std::unique_ptr<HTT_Node>>;
+
 private:     // data
   // Parent of this node.  Having this pointer means we can easily pop
   // elements from the node stack without keeping them in a vector.
@@ -40,7 +45,7 @@ private:     // data
   // Map from HTT_LabelIndex to child HTT_Node.
   //
   // Invariant: No value is nullptr.
-  OrderedMRUFlatMap<HTT_LabelIndex, std::unique_ptr<HTT_Node>> m_children;
+  LabelIndexToChildMap m_children;
 
   // Elapsed time, in milliseconds, accumulated while this node was on
   // the stack.
@@ -65,6 +70,25 @@ public:      // funcs
 
   HTT_Node * NULLABLE getParent()
     { return m_parent; }
+
+  /*
+    Return as an untagged ordered map with keys:
+
+    * elapsedMS: Integer m_elapsedMS.
+
+    * children: Ordered map from child label (as a string) to its GDV.
+
+    Example:
+
+    [
+      elapsedMS: 123
+      children: [
+        "child1": [...]
+        "child2": [...]
+      ]
+    ]
+  */
+  gdv::GDValue asGDValue(HTT_Tree const &tree) const;
 };
 
 
@@ -94,7 +118,7 @@ public:      // funcs
 
   // Requires: `index` is valid, having been previously returned by
   // `getIndexForLabel`.
-  std::string_view getLabelForIndex(HTT_LabelIndex index);
+  std::string_view getLabelForIndex(HTT_LabelIndex index) const;
 
   // Get or create a node that is a child of the current top of stack
   // node, but do not push it.
@@ -116,10 +140,45 @@ public:      // funcs
   // Ensures: m_stackTop == oldStackTop->m_parent
   void popNode(HTT_Node *oldStackTop);
 
-  // TODO: Methods to convert to GDV, and then render that as indented
-  // text.
+  /*
+    Return the root's GDV, for example:
 
-  // Render as an indented tree structure.
+    [
+      elapsedMS: 456
+      children: [
+        "one": [
+          elapsedMS: 123
+          children: [
+            "two": [
+              elapsedMS: 2
+              children: [
+                "three": [
+                  elapsedMS: 3
+                  children: [:]
+                ]
+              ]
+            ]
+          ]
+        ]
+        "two": [
+          elapsedMS: 4
+          children: [
+            "three": [
+              elapsedMS: 5
+              children: [:]
+            ]
+          ]
+        ]
+        "three": [
+          elapsedMS: 6
+          children: [:]
+        ]
+      ]
+    ]
+  */
+  operator gdv::GDValue() const;
+
+  // Render as indented GDVN.
   std::string asString() const;
 };
 
@@ -142,6 +201,10 @@ public:      // funcs
 
   HTT_Node *getNode() const
     { return m_node; }
+
+  // If we were to stop the timer now, how many milliseconds would get
+  // added to `m_node`?
+  unsigned elapsedMSSoFar() const;
 };
 
 
