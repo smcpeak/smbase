@@ -572,6 +572,22 @@ void test_performanceLoop()
 }
 
 
+/*
+  Measurements (-O2, x86_64, AMD Ryzen 9 7900X):
+
+    OFMT_PERF_KEYS OFMT_PERF_ITERS FlatMap(ms) MRUFlatMap(ms)
+    -------------- --------------- ----------- --------------
+                 1       100000000         172             78
+                10       100000000         219             78
+               100       100000000         375             78
+
+  So for a probably-typical map size of 10 elements, the MRU lookup is
+  close to 3x faster, and (as expected) its run time stays constant as
+  the size of the map increases.
+
+  It's interesting that the lookup is still more than twice as fast when
+  there is only one child.
+*/
 void test_performance()
 {
   // Enable verbose output just for the performance tests.
