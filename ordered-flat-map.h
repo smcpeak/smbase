@@ -175,7 +175,7 @@ VALUE &OrderedFlatMap<KEY, VALUE, COMPARE>::insertNewKeyAndValue(
   catch (std::exception &x) {
     // If an exception is thrown above, this class's invariants might be
     // broken.  Restore them by clearing, then fail an assertion.
-    this->clear();
+    this->clear();                     // gcov-ignore
     xfailure_stringbc(
       "Exception during OrderedFlatMap::insertNewKeyAndValue: " <<
       x.what());
