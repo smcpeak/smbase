@@ -1,5 +1,5 @@
 // ordered-mru-flat-map.h
-// OrderedMRUFlatMap, an OrderedFlatMap with a one-element MRU cache.
+// `OrderedMRUFlatMap`, an `OrderedFlatMap` with a one-element MRU cache.
 
 // This file is in the public domain.
 

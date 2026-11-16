@@ -1,5 +1,5 @@
 // ordered-flat-map.h
-// OrderedFlatMap, like `std::flat_map` but remembering insertion order.
+// `OrderedFlatMap`, like `std::flat_map` but remembering insertion order.
 
 // This file is in the public domain.
 
