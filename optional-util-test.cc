@@ -191,8 +191,12 @@ void test_OPT_INVOKE_METHOD()
     OPT_INVOKE_METHOD(strOpt, size);
   EXPECT_EQ(*sizeOpt, 2);
 
-  strOpt = std::nullopt;
-  sizeOpt = OPT_INVOKE_METHOD(strOpt, size);
+  // Use a separate, never-filled `optional` for the empty case.  If
+  // instead `strOpt` is reset to `nullopt` and reused, GCC 13 at -O2
+  // inlines everything, and then `-Wmaybe-uninitialized` complains
+  // about the `size()` call in the unreachable branch (false positive).
+  std::optional<std::string> emptyOpt;
+  sizeOpt = OPT_INVOKE_METHOD(emptyOpt, size);
   EXPECT_FALSE(sizeOpt.has_value());
 }
 
