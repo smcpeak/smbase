@@ -4,7 +4,7 @@
 #include "text-table.h"                // this module
 
 #include "smbase/sm-integer.h"         // smbase::Integer
-#include "smbase/sm-macros.h"          // OPEN_NAMESPACE, DMEMB
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE, DMEMB, MDMEMB, CMEMB, MCMEMB
 #include "smbase/xassert.h"            // xassertPrecondition
 
 #include <algorithm>                   // std::max
@@ -45,6 +45,29 @@ TextTableCell::TextTableCell(std::string &&s)
   : m_kind(TTCK_STRING),
     m_data(std::move(s))
 {}
+
+
+// In both assignment operators, `m_data` is assigned first so that, if
+// it throws, `m_kind` has not yet been changed to disagree with it.
+
+TextTableCell &TextTableCell::operator=(TextTableCell const &obj)
+{
+  if (this != &obj) {
+    CMEMB(m_data);
+    CMEMB(m_kind);
+  }
+  return *this;
+}
+
+
+TextTableCell &TextTableCell::operator=(TextTableCell &&obj)
+{
+  if (this != &obj) {
+    MCMEMB(m_data);
+    MCMEMB(m_kind);
+  }
+  return *this;
+}
 
 
 Integer const &TextTableCell::getInteger() const

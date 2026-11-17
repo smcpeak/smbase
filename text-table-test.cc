@@ -97,11 +97,153 @@ void test_cellCopyAndMove()
 }
 
 
+void test_cellCopyAssign()
+{
+  TextTableCell const intCell(Integer(7));
+  TextTableCell const strCell("seven");
+
+  // String over integer: the kind changes along with the data, and the
+  // source is unchanged.
+  TextTableCell c(Integer(1));
+  c = strCell;
+  EXPECT_EQ(c.getKind(), TTCK_STRING);
+  EXPECT_EQ(c.getString(), "seven");
+  EXPECT_EXN(c.getInteger(), XAssert);
+  EXPECT_EQ(strCell.getString(), "seven");
+
+  // Integer over string.
+  c = intCell;
+  EXPECT_EQ(c.getKind(), TTCK_INTEGER);
+  EXPECT_EQ(c.getInteger(), Integer(7));
+  EXPECT_EXN(c.getString(), XAssert);
+  EXPECT_EQ(intCell.getInteger(), Integer(7));
+
+  // Same kind, different value.
+  TextTableCell s("old");
+  s = strCell;
+  EXPECT_EQ(s.getKind(), TTCK_STRING);
+  EXPECT_EQ(s.getString(), "seven");
+
+  // Self-assignment, through a reference so the compiler does not
+  // complain about the obvious case.
+  TextTableCell &sAlias = s;
+  s = sAlias;
+  EXPECT_EQ(s.getKind(), TTCK_STRING);
+  EXPECT_EQ(s.getString(), "seven");
+
+  // Chained assignment, which relies on the return value.
+  TextTableCell a(Integer(0));
+  TextTableCell b("b");
+  a = b = intCell;
+  EXPECT_EQ(a.getKind(), TTCK_INTEGER);
+  EXPECT_EQ(a.getInteger(), Integer(7));
+  EXPECT_EQ(b.getKind(), TTCK_INTEGER);
+  EXPECT_EQ(b.getInteger(), Integer(7));
+
+  // Copies are independent: overwriting the copy does not affect the
+  // cell it was copied from.
+  b = strCell;
+  EXPECT_EQ(a.getInteger(), Integer(7));
+}
+
+
+void test_cellMoveAssign()
+{
+  // String over integer.
+  TextTableCell c(Integer(1));
+  TextTableCell strSrc("moved string");
+  c = std::move(strSrc);
+  EXPECT_EQ(c.getKind(), TTCK_STRING);
+  EXPECT_EQ(c.getString(), "moved string");
+  EXPECT_EXN(c.getInteger(), XAssert);
+
+  // The source's data is unspecified, but its kind is unchanged.
+  EXPECT_EQ(strSrc.getKind(), TTCK_STRING);
+
+  // Integer over string, with a value too large for a primitive.
+  Integer big = Integer::fromDigits("123456789012345678901234567890");
+  TextTableCell intSrc{Integer(big)};
+  c = std::move(intSrc);
+  EXPECT_EQ(c.getKind(), TTCK_INTEGER);
+  EXPECT_EQ(c.getInteger(), big);
+  EXPECT_EXN(c.getString(), XAssert);
+  EXPECT_EQ(intSrc.getKind(), TTCK_INTEGER);
+
+  // Assigning from a temporary.
+  c = TextTableCell("temp");
+  EXPECT_EQ(c.getKind(), TTCK_STRING);
+  EXPECT_EQ(c.getString(), "temp");
+
+  // Self move-assignment leaves the cell unchanged.
+  TextTableCell &cAlias = c;
+  c = std::move(cAlias);
+  EXPECT_EQ(c.getKind(), TTCK_STRING);
+  EXPECT_EQ(c.getString(), "temp");
+
+  // A moved-from cell can be assigned a new value.
+  strSrc = TextTableCell(Integer(5));
+  EXPECT_EQ(strSrc.getKind(), TTCK_INTEGER);
+  EXPECT_EQ(strSrc.getInteger(), Integer(5));
+}
+
+
+// Vector operations that shift elements, and hence need assignment.
+void test_cellAssignInVector()
+{
+  std::vector<TextTableCell> vec;
+  vec.push_back(TextTableCell("a"));
+  vec.push_back(TextTableCell(Integer(2)));
+  vec.push_back(TextTableCell("c"));
+
+  // Erasing from the front move-assigns the later elements down.
+  vec.erase(vec.begin());
+  EXPECT_EQ(vec.size(), 2);
+  EXPECT_EQ(vec.at(0).getKind(), TTCK_INTEGER);
+  EXPECT_EQ(vec.at(0).getInteger(), Integer(2));
+  EXPECT_EQ(vec.at(1).getString(), "c");
+
+  // Inserting at the front shifts them back up.
+  vec.insert(vec.begin(), TextTableCell("z"));
+  EXPECT_EQ(vec.size(), 3);
+  EXPECT_EQ(vec.at(0).getString(), "z");
+  EXPECT_EQ(vec.at(1).getInteger(), Integer(2));
+  EXPECT_EQ(vec.at(2).getString(), "c");
+
+  // Assigning a braced list copy-assigns elements into existing ones.
+  vec = { TextTableCell(Integer(9)), TextTableCell("y") };
+  EXPECT_EQ(vec.size(), 2);
+  EXPECT_EQ(vec.at(0).getInteger(), Integer(9));
+  EXPECT_EQ(vec.at(1).getString(), "y");
+}
+
+
 // ---------------------------- TextTable ------------------------------
-// Table data.  Assigning a braced list directly to `m_cells` would
-// require `TextTableCell` to be assignable, which it is not, so build a
-// vector and move-assign it instead.
+// Table data, for tests that build a complete set of rows at once.
 using Cells = std::vector<std::vector<TextTableCell>>;
+
+
+// Assigning a braced list directly to `m_cells`, which requires
+// `TextTableCell` to be copy-assignable.
+void test_bracedListAssign()
+{
+  TextTable tt;
+  tt.m_columnTitles = {"k", "v"};
+  tt.m_cells = {
+    { TextTableCell("one"), TextTableCell(Integer(1)) },
+  };
+
+  // Assign again so the existing elements are assigned over.
+  tt.m_cells = {
+    { TextTableCell("two"), TextTableCell(Integer(22)) },
+    { TextTableCell("three") },
+  };
+
+  EXPECT_EQ(tt.render(),
+    "k      v\n"
+    "-----  --\n"
+    "two    22\n"
+    "three\n");
+}
 
 
 // Build the table shown in the `render` documentation.
@@ -302,8 +444,12 @@ void test_text_table()
   test_cellInteger();
   test_cellString();
   test_cellCopyAndMove();
+  test_cellCopyAssign();
+  test_cellMoveAssign();
+  test_cellAssignInVector();
 
   test_docExample();
+  test_bracedListAssign();
   test_emptyTable();
   test_titlesOnly();
   test_dataWithoutTitles();

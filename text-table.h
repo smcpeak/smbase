@@ -31,7 +31,8 @@ enum TextTableCellKind : int {
 };
 
 
-// Data for one cell in the table.  Immutable.
+// Data for one cell in the table.  There are no mutators, but a cell
+// can be replaced as a whole by assignment.
 class TextTableCell {
 private:     // data
   // Kind of data stored in this cell.
@@ -53,6 +54,9 @@ public:      // funcs
 
   explicit TextTableCell(Integer &&i);
   explicit TextTableCell(std::string &&s);
+
+  TextTableCell &operator=(TextTableCell const &obj);
+  TextTableCell &operator=(TextTableCell      &&obj);
 
   TextTableCellKind getKind() const
     { return m_kind; }
