@@ -5,7 +5,7 @@
 
 #include "htt.h"                                 // this module
 
-#include "smbase/fasttime.h"                     // fastTimeInitialize, fastTimeMilliseconds
+#include "smbase/fasttime.h"                     // smbase::{fastTimeInitialize, fastTimeMilliseconds, fastTimeIsImplemented}
 #include "smbase/gdvalue.h"                      // gdv::GDValue
 #include "smbase/ordered-mru-flat-map.h"         // smbase::OrderedMRUFlatMap
 #include "smbase/sm-macros.h"                    // OPEN_NAMESPACE, SELFCHECK
@@ -184,7 +184,14 @@ std::string HTT_Tree::asTableString() const
 
   m_root.renderTableRows(tt, *this, 0 /*indent*/);
 
-  return tt.render();
+  std::string table = tt.render();
+
+  if (!fastTimeIsImplemented()) {
+    table += "NOTE: `fasttime` is not implemented on this platform, "
+             "so all times are zero.\n";
+  }
+
+  return table;
 }
 
 

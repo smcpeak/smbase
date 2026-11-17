@@ -219,6 +219,9 @@ public:      // funcs
 
     Note the omission of a row for the root node, since its elapsed time
     is always zero.
+
+    If `fasttime` is not implemented on this platform, add a warning to
+    that effect as a final line.
   */
   std::string asTableString() const;
 };
