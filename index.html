@@ -95,7 +95,7 @@ modules are now considered obsolete (marked below as such).
   <li><a class="toc" href="#application_domains">Application domains</a>
   <ul>
     <li><a class="toc" href="#language_processing">Programming language processing support</a>
-    <li><a class="toc" href="#pretty_printing">Pretty printing</a>
+    <li><a class="toc" href="#pretty_printing">Pretty printing and plain text rendering</a>
     <li><a class="toc" href="#utf8">UTF-8</a>
     <li><a class="toc" href="#fonts">Fonts</a>
   </ul>
@@ -1602,11 +1602,12 @@ process programming languages.
 </dl>
 
 
-<h2 id="pretty_printing">Pretty printing</h2>
+<h2 id="pretty_printing">Pretty printing and plain text rendering</h2>
 
 <p>
-Pretty printing is surprisingly difficult.  Perhaps that explains why I
-have three different modules to do it?
+"Pretty printing" refers to formatting source code with whitespace so it
+is readable.  There are several modules because I've attempted it
+multiple times, achieving varying degress of success.
 
 <dl>
 
@@ -1630,6 +1631,12 @@ have three different modules to do it?
   <!-- AUTO --><dd>
   <!-- AUTO -->  TreePrint class, which holds a tree to print while it is being built.
   <!-- AUTO -->  It then prints that tree to an ostream in the 'print()' method.
+<!-- end file desc -->
+
+<!-- begin file desc: text-table.h -->
+  <!-- AUTO --><dt><a href="text-table.h">text-table.h</a>
+  <!-- AUTO --><dd>
+  <!-- AUTO -->  Emit/render a 2D table as plain text.
 <!-- end file desc -->
 
 </dl>

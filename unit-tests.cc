@@ -212,6 +212,7 @@ static void entry(int argc, char **argv)
   RUN_TEST(system_error_code);
   RUN_TEST(taillist);
   RUN_TEST(temporary_file);
+  RUN_TEST(text_table);
   RUN_TEST(tree_print);
   RUN_TEST(type_name_and_size);
   RUN_TEST(utf8);
