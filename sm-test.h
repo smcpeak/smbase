@@ -185,6 +185,10 @@ void expectEq(
   }
 }
 
+// If unequal, complain, serializing with `operator<<(std::ostream)`.
+// The type-appropriate overload has to be declared before `sm-test.h`
+// is #included.  (Maybe I should fix that by pre-emptively serializing
+// in the macro?)
 #define EXPECT_EQ(actual, expect)           \
   expectEq(HERE_PREPROC_FILE_LINE, #actual, \
            actual, expect) /* user ; */
@@ -284,11 +288,12 @@ void expectEqGDVSer(
     loc, label, actualGDV, expectGDV);
 }
 
-// Check that `actual==expect`, but use GDV for serialization for the
-// error message.  We serialize unconditionally both so we can check
-// that GDV equality agrees and so that the requirement to have a
-// suitable `toGDValue` in scope is imposed at the call site, not here
-// where the function template is defined.
+// Check that `actual==expect` using the original types, but use GDV for
+// serialization for the error message.  We serialize unconditionally
+// both so we can check that GDV equality agrees, and so that the
+// requirement to have a suitable `toGDValue` in scope is imposed at the
+// macro call site, not where the function template is defined (here in
+// `sm-test.h`).
 #define EXPECT_EQ_GDVSER(actual, expect)                            \
   expectEqGDVSer(HERE_PREPROC_FILE_LINE,                            \
                  #actual,                                           \
@@ -303,7 +308,7 @@ void expectEqGDVSer(
 
 
 // ---------------------------- EXPECT_EXN -----------------------------
-// Common core of `EXPECT_EXN` and `EXPECT_EXN_SUBSTR`
+// Common core of `EXPECT_EXN` and `EXPECT_EXN_SUBSTR`.
 #define EXPECT_EXN_COMMON_CORE(expr, ExnType, additionalCheck) \
   {                                                            \
     bool evalFinished = false;                                 \
