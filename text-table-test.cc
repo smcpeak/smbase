@@ -113,7 +113,7 @@ void test_docExample()
     "col1", "col2", "col3",
   };
 
-  tt.m_cells = std::vector<std::vector<TextTableCell>>{
+  tt.m_cells = Cells{
     {
       TextTableCell("celldata11"),
       TextTableCell("d12"),

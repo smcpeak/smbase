@@ -4,7 +4,7 @@
 #include "text-table.h"                // this module
 
 #include "smbase/sm-integer.h"         // smbase::Integer
-#include "smbase/sm-macros.h"          // OPEN_NAMESPACE
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE, DMEMB
 #include "smbase/xassert.h"            // xassertPrecondition
 
 #include <algorithm>                   // std::max
@@ -24,14 +24,14 @@ TextTableCell::~TextTableCell()
 
 
 TextTableCell::TextTableCell(TextTableCell const &obj)
-  : m_kind(obj.m_kind),
-    m_data(obj.m_data)
+  : DMEMB(m_kind),
+    DMEMB(m_data)
 {}
 
 
 TextTableCell::TextTableCell(TextTableCell &&obj)
-  : m_kind(obj.m_kind),
-    m_data(std::move(obj.m_data))
+  : MDMEMB(m_kind),
+    MDMEMB(m_data)
 {}
 
 
@@ -75,11 +75,15 @@ TextTable::TextTable()
 OPEN_ANONYMOUS_NAMESPACE
 
 
-// The text of one cell, plus how to align it within its column.
+// Cell text and alignment.
 struct RenderedCell {
+  // Text for the cell.
   std::string m_text;
+
+  // True to align on the right side of the column, false for left.
   bool m_rightAlign = false;
 };
+
 
 // One line of output, before padding.  It may have fewer elements
 // than there are columns.
@@ -106,7 +110,7 @@ RenderedCell renderCell(TextTableCell const &cell)
 
 // Append to `dest` the padded form of `line`, using `columnWidths`,
 // then a newline.  Padding that would be at the end of the line is
-// omitted, but any trailing spaces within the cell text are kept.
+// omitted, but any trailing spaces within the cell `m_text` are kept.
 void appendLine(
   std::string &dest,
   RenderedLine const &line,
@@ -114,11 +118,16 @@ void appendLine(
 {
   std::size_t const lineStart = dest.size();
 
-  // Position just past the last cell text appended so far.
+  // Position just past the last non-empty cell text appended so far.
+  // This position does not include padding added after left-aligned
+  // text.  This mechanism allows all trailing padding to be removed at
+  // the end of the line (via `resize`) while retaining any spaces that
+  // came from `m_text`.
   std::size_t contentEnd = lineStart;
 
   for (std::size_t c=0; c < columnWidths.size(); ++c) {
     if (c > 0) {
+      // Spacing between columns.
       dest += "  ";
     }
 
