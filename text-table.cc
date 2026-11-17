@@ -72,82 +72,86 @@ TextTable::TextTable()
 {}
 
 
-namespace {
-  // The text of one cell, plus how to align it within its column.
-  struct RenderedCell {
-    std::string m_text;
-    bool m_rightAlign = false;
-  };
-
-  // One line of output, before padding.  It may have fewer elements
-  // than there are columns.
-  using RenderedLine = std::vector<RenderedCell>;
+OPEN_ANONYMOUS_NAMESPACE
 
 
-  RenderedCell renderCell(TextTableCell const &cell)
-  {
-    switch (cell.getKind()) {
-      case TTCK_INTEGER:
-        return RenderedCell{cell.getInteger().toString(), true /*right*/};
+// The text of one cell, plus how to align it within its column.
+struct RenderedCell {
+  std::string m_text;
+  bool m_rightAlign = false;
+};
 
-      case TTCK_STRING:
-        return RenderedCell{cell.getString(), false /*right*/};
+// One line of output, before padding.  It may have fewer elements
+// than there are columns.
+using RenderedLine = std::vector<RenderedCell>;
 
-      default:
-        break;
-    }
 
-    xfailure("invalid TextTableCellKind");
-    return RenderedCell{};             // Not reached.
+RenderedCell renderCell(TextTableCell const &cell)
+{
+  switch (cell.getKind()) {
+    case TTCK_INTEGER:
+      return RenderedCell{cell.getInteger().toString(), true /*right*/};
+
+    case TTCK_STRING:
+      return RenderedCell{cell.getString(), false /*right*/};
+
+    default:
+      break;
   }
 
-
-  // Append to `dest` the padded form of `line`, using `columnWidths`,
-  // then a newline.  Padding that would be at the end of the line is
-  // omitted, but any trailing spaces within the cell text are kept.
-  void appendLine(
-    std::string &dest,
-    RenderedLine const &line,
-    std::vector<std::size_t> const &columnWidths)
-  {
-    std::size_t const lineStart = dest.size();
-
-    // Position just past the last cell text appended so far.
-    std::size_t contentEnd = lineStart;
-
-    for (std::size_t c=0; c < columnWidths.size(); ++c) {
-      if (c > 0) {
-        dest += "  ";
-      }
-
-      // A missing cell is treated like an empty string.
-      static RenderedCell const emptyCell;
-      RenderedCell const &cell = (c < line.size()? line[c] : emptyCell);
-
-      xassert(cell.m_text.size() <= columnWidths[c]);
-      std::string const padding(columnWidths[c] - cell.m_text.size(), ' ');
-
-      if (cell.m_rightAlign) {
-        dest += padding;
-        dest += cell.m_text;
-        if (!cell.m_text.empty()) {
-          contentEnd = dest.size();
-        }
-      }
-      else {
-        dest += cell.m_text;
-        if (!cell.m_text.empty()) {
-          contentEnd = dest.size();
-        }
-        dest += padding;
-      }
-    }
-
-    // Remove trailing padding and separators.
-    dest.resize(contentEnd);
-    dest += '\n';
-  }
+  xfailure("invalid TextTableCellKind");
+  return RenderedCell{};             // Not reached.
 }
+
+
+// Append to `dest` the padded form of `line`, using `columnWidths`,
+// then a newline.  Padding that would be at the end of the line is
+// omitted, but any trailing spaces within the cell text are kept.
+void appendLine(
+  std::string &dest,
+  RenderedLine const &line,
+  std::vector<std::size_t> const &columnWidths)
+{
+  std::size_t const lineStart = dest.size();
+
+  // Position just past the last cell text appended so far.
+  std::size_t contentEnd = lineStart;
+
+  for (std::size_t c=0; c < columnWidths.size(); ++c) {
+    if (c > 0) {
+      dest += "  ";
+    }
+
+    // A missing cell is treated like an empty string.
+    static RenderedCell const emptyCell;
+    RenderedCell const &cell = (c < line.size()? line[c] : emptyCell);
+
+    xassert(cell.m_text.size() <= columnWidths[c]);
+    std::string const padding(columnWidths[c] - cell.m_text.size(), ' ');
+
+    if (cell.m_rightAlign) {
+      dest += padding;
+      dest += cell.m_text;
+      if (!cell.m_text.empty()) {
+        contentEnd = dest.size();
+      }
+    }
+    else {
+      dest += cell.m_text;
+      if (!cell.m_text.empty()) {
+        contentEnd = dest.size();
+      }
+      dest += padding;
+    }
+  }
+
+  // Remove trailing padding and separators.
+  dest.resize(contentEnd);
+  dest += '\n';
+}
+
+
+CLOSE_ANONYMOUS_NAMESPACE
 
 
 std::string TextTable::render() const

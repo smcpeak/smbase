@@ -116,4 +116,7 @@ files go in `SRCS`. Both lists are kept in `LANG=C` sort order.
   with `GENSRC=1`.
 - Most of the library is public domain (`license.txt`).
 - Constructors and other special member functions use the DMEMB, etc.,
-  macros defined in sm-macros.h.  See dmemb-etc-macros.txt.
+  macros defined in `sm-macros.h`.  See `dmemb-etc-macros.txt`.
+- Namespaces are opened and closed using
+  `{OPEN,CLOSE}[_ANONYMOUS]_NAMESPACE` macros defined in sm-macros.h,
+  except in `-fwd.h` files, which use ordinary `namespace` open/close.
