@@ -56,7 +56,7 @@ private:     // methods
 public:      // methods
   ~Integer();
 
-  // ---------- Constructors ----------
+  // -------------------------- Constructors ---------------------------
   // Zero.
   Integer();
 
@@ -70,29 +70,29 @@ public:      // methods
                          std::is_integral_v<PRIM>>::type>
   Integer(PRIM n);
 
-  // ---------- Assignment ----------
+  // --------------------------- Assignment ----------------------------
   Integer &operator=(Integer const &obj);
   Integer &operator=(Integer      &&obj);
 
-  // ---------- General ----------
+  // ----------------------------- General -----------------------------
   // Assert invariants.
   void selfCheck() const;
 
-  // ---------- Zero ----------
+  // ------------------------------ Zero -------------------------------
   // True if this object represents zero.
   bool isZero() const;
 
   // Set the value of this object to zero.
   void setZero();
 
-  // ---------- Negative ----------
-  // True if `*this* is less than zero.
+  // ---------------------------- Negative -----------------------------
+  // True if `*this` is less than zero.
   bool isNegative() const;
 
   // Flip the sign of `*this` unless the magnitude is zero.
   void flipSign();
 
-  // ---------- Convert to primitive ----------
+  // ---------------------- Convert to primitive -----------------------
   /* Get as a primitive type, or `nullopt` if it will not fit.  That
      includes the cases:
 
@@ -109,14 +109,14 @@ public:      // methods
   template <typename PRIM>
   PRIM getAs() const;
 
-  // ---------- Relational comparison ----------
+  // ---------------------- Relational comparison ----------------------
   // Return <0 if a<b, 0 if a==b, >0 if a>b.
   friend int compare(Integer const &a,
                      Integer const &b);
 
   DEFINE_FRIEND_RELATIONAL_OPERATORS(Integer)
 
-  // ---------- Convert to sequence of digits ----------
+  // ------------------ Convert to sequence of digits ------------------
   /* Return a string of base-`radix` digits representing `*this`.  The
      radix must be in [2,36].  The output begins with '-' if the value
      is negative.
@@ -139,7 +139,7 @@ public:      // methods
   // Return the value as a hex string with radix indicator.
   std::string toHexString() const;
 
-  // ---------- Convert from sequence of digits ----------
+  // ----------------- Convert from sequence of digits -----------------
   /* Convert `digits` to an integer value.
 
      If it starts with '-', return a negative value.
@@ -169,26 +169,26 @@ public:      // methods
   // the most user-friendly interface.
   static Integer fromDigits(std::string_view digits);
 
-  // ---------- Addition ----------
+  // ---------------------------- Addition -----------------------------
   Integer &operator+=(Integer const &other);
 
   Integer operator+(Integer const &other) const;
 
   Integer const &operator+() const;
 
-  // ---------- Subtraction ----------
+  // --------------------------- Subtraction ---------------------------
   Integer &operator-=(Integer const &other);
 
   Integer operator-(Integer const &other) const;
 
   Integer operator-() const;
 
-  // ---------- Multiplication ----------
+  // ------------------------- Multiplication --------------------------
   Integer &operator*=(Integer const &other);
 
   Integer operator*(Integer const &other) const;
 
-  // ---------- Division ----------
+  // ---------------------------- Division -----------------------------
   /* Compute `quotient`, the maximum number of times that `divisor`
      goes into `dividend`, and `remainder`, what is left over after
      taking that many divisors out.
