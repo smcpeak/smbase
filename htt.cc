@@ -309,13 +309,19 @@ HTT_Singleton::HTT_Singleton()
 {}
 
 
-/*static*/ HTT_LabelIndex HTT_Singleton::getIndexForLabel(
-  std::string_view label)
+/*static*/ void HTT_Singleton::ensureCreated()
 {
   if (s_instance == nullptr) {
     // This object is never deallocated.
     s_instance = new HTT_Singleton();
   }
+}
+
+
+/*static*/ HTT_LabelIndex HTT_Singleton::getIndexForLabel(
+  std::string_view label)
+{
+  ensureCreated();
 
   return instanceTree().getIndexForLabel(label);
 }

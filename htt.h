@@ -292,6 +292,11 @@ private:     // funcs
   HTT_Singleton();
 
 public:      // funcs
+  // Create the instance if it has not been.
+  //
+  // Ensures: s_instance != nullptr
+  static void ensureCreated();
+
   // Map label text to an index.
   //
   // This also creates the instance if needed.
