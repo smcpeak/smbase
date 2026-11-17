@@ -29,14 +29,7 @@ HTT_Node::~HTT_Node()
 
 void HTT_Node::selfCheck() const
 {
-  // TODO: Build an iterator for this.
-  for (LabelIndexToChildMap::size_type childIndex=0;
-       childIndex < m_children.size();
-       ++childIndex)
-  {
-    std::unique_ptr<HTT_Node> const &child =
-      m_children.valueAtIndex(childIndex);
-
+  for (auto [_, child] : m_children) {
     xassert(child != nullptr);
     xassert(child->m_parent == this);
 
@@ -78,14 +71,9 @@ gdv::GDValue HTT_Node::asGDValue(HTT_Tree const &tree) const
 
   gdv::GDValue children(gdv::GDVK_ORDERED_MAP);
 
-  for (LabelIndexToChildMap::size_type childIndex=0;
-       childIndex < m_children.size();
-       ++childIndex)
-  {
-    HTT_LabelIndex labelIndex = m_children.keyAtIndex(childIndex);
+  for (auto [labelIndex, child] : m_children) {
     std::string_view label = tree.getLabelForIndex(labelIndex);
 
-    HTT_Node const *child = m_children.valueAtIndex(childIndex).get();
     gdv::GDValue childGDV = child->asGDValue(tree);
 
     children.orderedMapSetValueAt(
@@ -103,14 +91,8 @@ void HTT_Node::renderTableRows(
   HTT_Tree const &tree,
   int indent) const
 {
-  for (LabelIndexToChildMap::size_type childIndex=0;
-       childIndex < m_children.size();
-       ++childIndex)
-  {
-    HTT_LabelIndex labelIndex = m_children.keyAtIndex(childIndex);
+  for (auto [labelIndex, child] : m_children) {
     std::string_view label = tree.getLabelForIndex(labelIndex);
-
-    HTT_Node const *child = m_children.valueAtIndex(childIndex).get();
 
     tt.m_cells.push_back(std::vector<TextTableCell>{
       TextTableCell(stringb(repeatString("  ", indent) << label)),

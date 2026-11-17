@@ -11,7 +11,7 @@
 #include "smbase/gdvalue-fwd.h"                  // gdv::GDValue [f]
 #include "smbase/indexed-string-table.h"         // smbase::IndexedStringTable
 #include "smbase/ordered-mru-flat-map-iface.h"   // smbase::OrderedMRUFlatMap [i]
-#include "smbase/sm-macros.h"                    // OPEN_NAMESPACE
+#include "smbase/sm-macros.h"                    // OPEN_NAMESPACE, NULLABLE
 #include "smbase/std-string-fwd.h"               // std::string [f]
 #include "smbase/std-string-view-fwd.h"          // std::string_view [f]
 #include "smbase/text-table-fwd.h"               // smbase::TextTable [f]
