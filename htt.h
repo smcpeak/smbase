@@ -212,12 +212,12 @@ public:      // funcs
   /*
     Render as a plain text table like this:
 
-      timer        elapsed_ms r
-      -----------  ---------- -
-      root                234 r
-        one               123 r
-          two               2 r
-            three           3 r
+      timer        elapsed_ms  r
+      -----------  ----------  -
+      root                234  r
+        one               123  r
+          two               2  r
+            three           3  r
         two                 4
           three             5
         three               6
@@ -317,14 +317,20 @@ public:      // funcs
 };
 
 
-// Start/stop a task timer within the `HTT_Singleton`.
-#define HTT_TASK(label)                                       \
-  static HTT_LabelIndex SM_PP_CAT(taskLabelIndex_,__LINE__) = \
-    HTT_Singleton::getIndexForLabel(label);                   \
-  [[maybe_unused]]                                            \
-  HTT_StartStopLabel SM_PP_CAT(startStopLabel_,__LINE__)(     \
-    HTT_Singleton::instanceTree(),                            \
+// Start/stop a task timer within the `HTT_Singleton`, using a label
+// that might vary with each use.
+#define HTT_TASK_DYNAMIC_LABEL(label)                     \
+  HTT_LabelIndex SM_PP_CAT(taskLabelIndex_,__LINE__) =    \
+    HTT_Singleton::getIndexForLabel(label);               \
+  [[maybe_unused]]                                        \
+  HTT_StartStopLabel SM_PP_CAT(startStopLabel_,__LINE__)( \
+    HTT_Singleton::instanceTree(),                        \
     SM_PP_CAT(taskLabelIndex_,__LINE__)) /* user ; */
+
+
+// Start/stop using a fixed label.
+#define HTT_TASK(label)                \
+  static HTT_TASK_DYNAMIC_LABEL(label) /* user ; */
 
 
 CLOSE_NAMESPACE(smbase)

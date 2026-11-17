@@ -109,7 +109,7 @@ void test_macros()
     HTT_TASK("two point five");
 
     {
-      HTT_TASK("three");
+      HTT_TASK_DYNAMIC_LABEL(stringb("three." << i));
 
       shortBusyWaitLoop();
     }
