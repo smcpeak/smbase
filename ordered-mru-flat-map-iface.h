@@ -32,7 +32,7 @@ template <typename KEY,
           typename VALUE,
           typename COMPARE> // Defaults to std::less<KEY> in -fwd.h file.
 class OrderedMRUFlatMap :
-  // Privately inherit the underlying map so I call its protected
+  // Privately inherit the underlying map so I can call its protected
   // methods, but it is not exposed to clients.
   private OrderedFlatMap<KEY, VALUE, COMPARE> {
 

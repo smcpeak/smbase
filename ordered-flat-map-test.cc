@@ -1,5 +1,5 @@
 // ordered-flat-map-test.cc
-// Tests for `ordered-flat-map` module.
+// Tests for `ordered-flat-map` and `ordered-mru-flat-map` modules.
 
 // This file is in the public domain.
 
@@ -8,6 +8,7 @@
 
 #include "smbase/exc.h"                          // EXN_CONTEXT_EXPR
 #include "smbase/fasttime.h"                     // smbase::{fastTimeInitialize, fastTimeMilliseconds}
+#include "smbase/gdvalue-vector.h"               // gdv::toGDValue(std::vector)
 #include "smbase/gdvalue.h"                      // gdv::GDValue
 #include "smbase/ordered-map.h"                  // smbase::OrderedMap
 #include "smbase/save-restore.h"                 // SAVE_RESTORE
@@ -183,7 +184,8 @@ public:
     size_type count = 0;
     for (auto flatIt = m_flatMap.begin();
          flatIt != m_flatMap.end();
-         ++flatIt, ++refIt, ++count) {
+         ++flatIt, ++refIt, ++count)
+    {
       xassert(refIt != m_refMap.end());
       auto [key, value] = *flatIt;
       EXPECT_EQ(key, (*refIt).first);
@@ -566,21 +568,20 @@ void test_stringKey()
 }
 
 
+using IntStringVec = std::vector<std::pair<int, std::string>>;
+
+
 // Collect the keys and values of `m`, in iteration order, using
 // `const_iterator`.
 template <typename ORDERED_FLAT_MAP>
-std::vector<std::pair<int, std::string>> iterContents(
-  ORDERED_FLAT_MAP const &m)
+IntStringVec iterContents(ORDERED_FLAT_MAP const &m)
 {
-  std::vector<std::pair<int, std::string>> ret;
+  IntStringVec ret;
   for (auto [key, value] : m) {
     ret.push_back(std::make_pair(key, value));
   }
   return ret;
 }
-
-
-using IntStringVec = std::vector<std::pair<int, std::string>>;
 
 
 // Basic iteration, both const and non-const.
@@ -611,8 +612,11 @@ void test_iterators()
   m.setValueAtNewKey(2, std::string("two"));
 
   // Iteration is in extrinsic (insertion) order, not key order.
-  EXPECT_EQ(iterContents(m) == (IntStringVec{
-    {1, "one"}, {3, "three"}, {2, "two"}}), true);
+  EXPECT_EQ_GDVSER(iterContents(m), (IntStringVec{
+    {1, "one"},
+    {3, "three"},
+    {2, "two"},
+  }));
 
   // Explicit const iteration, checking each step.
   {
@@ -641,8 +645,11 @@ void test_iterators()
   for (auto [key, value] : m) {
     value += "!";
   }
-  EXPECT_EQ(iterContents(m) == (IntStringVec{
-    {1, "one!"}, {3, "three!"}, {2, "two!"}}), true);
+  EXPECT_EQ_GDVSER(iterContents(m), (IntStringVec{
+    {1, "one!"},
+    {3, "three!"},
+    {2, "two!"},
+  }));
 
   // And through an explicit dereference.
   {

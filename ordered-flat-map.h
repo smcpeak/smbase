@@ -11,7 +11,7 @@
 #include "smbase/chained-cond.h"       // smbase::cc::z_le_lt
 #include "smbase/gdvalue.h"            // gdv::GDValue
 #include "smbase/overflow.h"           // convertNumber
-#include "smbase/sm-macros.h"          // OPEN_NAMESPACE, DMEMB, MDMEMB, CMEMB, EMEMB, SELFCHECK
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE, DMEMB, MDMEMB, CMEMB, EMEMB, IMEMBFP, SELFCHECK
 #include "smbase/vector-util.h"        // vecToElementSet, vecContains
 #include "smbase/xassert.h"            // xassert, xassertdb, xfailure_stringbc, xassertPrecondition
 
@@ -36,9 +36,9 @@ inline OrderedFlatMap<KEY, VALUE, COMPARE>::const_iterator::const_iterator(const
 
 template <typename KEY, typename VALUE, typename COMPARE>
 inline OrderedFlatMap<KEY, VALUE, COMPARE>::const_iterator::const_iterator(OrderedFlatMap const &map, size_type index)
-  : m_map(map),
+  : IMEMBFP(map),
     m_mapModificationCount(map.m_modificationCount),
-    m_index(index)
+    IMEMBFP(index)
 {}
 
 

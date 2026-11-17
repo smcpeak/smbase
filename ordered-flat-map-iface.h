@@ -163,10 +163,10 @@ protected:   // data
   // Number of times this container has been structurally modified.
   // This is used to detect the use of invalid iterators.
   //
-  // Unlike `OrderedMap`, only changes to the set of keys (insertion and
-  // clearing) count as modifications.  Replacing the value of an
-  // existing key does not, since iterators only store an index, and
-  // that index still denotes the same entry afterward.
+  // Only changes to the set of keys (insertion and clearing) count as
+  // modifications.  Replacing the value of an existing key does not,
+  // since iterators only store an index, and that index still denotes
+  // the same entry afterward.
   unsigned m_modificationCount = 0;
 
 protected:   // funcs
