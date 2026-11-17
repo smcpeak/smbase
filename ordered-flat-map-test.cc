@@ -15,9 +15,11 @@
 #include "smbase/sm-macros.h"                    // OPEN_ANONYMOUS_NAMESPACE, DMEMB, MDMEMB, smbase_loopi
 #include "smbase/sm-random.h"                    // smbase::{RandomChoice, sm_random}
 #include "smbase/sm-test.h"                      // EXPECT_EQ, EXPECT_EXN_SUBSTR, EnvRandomizedTestIters, TEST_FUNC, TEST_CASE
+#include "smbase/xassert.h"                      // xassert
 
 #include <string>                                // std::string
-#include <utility>                               // std::move
+#include <utility>                               // std::{make_pair, move, pair}
+#include <vector>                                // std::vector
 
 using namespace gdv;
 using namespace smbase;
@@ -175,6 +177,20 @@ public:
       this->valueAtIndex(index);
       this->valueAtKey(key);
     }
+
+    // Verify that iteration agrees, stepping both in lockstep.
+    auto refIt = m_refMap.begin();
+    size_type count = 0;
+    for (auto flatIt = m_flatMap.begin();
+         flatIt != m_flatMap.end();
+         ++flatIt, ++refIt, ++count) {
+      xassert(refIt != m_refMap.end());
+      auto [key, value] = *flatIt;
+      EXPECT_EQ(key, (*refIt).first);
+      EXPECT_EQ(value, (*refIt).second);
+    }
+    EXPECT_EQ(refIt == m_refMap.end(), true);
+    EXPECT_EQ(count, sz);
   }
 
   OrderedMapPair()
@@ -550,6 +566,222 @@ void test_stringKey()
 }
 
 
+// Collect the keys and values of `m`, in iteration order, using
+// `const_iterator`.
+template <typename ORDERED_FLAT_MAP>
+std::vector<std::pair<int, std::string>> iterContents(
+  ORDERED_FLAT_MAP const &m)
+{
+  std::vector<std::pair<int, std::string>> ret;
+  for (auto [key, value] : m) {
+    ret.push_back(std::make_pair(key, value));
+  }
+  return ret;
+}
+
+
+using IntStringVec = std::vector<std::pair<int, std::string>>;
+
+
+// Basic iteration, both const and non-const.
+template <typename ORDERED_FLAT_MAP>
+void test_iterators()
+{
+  ORDERED_FLAT_MAP m;
+  ORDERED_FLAT_MAP const &cm = m;
+
+  // Empty map.
+  EXPECT_EQ(m.begin() == m.end(), true);
+  EXPECT_EQ(cm.begin() == cm.end(), true);
+  EXPECT_EQ(m.cbegin() == m.cend(), true);
+  EXPECT_EQ(m.begin().isEnd(), true);
+  EXPECT_EQ(m.cbegin().isEnd(), true);
+  EXPECT_EQ(iterContents(m).empty(), true);
+
+  // Cannot dereference or advance the end iterator.
+  EXPECT_EXN(*(m.begin()), XAssert);
+  EXPECT_EXN(*(m.cbegin()), XAssert);
+  {
+    auto it = m.begin();
+    EXPECT_EXN(++it, XAssert);
+  }
+
+  m.setValueAtNewKey(1, std::string("one"));
+  m.setValueAtNewKey(3, std::string("three"));
+  m.setValueAtNewKey(2, std::string("two"));
+
+  // Iteration is in extrinsic (insertion) order, not key order.
+  EXPECT_EQ(iterContents(m) == (IntStringVec{
+    {1, "one"}, {3, "three"}, {2, "two"}}), true);
+
+  // Explicit const iteration, checking each step.
+  {
+    auto it = cm.begin();
+    EXPECT_EQ(it.isValid(), true);
+    EXPECT_EQ(it.isEnd(), false);
+    EXPECT_EQ((*it).first, 1);
+    EXPECT_EQ((*it).second, "one");
+
+    // The pair holds references into the container.
+    EXPECT_EQ(&((*it).second), &(cm.valueAtKey(1)));
+
+    ++it;
+    EXPECT_EQ((*it).first, 3);
+    ++it;
+    EXPECT_EQ((*it).first, 2);
+    EXPECT_EQ(it != cm.end(), true);
+    ++it;
+    EXPECT_EQ(it == cm.end(), true);
+    EXPECT_EQ(it.isEnd(), true);
+  }
+
+  // Modify values through the non-const iterator, using structured
+  // bindings.  `value` is a `std::string&` because the pair contains
+  // references.
+  for (auto [key, value] : m) {
+    value += "!";
+  }
+  EXPECT_EQ(iterContents(m) == (IntStringVec{
+    {1, "one!"}, {3, "three!"}, {2, "two!"}}), true);
+
+  // And through an explicit dereference.
+  {
+    auto it = m.begin();
+    ++it;
+    (*it).second = "THREE";
+    EXPECT_EQ(m.valueAtKey(3), "THREE");
+  }
+
+  // Iterator copy and assignment.
+  {
+    auto it = m.begin();
+    auto it2(it);
+    EXPECT_EQ(it == it2, true);
+    ++it2;
+    EXPECT_EQ(it != it2, true);
+    it = it2;
+    EXPECT_EQ(it == it2, true);
+    EXPECT_EQ((*it).first, 3);
+
+    auto cit = cm.begin();
+    auto cit2 = cm.end();
+    cit2 = cit;
+    EXPECT_EQ(cit == cit2, true);
+  }
+}
+
+
+// Which operations invalidate iterators, and how misuse is detected.
+template <typename ORDERED_FLAT_MAP>
+void test_iteratorValidity()
+{
+  ORDERED_FLAT_MAP m;
+  m.setValueAtNewKey(1, std::string("one"));
+  m.setValueAtNewKey(2, std::string("two"));
+
+  // Changing the value of an existing key does not invalidate.
+  {
+    auto it = m.begin();
+    auto cit = m.cbegin();
+
+    EXPECT_EQ(m.setValueAtKey(1, std::string("uno")), false);
+    m.valueRefAtKey(2) = "dos";
+    m.valueRefAtKey(1);
+
+    EXPECT_EQ(it.isValid(), true);
+    EXPECT_EQ(cit.isValid(), true);
+    EXPECT_EQ((*it).second, "uno");
+    ++it;
+    EXPECT_EQ((*it).second, "dos");
+  }
+
+  // Lookups do not invalidate.  For `OrderedMRUFlatMap`, these change
+  // the MRU cache, which must not affect iterators.
+  {
+    auto it = m.begin();
+    m.valueRefAtKey(2);
+    m.valueRefAtKey(1);
+    m.valueRefAtKey(2);
+    EXPECT_EQ(m.contains(3), false);
+    m.valueAtKey(1);
+    EXPECT_EQ(it.isValid(), true);
+    EXPECT_EQ((*it).first, 1);
+  }
+
+  // Inserting a new key invalidates, by each method of insertion.
+  {
+    auto it = m.begin();
+    auto cit = m.cbegin();
+    auto endIt = m.end();
+    m.setValueAtNewKey(3, std::string("three"));
+    EXPECT_EQ(it.isValid(), false);
+    EXPECT_EQ(cit.isValid(), false);
+    EXPECT_EQ(endIt.isValid(), false);
+
+    // Using an invalid iterator is detected.
+    EXPECT_EXN(*it, XAssert);
+    EXPECT_EXN(*cit, XAssert);
+    EXPECT_EXN(++it, XAssert);
+    EXPECT_EXN(it.isEnd(), XAssert);
+    EXPECT_EXN((void)(it == m.begin()), XAssert);
+    EXPECT_EXN((void)(m.begin() == it), XAssert);
+
+    // An invalid iterator can be made valid again by assignment.
+    it = m.begin();
+    EXPECT_EQ(it.isValid(), true);
+    EXPECT_EQ((*it).first, 1);
+  }
+  {
+    auto it = m.begin();
+    EXPECT_EQ(m.setValueAtKey(4, std::string("four")), true);
+    EXPECT_EQ(it.isValid(), false);
+  }
+  {
+    auto it = m.begin();
+    m.valueRefAtKey(5);                // New key.
+    EXPECT_EQ(it.isValid(), false);
+  }
+
+  // Copying the map does not invalidate iterators into the original.
+  // Iterators of different maps cannot be compared or assigned.
+  {
+    auto it = m.begin();
+    ORDERED_FLAT_MAP m2(m);
+    EXPECT_EQ(it.isValid(), true);
+
+    auto it2 = m2.begin();
+    EXPECT_EQ(it2.isValid(), true);
+    EXPECT_EXN((void)(it == it2), XAssert);
+    EXPECT_EXN(it = it2, XAssert);
+
+    // Inserting into the copy does not affect the original's
+    // iterators.
+    m2.setValueAtNewKey(6, std::string("six"));
+    EXPECT_EQ(it.isValid(), true);
+    EXPECT_EQ(it2.isValid(), false);
+  }
+
+  // Moving from the map clears it, which invalidates its iterators.
+  {
+    auto it = m.begin();
+    ORDERED_FLAT_MAP m3(std::move(m));
+    EXPECT_EQ(it.isValid(), false);
+    EXPECT_EQ(m3.size(), 5);
+    EXPECT_EQ(m.begin() == m.end(), true);
+  }
+
+  // `clear` invalidates.
+  {
+    ORDERED_FLAT_MAP m4;
+    m4.setValueAtNewKey(1, std::string("one"));
+    auto it = m4.begin();
+    m4.clear();
+    EXPECT_EQ(it.isValid(), false);
+    EXPECT_EQ(m4.begin() == m4.end(), true);
+  }
+}
+
+
 // Do repeated lookups of the same key to test performance of MRU.
 template <typename ORDERED_FLAT_MAP>
 void test_performanceLoop()
@@ -643,6 +875,12 @@ void test_ordered_flat_map()
 
   test_stringKey<OrderedFlatMap<std::string, int>>();
   test_stringKey<OrderedMRUFlatMap<std::string, int>>();
+
+  test_iterators<FlatMap>();
+  test_iterators<MRUFlatMap>();
+
+  test_iteratorValidity<FlatMap>();
+  test_iteratorValidity<MRUFlatMap>();
 
   test_performance();
 }

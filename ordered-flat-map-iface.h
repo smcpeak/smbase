@@ -11,6 +11,7 @@
 #include "smbase/gdvalue-fwd.h"        // gdv::GDValue [f]
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 #include "smbase/std-tuple-fwd.h"      // std::tuple [f]
+#include "smbase/std-utility-fwd.h"    // std::pair [n]
 
 #include <cstddef>                     // std::size_t
 #include <type_traits>                 // std::{decay_t, enable_if_t, is_same_v}
@@ -61,6 +62,81 @@ public:      // types
   // Type for container sizes and numeric (positional) indices.
   using size_type = std::size_t;
 
+  // What dereferencing an iterator yields.  Since the keys and values
+  // are stored in separate vectors, there is no `std::pair` object in
+  // the container to refer to, so iterators return these pairs *by
+  // value*.  Each pair contains references into the container.  (This
+  // is the same approach used by `std::flat_map`.)
+  using const_reference = std::pair<KEY const &, VALUE const &>;
+  using reference       = std::pair<KEY const &, VALUE       &>;
+
+  // Iterate over the map entries in extrinsic order without modifying
+  // anything.
+  class const_iterator {
+  private:     // data
+    // The map we are iterating over.
+    OrderedFlatMap const &m_map;
+
+    // Modification count of `m_map` at creation time.
+    unsigned m_mapModificationCount;
+
+    // Extrinsic index of the next element, or `size()` if this is the
+    // end iterator.
+    size_type m_index;
+
+  public:      // methods
+    inline const_iterator(const_iterator const &obj);
+
+    // Begin iterating at `index`.
+    inline const_iterator(OrderedFlatMap const &map, size_type index);
+
+    // Assigning an iterator requires that both refer to the same map.
+    inline const_iterator &operator=(const_iterator const &obj);
+
+    // True if this iterator can still be used with the container.
+    inline bool isValid() const;
+
+    inline bool operator==(const_iterator const &obj) const;
+    inline bool operator!=(const_iterator const &obj) const;
+
+    inline bool isEnd() const;
+
+    inline const_iterator &operator++();
+
+    // Returns by value; see `const_reference`.
+    inline const_reference operator*() const;
+  };
+
+  // Iterate in extrinsic order, possibly modifying the values but not
+  // the keys.
+  class iterator {
+  private:     // data
+    // Underlying const iterator to handle the mechanics.
+    const_iterator m_iter;
+
+  public:      // methods
+    inline iterator(iterator const &obj);
+
+    // Begin iterating at `index`.
+    inline iterator(OrderedFlatMap &map, size_type index);
+
+    // Assigning an iterator requires that both refer to the same map.
+    inline iterator &operator=(iterator const &obj);
+
+    // True if this iterator can still be used with the container.
+    inline bool isValid() const;
+
+    inline bool operator==(iterator const &obj) const;
+    inline bool operator!=(iterator const &obj) const;
+
+    inline bool isEnd() const;
+
+    inline iterator &operator++();
+
+    // Returns by value; see `reference`.
+    inline reference operator*() const;
+  };
+
 protected:   // data
   // All map keys, in intrinsic key order.
   //
@@ -83,6 +159,15 @@ protected:   // data
   //
   // Invariant: The set of values in `m_insertionOrder` is [0,size()-1].
   std::vector<unsigned> m_insertionOrder;
+
+  // Number of times this container has been structurally modified.
+  // This is used to detect the use of invalid iterators.
+  //
+  // Unlike `OrderedMap`, only changes to the set of keys (insertion and
+  // clearing) count as modifications.  Replacing the value of an
+  // existing key does not, since iterators only store an index, and
+  // that index still denotes the same entry afterward.
+  unsigned m_modificationCount = 0;
 
 protected:   // funcs
   // Return the first index in `m_sortedKeys` whose key is not less than
@@ -129,6 +214,19 @@ public:      // funcs
   //
   // Requires: 0 <= index < size()
   inline VALUE const &valueAtIndex(size_type index) const;
+
+  // ---------------------------- Iterators ----------------------------
+  // Iteration is in extrinsic (insertion) order.  Iterators are
+  // invalidated by inserting a new key or by `clear()`, but not by
+  // changing the value of an existing key.
+  inline const_iterator cbegin() const;
+  inline const_iterator cend() const;
+
+  inline const_iterator begin() const;
+  inline const_iterator end() const;
+
+  inline iterator begin();
+  inline iterator end();
 
   // ---------------------------- Capacity -----------------------------
   // True if the container is empty.

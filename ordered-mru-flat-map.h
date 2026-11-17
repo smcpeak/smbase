@@ -99,6 +99,49 @@ VALUE const &OrderedMRUFlatMap<KEY, VALUE, COMPARE>::valueAtIndex(size_type inde
 }
 
 
+// ----------------------------- Iterators -----------------------------
+template <typename KEY, typename VALUE, typename COMPARE>
+inline auto OrderedMRUFlatMap<KEY, VALUE, COMPARE>::cbegin() const -> const_iterator
+{
+  return Base::cbegin();
+}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
+inline auto OrderedMRUFlatMap<KEY, VALUE, COMPARE>::cend() const -> const_iterator
+{
+  return Base::cend();
+}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
+inline auto OrderedMRUFlatMap<KEY, VALUE, COMPARE>::begin() const -> const_iterator
+{
+  return Base::begin();
+}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
+inline auto OrderedMRUFlatMap<KEY, VALUE, COMPARE>::end() const -> const_iterator
+{
+  return Base::end();
+}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
+inline auto OrderedMRUFlatMap<KEY, VALUE, COMPARE>::begin() -> iterator
+{
+  return Base::begin();
+}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
+inline auto OrderedMRUFlatMap<KEY, VALUE, COMPARE>::end() -> iterator
+{
+  return Base::end();
+}
+
+
 // ----------------------------- Capacity ------------------------------
 template <typename KEY, typename VALUE, typename COMPARE>
 bool OrderedMRUFlatMap<KEY, VALUE, COMPARE>::empty() const

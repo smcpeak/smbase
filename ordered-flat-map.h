@@ -11,7 +11,7 @@
 #include "smbase/chained-cond.h"       // smbase::cc::z_le_lt
 #include "smbase/gdvalue.h"            // gdv::GDValue
 #include "smbase/overflow.h"           // convertNumber
-#include "smbase/sm-macros.h"          // OPEN_NAMESPACE, DMEMB, MDMEMB, SELFCHECK
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE, DMEMB, MDMEMB, CMEMB, EMEMB, SELFCHECK
 #include "smbase/vector-util.h"        // vecToElementSet, vecContains
 #include "smbase/xassert.h"            // xassert, xassertdb, xfailure_stringbc, xassertPrecondition
 
@@ -25,6 +25,159 @@
 OPEN_NAMESPACE(smbase)
 
 
+// ------------------ OrderedFlatMap::const_iterator -------------------
+template <typename KEY, typename VALUE, typename COMPARE>
+inline OrderedFlatMap<KEY, VALUE, COMPARE>::const_iterator::const_iterator(const_iterator const &obj)
+  : DMEMB(m_map),
+    DMEMB(m_mapModificationCount),
+    DMEMB(m_index)
+{}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
+inline OrderedFlatMap<KEY, VALUE, COMPARE>::const_iterator::const_iterator(OrderedFlatMap const &map, size_type index)
+  : m_map(map),
+    m_mapModificationCount(map.m_modificationCount),
+    m_index(index)
+{}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
+inline auto OrderedFlatMap<KEY, VALUE, COMPARE>::const_iterator::operator=(const_iterator const &obj) -> const_iterator &
+{
+  xassertPrecondition(&m_map == &obj.m_map);
+  CMEMB(m_mapModificationCount);
+  CMEMB(m_index);
+  return *this;
+}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
+inline auto OrderedFlatMap<KEY, VALUE, COMPARE>::const_iterator::isValid() const -> bool
+{
+  return m_mapModificationCount == m_map.m_modificationCount;
+}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
+inline auto OrderedFlatMap<KEY, VALUE, COMPARE>::const_iterator::operator==(const_iterator const &obj) const -> bool
+{
+  // Both iterators must be valid.
+  xassertPrecondition(isValid());
+  xassertPrecondition(obj.isValid());
+
+  // Both iterators must refer to the same container.
+  xassertPrecondition(&m_map == &(obj.m_map));
+
+  return m_index == obj.m_index;
+}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
+inline auto OrderedFlatMap<KEY, VALUE, COMPARE>::const_iterator::operator!=(const_iterator const &obj) const -> bool
+{
+  return !operator==(obj);
+}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
+inline auto OrderedFlatMap<KEY, VALUE, COMPARE>::const_iterator::isEnd() const -> bool
+{
+  xassertPrecondition(isValid());
+  return m_index == m_map.size();
+}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
+inline auto OrderedFlatMap<KEY, VALUE, COMPARE>::const_iterator::operator++() -> const_iterator &
+{
+  xassertPrecondition(!isEnd());
+
+  ++m_index;
+
+  return *this;
+}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
+inline auto OrderedFlatMap<KEY, VALUE, COMPARE>::const_iterator::operator*() const -> const_reference
+{
+  xassertPrecondition(!isEnd());
+
+  return const_reference(m_map.keyAtIndex(m_index),
+                         m_map.valueAtIndex(m_index));
+}
+
+
+// --------------------- OrderedFlatMap::iterator ----------------------
+template <typename KEY, typename VALUE, typename COMPARE>
+inline OrderedFlatMap<KEY, VALUE, COMPARE>::iterator::iterator(iterator const &obj)
+  : DMEMB(m_iter)
+{}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
+inline OrderedFlatMap<KEY, VALUE, COMPARE>::iterator::iterator(OrderedFlatMap &map, size_type index)
+  : m_iter(map, index)
+{}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
+inline auto OrderedFlatMap<KEY, VALUE, COMPARE>::iterator::operator=(iterator const &obj) -> iterator &
+{
+  CMEMB(m_iter);
+  return *this;
+}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
+inline auto OrderedFlatMap<KEY, VALUE, COMPARE>::iterator::isValid() const -> bool
+{
+  return m_iter.isValid();
+}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
+inline auto OrderedFlatMap<KEY, VALUE, COMPARE>::iterator::operator==(iterator const &obj) const -> bool
+{
+  return EMEMB(m_iter);
+}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
+inline auto OrderedFlatMap<KEY, VALUE, COMPARE>::iterator::operator!=(iterator const &obj) const -> bool
+{
+  return !operator==(obj);
+}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
+inline auto OrderedFlatMap<KEY, VALUE, COMPARE>::iterator::isEnd() const -> bool
+{
+  return m_iter.isEnd();
+}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
+inline auto OrderedFlatMap<KEY, VALUE, COMPARE>::iterator::operator++() -> iterator &
+{
+  ++m_iter;
+  return *this;
+}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
+inline auto OrderedFlatMap<KEY, VALUE, COMPARE>::iterator::operator*() const -> reference
+{
+  const_reference ret = *m_iter;
+
+  // The lack of a `const` qualifier when we first accepted the
+  // container reference justifies removing `const` here.
+  return reference(ret.first, const_cast<VALUE&>(ret.second));
+}
+
+
+// -------------------------- OrderedFlatMap ---------------------------
 template <typename KEY, typename VALUE, typename COMPARE>
 inline OrderedFlatMap<KEY, VALUE, COMPARE>::~OrderedFlatMap()
 {}
@@ -159,6 +312,49 @@ VALUE const &OrderedFlatMap<KEY, VALUE, COMPARE>::valueAtIndex(size_type index) 
 }
 
 
+// ----------------------------- Iterators -----------------------------
+template <typename KEY, typename VALUE, typename COMPARE>
+inline auto OrderedFlatMap<KEY, VALUE, COMPARE>::cbegin() const -> const_iterator
+{
+  return const_iterator(*this, 0);
+}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
+inline auto OrderedFlatMap<KEY, VALUE, COMPARE>::cend() const -> const_iterator
+{
+  return const_iterator(*this, size());
+}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
+inline auto OrderedFlatMap<KEY, VALUE, COMPARE>::begin() const -> const_iterator
+{
+  return cbegin();
+}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
+inline auto OrderedFlatMap<KEY, VALUE, COMPARE>::end() const -> const_iterator
+{
+  return cend();
+}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
+inline auto OrderedFlatMap<KEY, VALUE, COMPARE>::begin() -> iterator
+{
+  return iterator(*this, 0);
+}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
+inline auto OrderedFlatMap<KEY, VALUE, COMPARE>::end() -> iterator
+{
+  return iterator(*this, size());
+}
+
+
 // ----------------------------- Capacity ------------------------------
 template <typename KEY, typename VALUE, typename COMPARE>
 bool OrderedFlatMap<KEY, VALUE, COMPARE>::empty() const
@@ -181,6 +377,9 @@ VALUE &OrderedFlatMap<KEY, VALUE, COMPARE>::insertNewKeyAndValue(
   size_type index, K &&key, V &&value)
 {
   unsigned unsigned_index = convertNumber<unsigned>(index);
+
+  // Adding a key invalidates all iterators.
+  ++m_modificationCount;
 
   try {
     // Insert into sorted maps at `index`.
@@ -278,6 +477,8 @@ void OrderedFlatMap<KEY, VALUE, COMPARE>::clear()
   // invariants might be broken, and its purpose is to restore them by
   // any means necessary.  Consequently, this is the one public function
   // for which the class invariants are *not* a precondition.
+
+  ++m_modificationCount;
 
   m_sortedKeys.clear();
   m_correspValues.clear();

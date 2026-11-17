@@ -40,6 +40,14 @@ public:      // types
   using Base = OrderedFlatMap<KEY, VALUE, COMPARE>;
   using size_type = typename Base::size_type;
 
+  // The iterators are those of the underlying map.  Consequently, they
+  // are only invalidated by modifications to that map (as tracked by
+  // its modification count), and not by updates to `m_mruIndex`.
+  using const_reference = typename Base::const_reference;
+  using reference       = typename Base::reference;
+  using const_iterator  = typename Base::const_iterator;
+  using iterator        = typename Base::iterator;
+
 private:     // data
   // Most-recently-used lookup cache.  If the map is empty then this is
   // 0, otherwise it is always a valid array index, normally the most
@@ -66,6 +74,16 @@ public:      // funcs
   inline VALUE const &valueAtKey(KEY const &key) const;
   inline KEY const &keyAtIndex(size_type index) const;
   inline VALUE const &valueAtIndex(size_type index) const;
+
+  // ---------------------------- Iterators ----------------------------
+  inline const_iterator cbegin() const;
+  inline const_iterator cend() const;
+
+  inline const_iterator begin() const;
+  inline const_iterator end() const;
+
+  inline iterator begin();
+  inline iterator end();
 
   // ---------------------------- Capacity -----------------------------
   inline bool empty() const;
