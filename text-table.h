@@ -93,6 +93,9 @@ public:      // funcs
     If a row (including the column title row) is missing data for a
     cell, it is treated as if it had the empty string there.
 
+    Lines do not end with padding spaces, although any trailing spaces
+    that are part of a cell's own string data are retained.
+
     Example (overall table indentation is exposition only):
 
       col1        col2  col3
