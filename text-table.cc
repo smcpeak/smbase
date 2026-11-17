@@ -4,7 +4,7 @@
 #include "text-table.h"                // this module
 
 #include "smbase/sm-integer.h"         // smbase::Integer
-#include "smbase/sm-macros.h"          // OPEN_NAMESPACE, DMEMB, MDMEMB, CMEMB, MCMEMB
+#include "smbase/sm-macros.h"          // OPEN_NAMESPACE, [M]DMEMB, [M]CMEMB
 #include "smbase/xassert.h"            // xassertPrecondition
 
 #include <algorithm>                   // std::max
