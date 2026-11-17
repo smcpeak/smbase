@@ -13,6 +13,7 @@
 #include "smbase/ordered-mru-flat-map-iface.h"   // smbase::OrderedMRUFlatMap [i]
 #include "smbase/sm-macros.h"                    // OPEN_NAMESPACE, NULLABLE, NO_OBJECT_COPIES
 #include "smbase/sm-pp-util.h"                   // SM_PP_CAT
+#include "smbase/std-set-fwd.h"                  // stdfwd::set [f]
 #include "smbase/std-string-fwd.h"               // std::string [f]
 #include "smbase/std-string-view-fwd.h"          // std::string_view [f]
 #include "smbase/text-table-fwd.h"               // smbase::TextTable [f]
@@ -53,6 +54,13 @@ private:     // data
   //
   LabelIndexToChildMap m_children;
 
+  // True if this timer is running.
+  bool m_running;
+
+  // If `m_running`, this is when it started.  Otherwise it is
+  // meaningless.
+  unsigned m_startMS;
+
   // Elapsed time, in milliseconds, accumulated while this node was on
   // the stack.
   //
@@ -64,12 +72,16 @@ private:     // data
 public:      // funcs
   ~HTT_Node();
 
-  // Recursively assert invariants.
-  void selfCheck() const;
+  // Recursively assert invariants.  `stackNodes` is the set of nodes
+  // on the containing tree's stack.
+  void selfCheck(stdfwd::set<HTT_Node const *> const &stackNodes) const;
 
   // Create a node with the specified parent, no children, and zero
   // elapsed time.
   explicit HTT_Node(HTT_Node * NULLABLE parent);
+
+  HTT_Node * NULLABLE getParent() const
+    { return m_parent; }
 
   // Get or create a child for `labelIndex`.
   //
@@ -78,22 +90,37 @@ public:      // funcs
   // Ensures: return->m_parent == this
   HTT_Node *getChild(HTT_LabelIndex labelIndex);
 
-  void addElapsedMS(unsigned ms)
-    { m_elapsedMS += ms; }
+  bool running() const
+    { return m_running; }
 
-  HTT_Node * NULLABLE getParent()
-    { return m_parent; }
+  // Start this timer.
+  //
+  // Requires: running() == false
+  //
+  // Ensures: running() == true
+  void start();
+
+  // Stop this timer.
+  //
+  // Requires: running() == true
+  //
+  // Ensures: running() == false
+  void stop();
+
+  // Elapsed time in `m_elapsedMS`, plus, if `running()`,
+  // `currentMS - m_startMS`.
+  unsigned elapsedPlusRunningMS(unsigned currentMS) const;
 
   /*
-    Return as an untagged ordered map with keys:
-
-    * elapsedMS: Integer m_elapsedMS.
-
-    * children: Ordered map from child label (as a string) to its GDV.
+    Return as an untagged ordered map, starting with the scalars in the
+    obvious way, then the children as an ordered map from child label
+    (as a string) to its GDV.
 
     Example:
 
     [
+      running: true
+      startMS: 45
       elapsedMS: 123
       children: [
         "child1": [...]
@@ -104,12 +131,12 @@ public:      // funcs
   gdv::GDValue asGDValue(HTT_Tree const &tree) const;
 
   // Recursively add to `tt.m_cells` rows for this node's children.
-  // `tree` is used to decode the label indices.  `indent` specifies the
-  // level of indentation to prepend to each label.
   void renderTableRows(
-    TextTable &tt,
-    HTT_Tree const &tree,
-    int indent) const;
+    TextTable &tt,                // Destination table to build.
+    HTT_Tree const &tree,         // Used to decode label indices.
+    std::string_view label,       // This node's label text.
+    int indent,                   // How much to indent the label.
+    unsigned currentMS) const;    // Current clock value.
 };
 
 
@@ -121,11 +148,18 @@ private:     // data
   IndexedStringTable m_labelTable;
 
   // Root tree node.
+  //
+  // Invariant: m_root.m_running == true
   HTT_Node m_root;
 
   // Top-most (innermost) active node.  Initially `&m_root`.
   //
   // Invariant: m_stackTop != nullptr
+  //
+  // Invariant: Every node that is reachable from `m_stackTop` by
+  // traversing `m_parent` pointers, including `m_stackTop` itself, is
+  // running; and all other nodes are not running.
+  //
   HTT_Node *m_stackTop;
 
 public:      // funcs
@@ -150,56 +184,26 @@ public:      // funcs
   // Ensures: return->m_parent == m_stackTop
   HTT_Node *getTOSChildNode(HTT_LabelIndex labelIndex);
 
-  // Push a node that is not currently on the stack onto its top.
+  // Push a node that is not currently on the stack onto its top and
+  // start its timer.
   //
-  // Requires: newStackTop->m_parent == m_stackTop
+  // Requires: newStackTop->getParent() == m_stackTop
+  // Requires: newStackTop->running() == false
   //
   // Ensures: m_stackTop == newStackTop
+  // Ensures: newStackTop->running() == true
   void pushNode(HTT_Node *newStackTop);
 
-  // Pop the top of stack.
+  // Pop the top of stack and stop its timer.
   //
   // Requires: oldStackTop == m_stackTop
+  // Requires: oldStackTop->running() == true
   //
-  // Ensures: m_stackTop == oldStackTop->m_parent
+  // Ensures: m_stackTop == oldStackTop->getParent()
+  // Ensures: oldStackTop->running() == false
   void popNode(HTT_Node *oldStackTop);
 
-  /*
-    Return the root's GDV, for example:
-
-    [
-      elapsedMS: 0
-      children: [
-        "one": [
-          elapsedMS: 123
-          children: [
-            "two": [
-              elapsedMS: 2
-              children: [
-                "three": [
-                  elapsedMS: 3
-                  children: [:]
-                ]
-              ]
-            ]
-          ]
-        ]
-        "two": [
-          elapsedMS: 4
-          children: [
-            "three": [
-              elapsedMS: 5
-              children: [:]
-            ]
-          ]
-        ]
-        "three": [
-          elapsedMS: 6
-          children: [:]
-        ]
-      ]
-    ]
-  */
+  // Return the root's GDV.
   operator gdv::GDValue() const;
 
   // Render as indented GDVN.
@@ -208,17 +212,20 @@ public:      // funcs
   /*
     Render as a plain text table like this:
 
-      timer      elapsed_ms
-      ---------  ----------
-      one               123
-        two               2
-          three           3
-      two                 4
-        three             5
-      three               6
+      timer        elapsed_ms r
+      -----------  ---------- -
+      root                234 r
+        one               123 r
+          two               2 r
+            three           3 r
+        two                 4
+          three             5
+        three               6
 
-    Note the omission of a row for the root node, since its elapsed time
-    is always zero.
+    The elapsed time is as reported by `HTTNode::elapsed()` for the
+    current time.
+
+    The "r" column is "r" if that timer is running.
 
     If `fasttime` is not implemented on this platform, add a warning to
     that effect as a final line.
@@ -230,40 +237,31 @@ public:      // funcs
 // Start a node timer on entry.  Stop and accumulate on exit.
 class HTT_StartStopNode {
 private:     // data
+  // The tree holding the label table and the timer nodes.
+  HTT_Tree &m_tree;
+
   // Associated node in the HTT tree.
   HTT_Node *m_node;
 
-  // Timer value when we start.
-  unsigned m_startMS;
-
 public:      // funcs
   // Save `node`, start the timer.
-  explicit HTT_StartStopNode(HTT_Node *node);
+  explicit HTT_StartStopNode(HTT_Tree &tree, HTT_Node *node);
 
-  // Add elapsed time to `node`.
+  // Stop the timer.
   ~HTT_StartStopNode();
 
   HTT_Node *getNode() const
     { return m_node; }
-
-  // If we were to stop the timer now, how many milliseconds would get
-  // added to `m_node`?
-  unsigned elapsedMSSoFar() const;
 };
 
 
-// Push and start a node timer identified by a tree and label on entry.
-// Stop, accumulate, and pop on exit.
+// Start and stop, using the label to identify the node.
 class HTT_StartStopLabel : public HTT_StartStopNode {
-private:     // data
-  // The tree holding the label table and the timer nodes.
-  HTT_Tree &m_tree;
-
 public:      // funcs
-  // Use `pushNode` to get and push a node, and start its timer.
+  // Start.
   explicit HTT_StartStopLabel(HTT_Tree &tree, HTT_LabelIndex labelIndex);
 
-  // Stop the timer, pop the node.
+  // Stop.
   ~HTT_StartStopLabel();
 };
 

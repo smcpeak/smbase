@@ -60,6 +60,9 @@ void test_basics()
 
         // Ensure not all the counts are zero.
         shortBusyWaitLoop();
+
+        // Print the table while several timers are running.
+        DIAG(tree.asTableString());
       }
     }
   }
