@@ -309,6 +309,10 @@ public:      // funcs
   // Requires: s_instance != nullptr
   static HTT_Tree &instanceTree()
     { return s_instance->m_tree; }
+
+  // Return the global tree timer table, or an empty string if the
+  // instance was never created.
+  static std::string asTableString();
 };
 
 

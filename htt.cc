@@ -245,6 +245,18 @@ HTT_Singleton::HTT_Singleton()
 }
 
 
+/*static*/ std::string HTT_Singleton::asTableString()
+{
+  if (s_instance == nullptr) {
+    return "";
+  }
+
+  else {
+    return instanceTree().asTableString();
+  }
+}
+
+
 CLOSE_NAMESPACE(smbase)
 
 

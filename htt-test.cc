@@ -113,9 +113,9 @@ void test_macros()
     HTT_TASK("three");
   }
 
-  HTT_Tree &tree = HTT_Singleton::instanceTree();
-  DIAG(tree.asTableString());
-  tree.selfCheck();
+  DIAG(HTT_Singleton::asTableString());
+
+  HTT_Singleton::instanceTree().selfCheck();
 }
 
 
