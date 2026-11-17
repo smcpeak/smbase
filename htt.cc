@@ -224,6 +224,27 @@ HTT_StartStopLabel::~HTT_StartStopLabel()
 }
 
 
+// --------------------------- HTT_Singleton ---------------------------
+HTT_Singleton * NULLABLE HTT_Singleton::s_instance = nullptr;
+
+
+HTT_Singleton::HTT_Singleton()
+  : m_tree()
+{}
+
+
+/*static*/ HTT_LabelIndex HTT_Singleton::getIndexForLabel(
+  std::string_view label)
+{
+  if (s_instance == nullptr) {
+    // This object is never deallocated.
+    s_instance = new HTT_Singleton();
+  }
+
+  return instanceTree().getIndexForLabel(label);
+}
+
+
 CLOSE_NAMESPACE(smbase)
 
 

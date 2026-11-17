@@ -11,7 +11,8 @@
 #include "smbase/gdvalue-fwd.h"                  // gdv::GDValue [f]
 #include "smbase/indexed-string-table.h"         // smbase::IndexedStringTable
 #include "smbase/ordered-mru-flat-map-iface.h"   // smbase::OrderedMRUFlatMap [i]
-#include "smbase/sm-macros.h"                    // OPEN_NAMESPACE, NULLABLE
+#include "smbase/sm-macros.h"                    // OPEN_NAMESPACE, NULLABLE, NO_OBJECT_COPIES
+#include "smbase/sm-pp-util.h"                   // SM_PP_CAT
 #include "smbase/std-string-fwd.h"               // std::string [f]
 #include "smbase/std-string-view-fwd.h"          // std::string_view [f]
 #include "smbase/text-table-fwd.h"               // smbase::TextTable [f]
@@ -68,7 +69,7 @@ public:      // funcs
 
   // Create a node with the specified parent, no children, and zero
   // elapsed time.
-  HTT_Node(HTT_Node * NULLABLE parent);
+  explicit HTT_Node(HTT_Node * NULLABLE parent);
 
   // Get or create a child for `labelIndex`.
   //
@@ -234,7 +235,7 @@ private:     // data
 
 public:      // funcs
   // Save `node`, start the timer.
-  HTT_StartStopNode(HTT_Node *node);
+  explicit HTT_StartStopNode(HTT_Node *node);
 
   // Add elapsed time to `node`.
   ~HTT_StartStopNode();
@@ -257,11 +258,68 @@ private:     // data
 
 public:      // funcs
   // Use `pushNode` to get and push a node, and start its timer.
-  HTT_StartStopLabel(HTT_Tree &tree, HTT_LabelIndex labelIndex);
+  explicit HTT_StartStopLabel(HTT_Tree &tree, HTT_LabelIndex labelIndex);
 
   // Stop the timer, pop the node.
   ~HTT_StartStopLabel();
 };
+
+
+/* Object that establishes itself as the unique global singleton tree
+   that the HTT macros interact with.
+
+   Only one such object can be created during the process lifetime
+   because the macros use `static` for efficiency to avoid repeated
+   lookups, and there is no way to "reset" the state of a `static` local
+   variable.
+*/
+class HTT_Singleton {
+  NO_OBJECT_COPIES(HTT_Singleton);
+
+private:     // class data
+  // Current singleton instance, or nullptr if there is none.  Initially
+  // nullptr.  The singleton is created on demand by `getIndexForLabel`,
+  // and never destroyed.
+  static HTT_Singleton * NULLABLE s_instance;
+
+private:     // instance data
+  // The tree data this object wraps.
+  HTT_Tree m_tree;
+
+private:     // funcs
+  // This is private because creation is done by `getIndexForLabel`.
+  HTT_Singleton();
+
+public:      // funcs
+  // Map label text to an index.
+  //
+  // This also creates the instance if needed.
+  //
+  // Ensures: s_instance != nullptr
+  static HTT_LabelIndex getIndexForLabel(std::string_view label);
+
+  // Return the instance.
+  //
+  // Requires: s_instance != nullptr
+  static HTT_Singleton &instance()
+    { return *s_instance; }
+
+  // Return the global tree.
+  //
+  // Requires: s_instance != nullptr
+  static HTT_Tree &instanceTree()
+    { return s_instance->m_tree; }
+};
+
+
+// Start/stop a task timer within the `HTT_Singleton`.
+#define HTT_TASK(label)                                       \
+  static HTT_LabelIndex SM_PP_CAT(taskLabelIndex_,__LINE__) = \
+    HTT_Singleton::getIndexForLabel(label);                   \
+  [[maybe_unused]]                                            \
+  HTT_StartStopLabel SM_PP_CAT(startStopLabel_,__LINE__)(     \
+    HTT_Singleton::instanceTree(),                            \
+    SM_PP_CAT(taskLabelIndex_,__LINE__)) /* user ; */
 
 
 CLOSE_NAMESPACE(smbase)

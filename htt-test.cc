@@ -5,13 +5,24 @@
 
 #include "smbase/htt.h"                // module under test
 
-#include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
+#include "smbase/fasttime.h"           // smbase::{fastTimeInitialize, fastTimeMilliseconds}
+#include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE, smbase_loopi
 #include "smbase/sm-test.h"            // EXPECT_EQ
 
 using namespace smbase;
 
 
 OPEN_ANONYMOUS_NAMESPACE
+
+
+// Enter a busy-wait loop until the timer ticks.
+void shortBusyWaitLoop()
+{
+  fastTimeInitialize();
+  unsigned start = fastTimeMilliseconds;
+  while (fastTimeMilliseconds == start)
+    {}
+}
 
 
 void test_basics()
@@ -45,8 +56,7 @@ void test_basics()
         tree.selfCheck();
 
         // Ensure not all the counts are zero.
-        while (ss3.elapsedMSSoFar() == 0)
-          {}
+        shortBusyWaitLoop();
       }
     }
   }
@@ -69,6 +79,46 @@ void test_basics()
 }
 
 
+void test_macros()
+{
+  {
+    HTT_TASK("one");
+
+    {
+      HTT_TASK("two");
+
+      {
+        HTT_TASK("three");
+
+        shortBusyWaitLoop();
+      }
+    }
+  }
+
+  // These should work in a loop.
+  smbase_loopi(3) {
+    HTT_TASK("two");
+
+    // Another in the same scope shouldn't cause problems.
+    HTT_TASK("two point five");
+
+    {
+      HTT_TASK("three");
+
+      shortBusyWaitLoop();
+    }
+  }
+
+  {
+    HTT_TASK("three");
+  }
+
+  HTT_Tree &tree = HTT_Singleton::instanceTree();
+  DIAG(tree.asTableString());
+  tree.selfCheck();
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -76,6 +126,7 @@ CLOSE_ANONYMOUS_NAMESPACE
 void test_htt()
 {
   test_basics();
+  test_macros();
 }
 
 
