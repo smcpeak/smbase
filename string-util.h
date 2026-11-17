@@ -401,6 +401,7 @@ std::string replaceNonAlnumWith(
 
   This is intended for use in test cases where, otherwise, the raw
   string literal syntax clashes with the surrounding code's indentation.
+  It is similar to Python's `textwrap.dedent` function.
 */
 std::string removeTestCaseIndentation(std::string const &src);
 
