@@ -64,6 +64,7 @@ void test_basics()
   }
 
   VPVAL(tree.asString());
+  DIAG(tree.asTableString());
   tree.selfCheck();
 }
 

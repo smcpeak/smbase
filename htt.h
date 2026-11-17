@@ -14,6 +14,7 @@
 #include "smbase/sm-macros.h"                    // OPEN_NAMESPACE
 #include "smbase/std-string-fwd.h"               // std::string [f]
 #include "smbase/std-string-view-fwd.h"          // std::string_view [f]
+#include "smbase/text-table-fwd.h"               // smbase::TextTable [f]
 
 #include <memory>                                // std::unique_ptr
 
@@ -100,6 +101,14 @@ public:      // funcs
     ]
   */
   gdv::GDValue asGDValue(HTT_Tree const &tree) const;
+
+  // Recursively add to `tt.m_cells` rows for this node's children.
+  // `tree` is used to decode the label indices.  `indent` specifies the
+  // level of indentation to prepend to each label.
+  void renderTableRows(
+    TextTable &tt,
+    HTT_Tree const &tree,
+    int indent) const;
 };
 
 
@@ -194,6 +203,23 @@ public:      // funcs
 
   // Render as indented GDVN.
   std::string asString() const;
+
+  /*
+    Render as a plain text table like this:
+
+      timer      elapsed_ms
+      ---------  ----------
+      one               123
+        two               2
+          three           3
+      two                 4
+        three             5
+      three               6
+
+    Note the omission of a row for the root node, since its elapsed time
+    is always zero.
+  */
+  std::string asTableString() const;
 };
 
 

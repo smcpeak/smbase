@@ -9,6 +9,9 @@
 #include "smbase/gdvalue.h"                      // gdv::GDValue
 #include "smbase/ordered-mru-flat-map.h"         // smbase::OrderedMRUFlatMap
 #include "smbase/sm-macros.h"                    // OPEN_NAMESPACE, SELFCHECK
+#include "smbase/stringb.h"                      // stringb
+#include "smbase/string-util.h"                  // repeatString
+#include "smbase/text-table.h"                   // smbase::TextTable
 #include "smbase/xassert.h"                      // xassert, xassertPrecondition
 
 #include <string>                                // std::string
@@ -95,6 +98,30 @@ gdv::GDValue HTT_Node::asGDValue(HTT_Tree const &tree) const
 }
 
 
+void HTT_Node::renderTableRows(
+  TextTable &tt,
+  HTT_Tree const &tree,
+  int indent) const
+{
+  for (LabelIndexToChildMap::size_type childIndex=0;
+       childIndex < m_children.size();
+       ++childIndex)
+  {
+    HTT_LabelIndex labelIndex = m_children.keyAtIndex(childIndex);
+    std::string_view label = tree.getLabelForIndex(labelIndex);
+
+    HTT_Node const *child = m_children.valueAtIndex(childIndex).get();
+
+    tt.m_cells.push_back(std::vector<TextTableCell>{
+      TextTableCell(stringb(repeatString("  ", indent) << label)),
+      TextTableCell(child->m_elapsedMS),
+    });
+
+    child->renderTableRows(tt, tree, indent+1);
+  }
+}
+
+
 // ----------------------------- HTT_Tree ------------------------------
 HTT_Tree::~HTT_Tree()
 {}
@@ -162,6 +189,20 @@ std::string HTT_Tree::asString() const
 {
   gdv::GDValue v(*this);
   return v.asIndentedString();
+}
+
+
+std::string HTT_Tree::asTableString() const
+{
+  TextTable tt;
+  tt.m_columnTitles = std::vector<std::string>{
+    "timer",
+    "elapsed_ms",
+  };
+
+  m_root.renderTableRows(tt, *this, 0 /*indent*/);
+
+  return tt.render();
 }
 
 
