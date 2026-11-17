@@ -19,9 +19,12 @@ OPEN_ANONYMOUS_NAMESPACE
 void shortBusyWaitLoop()
 {
   fastTimeInitialize();
-  unsigned start = fastTimeMilliseconds;
-  while (fastTimeMilliseconds == start)
-    {}
+
+  if (fastTimeIsImplemented()) {
+    unsigned start = fastTimeMilliseconds;
+    while (fastTimeMilliseconds == start)
+      {}
+  }
 }
 
 
