@@ -494,7 +494,7 @@ OrderedFlatMap<KEY, VALUE, COMPARE>::operator gdv::GDValue() const
 
   gdv::GDValue ret(gdv::GDVK_ORDERED_MAP);
 
-  for (size_type index=0; index < this->size(); ++index) {
+  for (auto [key, value] : *this) {
     // Convert each key and value to GDV, then add them as a mapping in
     // `ret`.
     //
@@ -504,8 +504,8 @@ OrderedFlatMap<KEY, VALUE, COMPARE>::operator gdv::GDValue() const
     // (or later) mapping with a duplicate GDV key will be silently
     // discarded.
     ret.orderedMapInsertValueAt(
-      toGDValue(this->keyAtIndex(index)),
-      toGDValue(this->valueAtIndex(index))
+      toGDValue(key),
+      toGDValue(value)
     );
   }
 
