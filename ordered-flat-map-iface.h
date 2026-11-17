@@ -112,6 +112,9 @@ public:      // funcs
   inline OrderedFlatMap(OrderedFlatMap      &&obj);
 
   // ------------------------- Element access --------------------------
+  // True if `key` is mapped to some value.
+  inline bool contains(KEY const &key) const;
+
   // Return the value at `key`, which must be mapped.
   //
   // Requires: contains(key)
@@ -174,10 +177,6 @@ public:      // funcs
 
   // Remove all elements.
   inline void clear();
-
-  // ----------------------------- Lookup ------------------------------
-  // True if `key` is mapped to some value.
-  inline bool contains(KEY const &key) const;
 
   // -------------------------- Serialization --------------------------
   // Return as an untagged ordered map.

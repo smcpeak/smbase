@@ -102,6 +102,36 @@ OrderedFlatMap<KEY, VALUE, COMPARE>::OrderedFlatMap(OrderedFlatMap &&obj)
 
 // -------------------------- Element access ---------------------------
 template <typename KEY, typename VALUE, typename COMPARE>
+auto OrderedFlatMap<KEY, VALUE, COMPARE>::lookup(KEY const &key) const
+  -> std::tuple<size_type, bool>
+{
+  auto it = std::lower_bound(m_sortedKeys.begin(), m_sortedKeys.end(),
+                             key, COMPARE());
+
+  // This is guaranteed to be constant-time by the fact that we started
+  // with a vector iterator and `lower_bound` returns the same type as
+  // its parameters.  With C++20 I could do
+  // `static_assert(std::contiguous_iterator<decltype(it)>);` to
+  // double-check, but I'm currently targeting C++17.
+  size_type index = it - m_sortedKeys.begin();
+
+  bool found = (
+    index < m_sortedKeys.size() &&
+    equalKeys(m_sortedKeys.at(index), key)
+  );
+
+  return std::make_tuple(index, found);
+}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
+bool OrderedFlatMap<KEY, VALUE, COMPARE>::contains(KEY const &key) const
+{
+  return std::get<1>(lookup(key));
+}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
 VALUE const &OrderedFlatMap<KEY, VALUE, COMPARE>::valueAtKey(KEY const &key) const
 {
   auto [index, found] = lookup(key);
@@ -252,37 +282,6 @@ void OrderedFlatMap<KEY, VALUE, COMPARE>::clear()
   m_sortedKeys.clear();
   m_correspValues.clear();
   m_insertionOrder.clear();
-}
-
-
-// ------------------------------ Lookup -------------------------------
-template <typename KEY, typename VALUE, typename COMPARE>
-auto OrderedFlatMap<KEY, VALUE, COMPARE>::lookup(KEY const &key) const
-  -> std::tuple<size_type, bool>
-{
-  auto it = std::lower_bound(m_sortedKeys.begin(), m_sortedKeys.end(),
-                             key, COMPARE());
-
-  // This is guaranteed to be constant-time by the fact that we started
-  // with a vector iterator and `lower_bound` returns the same type as
-  // its parameters.  With C++20 I could do
-  // `static_assert(std::contiguous_iterator<decltype(it)>);` to
-  // double-check, but I'm currently targeting C++17.
-  size_type index = it - m_sortedKeys.begin();
-
-  bool found = (
-    index < m_sortedKeys.size() &&
-    equalKeys(m_sortedKeys.at(index), key)
-  );
-
-  return std::make_tuple(index, found);
-}
-
-
-template <typename KEY, typename VALUE, typename COMPARE>
-bool OrderedFlatMap<KEY, VALUE, COMPARE>::contains(KEY const &key) const
-{
-  return std::get<1>(lookup(key));
 }
 
 

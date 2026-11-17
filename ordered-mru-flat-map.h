@@ -72,6 +72,13 @@ OrderedMRUFlatMap<KEY, VALUE, COMPARE>::OrderedMRUFlatMap(OrderedMRUFlatMap &&ob
 
 // -------------------------- Element access ---------------------------
 template <typename KEY, typename VALUE, typename COMPARE>
+bool OrderedMRUFlatMap<KEY, VALUE, COMPARE>::contains(KEY const &key) const
+{
+  return Base::contains(key);
+}
+
+
+template <typename KEY, typename VALUE, typename COMPARE>
 VALUE const &OrderedMRUFlatMap<KEY, VALUE, COMPARE>::valueAtKey(KEY const &key) const
 {
   return Base::valueAtKey(key);
@@ -157,14 +164,6 @@ void OrderedMRUFlatMap<KEY, VALUE, COMPARE>::clear()
 {
   Base::clear();
   m_mruIndex = 0;
-}
-
-
-// ------------------------------ Lookup -------------------------------
-template <typename KEY, typename VALUE, typename COMPARE>
-bool OrderedMRUFlatMap<KEY, VALUE, COMPARE>::contains(KEY const &key) const
-{
-  return Base::contains(key);
 }
 
 

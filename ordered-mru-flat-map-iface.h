@@ -62,6 +62,7 @@ public:      // funcs
   inline OrderedMRUFlatMap(OrderedMRUFlatMap      &&obj);
 
   // ------------------------- Element access --------------------------
+  inline bool contains(KEY const &key) const;
   inline VALUE const &valueAtKey(KEY const &key) const;
   inline KEY const &keyAtIndex(size_type index) const;
   inline VALUE const &valueAtIndex(size_type index) const;
@@ -87,9 +88,6 @@ public:      // funcs
   inline VALUE &valueRefAtKey(KEY const &key);
 
   inline void clear();
-
-  // ----------------------------- Lookup ------------------------------
-  inline bool contains(KEY const &key) const;
 
   // -------------------------- Serialization --------------------------
   operator gdv::GDValue() const;
