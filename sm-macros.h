@@ -29,6 +29,10 @@
     { return !operator<(obj); }
 
 
+// ********
+// ******** See dmemb-etc-macros.txt for more explanation of DMEMB, etc.
+// ********
+
 // Member copy ("duplicate") in constructor initializer list.
 #define DMEMB(var) var(obj.var)
 

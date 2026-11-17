@@ -1,0 +1,197 @@
+dmemb-etc-macros.txt
+Explanation of DMEMB and related macros
+
+
+DMEMB: For the copy constructor
+-------------------------------
+
+In sm-macros.h, there is this maacro definition:
+
+  // Member copy ("duplicate") in constructor initializer list.
+  #define DMEMB(var) var(obj.var)
+
+It is meant to be used within a copy constructor.  Example:
+
+  struct Foo {
+    int m_x;
+    int m_y;
+
+    Foo(Foo const &obj)
+      : DMEMB(m_x),
+        DMEMB(m_y)
+    {}
+  };
+
+Note that the macro relies on my naming convention that the parameter is
+called `obj`.  It initializes each member using the corresponding member
+from `obj`.
+
+Rationale: The obvious benefit is I don't have to repeat the member
+names, and hence cannot (for example) copy+paste a line and forget to
+change one of the member names.  A secondary benefit is the block of
+initializers can be copied, pasted, and easily modified for use in a
+different member function, as explained in what follows.
+
+
+MDMEMB: For the move constructor
+--------------------------------
+
+The next macro is MDMEMB:
+
+  // Member move in move constructor.  Caller must `#include <utility>`.
+  #define MDMEMB(var) var(std::move(obj.var))
+
+This works analogously to DMEMB but for the move constructor:
+
+  Foo(Foo &&obj)
+    : MDMEMB(m_x),
+      MDMEMB(m_y)
+  {}
+
+Rationale: In addition to not repeating the member names, this nicely
+encapsulates the call to `std::move`.  The block of initializers is also
+easily created by copying the DMEMB block and adding "M" to each line.
+
+
+CMEMB: For the copy assignment operator
+---------------------------------------
+
+Next is CMEMB:
+
+  // Member copy in copy assignment operator.
+  #define CMEMB(var) (var = obj.var)
+
+This is used like so:
+
+  Foo &operator=(Foo const &obj)
+  {
+    CMEMB(m_x);
+    CMEMB(m_y);
+    return *this;
+  }
+
+Rationale: Again we avoid repeating member names.
+
+
+MCMEMB: For the move assignment operator
+----------------------------------------
+
+Next is MCMEMB:
+
+  // Member move in move assignment operator.
+  #define MCMEMB(var) (var = std::move(obj.var))
+
+Usage:
+
+  Foo &operator=(Foo &&obj)
+  {
+    MCMEMB(m_x);
+    MCMEMB(m_y);
+    return *this;
+  }
+
+Rationale: This naturally extends the previous macros, avoids repeating
+the member names, and encapsulates `std::move`.
+
+
+EMEMB: For the equality operator
+--------------------------------
+
+Next is EMEMB:
+
+  // Member comparison in operator ==.
+  #define EMEMB(var) (var == obj.var)
+
+Usage:
+
+  bool operator==(Foo const &obj) const
+  {
+    return EMEMB(m_x) &&
+           EMEMB(m_y);
+  }
+
+This facilitiates writing a simple equality operator.
+
+However, in many cases I want full relational operators, in which case
+the macros and utilities in compare-util[-iface].h should be used
+instead of EMEMB.
+
+
+IMEMBFP: For the ordinary parameter constructor
+-----------------------------------------------
+
+Next is IMEMBFP, which stands for "initialize a member from a
+parameter":
+
+  // Initialize a member whose name starts with "m_" from the
+  // corresponding constructor parameter without that prefix.
+  #define IMEMBFP(param) m_##param(param)
+
+Usage:
+
+  Foo(int x, int y)
+    : IMEMBFP(x),
+      IMEMBFP(y)
+  {}
+
+Rationale: Once again we avoid repeating the parameter or member name in
+cases where one straightforwardly initializes the other.  This type of
+constructor initializer is particularly prone to copy+paste errors,
+which the macro makes impossible.
+
+
+IMEMBMFP: For the move parameter constructor
+--------------------------------------------
+
+Next is IMEMBMFP:
+
+  // Same, but moving the parameter.
+  #define IMEMBMFP(param) m_##param(std::move(param))
+
+Usage:
+
+  Foo(std::string &&x, std::string &y)
+    : IMEMBMFP(x),
+      IMEMBMFP(y)
+  {}
+
+Rationale: We avoid repeating names and we encapsulate `std::move`.
+
+
+SWAP_MEMB: For the `swap` method
+--------------------------------
+
+Finally we have SWAP_MEMB:
+
+  // Swap members from within a member `swap` function.  Caller should
+  // `#include <utility>` and `using std::swap`.
+  #define SWAP_MEMB(memb) swap(memb, obj.memb)
+
+Usage:
+
+  void swap(Foo &obj)        // member function
+  {
+    using std::swap;         // and maybe other `using`s if needed
+
+    SWAP_MEMB(m_x);
+    SWAP_MEMB(m_y);
+  }
+
+Rationale: Again we avoid repeating names.
+
+
+Wrap-up
+-------
+
+These macros help avoid some of the pitfalls associated with C++ class
+definition.  The avoid repeating member names, and they cause the family
+of applicable functions to share a recognizable block of similar lines
+of code, which further aids in detecting omissions or other unintended
+variations.
+
+Note: The create-tuple-class.py script provides additional class
+definition automation, and should be preferred to manually declaring and
+defining these methods when applicable.
+
+
+EOF

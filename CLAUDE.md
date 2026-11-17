@@ -115,3 +115,5 @@ files go in `SRCS`. Both lists are kept in `LANG=C` sort order.
   `xstrobjdict.h`, and are read-only. Edit the `x*.h` source and build
   with `GENSRC=1`.
 - Most of the library is public domain (`license.txt`).
+- Constructors and other special member functions use the DMEMB, etc.,
+  macros defined in sm-macros.h.  See dmemb-etc-macros.txt.
