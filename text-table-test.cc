@@ -7,6 +7,7 @@
 #include "smbase/sm-integer.h"         // smbase::Integer
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
 #include "smbase/sm-test.h"            // EXPECT_EQ, EXPECT_EXN
+#include "smbase/string-util.h"        // removeTestCaseIndentation
 
 #include <string>                      // std::string
 #include <utility>                     // std::move
@@ -238,6 +239,9 @@ void test_bracedListAssign()
     { TextTableCell("three") },
   };
 
+  // I'll leave this test using ordinary string literals instead of
+  // `removeTestCaseIndentation` just so there is one that is a little
+  // more explicit about where whitespace is.
   EXPECT_EQ(tt.render(),
     "k      v\n"
     "-----  --\n"
@@ -276,15 +280,14 @@ void test_docExample()
     },
   };
 
-  // TODO: Make a Python-like `dedent` for cases like this.
-  EXPECT_EQ(tt.render(),
-R"(col1        col2  col3
-----------  ----  ----
-celldata11  d12   d13
-short row
-text         123   456
-more text      9    10
-)");
+  EXPECT_EQ(tt.render(), removeTestCaseIndentation(R"(
+    col1        col2  col3
+    ----------  ----  ----
+    celldata11  d12   d13
+    short row
+    text         123   456
+    more text      9    10
+  )"));
 }
 
 
@@ -306,9 +309,10 @@ void test_titlesOnly()
 {
   TextTable tt;
   tt.m_columnTitles = {"a", "bbb", "cc"};
-  EXPECT_EQ(tt.render(),
-    "a  bbb  cc\n"
-    "-  ---  --\n");
+  EXPECT_EQ(tt.render(), removeTestCaseIndentation(R"(
+    a  bbb  cc
+    -  ---  --
+  )"));
 }
 
 
@@ -321,11 +325,12 @@ void test_dataWithoutTitles()
     { TextTableCell("x"), TextTableCell(Integer(10)) },
     { TextTableCell("longer"), TextTableCell(Integer(5)) },
   };
-  EXPECT_EQ(tt.render(),
-    "\n"
-    "------  --\n"
-    "x       10\n"
-    "longer   5\n");
+  EXPECT_EQ(tt.render(), removeTestCaseIndentation(R"(
+
+    ------  --
+    x       10
+    longer   5
+  )"));
 }
 
 
@@ -339,11 +344,12 @@ void test_moreCellsThanTitles()
     { TextTableCell("a"), TextTableCell("b"), TextTableCell("c") },
     { TextTableCell("d") },
   };
-  EXPECT_EQ(tt.render(),
-    "name\n"
-    "----  -  -\n"
-    "a     b  c\n"
-    "d\n");
+  EXPECT_EQ(tt.render(), removeTestCaseIndentation(R"(
+    name
+    ----  -  -
+    a     b  c
+    d
+  )"));
 }
 
 
@@ -358,12 +364,13 @@ void test_mixedColumn()
     { TextTableCell(Integer(5)),   TextTableCell("e") },
     { TextTableCell(Integer(-12)), TextTableCell("e") },
   };
-  EXPECT_EQ(tt.render(),
-    "v     end\n"
-    "----  ---\n"
-    "abcd  e\n"
-    "   5  e\n"
-    " -12  e\n");
+  EXPECT_EQ(tt.render(), removeTestCaseIndentation(R"(
+    v     end
+    ----  ---
+    abcd  e
+       5  e
+     -12  e
+  )"));
 }
 
 
@@ -379,12 +386,13 @@ void test_emptyCells()
 
   // The middle column has width 0.  An empty leading cell still yields
   // padding, but empty trailing cells do not.
-  EXPECT_EQ(tt.render(),
-    "\n"
-    "-    -\n"
-    "a    b\n"
-    "     c\n"
-    "d\n");
+  EXPECT_EQ(tt.render(), removeTestCaseIndentation(R"(
+
+    -    -
+    a    b
+         c
+    d
+  )"));
 }
 
 
@@ -398,6 +406,9 @@ void test_trailingSpacesInData()
     { TextTableCell("x"), TextTableCell("y ") },
     { TextTableCell("z ") },
   };
+
+  // This does not use `removeTestCaseIndentation` since that would
+  // obscure the trailing space behavior being tested.
   EXPECT_EQ(tt.render(),
     "t1  t2\n"
     "--  --\n"
@@ -415,11 +426,12 @@ void test_bigInteger()
     { TextTableCell(Integer::fromDigits("123456789012345678901234567890")) },
     { TextTableCell(Integer(1)) },
   };
-  EXPECT_EQ(tt.render(),
-    "n\n"
-    "------------------------------\n"
-    "123456789012345678901234567890\n"
-    "                             1\n");
+  EXPECT_EQ(tt.render(), removeTestCaseIndentation(R"(
+    n
+    ------------------------------
+    123456789012345678901234567890
+                                 1
+  )"));
 }
 
 
@@ -431,7 +443,11 @@ void test_renderTwice()
   tt.m_cells = Cells{{ TextTableCell(Integer(1)) }};
   std::string first = tt.render();
   EXPECT_EQ(tt.render(), first);
-  EXPECT_EQ(first, "a\n-\n1\n");
+  EXPECT_EQ(first, removeTestCaseIndentation(R"(
+    a
+    -
+    1
+  )"));
 }
 
 
