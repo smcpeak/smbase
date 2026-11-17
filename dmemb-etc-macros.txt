@@ -5,7 +5,7 @@ Explanation of DMEMB and related macros
 DMEMB: For the copy constructor
 -------------------------------
 
-In sm-macros.h, there is this maacro definition:
+In sm-macros.h, there is this macro definition:
 
   // Member copy ("duplicate") in constructor initializer list.
   #define DMEMB(var) var(obj.var)
