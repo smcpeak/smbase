@@ -65,8 +65,10 @@ This is used like so:
 
   Foo &operator=(Foo const &obj)
   {
-    CMEMB(m_x);
-    CMEMB(m_y);
+    if (this != &obj) {
+      CMEMB(m_x);
+      CMEMB(m_y);
+    }
     return *this;
   }
 
@@ -85,8 +87,10 @@ Usage:
 
   Foo &operator=(Foo &&obj)
   {
-    MCMEMB(m_x);
-    MCMEMB(m_y);
+    if (this != &obj) {
+      MCMEMB(m_x);
+      MCMEMB(m_y);
+    }
     return *this;
   }
 
@@ -173,8 +177,10 @@ Usage:
   {
     using std::swap;         // and maybe other `using`s if needed
 
-    SWAP_MEMB(m_x);
-    SWAP_MEMB(m_y);
+    if (this != &obj) {
+      SWAP_MEMB(m_x);
+      SWAP_MEMB(m_y);
+    }
   }
 
 Rationale: Again we avoid repeating names.
@@ -184,14 +190,14 @@ Wrap-up
 -------
 
 These macros help avoid some of the pitfalls associated with C++ class
-definition.  The avoid repeating member names, and they cause the family
-of applicable functions to share a recognizable block of similar lines
-of code, which further aids in detecting omissions or other unintended
-variations.
+definition.  They avoid repeating member names, and they cause the
+family of applicable functions to share a recognizable block of similar
+lines of code, which further aids in detecting omissions or other
+unintended variations.
 
 Note: The create-tuple-class.py script provides additional class
-definition automation, and should be preferred to manually declaring and
-defining these methods when applicable.
+definition automation, and should often be preferred to manually
+declaring and defining these methods when applicable.
 
 
 EOF
