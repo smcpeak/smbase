@@ -45,14 +45,25 @@ private:     // data
   // Map from HTT_LabelIndex to child HTT_Node.
   //
   // Invariant: No value is nullptr.
+  //
+  // Invariant: For all valid i:
+  //   m_children[i]->m_parent == this
+  //
   LabelIndexToChildMap m_children;
 
   // Elapsed time, in milliseconds, accumulated while this node was on
   // the stack.
+  //
+  // Exception: The root node always has zero elapsed time because we
+  // never start/stop it; it is just a container, and is not associated
+  // with any particular task.
   unsigned m_elapsedMS;
 
 public:      // funcs
   ~HTT_Node();
+
+  // Recursively assert invariants.
+  void selfCheck() const;
 
   // Create a node with the specified parent, no children, and zero
   // elapsed time.
@@ -110,6 +121,9 @@ private:     // data
 public:      // funcs
   ~HTT_Tree();
 
+  // Assert invariants throughout tree.
+  void selfCheck() const;
+
   // Make a tree that is empty except for its root.
   HTT_Tree();
 
@@ -144,7 +158,7 @@ public:      // funcs
     Return the root's GDV, for example:
 
     [
-      elapsedMS: 456
+      elapsedMS: 0
       children: [
         "one": [
           elapsedMS: 123

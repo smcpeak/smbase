@@ -8,7 +8,7 @@
 #include "smbase/fasttime.h"                     // fastTimeInitialize, fastTimeMilliseconds
 #include "smbase/gdvalue.h"                      // gdv::GDValue
 #include "smbase/ordered-mru-flat-map.h"         // smbase::OrderedMRUFlatMap
-#include "smbase/sm-macros.h"                    // OPEN_NAMESPACE
+#include "smbase/sm-macros.h"                    // OPEN_NAMESPACE, SELFCHECK
 #include "smbase/xassert.h"                      // xassert, xassertPrecondition
 
 #include <string>                                // std::string
@@ -24,11 +24,31 @@ HTT_Node::~HTT_Node()
 {}
 
 
+void HTT_Node::selfCheck() const
+{
+  // TODO: Build an iterator for this.
+  for (LabelIndexToChildMap::size_type childIndex=0;
+       childIndex < m_children.size();
+       ++childIndex)
+  {
+    std::unique_ptr<HTT_Node> const &child =
+      m_children.valueAtIndex(childIndex);
+
+    xassert(child != nullptr);
+    xassert(child->m_parent == this);
+
+    child->selfCheck();
+  }
+}
+
+
 HTT_Node::HTT_Node(HTT_Node * NULLABLE parent)
   : m_parent(parent),
     m_children(),
     m_elapsedMS(0)
-{}
+{
+  SELFCHECK();
+}
 
 
 HTT_Node *HTT_Node::getChild(HTT_LabelIndex labelIndex)
@@ -80,12 +100,21 @@ HTT_Tree::~HTT_Tree()
 {}
 
 
+void HTT_Tree::selfCheck() const
+{
+  m_labelTable.selfCheck();
+  m_root.selfCheck();
+  xassert(m_stackTop != nullptr);
+}
+
+
 HTT_Tree::HTT_Tree()
   : m_labelTable(),
     m_root(nullptr),
     m_stackTop(&m_root)
 {
   fastTimeInitialize();
+  SELFCHECK();
 }
 
 

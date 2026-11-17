@@ -17,6 +17,8 @@ OPEN_ANONYMOUS_NAMESPACE
 void test_basics()
 {
   HTT_Tree tree;
+  tree.selfCheck();
+
   HTT_LabelIndex one = tree.getIndexForLabel("one");
   HTT_LabelIndex two = tree.getIndexForLabel("two");
   HTT_LabelIndex three = tree.getIndexForLabel("three");
@@ -33,12 +35,14 @@ void test_basics()
 
   {
     [[maybe_unused]] HTT_StartStopLabel ss1(tree, one);
+    tree.selfCheck();
 
     {
       [[maybe_unused]] HTT_StartStopLabel ss2(tree, two);
 
       {
         [[maybe_unused]] HTT_StartStopLabel ss3(tree, three);
+        tree.selfCheck();
 
         // Ensure not all the counts are zero.
         while (ss3.elapsedMSSoFar() == 0)
@@ -60,6 +64,7 @@ void test_basics()
   }
 
   VPVAL(tree.asString());
+  tree.selfCheck();
 }
 
 
