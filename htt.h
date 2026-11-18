@@ -324,12 +324,12 @@ public:      // funcs
 
 // Start/stop a task timer within the `HTT_Singleton`, using a label
 // that might vary with each use.
-#define HTT_TASK_DYNAMIC_LABEL(label)                     \
-  HTT_LabelIndex SM_PP_CAT(taskLabelIndex_,__LINE__) =    \
-    HTT_Singleton::getIndexForLabel(label);               \
-  [[maybe_unused]]                                        \
-  HTT_StartStopLabel SM_PP_CAT(startStopLabel_,__LINE__)( \
-    HTT_Singleton::instanceTree(),                        \
+#define HTT_TASK_DYNAMIC_LABEL(label)                             \
+  smbase::HTT_LabelIndex SM_PP_CAT(taskLabelIndex_,__LINE__) =    \
+    smbase::HTT_Singleton::getIndexForLabel(label);               \
+  [[maybe_unused]]                                                \
+  smbase::HTT_StartStopLabel SM_PP_CAT(startStopLabel_,__LINE__)( \
+    smbase::HTT_Singleton::instanceTree(),                        \
     SM_PP_CAT(taskLabelIndex_,__LINE__)) /* user ; */
 
 

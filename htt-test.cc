@@ -9,7 +9,18 @@
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE, smbase_loopi
 #include "smbase/sm-test.h"            // EXPECT_EQ
 
-using namespace smbase;
+// Do not do this since I want to confirm the macros will work without
+// it.
+//using namespace smbase;
+//
+// Instead, I'll import some specific names.
+using smbase::HTT_LabelIndex;
+using smbase::HTT_Singleton;
+using smbase::HTT_StartStopLabel;
+using smbase::HTT_Tree;
+using smbase::fastTimeInitialize;
+using smbase::fastTimeIsImplemented;
+using smbase::fastTimeMilliseconds;
 
 
 OPEN_ANONYMOUS_NAMESPACE
