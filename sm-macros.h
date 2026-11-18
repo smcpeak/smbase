@@ -172,6 +172,13 @@ inline void pretendUsedFn(T const &) {}
 #endif // __cplusplus
 
 
+// Annotation for functions and variables that are used for debugging
+// and/or tracing.  This is a more modern alternative to `PRETEND_USED`,
+// and this macro is intended to convey the reason something might be
+// unused.
+#define USED_FOR_DEBUGGING [[maybe_unused]]
+
+
 // For use with a function call when the return value is ignored, and I
 // do not want a compiler warning about that.  Historically this was
 // done by casting to 'void', but GCC-4.6+ no longer recognizes that
