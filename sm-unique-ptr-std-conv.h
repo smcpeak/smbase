@@ -22,27 +22,14 @@ OPEN_NAMESPACE(smbase)
 
 
 template <typename T>
-inline constexpr UniquePtr<T>::UniquePtr(std::unique_ptr<T> &&obj) noexcept
-  : m_ptr(obj.release())
-{}
-
-
-template <typename T>
-template <typename U>
+template <typename U, typename>
 inline constexpr UniquePtr<T>::UniquePtr(std::unique_ptr<U> &&obj) noexcept
   : m_ptr(obj.release())
 {}
 
 
 template <typename T>
-inline constexpr UniquePtr<T>::operator std::unique_ptr<T>() && noexcept
-{
-  return std::unique_ptr<T>(this->release());
-}
-
-
-template <typename T>
-template <typename U>
+template <typename U, typename>
 inline constexpr UniquePtr<T>::operator std::unique_ptr<U>() && noexcept
 {
   return std::unique_ptr<T>(this->release());

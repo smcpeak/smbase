@@ -66,13 +66,7 @@ inline constexpr UniquePtr<T>::UniquePtr(T * NULLABLE p) noexcept
 
 
 template <typename T>
-inline constexpr UniquePtr<T>::UniquePtr(UniquePtr &&obj) noexcept
-  : m_ptr(obj.release())
-{}
-
-
-template <typename T>
-template <typename U>
+template <typename U, typename>
 inline constexpr UniquePtr<T>::UniquePtr(UniquePtr<U> &&obj) noexcept
   : m_ptr(obj.release())
 {}
@@ -86,15 +80,7 @@ inline UniquePtr<T>::~UniquePtr() noexcept
 
 
 template <typename T>
-inline constexpr UniquePtr<T> &UniquePtr<T>::operator=(UniquePtr &&obj) noexcept
-{
-  reset(obj.release());
-  return *this;
-}
-
-
-template <typename T>
-template <typename U>
+template <typename U, typename>
 inline constexpr UniquePtr<T> &UniquePtr<T>::operator=(UniquePtr<U> &&obj) noexcept
 {
   reset(obj.release());

@@ -13,6 +13,7 @@
 #include "std-memory-fwd.h"            // stdfwd::unique_ptr [f]
 
 #include <cstddef>                     // std::nullptr_t
+#include <type_traits>                 // std::{enable_if_t, is_convertible_v}
 
 
 OPEN_NAMESPACE(smbase)
@@ -49,22 +50,19 @@ public:      // methods
   // `nullptr` then the resulting `UniquePtr` is empty.
   inline constexpr explicit UniquePtr(T * NULLABLE p) noexcept;
 
-  // Take ownership of the object owned by `obj`, if any.
-  inline constexpr UniquePtr(UniquePtr &&obj) noexcept;
-
   // Take ownership of the object owned by `obj`, if any.  The type `U*`
   // must be implicitly convertible to the type `T*`.
-  template <typename U>
+  template <typename U,
+            typename = std::enable_if_t<std::is_convertible_v<U*, T*>>>
   inline constexpr UniquePtr(UniquePtr<U> &&obj) noexcept;
 
-  // Take ownership of the object owned by `obj`, if any.
+  // Take ownership of the object owned by `obj`, if any.  `U*` must be
+  // convertible to `T*`.
   //
   // All methods that deal in `std::unique_ptr` are implemented in
   // `sm-unique-ptr-std-conv.h`.
-  inline constexpr UniquePtr(stdfwd::unique_ptr<T> &&obj) noexcept;
-
-  // `U*` must be convertible to `T*`.
-  template <typename U>
+  template <typename U,
+            typename = std::enable_if_t<std::is_convertible_v<U*, T*>>>
   inline constexpr UniquePtr(stdfwd::unique_ptr<U> &&obj) noexcept;
 
   // --------------------------- Destructor ----------------------------
@@ -77,13 +75,10 @@ public:      // methods
 
   // --------------------------- Assignment ----------------------------
   // Take ownership of the object owned by `obj`, if any.  The currently
-  // owned object, if any, is deallocated first.
-  inline constexpr UniquePtr &operator=(UniquePtr &&obj) noexcept;
-
-  // Take ownership of the object owned by `obj`, if any.  The type `U*`
-  // must be implicitly convertible to the type `T*`.  The currently
-  // owned object, if any, is deallocated first.
-  template <typename U>
+  // owned object, if any, is deallocated first.  The type `U*` must be
+  // implicitly convertible to the type `T*`.
+  template <typename U,
+            typename = std::enable_if_t<std::is_convertible_v<U*, T*>>>
   inline constexpr UniquePtr &operator=(UniquePtr<U> &&obj) noexcept;
 
   // Deallocate the owned object, if any, so that `*this` is empty.
@@ -127,12 +122,10 @@ public:      // methods
   // Swap the stored pointer with that of `obj`.
   inline constexpr void swap(UniquePtr &obj) noexcept;
 
-  // Transfer the stored object (if any) to a `std::unique_ptr`.
-  inline constexpr operator stdfwd::unique_ptr<T>() && noexcept;
-
-  // Transfer to a `std::unique_ptr` with a different type (pointer to a
-  // supertype).
-  template <typename U>
+  // Transfer the stored object (if any) to a `std::unique_ptr`.  `T*`
+  // must be convertible to `U*`.
+  template <typename U,
+            typename = std::enable_if_t<std::is_convertible_v<T*, U*>>>
   inline constexpr operator stdfwd::unique_ptr<U>() && noexcept;
 };
 
