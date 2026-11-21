@@ -9,12 +9,14 @@ static smbase::UniquePtr<int> *g_UniquePtr_ptr;
 
 static smbase::UniquePtr<int> g_UniquePtr;
 
+#include "sm-unique-ptr-std-conv.h"    // operations under test
 #include "sm-unique-ptr.h"             // operations under test
 
 #include "sm-macros.h"                 // OPEN_ANONYMOUS_NAMESPACE
 #include "sm-test.h"                   // EXPECT_EQ
 #include "xassert.h"                   // xassert
 
+#include <memory>                      // std::unique_ptr
 #include <utility>                     // std::{move, swap}
 
 using namespace smbase;
@@ -180,6 +182,54 @@ void testSwap()
 }
 
 
+void testStdConv_sameType()
+{
+  UniquePtr<Super> p1(new Super(1));
+  xassert(p1);
+  xassert(p1->one == 1);
+
+  std::unique_ptr<Super> p2(std::move(p1));
+  xassert(!p1);
+  xassert(p2);
+  xassert(p2->one == 1);
+
+  UniquePtr<Super> p3(std::move(p2));
+  xassert(!p2);
+  xassert(p3);
+  xassert(p3->one == 1);
+}
+
+
+void testStdConv_upConv()
+{
+  // UniquePtr -> unique_ptr
+  {
+    UniquePtr<Sub> p1(new Sub);
+    xassert(p1);
+    xassert(p1->one == 1);
+
+    // Up-convert the object type while converting to a different
+    // container.
+    std::unique_ptr<Super> p2(std::move(p1));
+    xassert(!p1);
+    xassert(p2);
+    xassert(p2->one == 1);
+  }
+
+  // unique_ptr -> UniquePtr
+  {
+    std::unique_ptr<Sub> p1(new Sub);
+    xassert(p1);
+    xassert(p1->one == 1);
+
+    UniquePtr<Super> p2(std::move(p1));
+    xassert(!p1);
+    xassert(p2);
+    xassert(p2->one == 1);
+  }
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -193,6 +243,8 @@ void test_sm_unique_ptr()
   testRelease();
   testReset();
   testSwap();
+  testStdConv_sameType();
+  testStdConv_upConv();
 
   xassert(Super::s_count == 0);
 }

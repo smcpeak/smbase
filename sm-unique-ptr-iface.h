@@ -1,5 +1,6 @@
 // sm-unique-ptr-iface.h
 // Interface for `sm-unique-ptr.h`.  See that file for overview, etc.
+// Also see `sm-unique-ptr-std-conv.h`.
 
 // This file is in the public domain.
 
@@ -9,6 +10,7 @@
 #include "sm-unique-ptr-fwd.h"         // forwards for this module
 
 #include "sm-macros.h"                 // OPEN_NAMESPACE, NULLABLE, NO_OBJECT_COPIES
+#include "std-memory-fwd.h"            // stdfwd::unique_ptr [f]
 
 #include <cstddef>                     // std::nullptr_t
 
@@ -54,6 +56,16 @@ public:      // methods
   // must be implicitly convertible to the type `T*`.
   template <typename U>
   inline constexpr UniquePtr(UniquePtr<U> &&obj) noexcept;
+
+  // Take ownership of the object owned by `obj`, if any.
+  //
+  // All methods that deal in `std::unique_ptr` are implemented in
+  // `sm-unique-ptr-std-conv.h`.
+  inline constexpr UniquePtr(stdfwd::unique_ptr<T> &&obj) noexcept;
+
+  // `U*` must be convertible to `T*`.
+  template <typename U>
+  inline constexpr UniquePtr(stdfwd::unique_ptr<U> &&obj) noexcept;
 
   // --------------------------- Destructor ----------------------------
   // Deallocate the owned object, if any.
@@ -114,6 +126,14 @@ public:      // methods
 
   // Swap the stored pointer with that of `obj`.
   inline constexpr void swap(UniquePtr &obj) noexcept;
+
+  // Transfer the stored object (if any) to a `std::unique_ptr`.
+  inline constexpr operator stdfwd::unique_ptr<T>() && noexcept;
+
+  // Transfer to a `std::unique_ptr` with a different type (pointer to a
+  // supertype).
+  template <typename U>
+  inline constexpr operator stdfwd::unique_ptr<U>() && noexcept;
 };
 
 
