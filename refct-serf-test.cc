@@ -983,6 +983,41 @@ void test_reset()
 }
 
 
+void test_assignNonConstToConst()
+{
+  // Copy initializer.
+  {
+    Integer i(98);
+    RCSerf<Integer> p1(&i);
+    RCSerf<Integer const> p2 = p1;
+
+    EXPECT_EQ(i.getRefCount(), 2);
+    EXPECT_EQ(p2->m_i, 98);
+  }
+
+  // Constructor argument.
+  {
+    Integer i(98);
+    RCSerf<Integer> p1(&i);
+    RCSerf<Integer const> p2(p1);
+
+    EXPECT_EQ(i.getRefCount(), 2);
+    EXPECT_EQ(p2->m_i, 98);
+  }
+
+  // Assignment operator.
+  {
+    Integer i(98);
+    RCSerf<Integer> p1(&i);
+    RCSerf<Integer const> p2;
+    p2 = p1;
+
+    EXPECT_EQ(i.getRefCount(), 2);
+    EXPECT_EQ(p2->m_i, 98);
+  }
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -1018,6 +1053,7 @@ void test_refct_serf()
   test_RCSerf_compare();
   testEditorWindowIssue();
   test_reset();
+  test_assignNonConstToConst();
 }
 
 

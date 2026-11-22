@@ -49,7 +49,11 @@
 
 #include "compare-util-iface.h"        // smbase::compare
 #include "sm-noexcept.h"               // NOEXCEPT
+#include "xassert.h"                   // xfailure
 
+#include <type_traits>                 // std::{enable_if_t, is_convertible_v}
+
+// TODO: Change to cstddef and nullptr.
 #include <stddef.h>                    // NULL
 
 
@@ -174,6 +178,15 @@ public:      // funcs
     RCSerfPrivateHelpers::incRefct(m_ptr);
   }
 
+  // Allow copy initialization, e.g., `RCSerf<Super> p = RCSerf<Sub>()`.
+  template <typename U,
+            typename = std::enable_if_t<std::is_convertible_v<U*, T*>>>
+  RCSerf(RCSerf<U> const &obj)
+    : m_ptr(obj.ptr())
+  {
+    RCSerfPrivateHelpers::incRefct(m_ptr);
+  }
+
   // Decrement refct if not NULL.  If the refct goes negative, abort
   // the program, since it means the counts are wrong and thus we are
   // at risk of memory corruption.
@@ -186,6 +199,17 @@ public:      // funcs
   RCSerf& operator= (RCSerf const &obj)
   {
     this->operator=(obj.m_ptr);
+    return *this;
+  }
+
+  // Among other things, this resolves what would otherwise be an
+  // ambiguity when assigning convertible pointers since we could go
+  // via the template ctor or the raw pointer assignment.
+  template <typename U,
+            typename = std::enable_if_t<std::is_convertible_v<U*, T*>>>
+  RCSerf& operator= (RCSerf<U> const &obj)
+  {
+    this->operator=(obj.ptr());
     return *this;
   }
 
@@ -214,6 +238,12 @@ public:      // funcs
 
   // Get the pointer as an ordinary C++ pointer.
   T *ptr() const
+  {
+    return m_ptr;
+  }
+
+  // Interface compatibility with `std::unique_ptr`.
+  T *get() const
   {
     return m_ptr;
   }
@@ -253,8 +283,8 @@ public:      // funcs
   // function that will deallocate the object.  It is not a transfer of
   // ownership, since the serf pointer does not own the object, but the
   // serf pointer is being used as a *name* for something that another
-  // object owns, and is being used as part of an operation that will
-  // result in that thing being deallocated.
+  // object owns, perhaps as part of an operation that will result in
+  // that thing being deallocated.
   T *release()
   {
     T *ret = m_ptr;
