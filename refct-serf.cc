@@ -22,7 +22,7 @@ int SerfRefCount::s_objectCount = 0;
 
 CHECK_OBJECT_COUNT(SerfRefCount);
 
-void (*SerfRefCount::s_preAbortFunction)() = NULL;
+void (*SerfRefCount::s_preAbortFunction)() = nullptr;
 
 
 STATICDEF void SerfRefCount::callPreAbortFunction()

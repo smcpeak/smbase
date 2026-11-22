@@ -53,9 +53,6 @@
 
 #include <type_traits>                 // std::{enable_if_t, is_convertible_v}
 
-// TODO: Change to cstddef and nullptr.
-#include <stddef.h>                    // NULL
-
 
 // Base class of objects to which RCSerf can point.
 //
@@ -70,10 +67,11 @@ public:      // class data
   // memory leaks when the program terminates.
   static int s_objectCount;
 
-  // If non-NULL, this function is called prior to abort() when a fatal
-  // reference count problem is detected.  After the function returns,
-  // the problem condition is re-checked, and if it has been solved,
-  // then we do not call abort().  It is meant for use during testing.
+  // If non-nullptr, this function is called prior to abort() when a
+  // fatal reference count problem is detected.  After the function
+  // returns, the problem condition is re-checked, and if it has been
+  // solved, then we do not call abort().  It is meant for use during
+  // testing.
   static void (*s_preAbortFunction)();
 
 private:     // instance data
@@ -133,11 +131,11 @@ public:      // funcs
 // to reduce namespace pollution and simplify 'friend' nomination.
 class RCSerfPrivateHelpers {
 protected:   // funcs
-  // If 'ptr' is not NULL, increment its reference count.
+  // If 'ptr' is not nullptr, increment its reference count.
   static void incRefct(SerfRefCount const *p);
 
-  // If 'ptr' is not NULL, decrement its reference count.  If it becomes
-  // negative, abort.
+  // If 'ptr' is not nullptr, decrement its reference count.  If it
+  // becomes negative, abort.
   static void decRefct(SerfRefCount const *p);
 };
 
@@ -156,14 +154,14 @@ template <class T>
 class RCSerf : private RCSerfPrivateHelpers {
 private:     // data
   // Pointer to the object whose reference count we are tracking.  This
-  // object acts as a wrapper for this pointer.  Can be NULL.
+  // object acts as a wrapper for this pointer.  Can be nullptr.
   T *m_ptr;
 
 public:      // funcs
-  // Initialize as NULL.
-  RCSerf() : m_ptr(NULL) {}
+  // Initialize as nullptr.
+  RCSerf() : m_ptr(nullptr) {}
 
-  // Store 'ptr', and increment its refct if not NULL.  It is
+  // Store 'ptr', and increment its refct if not nullptr.  It is
   // intentional that this is not 'explicit'.
   RCSerf(T *p)
     : m_ptr(p)
@@ -171,7 +169,7 @@ public:      // funcs
     RCSerfPrivateHelpers::incRefct(m_ptr);
   }
 
-  // Copy the pointer in 'obj', incrementing refct if not NULL.
+  // Copy the pointer in 'obj', incrementing refct if not nullptr.
   RCSerf(RCSerf const &obj)
     : m_ptr(obj.m_ptr)
   {
@@ -187,7 +185,7 @@ public:      // funcs
     RCSerfPrivateHelpers::incRefct(m_ptr);
   }
 
-  // Decrement refct if not NULL.  If the refct goes negative, abort
+  // Decrement refct if not nullptr.  If the refct goes negative, abort
   // the program, since it means the counts are wrong and thus we are
   // at risk of memory corruption.
   ~RCSerf()
@@ -276,8 +274,8 @@ public:      // funcs
     *this = p;
   }
 
-  // Set m_ptr to NULL, decrementing refct if not already NULL.
-  // Return the value m_ptr had before the call, which may be NULL.
+  // Set m_ptr to nullptr, decrementing refct if not already nullptr.
+  // Return the value m_ptr had before the call, which may be nullptr.
   //
   // This is meant for cases where we want to pass the pointer to a
   // function that will deallocate the object.  It is not a transfer of
@@ -289,7 +287,7 @@ public:      // funcs
   {
     T *ret = m_ptr;
     RCSerfPrivateHelpers::decRefct(m_ptr);
-    m_ptr = NULL;
+    m_ptr = nullptr;
     return ret;
   }
 };

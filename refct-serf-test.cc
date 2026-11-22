@@ -145,7 +145,7 @@ void emptyFailingSerfs(ArrayStack<RCSerf<T>*> &failingSerfs)
     RCSerf<T> *s = failingSerfs.pop();
 
     // Nullify the pointer, decrementing the refct.
-    *s = NULL;
+    *s = nullptr;
   }
 }
 
@@ -367,7 +367,7 @@ void testNullify()
   EXPECT_EQ(!!s1, true);
   EXPECT_EQ(i.getRefCount(), 1);
 
-  s1 = NULL;
+  s1 = nullptr;
   EXPECT_EQ(!!s1, false);
   EXPECT_EQ(i.getRefCount(), 0);
 }
@@ -567,7 +567,7 @@ void testListSuccess()
   EXPECT_EQ(list.indexOf(&o1), 0);
   EXPECT_EQ(list.indexOf(&o2), 1);
   EXPECT_EQ(list.indexOf(&o4), 2);
-  EXPECT_EQ(list.indexOf(NULL), -1);
+  EXPECT_EQ(list.indexOf(nullptr), -1);
   EXPECT_EQ(o1.getRefCount(), 1);
   EXPECT_EQ(o2.getRefCount(), 1);
   EXPECT_EQ(o4.getRefCount(), 1);
@@ -607,7 +607,7 @@ void testListSuccess()
 
   try {
     DIAG("should throw:");
-    list.removeItem(NULL);
+    list.removeItem(nullptr);
     cout << "should have failed" << endl;
     abort();
   }
