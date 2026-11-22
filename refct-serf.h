@@ -338,21 +338,7 @@ template <typename T>
 int compare(RCSerf<T> const &a, RCSerf<T> const &b) = delete;
 
 
-// A nullable `RCSerf`.
-//
-// For now this is just the same class, and its use just emphasizes the
-// null possibility, but I'm considering making it a separate class at
-// some point.
-template <typename T>
-using RCSerfOpt = RCSerf<T>;
-
-
-// Non-null `RCSerf`.
-//
-// This too is, for the moment, effectively just a form of
-// documentation, but in the future might be its own class.
-template <typename T>
-using NNRCSerf = RCSerf<T>;
+// `RCSerfOpt` and `NNRCSerf` are declared in `refct-serf-fwd.h`.
 
 
 #endif // REFCT_SERF_H

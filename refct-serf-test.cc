@@ -1018,6 +1018,20 @@ void test_assignNonConstToConst()
 }
 
 
+void test_RCSerfOpt()
+{
+  // Just test that the name can be used.
+  RCSerfOpt<Integer> p;
+}
+
+
+void test_NNRCSerf()
+{
+  Integer i(3);
+  NNRCSerf<Integer> p(&i);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -1054,6 +1068,8 @@ void test_refct_serf()
   testEditorWindowIssue();
   test_reset();
   test_assignNonConstToConst();
+  test_RCSerfOpt();
+  test_NNRCSerf();
 }
 
 
