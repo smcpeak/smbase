@@ -8,6 +8,7 @@ Revision history
 * 0.1 2024-06-05: First draft.
 
 * 0.2 2026-11-23: Clarify that whitespace can appear in "{}", etc.
+                  Specify comment syntax.
 
 
 Introduction
@@ -450,6 +451,10 @@ GDVN is a textual format, regarded as a sequence of Unicode code points.
 In principle any encoding can be used, but in practice UTF-8 encoding is
 strongly preferred.
 
+
+Values
+------
+
 Symbols have two forms, unquoted and quoted:
 
   * An unquoted symbol conforms to the regex: [a-zA-Z_][a-zA-Z0-9_]
@@ -654,6 +659,30 @@ serialization (e.g., file), then the following character must be one of:
 Consequently, for example, "[1a]" is invalid, whereas without this rule,
 it could potentially be parsed the same as "[1 a]".
 
+TODO: What about "()()"?  Or "1/**/a"?  Is the above rule actually
+enforced in my reader?
+
+
+Comments
+--------
+
+There are two comment syntaxes, "C-style" and "C++-style".
+
+A C-style comment begins with the two-character sequence "/*" outside
+any quoted string, quoted symbol, or C++-style comment.  It ends with
+the next "*/" sequence (where the asterisk *cannot* be shared with the
+opening sequence), provided there is no intervening "/*".  Inside a
+C-style comment, "/*" recursively opens another C-style comment that
+ends with its balanced "*/".  It is an error if the serialized data
+(file) ends without closing all open C-style comments.
+
+A C++-style comment begins with "//" outside any quoted string,
+quoted symbol, or comment (of either style).  It ends with the next
+newline character, or the end of the serialized data.
+
+
+TODO: Provide a railroad diagram.
+
 
 GDVN Rationale
 ==============
@@ -765,6 +794,10 @@ effect of preventing values from being juxtaposed, is meant in part to
 ensure readability, and also to preserve future extension points.  For
 example, it means that three double-quotes in a row remains reserved for
 a possible triple-quoted string extension.
+
+Supporting nesting C-style comments is important because one common use
+is to comment-out large blocks, but if comments can't nest, then that
+breaks anytime the commented-out section contains a C-style comment.
 
 
 Is GDVN syntax self-evident?
@@ -1348,8 +1381,6 @@ Triple-quoted strings.
 Continued strings.
 
 Symbols with non-English letters (and digits?).
-
-Floats.
 
 Binary serialization format.
 
