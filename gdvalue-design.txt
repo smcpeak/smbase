@@ -596,12 +596,14 @@ Set: {1 2 3}
   Duplicate elements are *ignored*.  The notation "{1 1}" is
   equivalent to the notation "{1}".
 
-  The empty set is denoted "{}".
+  The empty set is denoted "{}" (two tokens, possibly separated by
+  whitespace).
 
 Map: {a:1 b:2 c:3}
 
   Between the braces are any number of key/value pairs, where both the
-  key and value are GDVN values, separated by a colon.
+  key and value are GDVN values, separated by a colon.  Any amount of
+  whitespace can appear before and/or after the colon.
 
   There is no significance to the order in which map entries appear.
 
@@ -626,10 +628,10 @@ Map: {a:1 b:2 c:3}
       {x:y z:w}:{d:e f:g}
     }
 
-  Maps are distinguished from sets by the presence of colons separting
+  Maps are distinguished from sets by the presence of colons separating
   pair elements.
 
-  The empty map is denoted "{:}".
+  The empty map is denoted "{:}" (three tokens).
 
 Tagged container: Tag[...] or Tag(...) or Tag{...}
 
