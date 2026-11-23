@@ -293,7 +293,8 @@ that the *position* of each element is important to interpreting that
 element's meaning.  A good example is a date, e.g., "Date(2024 06 02)",
 or a rational number, "Rational(3 5)".  These are not mere lists of
 values that have an order, the exact position of each element is an
-essential part of determining the element's meaning.
+essential part of determining the element's meaning.  See section
+"Dates with leading digits" regarding that convention.
 
 In contrast, while a sequence has an order (unlike a set), the precise
 position of an element does not normally determine how that element is
@@ -689,10 +690,20 @@ the C/C++ convention of using a leading zero to indicate octal because
 octal is rare, and that notation is obscure and confusing to those only
 familiar with mathematical notation.  It allows redundant leading zeros
 in part because standard mathematical notation does, and in part to
-allow situation-specific flexibility in formatting.  For example, "(1980
-01 31)" is much better than "(1980 1 31)" for writing a date since only
-the former fits the ISO-8601 YYYY-MM-DD form (albeit without the
-hyphens).
+allow context-dependent flexibility in formatting.
+
+Dates with leading digits: One case of context-dependent formatting I've
+used in this document is writing dates like "(1980 01 31)" rather than
+"(1980 1 31)".  Among the motivations is that the former resembles
+ISO-8601 YYYY-MM-DD format, and is hence easier (IMO) to visually
+recognize and parse.  But one might object to this practice, as the
+leading zeroes are semantically insignificant, so writing them is
+potentially misleading.  I see this as similar to the use of whitespace
+such as indentation to help convey structure, or the choice of whether
+to write the letter "A" as "A" or "\u{41}".  I think GDVN producers
+should sometimes employ notational conventions that favor human
+readability, even when (as in the case of dates) that introduces a form
+of context dependence in rendering, as I've done here with dates.
 
 Within strings, unknown baskslash codes are disallowed in order to
 reserve them for possible future use.  If instead, say, "\c" just meant
