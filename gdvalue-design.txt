@@ -5,7 +5,9 @@ gdvalue-design.txt
 Revision history
 ================
 
-* 0.1 2024-06-05: Pre-publication phase.
+* 0.1 2024-06-05: First draft.
+
+* 0.2 2026-11-23: Clarify that whitespace can appear in "{}", etc.
 
 
 Introduction
