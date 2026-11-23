@@ -672,10 +672,9 @@ superset, which is valuable.  But "canonical" GDVN does not use them.
 
 The common symbols "null", "true", and "false" are not special because
 they do not need to be.  Whether and how applications give them special
-semantics is entirely up to those applications.  Furthermore, this
-allows additional symbols such as "NaN", "PInf", and "NInf" to be used
-as alternatives to ordinary floating point numbers once floats are
-added.
+semantics is entirely up to those applications.  That said, this
+specification does include a handful of recommended symbol
+interpretations to improve the likelihood of interoperability.
 
 Quoted symbols are enclosed in backticks because this is becoming a
 common way to write symbol-like entities in general text due to the
