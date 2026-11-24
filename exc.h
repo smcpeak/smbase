@@ -104,6 +104,11 @@ std::vector<std::string> &getExnContextVector();
   EXN_CONTEXT_STRING(compactFileAndLine(__FILE__, __LINE__)) /* user ; */
 
 
+// Push/pop an optional string if it has a value.
+#define EXN_CONTEXT_STRING_OPT(strOpt) \
+  VECTOR_PUSH_POP_OPT(smbase::getExnContextVector(), strOpt)
+
+
 // Return the current exception context as a string where each label is
 // terminated by ": ".  Thus, the result is something like "outer:
 // inner: ", or just an empty string if there is no context.

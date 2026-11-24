@@ -148,6 +148,22 @@ void test_xmessagesb()
 }
 
 
+void test_EXN_CONTEXT_STRING_OPT()
+{
+  EXPECT_EQ(getExnContextString(), "");
+
+  {
+    EXN_CONTEXT_STRING_OPT(std::optional<std::string>("blah"));
+    EXPECT_EQ(getExnContextString(), "blah: ");
+
+    EXN_CONTEXT_STRING_OPT(std::optional<std::string>());
+    EXPECT_EQ(getExnContextString(), "blah: ");
+  }
+
+  EXPECT_EQ(getExnContextString(), "");
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -161,6 +177,7 @@ void test_exc()
   test_getExceptionTypeName();
   test_getRelayMessage();
   test_xmessagesb();
+  test_EXN_CONTEXT_STRING_OPT();
 }
 
 
