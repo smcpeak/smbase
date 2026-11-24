@@ -236,6 +236,14 @@ void test_vecArrayToCRefs()
 }
 
 
+void test_stringbVec()
+{
+  std::vector<int> vec;
+  EXPECT_EQ(stringb(vec), "[]");
+  VPVAL(vec);
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -256,6 +264,7 @@ void test_vector_util()
   test_vecEraseFirstN();
   test_vecForAllElements();
   test_vecArrayToCRefs();
+  test_stringbVec();
 }
 
 
