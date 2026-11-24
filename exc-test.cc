@@ -136,6 +136,18 @@ void test_getRelayMessage()
 }
 
 
+void test_xmessagesb()
+{
+  try {
+    xmessagesb("one=" << 1);
+    xfailure("should not get here");
+  }
+  catch (XMessage &x) {
+    EXPECT_EQ(x.getMessage(), "one=1");
+  }
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -148,6 +160,7 @@ void test_exc()
   test_prependContextWithExnContext();
   test_getExceptionTypeName();
   test_getRelayMessage();
+  test_xmessagesb();
 }
 
 

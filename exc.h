@@ -384,6 +384,9 @@ public:      // methods
 // Equivalent to THROW(XMessage(msg)).
 void xmessage(std::string const &msg) NORETURN;
 
+// Throw an `XMessage` exception built using `stringb`.
+#define xmessagesb(msg) smbase::xmessage(stringb(msg))
+
 // For compatibility with older code, define this alias.
 inline void xbase(std::string const &msg) NORETURN;
 inline void xbase(std::string const &msg) { xmessage(msg); }
