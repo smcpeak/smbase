@@ -19,6 +19,7 @@
 // libc++
 #include <algorithm>                   // std::max
 #include <fstream>                     // std::fstream
+#include <string>                      // std::string
 #include <utility>                     // std::move
 
 // libc
@@ -86,7 +87,7 @@ SMFileName::SMFileName()
 {}
 
 
-SMFileName::SMFileName(string const &path, Syntax syntax)
+SMFileName::SMFileName(std::string const &path, Syntax syntax)
   : m_fileSystem(""),
     m_isAbsolute(false),
     m_pathComponents(),
@@ -216,8 +217,8 @@ SMFileName::SMFileName(string const &path, Syntax syntax)
 }
 
 
-SMFileName::SMFileName(string fileSystem, bool isAbsolute,
-                       ArrayStack<string> const &pathComponents,
+SMFileName::SMFileName(std::string fileSystem, bool isAbsolute,
+                       ArrayStack<std::string> const &pathComponents,
                        bool trailingSlash)
   : m_fileSystem(std::move(fileSystem)),
     m_isAbsolute(isAbsolute),
@@ -255,13 +256,13 @@ bool SMFileName::operator== (SMFileName const &obj) const
 }
 
 
-void SMFileName::getPathComponents(ArrayStack<string> /*OUT*/ &pathComponents) const
+void SMFileName::getPathComponents(ArrayStack<std::string> /*OUT*/ &pathComponents) const
 {
   pathComponents = m_pathComponents;
 }
 
 
-SMFileName SMFileName::withFileSystem(string const &newFileSystem) const
+SMFileName SMFileName::withFileSystem(std::string const &newFileSystem) const
 {
   return SMFileName(newFileSystem, m_isAbsolute,
                     m_pathComponents, m_trailingSlash);
@@ -273,7 +274,7 @@ SMFileName SMFileName::withIsAbsolute(bool newIsAbsolute) const
                     m_pathComponents, m_trailingSlash);
 }
 
-SMFileName SMFileName::withPathComponents(ArrayStack<string> const &newPathComponents) const
+SMFileName SMFileName::withPathComponents(ArrayStack<std::string> const &newPathComponents) const
 {
   return SMFileName(m_fileSystem, m_isAbsolute,
                     newPathComponents, m_trailingSlash);
@@ -286,7 +287,7 @@ SMFileName SMFileName::withTrailingSlash(bool newTrailingSlash) const
 }
 
 
-string SMFileName::toString(Syntax /*syntax*/) const
+std::string SMFileName::toString(Syntax /*syntax*/) const
 {
   stringBuilder sb;
   sb << m_fileSystem;
@@ -301,7 +302,7 @@ string SMFileName::toString(Syntax /*syntax*/) const
 }
 
 
-string SMFileName::getPathComponentsString() const
+std::string SMFileName::getPathComponentsString() const
 {
   stringBuilder sb;
   for (int i=0; i < m_pathComponents.length(); i++) {
@@ -335,7 +336,7 @@ STATICDEF bool SMFileName::isPathSeparator(unsigned char c, Syntax syntax)
 
 
 // ---------------- SMFileUtil::DirEntryInfo -----------------
-SMFileUtil::DirEntryInfo::DirEntryInfo(string const &name, FileKind kind)
+SMFileUtil::DirEntryInfo::DirEntryInfo(std::string const &name, FileKind kind)
   : m_name(name),
     m_kind(kind)
 {}
@@ -383,7 +384,7 @@ STATICDEF int SMFileUtil::DirEntryInfo::compare(
 }
 
 
-string SMFileUtil::DirEntryInfo::asString() const
+std::string SMFileUtil::DirEntryInfo::asString() const
 {
   return stringb(
     "{name:" << doubleQuote(m_name) <<
@@ -406,7 +407,7 @@ SMFileUtil::~SMFileUtil()
 {}
 
 
-bool SMFileUtil::hasNormalizedPathSeparators(string const &path) const
+bool SMFileUtil::hasNormalizedPathSeparators(std::string const &path) const
 {
   if (!windowsPathSemantics()) {
     return true;
@@ -422,7 +423,7 @@ bool SMFileUtil::hasNormalizedPathSeparators(string const &path) const
 }
 
 
-string SMFileUtil::normalizePathSeparators(string const &s) const
+std::string SMFileUtil::normalizePathSeparators(std::string const &s) const
 {
   if (!windowsPathSemantics()) {
     return s;
@@ -439,11 +440,11 @@ string SMFileUtil::normalizePathSeparators(string const &s) const
     }
   }
   arr[len] = 0;
-  return string(arr.ptr());
+  return std::string(arr.ptr());
 }
 
 
-string SMFileUtil::currentDirectory() const
+std::string SMFileUtil::currentDirectory() const
 {
 #if SM_FILE_UTIL_USE_WINDOWS_API
   // Get length of current directory, in characters.
@@ -467,13 +468,13 @@ string SMFileUtil::currentDirectory() const
       continue;
     }
 
-    string ret(a.ptr());
+    std::string ret(a.ptr());
     xassert(isAbsolutePath(ret));
     return ret;
   }
 
   xfailure("GetCurrentDirectory kept returning larger values!");
-  return string("");       // silence warning
+  return std::string("");       // silence warning
 
 #else
   errno = 0;
@@ -494,7 +495,7 @@ string SMFileUtil::currentDirectory() const
     xsyserror("getcwd");
   }
 
-  return string(a.ptr());
+  return std::string(a.ptr());
 
 #endif
 }
@@ -512,7 +513,7 @@ bool SMFileUtil::isDirectorySeparator(char c) const
 }
 
 
-bool SMFileUtil::endsWithDirectorySeparator(string const &name) const
+bool SMFileUtil::endsWithDirectorySeparator(std::string const &name) const
 {
   if (name.empty() || !isDirectorySeparator(name[name.length()-1])) {
     return false;
@@ -523,7 +524,7 @@ bool SMFileUtil::endsWithDirectorySeparator(string const &name) const
 }
 
 
-string SMFileUtil::ensureEndsWithDirectorySeparator(string const &dir) const
+std::string SMFileUtil::ensureEndsWithDirectorySeparator(std::string const &dir) const
 {
   if (!endsWithDirectorySeparator(dir)) {
     return stringb(dir << '/');
@@ -534,7 +535,7 @@ string SMFileUtil::ensureEndsWithDirectorySeparator(string const &dir) const
 }
 
 
-string SMFileUtil::stripTrailingDirectorySeparator(string const &dir) const
+std::string SMFileUtil::stripTrailingDirectorySeparator(std::string const &dir) const
 {
   int len = dir.length();
   if (len <= 1) {
@@ -559,7 +560,7 @@ string SMFileUtil::stripTrailingDirectorySeparator(string const &dir) const
 }
 
 
-bool SMFileUtil::isAbsolutePath(string const &path) const
+bool SMFileUtil::isAbsolutePath(std::string const &path) const
 {
   if (path[0] == 0) {
     return false;
@@ -587,14 +588,14 @@ bool SMFileUtil::isAbsolutePath(string const &path) const
 
 
 bool SMFileUtil::isAbsolutePathWithNormalizedPathSeparators(
-  string const &path) const
+  std::string const &path) const
 {
   return isAbsolutePath(path) &&
          hasNormalizedPathSeparators(path);
 }
 
 
-string SMFileUtil::getAbsolutePath(string const &path) const
+std::string SMFileUtil::getAbsolutePath(std::string const &path) const
 {
   if (isAbsolutePath(path)) {
     return path;
@@ -609,7 +610,7 @@ string SMFileUtil::getAbsolutePath(string const &path) const
   // If 'path' is "d:foo", we will return something like
   // "d:/some/path/d:foo", which is wrong, but oh well.
 
-  string cwd = currentDirectory();
+  std::string cwd = currentDirectory();
 
   if (windowsPathSemantics()) {
     if (isDirectorySeparator(path[0])) {
@@ -621,7 +622,7 @@ string SMFileUtil::getAbsolutePath(string const &path) const
 
       if (isDirectorySeparator(cwd[0]) && isDirectorySeparator(cwd[1])) {
         // Get the UNC share name.
-        StrtokParse tok(string(cwd.c_str()+2), "\\/");
+        StrtokParse tok(std::string(cwd.c_str()+2), "\\/");
         if (tok.tokc() >= 2) {
           stringBuilder sb;
           sb << "//" << tok.tokv(0) << '/' << tok.tokv(1) << path;
@@ -637,7 +638,7 @@ string SMFileUtil::getAbsolutePath(string const &path) const
 }
 
 
-bool SMFileUtil::absolutePathExists(string const &path) const
+bool SMFileUtil::absolutePathExists(std::string const &path) const
 {
   if (!isAbsolutePath(path)) {
     return false;
@@ -647,7 +648,7 @@ bool SMFileUtil::absolutePathExists(string const &path) const
 }
 
 
-bool SMFileUtil::absoluteFileExists(string const &path) const
+bool SMFileUtil::absoluteFileExists(std::string const &path) const
 {
   if (!isAbsolutePath(path)) {
     return false;
@@ -657,13 +658,13 @@ bool SMFileUtil::absoluteFileExists(string const &path) const
 }
 
 
-bool SMFileUtil::directoryExists(string const &path) const
+bool SMFileUtil::directoryExists(std::string const &path) const
 {
   return this->getFileKind(path) == FK_DIRECTORY;
 }
 
 
-SMFileUtil::FileKind SMFileUtil::getFileKind(string const &path) const
+SMFileUtil::FileKind SMFileUtil::getFileKind(std::string const &path) const
 {
   if (path.empty()) {
     return FK_NONE;
@@ -695,15 +696,15 @@ SMFileUtil::FileKind SMFileUtil::getFileKind(string const &path) const
 }
 
 
-bool SMFileUtil::pathExists(string const &path) const
+bool SMFileUtil::pathExists(std::string const &path) const
 {
   return getFileKind(path) != FK_NONE;
 }
 
 
-void SMFileUtil::createDirectory(string const &path_)
+void SMFileUtil::createDirectory(std::string const &path_)
 {
-  string path = stripTrailingDirectorySeparator(path_);
+  std::string path = stripTrailingDirectorySeparator(path_);
 
   int res = mkdir(path.c_str()
     #ifndef __WIN32__
@@ -716,15 +717,15 @@ void SMFileUtil::createDirectory(string const &path_)
 }
 
 
-void SMFileUtil::createDirectoryAndParents(string const &path_)
+void SMFileUtil::createDirectoryAndParents(std::string const &path_)
 {
-  string path = stripTrailingDirectorySeparator(path_);
+  std::string path = stripTrailingDirectorySeparator(path_);
   if (directoryExists(path)) {
     return;
   }
 
-  string dir;
-  string base;
+  std::string dir;
+  std::string base;
   splitPath(dir, base, path);
 
   if (!dir.empty()) {
@@ -735,9 +736,9 @@ void SMFileUtil::createDirectoryAndParents(string const &path_)
 }
 
 
-void SMFileUtil::createParentDirectories(string const &path)
+void SMFileUtil::createParentDirectories(std::string const &path)
 {
-  string dir = splitPathDir(path);
+  std::string dir = splitPathDir(path);
 
   if (!dir.empty()) {
     createDirectoryAndParents(dir);
@@ -745,7 +746,7 @@ void SMFileUtil::createParentDirectories(string const &path)
 }
 
 
-bool SMFileUtil::isReadOnly(string const &path) const NOEXCEPT
+bool SMFileUtil::isReadOnly(std::string const &path) const NOEXCEPT
 {
 #if SM_FILE_UTIL_USE_WINDOWS_API
   FileKind fileKind = getFileKind(path);
@@ -785,9 +786,9 @@ bool SMFileUtil::isReadOnly(string const &path) const NOEXCEPT
   // ----------------- part 0: closing handles -------------------
   struct CallCloseHandle {
     HANDLE m_handle;
-    string m_context;
+    std::string m_context;
 
-    CallCloseHandle(HANDLE h, string const &context)
+    CallCloseHandle(HANDLE h, std::string const &context)
       : m_handle(h),
         m_context(context)
     {}
@@ -964,8 +965,8 @@ bool SMFileUtil::isReadOnly(string const &path) const NOEXCEPT
 }
 
 
-string SMFileUtil::joinFilename(string const &prefix,
-                                string const &suffix) const
+std::string SMFileUtil::joinFilename(std::string const &prefix,
+                                     std::string const &suffix) const
 {
   if (prefix.empty()) {
     return suffix;
@@ -990,8 +991,8 @@ string SMFileUtil::joinFilename(string const &prefix,
 }
 
 
-string SMFileUtil::joinIfRelativeFilename(string const &prefix,
-                                          string const &suffix) const
+std::string SMFileUtil::joinIfRelativeFilename(std::string const &prefix,
+                                               std::string const &suffix) const
 {
   if (isAbsolutePath(suffix)) {
     return suffix;
@@ -1002,7 +1003,7 @@ string SMFileUtil::joinIfRelativeFilename(string const &prefix,
 }
 
 
-std::vector<unsigned char> SMFileUtil::readFile(string const &fname) const
+std::vector<unsigned char> SMFileUtil::readFile(std::string const &fname) const
 {
   std::vector<unsigned char> bytes;
 
@@ -1027,7 +1028,7 @@ std::vector<unsigned char> SMFileUtil::readFile(string const &fname) const
 }
 
 
-void SMFileUtil::writeFile(string const &fname,
+void SMFileUtil::writeFile(std::string const &fname,
                            std::vector<unsigned char> const &bytes)
 {
   AutoFILE fp(fname.c_str(), "wb");
@@ -1041,7 +1042,7 @@ void SMFileUtil::writeFile(string const &fname,
 }
 
 
-string SMFileUtil::readFileAsString(string const &fname) const
+std::string SMFileUtil::readFileAsString(std::string const &fname) const
 {
   std::vector<unsigned char> vec = readFile(fname);
   return std::string(reinterpret_cast<char const *>(vec.data()),
@@ -1049,8 +1050,8 @@ string SMFileUtil::readFileAsString(string const &fname) const
 }
 
 
-void SMFileUtil::writeFileAsString(string const &fname,
-                                   string const &contents)
+void SMFileUtil::writeFileAsString(std::string const &fname,
+                                   std::string const &contents)
 {
   std::vector<unsigned char> vec;
   unsigned char const *start =
@@ -1086,8 +1087,8 @@ struct CallCloseDir {
 // names are special is a POSIX and Windows convention.  It is my intent
 // that this module's interface be free of system-specific assumptions.
 // Filtering those two names would consistitute such an assumption.
-void SMFileUtil::getDirectoryNames(ArrayStack<string> /*OUT*/ &entries,
-                                   string const &directory) const
+void SMFileUtil::getDirectoryNames(ArrayStack<std::string> /*OUT*/ &entries,
+                                   std::string const &directory) const
 {
   entries.clear();
 
@@ -1121,17 +1122,17 @@ void SMFileUtil::getDirectoryNames(ArrayStack<string> /*OUT*/ &entries,
 // the test code.  It works on all platforms but is relatively slow
 // on Windows.
 void getDirectoryEntries_scanThenStat(SMFileUtil const &sfu,
-  ArrayStack<SMFileUtil::DirEntryInfo> /*OUT*/ &entries, string const &directory)
+  ArrayStack<SMFileUtil::DirEntryInfo> /*OUT*/ &entries, std::string const &directory)
 {
   entries.clear();
 
   // First get the names.
-  ArrayStack<string> names;
+  ArrayStack<std::string> names;
   sfu.getDirectoryNames(names, directory);
 
   // Probe each one to get its file type.
   for (int i=0; i < names.length(); i++) {
-    string const &name = names[i];
+    std::string const &name = names[i];
 
     SMFileUtil::FileKind kind =
       sfu.getFileKind(sfu.joinFilename(directory, name));
@@ -1147,14 +1148,14 @@ void getDirectoryEntries_scanThenStat(SMFileUtil const &sfu,
 
 
 void SMFileUtil::getDirectoryEntries(
-  ArrayStack<DirEntryInfo> /*OUT*/ &entries, string const &directory) const
+  ArrayStack<DirEntryInfo> /*OUT*/ &entries, std::string const &directory) const
 {
 #if SM_FILE_UTIL_USE_WINDOWS_API
   struct CallFindClose {
     HANDLE m_hFind;
-    string const &m_dir;
+    std::string const &m_dir;
 
-    CallFindClose(HANDLE h, string const &d)
+    CallFindClose(HANDLE h, std::string const &d)
       : m_hFind(h),
         m_dir(d)
     {}
@@ -1171,7 +1172,7 @@ void SMFileUtil::getDirectoryEntries(
 
   // Path to search.  FindFirstFileA has an odd interface, demanding
   // an explicit wildcard to search a directory.
-  string searchPath = this->joinFilename(directory, "*");
+  std::string searchPath = this->joinFilename(directory, "*");
 
   // Begin iterating over directory entries.
   WIN32_FIND_DATA fileData;
@@ -1212,15 +1213,15 @@ void SMFileUtil::getDirectoryEntries(
 
 
 void SMFileUtil::getSortedDirectoryEntries(
-  ArrayStack<DirEntryInfo> /*OUT*/ &entries, string const &directory) const
+  ArrayStack<DirEntryInfo> /*OUT*/ &entries, std::string const &directory) const
 {
   this->getDirectoryEntries(entries, directory);
   entries.sort(&DirEntryInfo::compare);
 }
 
 
-void SMFileUtil::splitPath(string /*OUT*/ &dir, string /*OUT*/ &base,
-                           string const &inputPath) const
+void SMFileUtil::splitPath(std::string /*OUT*/ &dir, std::string /*OUT*/ &base,
+                           std::string const &inputPath) const
 {
   if (inputPath.empty()) {
     dir = "";
@@ -1240,34 +1241,34 @@ void SMFileUtil::splitPath(string /*OUT*/ &dir, string /*OUT*/ &base,
 }
 
 
-string SMFileUtil::splitPathDir(string const &inputPath) const
+std::string SMFileUtil::splitPathDir(std::string const &inputPath) const
 {
-  string dir, base;
+  std::string dir, base;
   splitPath(dir, base, inputPath);
   return dir;
 }
 
-string SMFileUtil::splitPathBase(string const &inputPath) const
+std::string SMFileUtil::splitPathBase(std::string const &inputPath) const
 {
-  string dir, base;
+  std::string dir, base;
   splitPath(dir, base, inputPath);
   return base;
 }
 
 
-string SMFileUtil::collapseDots(string const &inputPath) const
+std::string SMFileUtil::collapseDots(std::string const &inputPath) const
 {
   // Parse into components.  Use S_WINDOWS since it should work fine in
   // practice, for this purpose, on all platforms, and ensures this
   // function behaves the same on all platforms, which is convenient.
   SMFileName fn(inputPath, SMFileName::S_WINDOWS);
-  ArrayStack<string> inputComponents;
+  ArrayStack<std::string> inputComponents;
   fn.getPathComponents(inputComponents);
 
   // Rebuild the path components, discarding some in response to "." and "..".
-  ArrayStack<string> outputComponents;
+  ArrayStack<std::string> outputComponents;
   for (int i=0; i < inputComponents.length(); i++) {
-    string const &comp = inputComponents[i];
+    std::string const &comp = inputComponents[i];
     if (comp == ".") {
       // Discard.  (But we might add it back at the end.)
     }
@@ -1301,8 +1302,8 @@ string SMFileUtil::collapseDots(string const &inputPath) const
 }
 
 
-void SMFileUtil::atomicallyRenameFile(string const &oldPath,
-                                      string const &newPath)
+void SMFileUtil::atomicallyRenameFile(std::string const &oldPath,
+                                      std::string const &newPath)
 {
   // Prohibit operating on directories.  One issue with that is
   // directory rename is not atomic on Windows.  (It is possible for
@@ -1337,15 +1338,15 @@ int SMFileUtil::getProcessID() const
 }
 
 
-string SMFileUtil::createUniqueTemporaryFname(
-  string const &dir,
-  string const &prefix,
+std::string SMFileUtil::createUniqueTemporaryFname(
+  std::string const &dir,
+  std::string const &prefix,
   int maxAttempts)
 {
   int pid = getProcessID();
 
   for (int n=0; n < maxAttempts; ++n) {
-    string fname = stringb(
+    std::string fname = stringb(
       dir << "/" << prefix << "." << pid << "." << n << ".tmp");
 
     if (!pathExists(fname)) {
@@ -1363,12 +1364,12 @@ string SMFileUtil::createUniqueTemporaryFname(
 
 
 void SMFileUtil::atomicallyWriteFileAsString(
-  string const &destFname, string const &contents)
+  std::string const &destFname, std::string const &contents)
 {
-  string dir, base;
+  std::string dir, base;
   splitPath(dir, base, destFname);
 
-  string tempFname = createUniqueTemporaryFname(dir, base);
+  std::string tempFname = createUniqueTemporaryFname(dir, base);
 
   writeFileAsString(tempFname, contents);
 
@@ -1376,7 +1377,7 @@ void SMFileUtil::atomicallyWriteFileAsString(
 }
 
 
-void SMFileUtil::removeFile(string const &path)
+void SMFileUtil::removeFile(std::string const &path)
 {
   if (remove(path.c_str()) < 0) {
     xsyserror("remove", path);
@@ -1384,7 +1385,7 @@ void SMFileUtil::removeFile(string const &path)
 }
 
 
-void SMFileUtil::removeFileIfExists(string const &path)
+void SMFileUtil::removeFileIfExists(std::string const &path)
 {
   if (pathExists(path)) {
     removeFile(path);
@@ -1394,7 +1395,7 @@ void SMFileUtil::removeFileIfExists(string const &path)
 
 // I posted this code to SO at:
 // https://stackoverflow.com/questions/10677200/c-ofstream-doesnt-change-mtime/73414309
-bool SMFileUtil::touchFile(string const &path)
+bool SMFileUtil::touchFile(std::string const &path)
 {
   char const *fname = path.c_str();
 
@@ -1459,7 +1460,7 @@ bool TestSMFileUtil::windowsPathSemantics() const
 }
 
 
-bool TestSMFileUtil::pathExists(string const &path) const
+bool TestSMFileUtil::pathExists(std::string const &path) const
 {
   if (m_existingPaths.has_value()) {
     return m_existingPaths->contains(path);
@@ -1481,7 +1482,7 @@ int TestSMFileUtil::getProcessID() const
 }
 
 
-void TestSMFileUtil::writeFile(string const &fname,
+void TestSMFileUtil::writeFile(std::string const &fname,
                                std::vector<unsigned char> const &bytes)
 {
   if (m_injectFailureAfterNBytes.has_value()) {
