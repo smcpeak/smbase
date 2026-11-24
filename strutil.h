@@ -9,6 +9,7 @@
 #define SMBASE_STRUTIL_H
 
 #include "array.h"                     // ArrayStack
+#include "str.h"                       // string
 #include "sm-macros.h"                 // DEPRECATED
 
 // My basic plan is to move the functionality that I think is worth

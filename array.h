@@ -12,13 +12,13 @@
 #include "exc.h"                       // GENERIC_CATCH_{BEGIN,END}
 #include "sm-macros.h"                 // NO_OBJECT_COPIES
 #include "sm-swap.h"                   // swap
-#include "str.h"                       // string
 #include "xassert.h"                   // xassert
 
 // libc++
 #include <algorithm>                   // std::sort
 #include <iterator>                    // std::random_access_iterator_tag
 #include <utility>                     // std::swap
+#include <string>                      // std::string
 #include <vector>                      // std::vector
 
 // libc
@@ -487,15 +487,15 @@ bool operator!= (ArrayStack<T> const &a1, ArrayStack<T> const &a2)
 }
 
 
-inline string toString(ArrayStack<char> const &arr)
+inline std::string toString(ArrayStack<char> const &arr)
 {
-  return string(arr.getArray(), arr.length());
+  return std::string(arr.getArray(), arr.length());
 }
 
 
-inline string toString(ArrayStack<unsigned char> const &arr)
+inline std::string toString(ArrayStack<unsigned char> const &arr)
 {
-  return string((char const *)arr.getArray(), arr.length());
+  return std::string((char const *)arr.getArray(), arr.length());
 }
 
 
