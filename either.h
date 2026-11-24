@@ -11,6 +11,7 @@
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
 #include "smbase/xassert.h"            // xassert
 
+#include <utility>                     // std::{forward, in_place_index}
 #include <variant>                     // std::{get, variant}
 
 
@@ -29,6 +30,21 @@ public:      // types
 
 public:
   using Base::Base;
+
+  // Explicitly make the left alternative rather than relying on
+  // overload resolution to pick the correct constructor.  This is
+  // useful when `LEFT` and `RIGHT` share a degree of
+  // interconvertibility.
+  template <typename... Args>
+  static Either makeLeft(Args&&... args)
+    { return Either(std::in_place_index<0>,
+                    std::forward<Args>(args)...); }
+
+  // Explicitly make the right-hand alternative.
+  template <typename... Args>
+  static Either makeRight(Args&&... args)
+    { return Either(std::in_place_index<1>,
+                    std::forward<Args>(args)...); }
 
   bool isLeft() const
     { return this->index() == 0; }
