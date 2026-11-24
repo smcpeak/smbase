@@ -324,6 +324,8 @@ char const *getExceptionTypeName(std::exception const &x);
 // do not want to simply terminate.
 //
 // Print details about 'x' to stderr using DEV_WARNING (dev-warning.h).
+//
+// TODO: Make this accept std::exception, and catch that below.
 void printUnhandled(XBase const &x);
 
 
@@ -332,10 +334,7 @@ void printUnhandled(XBase const &x);
 #define GENERIC_CATCH_BEGIN         \
   try {
 
-// And this goes at the bottom.  This if the client does not do
-// anything special, 'printUnhandled' will use the global version,
-// but in a class method, a client can provide their own handler
-// with that name.
+// And this goes at the bottom.
 #define GENERIC_CATCH_END             \
   }                                   \
   catch (smbase::XBase &x) {          \
