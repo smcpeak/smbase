@@ -5,8 +5,8 @@
 #define SMBASE_RUN_PROCESS_H
 
 #include "sm-macros.h"                 // NO_OBJECT_COPIES
-#include "str.h"                       // string
 
+#include <string>                      // std::string
 #include <vector>                      // std::vector
 
 
@@ -16,7 +16,7 @@ class RunProcess {
 
 private:     // data
   // Command to run.
-  std::vector<string> m_command;
+  std::vector<std::string> m_command;
 
   // True if we ran the program and it terminated.
   bool m_terminated;
@@ -33,7 +33,7 @@ public:      // methods
 
   // Set the program to run (first string) and its arguments (subsequent
   // strings).
-  void setCommand(std::vector<string> const &command);
+  void setCommand(std::vector<std::string> const &command);
 
   // Run the program and wait for it to terminate.
   void runAndWait();
@@ -68,16 +68,16 @@ public:      // methods
   //   - "Interrupted"
   //   - "Aborted"
   //   - "Signal N"
-  string exitDescription() const;
+  std::string exitDescription() const;
 
   // Run 'command'.  Throw if not 'exitedWith0()'.
-  static void check_run(std::vector<string> const &command);
+  static void check_run(std::vector<std::string> const &command);
 
   // Apply the bizarre Windows API quoting rules to 'command' in order
   // to form 'commandLine' that can be passed to CreateProcess.  The
   // resulting vector ends with a NUL byte.
   static void buildWindowsCommandLine(std::vector<char> &commandLine,
-    std::vector<string> const &command);
+    std::vector<std::string> const &command);
 };
 
 

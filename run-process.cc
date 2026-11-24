@@ -12,6 +12,7 @@
 #include "xassert.h"                   // xassert
 
 #include <iomanip>                     // std::hex
+#include <string>                      // std::string
 
 #include <errno.h>                     // errno
 #include <string.h>                    // strerror
@@ -31,7 +32,7 @@ RunProcess::~RunProcess()
 {}
 
 
-void RunProcess::setCommand(std::vector<string> const &command)
+void RunProcess::setCommand(std::vector<std::string> const &command)
 {
   xassert(!command.empty());
   m_command = command;
@@ -270,16 +271,16 @@ bool RunProcess::aborted() const
 }
 
 
-string RunProcess::exitDescription() const
+std::string RunProcess::exitDescription() const
 {
   if (exitedNormally()) {
     return stringb("Exit " << getExitCode());
   }
   else if (interrupted()) {
-    return string("Interrupted");
+    return std::string("Interrupted");
   }
   else if (aborted()) {
-    return string("Aborted");
+    return std::string("Aborted");
   }
   else {
     unsigned sig = getSignal();
@@ -296,13 +297,13 @@ string RunProcess::exitDescription() const
 }
 
 
-STATICDEF void RunProcess::check_run(std::vector<string> const &command)
+STATICDEF void RunProcess::check_run(std::vector<std::string> const &command)
 {
   RunProcess rproc;
   rproc.setCommand(command);
   rproc.runAndWait();
   if (!rproc.exitedWith0()) {
-    xfatal("Command \"" << vecAccumulateWith(command, string(" ")) <<
+    xfatal("Command \"" << vecAccumulateWith(command, std::string(" ")) <<
            "\" failed: " << rproc.exitDescription());
   }
 }
@@ -317,7 +318,7 @@ STATICDEF void RunProcess::check_run(std::vector<string> const &command)
 // are evidently what we're forced to use.
 //
 STATICDEF void RunProcess::buildWindowsCommandLine(
-  std::vector<char> &commandLine, std::vector<string> const &command)
+  std::vector<char> &commandLine, std::vector<std::string> const &command)
 {
   xassert(!command.empty());
 
