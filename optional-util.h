@@ -7,6 +7,7 @@
 #include "optional-util-iface.h"       // interface for this module
 
 #include "smbase/sm-macros.h"          // OPEN_NAMESPACE
+#include "smbase/xassert.h"            // xassertPrecondition
 
 #include <algorithm>                   // std::max
 #include <optional>                    // std::optional
@@ -104,6 +105,17 @@ std::optional<T> takeOptional(std::optional<T> &&opt)
   // Moving from `opt` leaves it holding a moved-from value (if it had
   // one), so explicitly reset it afterward.
   std::optional<T> ret(std::move(opt));
+  opt.reset();
+  return ret;
+}
+
+
+template <typename T>
+T takeOptionalsValue(std::optional<T> &&opt)
+{
+  xassertPrecondition(opt.has_value());
+
+  T ret(std::move(*opt));
   opt.reset();
   return ret;
 }

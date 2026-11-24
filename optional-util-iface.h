@@ -52,6 +52,13 @@ template <typename T>
 std::optional<T> takeOptional(std::optional<T> &&opt);
 
 
+// Return the value contained in `opt` and set it to absent.
+//
+// Requires `opt.has_value()`.
+template <typename T>
+T takeOptionalsValue(std::optional<T> &&opt);
+
+
 CLOSE_NAMESPACE(smbase)
 
 

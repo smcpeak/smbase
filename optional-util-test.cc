@@ -3,6 +3,7 @@
 
 #include "optional-util.h"             // module under test
 
+#include "smbase/exc.h"                // smbase::XAssert
 #include "smbase/optional-opll.h"      // operator<<(std::optional)
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
 #include "smbase/sm-test.h"            // EXPECT_EQ
@@ -297,6 +298,56 @@ void test_takeOptional()
 }
 
 
+void test_takeOptionalsValue()
+{
+  // Absent source: exception.
+  {
+    std::optional<int> src;
+    EXPECT_EXN(takeOptionalsValue(std::move(src)), XAssert);
+  }
+
+  // Present source: result has the value, source becomes absent.
+  {
+    std::optional<int> src(3);
+    int dest = takeOptionalsValue(std::move(src));
+    EXPECT_EQ(dest, 3);
+    EXPECT_FALSE(src.has_value());
+  }
+
+  // The value is moved, not copied: the string's buffer is transferred.
+  // (The string is long enough to not use the small-string buffer.)
+  {
+    std::optional<std::string> src(std::string(100, 'x'));
+    char const *origData = src->data();
+
+    std::string dest = takeOptionalsValue(std::move(src));
+    EXPECT_FALSE(src.has_value());
+    EXPECT_EQ(dest, std::string(100, 'x'));
+    EXPECT_EQ(dest.data() == origData, true);
+  }
+
+  // Works with a move-only type.
+  {
+    std::optional<std::unique_ptr<int>> src(std::make_unique<int>(5));
+    int *origPtr = src->get();
+
+    std::unique_ptr<int> dest =
+      takeOptionalsValue(std::move(src));
+    EXPECT_FALSE(src.has_value());
+    EXPECT_EQ(dest.get() == origPtr, true);
+    EXPECT_EQ(*dest, 5);
+  }
+
+  // Taking again from the now-absent source yields exception.
+  {
+    std::optional<int> src(7);
+    int first = takeOptionalsValue(std::move(src));
+    EXPECT_EXN(takeOptionalsValue(std::move(src)), XAssert);
+    EXPECT_EQ(first, 7);
+  }
+}
+
+
 CLOSE_ANONYMOUS_NAMESPACE
 
 
@@ -311,6 +362,7 @@ void test_optional_util()
   test_optFromOpt();
   test_OPT_INVOKE_METHOD();
   test_takeOptional();
+  test_takeOptionalsValue();
 }
 
 
