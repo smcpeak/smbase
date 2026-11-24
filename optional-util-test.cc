@@ -9,8 +9,11 @@
 
 #include <algorithm>                   // std::{min, max}
 #include <functional>                  // std::invoke
+#include <memory>                      // std::unique_ptr
 #include <optional>                    // std::optional
+#include <string>                      // std::string
 #include <type_traits>                 // std::{invoke_result_t, remove_reference_t}
+#include <utility>                     // std::move
 
 using namespace smbase;
 
@@ -241,6 +244,58 @@ std::optional<std::remove_reference_t<RESULT>> optInvokeMethod(
 #endif
 
 
+void test_takeOptional()
+{
+  // Absent source: result is absent, source stays absent.
+  {
+    std::optional<int> src;
+    std::optional<int> dest = takeOptional(std::move(src));
+    EXPECT_FALSE(dest.has_value());
+    EXPECT_FALSE(src.has_value());
+  }
+
+  // Present source: result has the value, source becomes absent.
+  {
+    std::optional<int> src(3);
+    std::optional<int> dest = takeOptional(std::move(src));
+    EXPECT_EQ(dest, std::optional<int>(3));
+    EXPECT_FALSE(src.has_value());
+  }
+
+  // The value is moved, not copied: the string's buffer is transferred.
+  // (The string is long enough to not use the small-string buffer.)
+  {
+    std::optional<std::string> src(std::string(100, 'x'));
+    char const *origData = src->data();
+
+    std::optional<std::string> dest = takeOptional(std::move(src));
+    EXPECT_FALSE(src.has_value());
+    EXPECT_EQ(*dest, std::string(100, 'x'));
+    EXPECT_EQ(dest->data() == origData, true);
+  }
+
+  // Works with a move-only type.
+  {
+    std::optional<std::unique_ptr<int>> src(std::make_unique<int>(5));
+    int *origPtr = src->get();
+
+    std::optional<std::unique_ptr<int>> dest =
+      takeOptional(std::move(src));
+    EXPECT_FALSE(src.has_value());
+    EXPECT_EQ(dest->get() == origPtr, true);
+    EXPECT_EQ(**dest, 5);
+  }
+
+  // Taking again from the now-absent source yields absent.
+  {
+    std::optional<int> src(7);
+    std::optional<int> first = takeOptional(std::move(src));
+    std::optional<int> second = takeOptional(std::move(src));
+    EXPECT_EQ(first, std::optional<int>(7));
+    EXPECT_FALSE(second.has_value());
+  }
+}
+
 
 CLOSE_ANONYMOUS_NAMESPACE
 
@@ -255,6 +310,7 @@ void test_optional_util()
   test_optInvokeAlt();
   test_optFromOpt();
   test_OPT_INVOKE_METHOD();
+  test_takeOptional();
 }
 
 

@@ -47,6 +47,11 @@ auto optInvoke(FUNC &&f, std::optional<T> const &opt)
   -> std::optional<decltype(f(*opt))>;
 
 
+// Return the value of `opt` and set it to absent.
+template <typename T>
+std::optional<T> takeOptional(std::optional<T> &&opt);
+
+
 CLOSE_NAMESPACE(smbase)
 
 

@@ -12,6 +12,7 @@
 #include <optional>                    // std::optional
 #include <string>                      // std::string
 #include <sstream>                     // std::ostringstream
+#include <utility>                     // std::move
 
 
 OPEN_NAMESPACE(smbase)
@@ -95,6 +96,17 @@ std::optional<DEST> optFromOpt(std::optional<SRC> const &s)
 // result in an `optional`.  Otherwise return `nullopt`.
 #define OPT_INVOKE_METHOD(opt, method, ...) \
    (opt? std::make_optional(opt->method(__VA_ARGS__)) : std::nullopt)
+
+
+template <typename T>
+std::optional<T> takeOptional(std::optional<T> &&opt)
+{
+  // Moving from `opt` leaves it holding a moved-from value (if it had
+  // one), so explicitly reset it afterward.
+  std::optional<T> ret(std::move(opt));
+  opt.reset();
+  return ret;
+}
 
 
 CLOSE_NAMESPACE(smbase)
