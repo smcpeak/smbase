@@ -3,6 +3,8 @@
 
 // This file is in the public domain.
 
+// TODO: Make an interface version of this I can use in exc.h.
+
 #ifndef SMBASE_VECTOR_PUSH_POP_H
 #define SMBASE_VECTOR_PUSH_POP_H
 
