@@ -158,6 +158,10 @@ void test_EXN_CONTEXT_STRING_OPT()
 
     EXN_CONTEXT_STRING_OPT(std::optional<std::string>());
     EXPECT_EQ(getExnContextString(), "blah: ");
+
+    // Needs the deduction guide to work.
+    EXN_CONTEXT_STRING_OPT(std::nullopt);
+    EXPECT_EQ(getExnContextString(), "blah: ");
   }
 
   EXPECT_EQ(getExnContextString(), "");

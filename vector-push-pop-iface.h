@@ -38,6 +38,11 @@ public:      // methods
 };
 
 
+// Deduce the value type from the vector type.
+template <typename T, typename U>
+VectorPushPop(stdfwd::vector<T> &, U &&) -> VectorPushPop<T>;
+
+
 // Push `value` onto `vec` now, pop it off on scope exit.
 //
 // If this macro gets expanded, then it is necessary to include
@@ -75,6 +80,11 @@ public:      // methods
   // Pop if `m_doPushPop`.
   inline ~VectorPushPopOpt();
 };
+
+
+// Deduce the value type from the vector type.
+template <typename T, typename U>
+VectorPushPopOpt(stdfwd::vector<T> &, U &&) -> VectorPushPopOpt<T>;
 
 
 // If `valueOpt` has a value, push its value onto `vec` now, and pop it

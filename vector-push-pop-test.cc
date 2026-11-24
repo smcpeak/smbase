@@ -161,6 +161,10 @@ void test_VECTOR_PUSH_POP()
     VECTOR_PUSH_POP(vec, 1);
     VECTOR_PUSH_POP(vec, two);
     EXPECT_EQ(vec, (IntVec{1, 2}));
+
+    // Conversion in argument.
+    VECTOR_PUSH_POP(vec, 3.1);
+    EXPECT_EQ(vec, (IntVec{1, 2, 3}));
   }
 
   EXPECT_TRUE(vec.empty());
