@@ -8,6 +8,7 @@
 #include "smbase/sm-macros.h"          // OPEN_ANONYMOUS_NAMESPACE
 #include "smbase/sm-test.h"            // EXPECT_EQ
 #include "smbase/stringb.h"            // stringb
+#include "smbase/xassert.h"            // xassertPtr
 
 #include <memory>                      // std::unique_ptr
 
@@ -64,6 +65,23 @@ void testMapFindOrNull()
 
   mapRemoveExisting(m, 1);
   xassert(m.empty());
+}
+
+
+void testMapFindValuePtrOpt()
+{
+  std::map<int, int> m{{1, 11}, {2, 22}};
+
+  EXPECT_EQ(*xassertPtr(mapFindValuePtrOptC(m, 1)), 11);
+  EXPECT_EQ(*xassertPtr(mapFindValuePtrOptC(m, 2)), 22);
+  EXPECT_EQ(mapFindValuePtrOptC(m, 3), nullptr);
+
+  EXPECT_EQ(*xassertPtr(mapFindValuePtrOpt(m, 1)), 11);
+  EXPECT_EQ(*xassertPtr(mapFindValuePtrOpt(m, 2)), 22);
+  EXPECT_EQ(mapFindValuePtrOpt(m, 3), nullptr);
+
+  *xassertPtr(mapFindValuePtrOpt(m, 2)) = 222;
+  EXPECT_EQ(*xassertPtr(mapFindValuePtrOpt(m, 2)), 222);
 }
 
 
@@ -155,6 +173,7 @@ void test_map_util()
 {
   testInsertMapUnique();
   testMapFindOrNull();
+  testMapFindValuePtrOpt();
   testMapMoveValueAt();
   testOstreamInsert();
   test_mapGetValueAt();

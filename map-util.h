@@ -143,6 +143,39 @@ std::optional<typename std::map<K,V>::const_iterator> mapFindOpt(
 }
 
 
+// Return a pointer to the value if one is associated with `k`, and
+// nullptr otherwise.  (It is not possible in C++17 to create an
+// optional reference, so a raw pointer is used instead.)
+template <class K, class V>
+V const * NULLABLE mapFindValuePtrOptC(
+  std::map<K,V> const &m,
+  K const &k)
+{
+  auto it = m.find(k);
+  if (it != m.end()) {
+    return &(it->second);
+  }
+  else {
+    return nullptr;
+  }
+}
+
+// Same, but returning a non-const pointer.
+template <class K, class V>
+V * NULLABLE mapFindValuePtrOpt(
+  std::map<K,V> &m,
+  K const &k)
+{
+  auto it = m.find(k);
+  if (it != m.end()) {
+    return &(it->second);
+  }
+  else {
+    return nullptr;
+  }
+}
+
+
 // Return a reference to the value for `k`, which must exist.
 template <typename K, typename V, typename C, typename A>
 V const &mapGetValueAtC(std::map<K,V,C,A> const &m, K const &k)
